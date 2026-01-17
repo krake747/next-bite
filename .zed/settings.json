@@ -1,0 +1,22 @@
+{
+    "autosave": {
+        "after_delay": {
+            "milliseconds": 100
+        }
+    },
+    "languages": {
+        "CSS": {
+            "language_servers": ["tailwindcss-language-server"]
+        }
+    },
+    "lsp": {
+        "tailwindcss-language-server": {
+            "settings": {
+                "classFunctions": ["cva", "cx"],
+                "experimental": {
+                    "classRegex": ["[cls|className]\\s\\:\\=\\s\"([^\"]*)"]
+                }
+            }
+        }
+    }
+}

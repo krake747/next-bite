@@ -1,0 +1,14 @@
+{
+    "$schema": "./node_modules/oxfmt/configuration_schema.json",
+    "ignorePatterns": [],
+    "printWidth": 120,
+    "tabWidth": 4,
+    "semi": false,
+    "experimentalTailwindcss": {
+        "stylesheet": "./src/index.css",
+        "attributes": ["class", "className", "classList"],
+        "functions": ["clsx", "cx"],
+        "preserveDuplicates": false,
+        "preserveWhitespace": false
+    }
+}

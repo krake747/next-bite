@@ -1,10 +1,34 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:is(.dark *));
+
 :root {
-    font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
+    font-family:
+        -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell", "Fira Sans",
+        "Droid Sans", "Helvetica Neue", sans-serif;
     color-scheme: light dark;
     font-synthesis: none;
     text-rendering: optimizeLegibility;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+}
+
+@theme inline {
+    --color-flame-pea-50: #fef4f2;
+    --color-flame-pea-100: #fde7e3;
+    --color-flame-pea-200: #fdd3cb;
+    --color-flame-pea-300: #fab5a7;
+    --color-flame-pea-400: #f58974;
+    --color-flame-pea-500: #eb6348;
+    --color-flame-pea-600: #db573d;
+    --color-flame-pea-700: #b53920;
+    --color-flame-pea-800: #96321e;
+    --color-flame-pea-900: #7d2e1f;
+    --color-flame-pea-950: #44140b;
+}
+
+@layer base {
+    body {
+        @apply bg-neutral-50 text-neutral-900 dark:bg-neutral-900 dark:text-neutral-100;
+    }
 }

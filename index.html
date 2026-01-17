@@ -4,7 +4,16 @@
         <meta charset="UTF-8" />
         <link rel="icon" type="image/svg+xml" href="/vite.svg" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>lets-eat</title>
+        <script>
+            // Apply theme immediately to prevent FOUC
+            const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches
+            const storedTheme = localStorage.getItem("theme")
+            const isDark = storedTheme === "dark" || (!storedTheme && prefersDark)
+            if (isDark) {
+                document.documentElement.classList.add("dark")
+            }
+        </script>
+        <title>My next bite</title>
     </head>
     <body>
         <div id="root"></div>
