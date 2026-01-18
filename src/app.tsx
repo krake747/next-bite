@@ -20,6 +20,8 @@ export function App() {
         friendFilter() ? restaurants()?.filter((r: Restaurant) => r.addedBy === friendFilter()) : restaurants(),
     )
 
+    const count = createMemo(() => filteredRestaurants()?.length ?? 0)
+
     const handleSubmit = async (output: any) => {
         try {
             await addRestaurant(output)
@@ -31,8 +33,8 @@ export function App() {
     return (
         <div class="flex min-h-screen flex-col text-neutral-900 dark:text-white">
             <div class="container mx-auto max-w-7xl flex-1 px-4 pb-8">
-                <Suspense fallback={<Loading />}>                             
-                    <Header count={restaurants()?.length ?? 0} />
+                <Suspense fallback={<Loading />}>
+                    <Header count={count} />
                     <Filters
                         friends={friends() ?? []}
                         friendFilter={friendFilter()}
