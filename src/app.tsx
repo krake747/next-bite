@@ -35,7 +35,10 @@ export function App() {
                         {(restaurant) => <RestaurantCard restaurant={restaurant} />}
                     </For>
                 </div>
-                <AddRestaurantDialog show={show()} onOpenChange={setShow} />
+                    <AddRestaurantDialog
+                        show={show()}
+                        onOpenChange={setShow}
+                    />
             </main>
             <Footer />
         </div>

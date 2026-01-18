@@ -2,7 +2,7 @@ import { For, Show } from "solid-js"
 import { Dialog } from "@kobalte/core/dialog"
 import { createForm, Field, Form, reset } from "@formisch/solid"
 import * as v from "valibot"
-import { useAddRestaurant, useFriends } from "../core/hooks"
+import { useUpdateRestaurant, useFriends, type Restaurant } from "../core/hooks"
 import { Button } from "../ui/button"
 
 const RestaurantSchema = v.object({
@@ -14,18 +14,32 @@ const RestaurantSchema = v.object({
     addedBy: v.pipe(v.string(), v.minLength(1, "Must select a friend")),
 })
 
-export function AddRestaurantDialog(props: { show: boolean; onOpenChange: (open: boolean) => void }) {
-    const addRestaurant = useAddRestaurant()
+export function EditRestaurantDialog(props: {
+    show: boolean
+    onOpenChange: (open: boolean) => void
+    restaurant: Restaurant
+}) {
+    const updateRestaurant = useUpdateRestaurant()
     const friends = useFriends()
-    const form = createForm({ schema: RestaurantSchema })
+    const form = createForm({
+        schema: RestaurantSchema,
+        initialInput: {
+            name: props.restaurant.name,
+            cuisine: props.restaurant.cuisine,
+            location: props.restaurant.location,
+            notes: props.restaurant.notes ?? "",
+            link: props.restaurant.link ?? "",
+            addedBy: props.restaurant.addedBy,
+        },
+    })
 
     const handleSubmit = async (output: v.InferOutput<typeof RestaurantSchema>) => {
         try {
-            await addRestaurant(output)
+            await updateRestaurant({ id: props.restaurant._id, ...output })
             reset(form)
             props.onOpenChange(false)
         } catch (error) {
-            console.error("Error adding restaurant:", error)
+            console.error("Error updating restaurant:", error)
         }
     }
 
@@ -35,7 +49,7 @@ export function AddRestaurantDialog(props: { show: boolean; onOpenChange: (open:
                 <Dialog.Overlay class="fixed inset-0 bg-black/50" />
                 <div class="fixed inset-0 flex items-center justify-center p-4">
                     <Dialog.Content class="w-full max-w-md rounded-lg bg-white p-6 dark:bg-neutral-800">
-                        <Dialog.Title class="mb-4 text-lg font-semibold">Add Restaurant</Dialog.Title>
+                        <Dialog.Title class="mb-4 text-lg font-semibold">Edit Restaurant</Dialog.Title>
                         <Form of={form} onSubmit={handleSubmit} class="space-y-4">
                             <Field of={form} path={["name"]}>
                                 {(field) => (
@@ -127,7 +141,7 @@ export function AddRestaurantDialog(props: { show: boolean; onOpenChange: (open:
                             </Field>
                             <div class="flex justify-end gap-2">
                                 <Button onClick={() => props.onOpenChange(false)}>Cancel</Button>
-                                <Button type="submit">Add</Button>
+                                <Button type="submit">Update</Button>
                             </div>
                         </Form>
                     </Dialog.Content>
