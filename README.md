@@ -3,6 +3,7 @@
 [![Netlify Status](https://api.netlify.com/api/v1/badges/a733814f-3e1f-4b8f-9dab-87b931715958/deploy-status)](https://app.netlify.com/projects/magnificent-frangollo-7954c2/deploys)
 
 A fun web app for friends to share and discover restaurant recommendations. Never wonder where to eat next!
+Built with SolidJS, Vite, Tailwind CSS, Convex, Formisch, and Valibot.
 
 [My next bite](https://nextbite.kevinkraemer.com)
 
@@ -13,6 +14,7 @@ A fun web app for friends to share and discover restaurant recommendations. Neve
 - Node.js (Latest stable version recommended)
 - pnpm (Package manager)
 - Convex account and project (see [Convex docs](https://docs.convex.dev/quickstart))
+- `.env.local` file configured (see Environment Setup below)
 
 ### Installation
 
@@ -27,6 +29,24 @@ Install dependencies
 
 ```bash
 pnpm install
+```
+
+### Environment Setup
+
+Copy the example environment file and configure your Convex deployment:
+
+```bash
+cp .env.example .env.local
+```
+
+Edit `.env.local` with your Convex deployment details (get these from your Convex dashboard):
+
+```env
+# Used by Convex CLI for development/deployment
+CONVEX_DEPLOYMENT=your-deployment-name
+
+# Used by the application at runtime
+VITE_CONVEX_URL=https://your-deployment.convex.cloud
 ```
 
 Start Convex backend dev server (syncs to your cloud dev project)
@@ -53,11 +73,6 @@ Open [http://localhost:5173](http://localhost:5173) in your browser.
 - `pnpm fmt` - Format code
 - `pnpm lint` - Lint code
 
-## Tech Stack
-
-- **Frontend:** SolidJS, Vite, TailwindCSS, TypeScript
-- **Backend:** Convex
-
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
@@ -69,4 +84,4 @@ greatly appreciated!
 
 ## Acknowledgments
 
-Made with ❤️ for food lovers who love trying new bites 🚀. Built with SolidJS.
+Made with ❤️ for food lovers who love trying new bites 🍝. Built with SolidJS.
