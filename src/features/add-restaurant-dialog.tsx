@@ -1,6 +1,6 @@
-import { For, Show } from "solid-js"
+import { For } from "solid-js"
 import { Dialog } from "@kobalte/core/dialog"
-import { createForm, Field, Form } from "@formisch/solid"
+import { createForm, Field, Form, reset } from "@formisch/solid"
 import * as v from "valibot"
 import { useAddRestaurant, useFriends } from "../core/hooks"
 import { Button } from "../ui/button"
@@ -21,6 +21,7 @@ export function AddRestaurantDialog(props: { show: boolean; onOpenChange: (open:
     const handleSubmit = async (output: v.InferOutput<typeof RestaurantSchema>) => {
         try {
             await addRestaurant(output)
+            reset(form)
             props.onOpenChange(false)
         } catch (error) {
             console.error("Error adding restaurant:", error)
@@ -97,13 +98,9 @@ export function AddRestaurantDialog(props: { show: boolean; onOpenChange: (open:
                                             class="w-full rounded border p-2 dark:border-neutral-600 dark:bg-neutral-700"
                                         >
                                             <option value="">Select friend</option>
-                                            <Show when={friends()} fallback={<option>Loading friends...</option>}>
-                                                {(friends) => (
-                                                    <For each={friends()}>
-                                                        {(f) => <option value={f.name}>{f.name}</option>}
-                                                    </For>
-                                                )}
-                                            </Show>
+                                            <For each={friends()} fallback={<option>Loading friends...</option>}>
+                                                {(f) => <option value={f.name}>{f.name}</option>}
+                                            </For>
                                         </select>
                                         {field.errors && <div class="text-sm text-red-500">{field.errors[0]}</div>}
                                     </div>
