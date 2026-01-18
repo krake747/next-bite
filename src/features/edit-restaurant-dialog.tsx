@@ -4,6 +4,7 @@ import { createForm, Field, Form, reset } from "@formisch/solid"
 import * as v from "valibot"
 import { useUpdateRestaurant, useFriends, type Restaurant } from "../core/hooks"
 import { Button } from "../ui/button"
+import { FieldWrapper, Input, Textarea, Select } from "../ui/field"
 
 const RestaurantSchema = v.object({
     name: v.pipe(v.string(), v.minLength(1, "Name is required")),
@@ -53,79 +54,43 @@ export function EditRestaurantDialog(props: {
                         <Form of={form} onSubmit={handleSubmit} class="space-y-4">
                             <Field of={form} path={["name"]}>
                                 {(field) => (
-                                    <div>
-                                        <input
-                                            {...field.props}
-                                            value={field.input}
-                                            type="text"
-                                            placeholder="Name"
-                                            class="w-full rounded border p-2 dark:border-neutral-600 dark:bg-neutral-700"
-                                        />
-                                        {field.errors && <div class="text-sm text-red-500">{field.errors[0]}</div>}
-                                    </div>
+                                    <FieldWrapper field={field}>
+                                        <Input field={field} placeholder="Name" />
+                                    </FieldWrapper>
                                 )}
                             </Field>
                             <Field of={form} path={["cuisine"]}>
                                 {(field) => (
-                                    <div>
-                                        <input
-                                            {...field.props}
-                                            value={field.input}
-                                            type="text"
-                                            placeholder="Cuisine"
-                                            class="w-full rounded border p-2 dark:border-neutral-600 dark:bg-neutral-700"
-                                        />
-                                        {field.errors && <div class="text-sm text-red-500">{field.errors[0]}</div>}
-                                    </div>
+                                    <FieldWrapper field={field}>
+                                        <Input field={field} placeholder="Cuisine" />
+                                    </FieldWrapper>
                                 )}
                             </Field>
                             <Field of={form} path={["location"]}>
                                 {(field) => (
-                                    <div>
-                                        <input
-                                            {...field.props}
-                                            value={field.input}
-                                            type="text"
-                                            placeholder="Location"
-                                            class="w-full rounded border p-2 dark:border-neutral-600 dark:bg-neutral-700"
-                                        />
-                                        {field.errors && <div class="text-sm text-red-500">{field.errors[0]}</div>}
-                                    </div>
+                                    <FieldWrapper field={field}>
+                                        <Input field={field} placeholder="Location" />
+                                    </FieldWrapper>
                                 )}
                             </Field>
                             <Field of={form} path={["notes"]}>
                                 {(field) => (
-                                    <textarea
-                                        {...field.props}
-                                        value={field.input || ""}
-                                        placeholder="Notes (optional)"
-                                        class="w-full rounded border p-2 dark:border-neutral-600 dark:bg-neutral-700"
-                                        rows="3"
-                                    />
+                                    <FieldWrapper field={field}>
+                                        <Textarea field={field} placeholder="Notes (optional)" />
+                                    </FieldWrapper>
                                 )}
                             </Field>
                             <Field of={form} path={["link"]}>
                                 {(field) => (
-                                    <div>
-                                        <input
-                                            {...field.props}
-                                            value={field.input || ""}
-                                            type="url"
-                                            placeholder="Link (optional)"
-                                            class="w-full rounded border p-2 dark:border-neutral-600 dark:bg-neutral-700"
-                                        />
-                                        {field.errors && <div class="text-sm text-red-500">{field.errors[0]}</div>}
-                                    </div>
+                                    <FieldWrapper field={field}>
+                                        <Input field={field} type="url" placeholder="Link (optional)" />
+                                    </FieldWrapper>
                                 )}
                             </Field>
                             <Field of={form} path={["addedBy"]}>
                                 {(field) => (
-                                    <div>
-                                        <select
-                                            {...field.props}
-                                            value={field.input}
-                                            class="w-full rounded border p-2 dark:border-neutral-600 dark:bg-neutral-700"
-                                        >
+                                    <FieldWrapper field={field}>
+                                        <Select field={field}>
                                             <option value="">Select friend</option>
                                             <Show when={friends()} fallback={<option>Loading friends...</option>}>
                                                 {(friends) => (
@@ -134,9 +99,8 @@ export function EditRestaurantDialog(props: {
                                                     </For>
                                                 )}
                                             </Show>
-                                        </select>
-                                        {field.errors && <div class="text-sm text-red-500">{field.errors[0]}</div>}
-                                    </div>
+                                        </Select>
+                                    </FieldWrapper>
                                 )}
                             </Field>
                             <div class="flex justify-end gap-2">
