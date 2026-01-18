@@ -22,7 +22,7 @@
         "tailwindcss": "^4.1.18"
     },
     "devDependencies": {
-        "@types/node": "^24.10.9",
+        "@types/node": "^25.0.9",
         "oxfmt": "^0.24.0",
         "oxlint": "^1.39.0",
         "typescript": "~5.9.3",
