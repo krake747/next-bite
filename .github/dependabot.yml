@@ -1,24 +1,24 @@
 version: 2
 
 updates:
-    - package-ecosystem: "npm"
-      directory: "/"
-      schedule:
-          interval: "monthly"
-          time: "08:00"
-      open-pull-requests-limit: 5
-      assignees:
-          - krake747
-      labels:
-          - "deps"
-          - "auto-bump"
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "monthly"
+      time: "08:00"
+    open-pull-requests-limit: 5
+    assignees:
+      - krake747
+    labels:
+      - "deps"
+      - "auto-bump"
 
-    - package-ecosystem: "github-actions"
-      directory: "/"
-      schedule:
-          interval: "monthly"
-          day: "monday"
-          time: "08:00"
-      labels:
-          - "ci"
-          - "auto-bump"
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "monthly"
+      day: "monday"
+      time: "08:00"
+    labels:
+      - "ci"
+      - "auto-bump"

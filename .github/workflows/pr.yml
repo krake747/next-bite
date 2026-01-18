@@ -1,41 +1,41 @@
 name: Verify pull request
 
 on:
-    pull_request:
-        branches: [main]
+  pull_request:
+    branches: [main]
 
 permissions:
-    contents: read
+  contents: read
 
 jobs:
-    build:
-        name: Format and Lint
-        runs-on: ubuntu-latest
+  build:
+    name: Format and Lint
+    runs-on: ubuntu-latest
 
-        strategy:
-            matrix:
-                node-version: [24.x]
+    strategy:
+      matrix:
+        node-version: [24.x]
 
-        steps:
-            - name: Checkout code
-              uses: actions/checkout@v6
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
 
-            - name: Set up Node.js
-              uses: actions/setup-node@v6
-              with:
-                  node-version: ${{ matrix.node-version }}
+      - name: Set up Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: ${{ matrix.node-version }}
 
-            - name: Install pnpm
-              uses: pnpm/action-setup@v4
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
 
-            - name: Install dependencies
-              run: pnpm install
+      - name: Install dependencies
+        run: pnpm install
 
-            - name: Oxfmt
-              run: pnpm fmt:check
+      - name: Oxfmt
+        run: pnpm fmt:check
 
-            - name: Oxlint
-              run: pnpm lint
+      - name: Oxlint
+        run: pnpm lint
 
-            - name: Build the app
-              run: pnpm build
+      - name: Build the app
+        run: pnpm build
