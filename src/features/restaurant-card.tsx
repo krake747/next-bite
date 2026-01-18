@@ -41,7 +41,7 @@ export function RestaurantCard(props: { restaurant: Restaurant }) {
                 </CardContent>
                 <CardFooter class="flex items-center justify-between text-neutral-500 dark:text-neutral-400">
                     <span>
-                        Added by{" "}
+                        Proposed by{" "}
                         <span class="font-medium text-neutral-900 dark:text-neutral-100">
                             {props.restaurant.addedBy}
                         </span>
