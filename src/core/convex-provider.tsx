@@ -1,6 +1,6 @@
 import { ConvexClient } from "convex/browser"
 import { ConvexContext } from "./convex-solid"
-import type { Component } from "solid-js"
+import { type Component } from "solid-js"
 
 const convex = new ConvexClient(import.meta.env.VITE_CONVEX_URL)
 

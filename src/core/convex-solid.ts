@@ -1,6 +1,6 @@
 import { ConvexClient } from "convex/browser"
-import type { FunctionReference } from "convex/server"
-import type { Context } from "solid-js"
+import  { type FunctionReference } from "convex/server"
+import  { type Context } from "solid-js"
 import { createContext, from, useContext } from "solid-js"
 
 export const ConvexContext: Context<ConvexClient | undefined> = createContext()

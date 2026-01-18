@@ -1,17 +1,28 @@
-export function FieldWrapper(props: { field: any; children: any }) {
+import { splitProps } from "solid-js"
+import { type FieldElementProps } from "@formisch/solid"
+
+export function FieldWrapper(props: { errors: any; children: any }) {
     return (
         <div>
             {props.children}
-            <FieldErrors field={props.field} />
+            <FieldErrors errors={props.errors} />
         </div>
     )
 }
 
-export function Input(props: { field: any; type?: string; placeholder?: string }) {
+interface InputProps extends FieldElementProps {
+    type?: string
+    placeholder?: string
+    input: string | undefined
+    errors: [string, ...string[]] | null
+}
+
+export function Input(props: InputProps) {
+    const [, inputProps] = splitProps(props, ["input", "errors", "type", "placeholder"])
     return (
         <input
-            {...props.field.props}
-            value={props.field.input}
+            {...inputProps}
+            value={props.input ?? ""}
             type={props.type ?? "text"}
             placeholder={props.placeholder ?? ""}
             class="w-full rounded border border-neutral-200 p-2 dark:border-neutral-600 dark:bg-neutral-700"
@@ -19,11 +30,19 @@ export function Input(props: { field: any; type?: string; placeholder?: string }
     )
 }
 
-export function Textarea(props: { field: any; placeholder?: string; rows?: number }) {
+interface TextareaProps extends FieldElementProps {
+    placeholder?: string
+    rows?: number
+    input: string | undefined
+    errors: [string, ...string[]] | null
+}
+
+export function Textarea(props: TextareaProps) {
+    const [, textareaProps] = splitProps(props, ["input", "errors", "placeholder", "rows"])
     return (
         <textarea
-            {...props.field.props}
-            value={props.field.input ?? ""}
+            {...textareaProps}
+            value={props.input ?? ""}
             placeholder={props.placeholder ?? ""}
             rows={props.rows ?? 3}
             class="w-full rounded border border-neutral-200 p-2 dark:border-neutral-600 dark:bg-neutral-700"
@@ -31,11 +50,18 @@ export function Textarea(props: { field: any; placeholder?: string; rows?: numbe
     )
 }
 
-export function Select(props: { field: any; children: any }) {
+interface SelectProps extends FieldElementProps {
+    children: any
+    input: string | undefined
+    errors: [string, ...string[]] | null
+}
+
+export function Select(props: SelectProps) {
+    const [, selectProps] = splitProps(props, ["input", "errors", "children"])
     return (
         <select
-            {...props.field.props}
-            value={props.field.input}
+            {...selectProps}
+            value={props.input ?? ""}
             class="w-full rounded border border-neutral-200 p-2 dark:border-neutral-600 dark:bg-neutral-700"
         >
             {props.children}
@@ -43,6 +69,6 @@ export function Select(props: { field: any; children: any }) {
     )
 }
 
-function FieldErrors(props: { field: any }) {
-    return props.field.errors ? <div class="text-sm text-red-500">{props.field.errors[0]}</div> : null
+function FieldErrors(props: { errors: any }) {
+    return props.errors ? <div class="text-sm text-red-500">{props.errors[0]}</div> : null
 }

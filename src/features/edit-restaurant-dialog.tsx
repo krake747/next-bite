@@ -1,19 +1,10 @@
 import { For, Show } from "solid-js"
 import { Dialog } from "@kobalte/core/dialog"
 import { createForm, Field, Form, reset } from "@formisch/solid"
-import * as v from "valibot"
 import { useUpdateRestaurant, useFriends, type Restaurant } from "../core/hooks"
 import { Button } from "../ui/button"
 import { FieldWrapper, Input, Textarea, Select } from "../ui/field"
-
-const RestaurantSchema = v.object({
-    name: v.pipe(v.string(), v.minLength(1, "Name is required")),
-    cuisine: v.pipe(v.string(), v.minLength(1, "Cuisine is required")),
-    location: v.pipe(v.string(), v.minLength(1, "Location is required")),
-    notes: v.optional(v.string()),
-    link: v.optional(v.string()),
-    addedBy: v.pipe(v.string(), v.minLength(1, "Must select a friend")),
-})
+import { RestaurantSchema, type RestaurantOutput } from "../core/schemas"
 
 export function EditRestaurantDialog(props: {
     show: boolean
@@ -34,7 +25,7 @@ export function EditRestaurantDialog(props: {
         },
     })
 
-    const handleSubmit = async (output: v.InferOutput<typeof RestaurantSchema>) => {
+    const handleSubmit = async (output: RestaurantOutput) => {
         try {
             await updateRestaurant({ id: props.restaurant._id, ...output })
             reset(form)
@@ -54,43 +45,69 @@ export function EditRestaurantDialog(props: {
                         <Form of={form} onSubmit={handleSubmit} class="space-y-4">
                             <Field of={form} path={["name"]}>
                                 {(field) => (
-                                    <FieldWrapper field={field}>
-                                        <Input field={field} placeholder="Name" />
+                                    <FieldWrapper errors={field.errors}>
+                                        <Input
+                                            {...field.props}
+                                            input={field.input}
+                                            errors={field.errors}
+                                            placeholder="Name"
+                                        />
                                     </FieldWrapper>
                                 )}
                             </Field>
                             <Field of={form} path={["cuisine"]}>
                                 {(field) => (
-                                    <FieldWrapper field={field}>
-                                        <Input field={field} placeholder="Cuisine" />
+                                    <FieldWrapper errors={field.errors}>
+                                        <Input
+                                            {...field.props}
+                                            input={field.input}
+                                            errors={field.errors}
+                                            placeholder="Cuisine"
+                                        />
                                     </FieldWrapper>
                                 )}
                             </Field>
                             <Field of={form} path={["location"]}>
                                 {(field) => (
-                                    <FieldWrapper field={field}>
-                                        <Input field={field} placeholder="Location" />
+                                    <FieldWrapper errors={field.errors}>
+                                        <Input
+                                            {...field.props}
+                                            input={field.input}
+                                            errors={field.errors}
+                                            placeholder="Location"
+                                        />
                                     </FieldWrapper>
                                 )}
                             </Field>
                             <Field of={form} path={["notes"]}>
                                 {(field) => (
-                                    <FieldWrapper field={field}>
-                                        <Textarea field={field} placeholder="Notes (optional)" />
+                                    <FieldWrapper errors={field.errors}>
+                                        <Textarea
+                                            {...field.props}
+                                            input={field.input}
+                                            errors={field.errors}
+                                            placeholder="Notes (optional)"
+                                        />
                                     </FieldWrapper>
                                 )}
                             </Field>
                             <Field of={form} path={["link"]}>
                                 {(field) => (
-                                    <FieldWrapper field={field}>
-                                        <Input field={field} type="url" placeholder="Link (optional)" />
+                                    <FieldWrapper errors={field.errors}>
+                                        <Input
+                                            {...field.props}
+                                            input={field.input}
+                                            errors={field.errors}
+                                            type="url"
+                                            placeholder="Link (optional)"
+                                        />
                                     </FieldWrapper>
                                 )}
                             </Field>
                             <Field of={form} path={["addedBy"]}>
                                 {(field) => (
-                                    <FieldWrapper field={field}>
-                                        <Select field={field}>
+                                    <FieldWrapper errors={field.errors}>
+                                        <Select {...field.props} input={field.input} errors={field.errors}>
                                             <option value="">Select friend</option>
                                             <Show when={friends()} fallback={<option>Loading friends...</option>}>
                                                 {(friends) => (

@@ -2,7 +2,7 @@ import { createSignal } from "solid-js"
 import { Card, CardContent, CardFooter, CardHeader } from "../ui/card"
 import { Badge } from "../ui/badge"
 import { MapPin, Utensils, ExternalLink, SquarePen } from "lucide-solid"
-import type { Restaurant } from "../core/hooks"
+import { type Restaurant } from "../core/hooks"
 import { EditRestaurantDialog } from "./edit-restaurant-dialog"
 
 export function RestaurantCard(props: { restaurant: Restaurant }) {
