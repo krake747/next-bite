@@ -33,7 +33,7 @@ export function RestaurantCard(props: { restaurant: Restaurant }) {
                 </div>
             </CardContent>
             <CardFooter class="text-neutral-500 dark:text-neutral-400">
-                Added by{" "}
+                Proposed by{" "}
                 <span class="font-medium text-neutral-900 dark:text-neutral-100">{props.restaurant.addedBy}</span>
             </CardFooter>
         </Card>
