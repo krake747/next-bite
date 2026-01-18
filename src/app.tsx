@@ -1,6 +1,6 @@
 import { For, createSignal, createMemo, Suspense } from "solid-js"
 import { Header } from "./features/header"
-import { useFriends, useRestaurants, useAddRestaurant } from "./core/data"
+import { useFriends, useRestaurants } from "./core/data"
 import { Footer } from "./features/footer"
 import { type Restaurant } from "./core/types"
 import { RestaurantCard } from "./features/restaurant-card"
@@ -14,21 +14,12 @@ export function App() {
 
     const restaurants = useRestaurants()
     const friends = useFriends()
-    const addRestaurant = useAddRestaurant()
 
     const filteredRestaurants = createMemo(() =>
         friendFilter() ? restaurants()?.filter((r: Restaurant) => r.addedBy === friendFilter()) : restaurants(),
     )
 
     const count = createMemo(() => filteredRestaurants()?.length ?? 0)
-
-    const handleSubmit = async (output: any) => {
-        try {
-            await addRestaurant(output)
-        } catch (error) {
-            console.error("Error adding restaurant:", error)
-        }
-    }
 
     return (
         <div class="flex min-h-screen flex-col text-neutral-900 dark:text-white">
@@ -50,7 +41,6 @@ export function App() {
                         isOpen={isOpen()}
                         onOpenChange={setIsOpen}
                         friends={friends() || []}
-                        onSubmit={handleSubmit}
                     />
                 </Suspense>
             </div>

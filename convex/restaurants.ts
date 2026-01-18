@@ -10,12 +10,12 @@ export const add = mutation({
         location: v.string(),
         notes: v.optional(v.string()),
         addedBy: v.string(),
-        visited: v.boolean(),
     },
     handler: async (ctx, args) =>
         ctx.db.insert("restaurants", {
             ...args,
-            visited: false,
             createdAt: Date.now(),
         }),
 })
+
+

@@ -5,7 +5,6 @@ export type Restaurant = {
     location: string
     notes?: string
     addedBy: string
-    visited: boolean
     createdAt: number
 }
 

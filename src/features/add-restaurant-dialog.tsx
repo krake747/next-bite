@@ -3,6 +3,7 @@ import { Dialog } from "@kobalte/core/dialog"
 import { createForm, Field, Form } from "@formisch/solid"
 import * as v from "valibot"
 import type { Friend } from "../core/types"
+import { useAddRestaurant } from "../core/data"
 
 const RestaurantSchema = v.object({
     name: v.pipe(v.string(), v.minLength(1, "Name is required")),
@@ -10,20 +11,23 @@ const RestaurantSchema = v.object({
     location: v.pipe(v.string(), v.minLength(1, "Location is required")),
     notes: v.optional(v.string()),
     addedBy: v.pipe(v.string(), v.minLength(1, "Must select a friend")),
-    visited: v.optional(v.boolean(), false),
 })
 
 export function AddRestaurantDialog(props: {
     isOpen: boolean
     onOpenChange: (open: boolean) => void
     friends: Friend[]
-    onSubmit: (output: v.InferOutput<typeof RestaurantSchema>) => void
 }) {
+    const addRestaurant = useAddRestaurant()
     const restaurantForm = createForm({ schema: RestaurantSchema })
 
-    const handleSubmit = (output: v.InferOutput<typeof RestaurantSchema>) => {
-        props.onSubmit(output)
-        props.onOpenChange(false)
+    const handleSubmit = async (output: v.InferOutput<typeof RestaurantSchema>) => {
+        try {
+            await addRestaurant(output)
+            props.onOpenChange(false)
+        } catch (error) {
+            console.error("Error adding restaurant:", error)
+        }
     }
 
     return (
@@ -103,16 +107,8 @@ export function AddRestaurantDialog(props: {
                                         {field.errors && <div class="text-sm text-red-500">{field.errors[0]}</div>}
                                     </div>
                                 )}
-                            </Field>
-                            <Field of={restaurantForm} path={["visited"]}>
-                                {(field) => (
-                                    <label class="flex items-center">
-                                        <input {...field.props} type="checkbox" checked={!!field.input} class="mr-2" />
-                                        Visited
-                                    </label>
-                                )}
-                            </Field>
-                            <div class="flex justify-end gap-2">
+                             </Field>
+                             <div class="flex justify-end gap-2">
                                 <button
                                     type="button"
                                     onClick={() => props.onOpenChange(false)}
