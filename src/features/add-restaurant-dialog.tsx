@@ -126,7 +126,9 @@ export function AddRestaurantDialog(props: { show: boolean; onOpenChange: (open:
                                 )}
                             </Field>
                             <div class="flex justify-end gap-2">
-                                <Button onClick={() => props.onOpenChange(false)}>Cancel</Button>
+                                <Button variant="secondary" onClick={() => props.onOpenChange(false)}>
+                                    Cancel
+                                </Button>
                                 <Button type="submit">Add</Button>
                             </div>
                         </Form>
