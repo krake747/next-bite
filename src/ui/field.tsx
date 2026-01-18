@@ -1,7 +1,7 @@
-import { splitProps } from "solid-js"
+import { splitProps, type JSX } from "solid-js"
 import { type FieldElementProps } from "@formisch/solid"
 
-export function FieldWrapper(props: { errors: any; children: any }) {
+export function FieldWrapper(props: { errors: any; children: JSX.Element }) {
     return (
         <div>
             {props.children}
@@ -51,7 +51,7 @@ export function Textarea(props: TextareaProps) {
 }
 
 interface SelectProps extends FieldElementProps {
-    children: any
+    children: JSX.Element
     input: string | undefined
     errors: [string, ...string[]] | null
 }
