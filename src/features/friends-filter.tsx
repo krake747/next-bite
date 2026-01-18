@@ -17,7 +17,7 @@ export function FriendsFilter(props: {
 
     return (
         <div class="mb-4 flex flex-col-reverse gap-4 sm:flex-row">
-            <div class="flex items-center gap-2">
+            <div class="flex items-center gap-1.5 sm:gap-2">
                 <Funnel class={cx("mr-1 size-5 text-neutral-500", props.filter && "fill-neutral-500")} />
                 <For each={friends()} fallback={<span>Loading friends...</span>}>
                     {(friend) => (
