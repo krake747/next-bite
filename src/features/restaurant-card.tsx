@@ -20,7 +20,7 @@ export function RestaurantCard(props: { restaurant: Restaurant }) {
                 </CardHeader>
                 <CardContent class="flex flex-1 flex-col justify-between gap-2">
                     <p class="text-neutral-500 dark:text-neutral-400">{props.restaurant.notes}</p>
-                    <div class="flex flex-col items-start gap-1 text-sm text-neutral-600 dark:text-neutral-400">
+                    <div class="flex items-center justify-between text-sm text-neutral-600 dark:text-neutral-400">
                         <div class="flex items-center">
                             <MapPin class="mr-1.5 size-3.5 shrink-0" />
                             {props.restaurant.location}
