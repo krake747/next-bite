@@ -1,11 +1,11 @@
-# My Next Bite
+# Our Next Bite
 
 [![Netlify Status](https://api.netlify.com/api/v1/badges/a733814f-3e1f-4b8f-9dab-87b931715958/deploy-status)](https://app.netlify.com/projects/magnificent-frangollo-7954c2/deploys)
 
 A fun web app for friends to share and discover restaurant recommendations. Never wonder where to eat next!
 Built with SolidJS, Vite, Tailwind CSS, Convex, Formisch, and Valibot.
 
-[My next bite](https://nextbite.kevinkraemer.com)
+[Our next bite](https://nextbite.kevinkraemer.com)
 
 ## Getting Started
 

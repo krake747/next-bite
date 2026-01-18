@@ -9,7 +9,7 @@ export function Header({ count }: { count: () => number }) {
                     <UtensilsCrossed class="text-primary size-6 sm:size-8" />
                 </div>
                 <h2 class="mt-2 text-4xl font-semibold tracking-tight text-neutral-900 sm:text-6xl lg:text-7xl dark:text-white">
-                    My next bite
+                    Our next bite
                 </h2>
                 <p class="mt-8 text-lg font-medium text-pretty text-neutral-500 sm:text-xl/8 dark:text-neutral-400">
                     {count()} places we're dreaming of trying together
