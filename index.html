@@ -2,12 +2,12 @@
 <html lang="en">
     <head>
         <meta charset="UTF-8" />
-        <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+        <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <script>
-            // Apply theme immediately to prevent FOUC
+            // Apply theme immediately to prevent flash of unstyled content
             const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches
-            const storedTheme = localStorage.getItem("theme")
+            const storedTheme = localStorage.getItem("next-bite-theme")
             const isDark = storedTheme === "dark" || (!storedTheme && prefersDark)
             if (isDark) {
                 document.documentElement.classList.add("dark")
