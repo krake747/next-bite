@@ -1,28 +1,61 @@
-## Usage
+# My Next Bite
+
+A fun web app for friends to share and discover restaurant recommendations. Never wonder where to eat next!
+
+[My next bite](https://nextbite.kevinkraemer.com)
+
+## Getting Started
+
+### Prerequisites
+
+- Node.js (Latest stable version recommended)
+- pnpm (Package manager)
+
+### Installation
+
+Clone the repository
 
 ```bash
-$ npm install # or pnpm install or yarn install
+git clone git@github.com:krake747/next-bite.git
+cd next-bite
 ```
 
-### Learn more on the [Solid Website](https://solidjs.com) and come chat with us on our [Discord](https://discord.com/invite/solidjs)
+Install dependencies
+
+```bash
+pnpm install
+```
+Start the development server
+
+```bash
+pnpm dev
+```
+
+Open [http://localhost:5173](http://localhost:5173) in your browser.
 
 ## Available Scripts
 
-In the project directory, you can run:
+- `pnpm dev` - Start development server
+- `pnpm build` - Build for production
+- `pnpm preview` - Preview production build
+- `pnpm fmt` - Format code
+- `pnpm lint` - Lint code
 
-### `npm run dev`
+## Tech Stack
 
-Runs the app in the development mode.<br>
-Open [http://localhost:5173](http://localhost:5173) to view it in the browser.
+- SolidJS
+- Vite
+- TailwindCSS
+- TypeScript
 
-### `npm run build`
+## License
 
-Builds the app for production to the `dist` folder.<br>
-It correctly bundles Solid in production mode and optimizes the build for the best performance.
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-The build is minified and the filenames include the hashes.<br>
-Your app is ready to be deployed!
+## Contributing
 
-## Deployment
+Feel free to open issues and pull requests to contribute to this project. Any contributions you make are greatly appreciated!
 
-Learn more about deploying your application with the [documentations](https://vite.dev/guide/static-deploy.html)
+## Acknowledgments
+
+Made with ❤️ for food lovers who love trying new bites 🚀. Built with SolidJS.
