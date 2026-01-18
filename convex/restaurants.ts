@@ -12,8 +12,7 @@ export const add = mutation({
         link: v.optional(v.string()),
         addedBy: v.string(),
     },
-    handler: async (ctx, args) =>
-        ctx.db.insert("restaurants", args),
+    handler: async (ctx, args) => ctx.db.insert("restaurants", args),
 })
 
 export const update = mutation({
