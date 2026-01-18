@@ -1,17 +1,17 @@
 import { Root } from "@kobalte/core/button"
-import { cva } from "./variants"
-import { type ComponentProps } from "solid-js"
+import { cva, type VariantProps } from "./variants"
+import { splitProps, type ComponentProps } from "solid-js"
 
 const button = cva({
-    base: "font-semibold shadow-xs focus-visible:outline-2 focus-visible:outline-offset-2 dark:shadow-none 0",
+    base: "inline-flex items-center font-semibold shadow-xs focus-visible:outline-2 focus-visible:outline-offset-2 dark:shadow-none",
     variants: {
         variant: {
             primary:
-                "text-white bg-indigo-600 hover:bg-indigo-500 focus-visible:outline-indigo-600 dark:bg-indigo-500  dark:hover:bg-indigo-400 dark:focus-visible:outline-indigo-50",
+                "text-white bg-flame-pea-600 hover:bg-flame-pea-500 focus-visible:outline-flame-pea-600 dark:bg-flame-pea-500  dark:hover:bg-flame-pea-400 dark:focus-visible:outline-flame-pea-50",
         },
         size: {
-            md: "rounded-md px-2.5 py-1.5 text-sm",
-            lg: "rounded-md px-3 py-2 text-sm",
+            md: "gap-x-1.5 rounded-md px-2.5 py-1.5 text-sm",
+            lg: "gap-x-1.5 rounded-md px-3 py-2 text-sm",
         },
     },
     defaultVariants: {
@@ -20,9 +20,17 @@ const button = cva({
     },
 })
 
-export function Button(props: ComponentProps<typeof Root>) {
+interface ButtonProps extends ComponentProps<typeof Root>, VariantProps<typeof button> {}
+
+export function Button(props: ButtonProps) {
+    const [local, rest] = splitProps(props, ["variant", "size", "class"])
+
     return (
-        <Root {...props} data-component="button" class={button({ size: "lg", class: props.class })}>
+        <Root
+            data-component="button"
+            {...rest}
+            class={button({ variant: local.variant, size: local.size, class: local.class })}
+        >
             {props.children}
         </Root>
     )

@@ -1,14 +1,13 @@
 import { Moon, Sun } from "lucide-solid"
 import { createSignal, onMount } from "solid-js"
-
-const theme = "next-bite-theme"
+import { Theme } from "../ui/constants"
 
 export function DarkModeToggle() {
     const [dark, setDark] = createSignal(false)
 
     onMount(() => {
         const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches
-        const storedTheme = localStorage.getItem(theme)
+        const storedTheme = localStorage.getItem(Theme)
 
         const isDark = storedTheme === "dark" || (!storedTheme && prefersDark)
         setDark(isDark)
@@ -19,7 +18,7 @@ export function DarkModeToggle() {
         const next = !dark()
         setDark(next)
         document.documentElement.classList.toggle("dark", next)
-        localStorage.setItem(theme, next ? "dark" : "light")
+        localStorage.setItem(Theme, next ? "dark" : "light")
     }
 
     return (

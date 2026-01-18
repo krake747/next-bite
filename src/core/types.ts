@@ -1,15 +1,15 @@
 export type Restaurant = {
-    id: string
+    _id: string
     name: string
     cuisine: string
     location: string
     notes?: string
     addedBy: string
     visited: boolean
-    createdAt: Date
+    createdAt: number
 }
 
 export type Friend = {
-    id: string
+    _id: string
     name: string
 }

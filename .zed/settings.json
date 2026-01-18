@@ -6,10 +6,157 @@
     },
     "languages": {
         "CSS": {
-            "language_servers": ["tailwindcss-language-server"]
+            "tab_size": 4,
+            "format_on_save": "on",
+            "prettier": {
+                "allowed": false
+            },
+            "language_servers": ["tailwindcss-language-server"],
+            "formatter": [
+                {
+                    "language_server": {
+                        "name": "oxfmt"
+                    }
+                }
+            ]
+        },
+        "HTML": {
+            "tab_size": 4,
+            "format_on_save": "on",
+            "prettier": {
+                "allowed": false
+            },
+            "formatter": [
+                {
+                    "language_server": {
+                        "name": "oxfmt"
+                    }
+                }
+            ]
+        },
+        "JavaScript": {
+            "tab_size": 4,
+            "format_on_save": "on",
+            "prettier": {
+                "allowed": false
+            },
+            "formatter": [
+                {
+                    "language_server": {
+                        "name": "oxfmt"
+                    }
+                },
+                {
+                    "code_action": "source.fixAll.oxc"
+                }
+            ]
+        },
+        "JSON": {
+            "tab_size": 4,
+            "format_on_save": "on",
+            "prettier": {
+                "allowed": false
+            },
+            "formatter": [
+                {
+                    "language_server": {
+                        "name": "oxfmt"
+                    }
+                }
+            ]
+        },
+        "JSONC": {
+            "tab_size": 4,
+            "format_on_save": "on",
+            "prettier": {
+                "allowed": false
+            },
+            "formatter": [
+                {
+                    "language_server": {
+                        "name": "oxfmt"
+                    }
+                }
+            ]
+        },
+        "Markdown": {
+            "tab_size": 2,
+            "format_on_save": "on",
+            "prettier": {
+                "allowed": false
+            },
+            "formatter": [
+                {
+                    "language_server": {
+                        "name": "oxfmt"
+                    }
+                }
+            ]
+        },
+        "TypeScript": {
+            "tab_size": 4,
+            "format_on_save": "on",
+            "prettier": {
+                "allowed": false
+            },
+            "formatter": [
+                {
+                    "language_server": {
+                        "name": "oxfmt"
+                    }
+                }
+            ]
+        },
+        "TSX": {
+            "tab_size": 4,
+            "format_on_save": "on",
+            "prettier": {
+                "allowed": false
+            },
+            "formatter": [
+                {
+                    "language_server": {
+                        "name": "oxfmt"
+                    }
+                }
+            ]
+        },
+        "YAML": {
+            "tab_size": 2,
+            "format_on_save": "on",
+            "prettier": {
+                "allowed": false
+            },
+            "formatter": [
+                {
+                    "language_server": {
+                        "name": "oxfmt"
+                    }
+                }
+            ]
         }
     },
     "lsp": {
+        "oxlint": {
+            "initialization_options": {
+                "settings": {
+                    "configPath": null,
+                    "run": "onType",
+                    "disableNestedConfig": false,
+                    "fixKind": "safe_fix",
+                    "typeAware": true,
+                    "unusedDisableDirectives": "deny"
+                }
+            }
+        },
+        "oxfmt": {
+            "initialization_options": {
+                "settings": {
+                    "configPath": null,
+                    "run": "onSave"
+                }
+            }
+        },
         "tailwindcss-language-server": {
             "settings": {
                 "classFunctions": ["cva", "cx"],
