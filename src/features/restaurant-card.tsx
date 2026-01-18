@@ -1,6 +1,6 @@
 import { Card, CardContent, CardFooter, CardHeader } from "../ui/card"
 import { Badge } from "../ui/badge"
-import { MapPin, Utensils } from "lucide-solid"
+import { MapPin, Utensils, ExternalLink } from "lucide-solid"
 import type { Restaurant } from "../core/hooks"
 
 export function RestaurantCard(props: { restaurant: Restaurant }) {
@@ -15,9 +15,21 @@ export function RestaurantCard(props: { restaurant: Restaurant }) {
             </CardHeader>
             <CardContent class="flex flex-1 flex-col justify-between gap-1">
                 <p class="text-neutral-500 dark:text-neutral-400">{props.restaurant.notes}</p>
-                <div class="flex items-center text-sm text-neutral-600 dark:text-neutral-400">
-                    <MapPin class="mr-1.5 size-3.5 shrink-0" />
-                    {props.restaurant.location}
+                <div class="flex items-center justify-between text-sm text-neutral-600 dark:text-neutral-400">
+                    <div class="flex items-center">
+                        <MapPin class="mr-1.5 size-3.5 shrink-0" />
+                        {props.restaurant.location}
+                    </div>
+                    {props.restaurant.link && (
+                        <a
+                            href={props.restaurant.link}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            class="ml-2 text-neutral-500 hover:text-neutral-700 dark:text-neutral-400 dark:hover:text-neutral-200"
+                        >
+                            <ExternalLink class="size-4" />
+                        </a>
+                    )}
                 </div>
             </CardContent>
             <CardFooter class="text-neutral-500 dark:text-neutral-400">

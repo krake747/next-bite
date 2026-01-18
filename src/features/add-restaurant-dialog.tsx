@@ -10,6 +10,7 @@ const RestaurantSchema = v.object({
     cuisine: v.pipe(v.string(), v.minLength(1, "Cuisine is required")),
     location: v.pipe(v.string(), v.minLength(1, "Location is required")),
     notes: v.optional(v.string()),
+    link: v.optional(v.string()),
     addedBy: v.pipe(v.string(), v.minLength(1, "Must select a friend")),
 })
 
@@ -82,11 +83,25 @@ export function AddRestaurantDialog(props: { show: boolean; onOpenChange: (open:
                                 {(field) => (
                                     <textarea
                                         {...field.props}
-                                        value={field.input ?? ""}
+                                        value={field.input || ""}
                                         placeholder="Notes (optional)"
                                         class="w-full rounded border p-2 dark:border-neutral-600 dark:bg-neutral-700"
                                         rows="3"
                                     />
+                                )}
+                            </Field>
+                            <Field of={form} path={["link"]}>
+                                {(field) => (
+                                    <div>
+                                        <input
+                                            {...field.props}
+                                            value={field.input || ""}
+                                            type="url"
+                                            placeholder="Link to menu (optional)"
+                                            class="w-full rounded border p-2 dark:border-neutral-600 dark:bg-neutral-700"
+                                        />
+                                        {field.errors && <div class="text-sm text-red-500">{field.errors[0]}</div>}
+                                    </div>
                                 )}
                             </Field>
                             <Field of={form} path={["addedBy"]}>

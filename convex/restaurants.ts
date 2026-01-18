@@ -9,6 +9,7 @@ export const add = mutation({
         cuisine: v.string(),
         location: v.string(),
         notes: v.optional(v.string()),
+        link: v.optional(v.string()),
         addedBy: v.string(),
     },
     handler: async (ctx, args) => ctx.db.insert("restaurants", args),

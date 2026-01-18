@@ -7,6 +7,7 @@ export default defineSchema({
         cuisine: v.string(),
         location: v.string(),
         notes: v.optional(v.string()),
+        link: v.optional(v.string()),
         addedBy: v.string(),
     }),
     friends: defineTable({
