@@ -24,21 +24,21 @@ export function App() {
     return (
         <div class="flex min-h-screen flex-col text-neutral-900 dark:text-white">
             <main class="container mx-auto max-w-7xl flex-1 px-4 pb-8">
-                <Suspense fallback={<Loading />}>
-                    <Header count={count} />
-                    <FriendsFilter filter={filter()} handleFilter={setFilter}>
-                        <Button onClick={() => setShow(true)} class="sm:ml-auto">
-                            <Plus class="size-4" />
-                            Add Restaurant
-                        </Button>
-                    </FriendsFilter>
-                    <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                <Header count={count} />
+                <FriendsFilter filter={filter()} handleFilter={setFilter}>
+                    <Button onClick={() => setShow(true)} class="sm:ml-auto">
+                        <Plus class="size-4" />
+                        Add Restaurant
+                    </Button>
+                </FriendsFilter>
+                <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                    <Suspense fallback={<Loading />}>
                         <For each={filteredRestaurants()}>
                             {(restaurant) => <RestaurantCard restaurant={restaurant} />}
                         </For>
-                    </div>
-                    <AddRestaurantDialog show={show()} onOpenChange={setShow} />
-                </Suspense>
+                    </Suspense>
+                </div>
+                <AddRestaurantDialog show={show()} onOpenChange={setShow} />
             </main>
             <Footer />
         </div>
