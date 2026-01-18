@@ -11,6 +11,5 @@ export const add = mutation({
         notes: v.optional(v.string()),
         addedBy: v.string(),
     },
-    handler: async (ctx, args) =>
-        ctx.db.insert("restaurants", args),
+    handler: async (ctx, args) => ctx.db.insert("restaurants", args),
 })

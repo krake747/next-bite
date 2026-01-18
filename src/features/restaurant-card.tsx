@@ -13,7 +13,7 @@ export function RestaurantCard(props: { restaurant: Restaurant }) {
                     {props.restaurant.cuisine}
                 </Badge>
             </CardHeader>
-            <CardContent class="grid min-h-36 grid-rows-[1fr_auto]">
+            <CardContent class="flex flex-1 flex-col justify-between gap-1">
                 <p class="text-neutral-500 dark:text-neutral-400">{props.restaurant.notes}</p>
                 <div class="flex items-center text-sm text-neutral-600 dark:text-neutral-400">
                     <MapPin class="mr-1.5 size-3.5 shrink-0" />
