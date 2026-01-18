@@ -1,4 +1,4 @@
-import { For, createSignal, Show, createMemo } from "solid-js"
+import { For, createSignal, createMemo, Suspense } from "solid-js"
 import { Header } from "./features/header"
 import { useFriends, useRestaurants, useAddRestaurant } from "./core/data"
 import { Footer } from "./features/footer"
@@ -31,7 +31,7 @@ export function App() {
     return (
         <div class="flex min-h-screen flex-col text-neutral-900 dark:text-white">
             <div class="container mx-auto max-w-7xl flex-1 px-4 pb-8">
-                <Show when={restaurants() && friends()} fallback={<Loading />}>
+                <Suspense fallback={<Loading />}>                             
                     <Header count={restaurants()?.length ?? 0} />
                     <Filters
                         friends={friends() ?? []}
@@ -50,7 +50,7 @@ export function App() {
                         friends={friends() || []}
                         onSubmit={handleSubmit}
                     />
-                </Show>
+                </Suspense>
             </div>
             <Footer />
         </div>
