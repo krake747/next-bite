@@ -3,20 +3,20 @@ import { Header } from "./features/header"
 import { useRestaurants, type Restaurant } from "./core/hooks"
 import { Footer } from "./features/footer"
 import { RestaurantCard } from "./features/restaurant-card"
-import { Filters } from "./features/filters"
+import { FriendsFilter } from "./features/filters"
 import { AddRestaurantDialog } from "./features/add-restaurant-dialog"
 import { Loading } from "./ui/loading"
 import { Button } from "./ui/button"
 import { Plus } from "lucide-solid"
 
 export function App() {
-    const [friendFilter, setFriendFilter] = createSignal<string | null>(null)
+    const [filter, setFilter] = createSignal<string | null>(null)
     const [show, setShow] = createSignal(false)
 
     const restaurants = useRestaurants()
 
     const filteredRestaurants = createMemo(() =>
-        friendFilter() ? restaurants()?.filter((r: Restaurant) => r.addedBy === friendFilter()) : restaurants(),
+        filter() ? restaurants()?.filter((r: Restaurant) => r.addedBy === filter()) : restaurants(),
     )
 
     const count = createMemo(() => filteredRestaurants()?.length ?? 0)
@@ -26,15 +26,12 @@ export function App() {
             <main class="container mx-auto max-w-7xl flex-1 px-4 pb-8">
                 <Suspense fallback={<Loading />}>
                     <Header count={count} />
-                    <Filters
-                        friendFilter={friendFilter()}
-                        handleFilterChange={setFriendFilter}
-                    >
+                    <FriendsFilter filter={filter()} handleFilter={setFilter}>
                         <Button onClick={() => setShow(true)} class="sm:ml-auto">
                             <Plus class="size-4" />
                             Add Restaurant
                         </Button>
-                    </Filters>
+                    </FriendsFilter>
                     <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                         <For each={filteredRestaurants()}>
                             {(restaurant) => <RestaurantCard restaurant={restaurant} />}

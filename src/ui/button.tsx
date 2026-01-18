@@ -3,11 +3,13 @@ import { cva, type VariantProps } from "./variants"
 import { splitProps, type ComponentProps } from "solid-js"
 
 const button = cva({
-    base: "inline-flex items-center font-semibold shadow-xs focus-visible:outline-2 focus-visible:outline-offset-2 dark:shadow-none",
+    base: "inline-flex items-center justify-center font-semibold shadow-xs focus-visible:outline-2 focus-visible:outline-offset-2 dark:shadow-none",
     variants: {
         variant: {
             primary:
-                "text-white bg-flame-pea-600 hover:bg-flame-pea-500 focus-visible:outline-flame-pea-600 dark:bg-flame-pea-500  dark:hover:bg-flame-pea-400 dark:focus-visible:outline-flame-pea-50",
+                "text-white bg-flame-pea-600 hover:bg-flame-pea-500 focus-visible:outline-flame-pea-600 dark:bg-flame-pea-500 dark:hover:bg-flame-pea-400 dark:focus-visible:outline-flame-pea-50",
+            secondary:
+                "bg-white text-neutral-900 inset-ring-neutral-300 hover:bg-neutral-50 dark:bg-white/10 dark:text-white dark:shadow-none dark:inset-ring-white/5 dark:hover:bg-white/20",
         },
         size: {
             md: "gap-x-1.5 rounded-md px-2.5 py-1.5 text-sm",
