@@ -5,7 +5,6 @@ import { createContext, from, useContext } from "solid-js"
 
 export const ConvexContext: Context<ConvexClient | undefined> = createContext()
 
-// Create a reactive SolidJS atom attached to a Convex query function.
 export function createQuery<T>(query: FunctionReference<"query">, args?: {}): () => T | undefined {
     const convex = useContext(ConvexContext)
     if (convex === undefined) {

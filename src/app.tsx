@@ -1,16 +1,17 @@
-import { For, createSignal, createMemo, Suspense } from "solid-js"
+import { For, createSignal, createMemo, Suspense, Show } from "solid-js"
 import { Header } from "./features/header"
-import { useFriends, useRestaurants } from "./core/data"
+import { useFriends, useRestaurants, type Restaurant } from "./core/hooks"
 import { Footer } from "./features/footer"
-import { type Restaurant } from "./core/types"
 import { RestaurantCard } from "./features/restaurant-card"
 import { Filters } from "./features/filters"
 import { AddRestaurantDialog } from "./features/add-restaurant-dialog"
 import { Loading } from "./ui/loading"
+import { Button } from "./ui/button"
+import { Plus } from "lucide-solid"
 
 export function App() {
     const [friendFilter, setFriendFilter] = createSignal<string | null>(null)
-    const [isOpen, setIsOpen] = createSignal(false)
+    const [show, setShow] = createSignal(false)
 
     const restaurants = useRestaurants()
     const friends = useFriends()
@@ -23,27 +24,31 @@ export function App() {
 
     return (
         <div class="flex min-h-screen flex-col text-neutral-900 dark:text-white">
-            <div class="container mx-auto max-w-7xl flex-1 px-4 pb-8">
+            <main class="container mx-auto max-w-7xl flex-1 px-4 pb-8">
                 <Suspense fallback={<Loading />}>
                     <Header count={count} />
-                    <Filters
-                        friends={friends() ?? []}
-                        friendFilter={friendFilter()}
-                        handleFilterChange={setFriendFilter}
-                        handleAddClick={() => setIsOpen(true)}
-                    />
+                    <Show when={friends()}>
+                        {(friends) => (
+                            <Filters
+                                friends={friends()}
+                                friendFilter={friendFilter()}
+                                handleFilterChange={setFriendFilter}
+                            >
+                                <Button onClick={() => setShow(true)} class="sm:ml-auto">
+                                    <Plus class="size-4" />
+                                    Add Restaurant
+                                </Button>
+                            </Filters>
+                        )}
+                    </Show>
                     <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                         <For each={filteredRestaurants()}>
                             {(restaurant) => <RestaurantCard restaurant={restaurant} />}
                         </For>
                     </div>
-                    <AddRestaurantDialog
-                        isOpen={isOpen()}
-                        onOpenChange={setIsOpen}
-                        friends={friends() || []}
-                    />
+                    <AddRestaurantDialog show={show()} onOpenChange={setShow} />
                 </Suspense>
-            </div>
+            </main>
             <Footer />
         </div>
     )

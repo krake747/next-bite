@@ -1,9 +1,9 @@
-import { For } from "solid-js"
+import { For, Show } from "solid-js"
 import { Dialog } from "@kobalte/core/dialog"
 import { createForm, Field, Form } from "@formisch/solid"
 import * as v from "valibot"
-import type { Friend } from "../core/types"
-import { useAddRestaurant } from "../core/data"
+import { useAddRestaurant, useFriends } from "../core/hooks"
+import { Button } from "../ui/button"
 
 const RestaurantSchema = v.object({
     name: v.pipe(v.string(), v.minLength(1, "Name is required")),
@@ -13,13 +13,10 @@ const RestaurantSchema = v.object({
     addedBy: v.pipe(v.string(), v.minLength(1, "Must select a friend")),
 })
 
-export function AddRestaurantDialog(props: {
-    isOpen: boolean
-    onOpenChange: (open: boolean) => void
-    friends: Friend[]
-}) {
+export function AddRestaurantDialog(props: { show: boolean; onOpenChange: (open: boolean) => void }) {
     const addRestaurant = useAddRestaurant()
-    const restaurantForm = createForm({ schema: RestaurantSchema })
+    const friends = useFriends()
+    const form = createForm({ schema: RestaurantSchema })
 
     const handleSubmit = async (output: v.InferOutput<typeof RestaurantSchema>) => {
         try {
@@ -31,14 +28,14 @@ export function AddRestaurantDialog(props: {
     }
 
     return (
-        <Dialog open={props.isOpen} onOpenChange={props.onOpenChange}>
+        <Dialog open={props.show} onOpenChange={props.onOpenChange}>
             <Dialog.Portal>
                 <Dialog.Overlay class="fixed inset-0 bg-black/50" />
                 <div class="fixed inset-0 flex items-center justify-center p-4">
                     <Dialog.Content class="w-full max-w-md rounded-lg bg-white p-6 dark:bg-neutral-800">
                         <Dialog.Title class="mb-4 text-lg font-semibold">Add Restaurant</Dialog.Title>
-                        <Form of={restaurantForm} onSubmit={handleSubmit} class="space-y-4">
-                            <Field of={restaurantForm} path={["name"]}>
+                        <Form of={form} onSubmit={handleSubmit} class="space-y-4">
+                            <Field of={form} path={["name"]}>
                                 {(field) => (
                                     <div>
                                         <input
@@ -52,7 +49,7 @@ export function AddRestaurantDialog(props: {
                                     </div>
                                 )}
                             </Field>
-                            <Field of={restaurantForm} path={["cuisine"]}>
+                            <Field of={form} path={["cuisine"]}>
                                 {(field) => (
                                     <div>
                                         <input
@@ -66,7 +63,7 @@ export function AddRestaurantDialog(props: {
                                     </div>
                                 )}
                             </Field>
-                            <Field of={restaurantForm} path={["location"]}>
+                            <Field of={form} path={["location"]}>
                                 {(field) => (
                                     <div>
                                         <input
@@ -80,7 +77,7 @@ export function AddRestaurantDialog(props: {
                                     </div>
                                 )}
                             </Field>
-                            <Field of={restaurantForm} path={["notes"]}>
+                            <Field of={form} path={["notes"]}>
                                 {(field) => (
                                     <textarea
                                         {...field.props}
@@ -91,7 +88,7 @@ export function AddRestaurantDialog(props: {
                                     />
                                 )}
                             </Field>
-                            <Field of={restaurantForm} path={["addedBy"]}>
+                            <Field of={form} path={["addedBy"]}>
                                 {(field) => (
                                     <div>
                                         <select
@@ -100,28 +97,21 @@ export function AddRestaurantDialog(props: {
                                             class="w-full rounded border p-2 dark:border-neutral-600 dark:bg-neutral-700"
                                         >
                                             <option value="">Select friend</option>
-                                            <For each={props.friends}>
-                                                {(friend) => <option value={friend.name}>{friend.name}</option>}
-                                            </For>
+                                            <Show when={friends()} fallback={<option>Loading friends...</option>}>
+                                                {(friends) => (
+                                                    <For each={friends()}>
+                                                        {(f) => <option value={f.name}>{f.name}</option>}
+                                                    </For>
+                                                )}
+                                            </Show>
                                         </select>
                                         {field.errors && <div class="text-sm text-red-500">{field.errors[0]}</div>}
                                     </div>
                                 )}
-                             </Field>
-                             <div class="flex justify-end gap-2">
-                                <button
-                                    type="button"
-                                    onClick={() => props.onOpenChange(false)}
-                                    class="rounded border px-4 py-2"
-                                >
-                                    Cancel
-                                </button>
-                                <button
-                                    type="submit"
-                                    class="rounded bg-flame-pea-600 px-4 py-2 text-white hover:bg-flame-pea-700"
-                                >
-                                    Add
-                                </button>
+                            </Field>
+                            <div class="flex justify-end gap-2">
+                                <Button onClick={() => props.onOpenChange(false)}>Cancel</Button>
+                                <Button type="submit">Add</Button>
                             </div>
                         </Form>
                     </Dialog.Content>

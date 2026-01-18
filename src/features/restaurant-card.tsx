@@ -1,7 +1,7 @@
 import { Card, CardContent, CardFooter, CardHeader } from "../ui/card"
 import { Badge } from "../ui/badge"
 import { MapPin, Utensils } from "lucide-solid"
-import type { Restaurant } from "../core/types"
+import type { Restaurant } from "../core/hooks"
 
 export function RestaurantCard(props: { restaurant: Restaurant }) {
     return (

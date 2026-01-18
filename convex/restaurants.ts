@@ -17,5 +17,3 @@ export const add = mutation({
             createdAt: Date.now(),
         }),
 })
-
-
