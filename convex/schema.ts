@@ -8,7 +8,6 @@ export default defineSchema({
         location: v.string(),
         notes: v.optional(v.string()),
         addedBy: v.string(),
-        createdAt: v.number(),
     }),
     friends: defineTable({
         name: v.string(),

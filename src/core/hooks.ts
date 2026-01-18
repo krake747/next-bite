@@ -13,7 +13,6 @@ export type Restaurant = {
     location: string
     notes?: string
     addedBy: string
-    createdAt: number
 }
 
 export type Friend = {

@@ -1,11 +1,10 @@
-import { For, createSignal, createMemo, Suspense } from "solid-js"
+import { For, createSignal, createMemo } from "solid-js"
 import { Header } from "./features/header"
 import { useRestaurants, type Restaurant } from "./core/hooks"
 import { Footer } from "./features/footer"
 import { RestaurantCard } from "./features/restaurant-card"
 import { FriendsFilter } from "./features/friends-filter"
 import { AddRestaurantDialog } from "./features/add-restaurant-dialog"
-import { Loading } from "./ui/loading"
 import { Button } from "./ui/button"
 import { Plus } from "lucide-solid"
 
@@ -32,11 +31,9 @@ export function App() {
                     </Button>
                 </FriendsFilter>
                 <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                    <Suspense fallback={<Loading />}>
-                        <For each={filteredRestaurants()}>
-                            {(restaurant) => <RestaurantCard restaurant={restaurant} />}
-                        </For>
-                    </Suspense>
+                    <For each={filteredRestaurants()} fallback={<span>Loading restaurants...</span>}>
+                        {(restaurant) => <RestaurantCard restaurant={restaurant} />}
+                    </For>
                 </div>
                 <AddRestaurantDialog show={show()} onOpenChange={setShow} />
             </main>
