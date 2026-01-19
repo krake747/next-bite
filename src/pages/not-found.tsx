@@ -9,7 +9,7 @@ export function NotFound() {
                     <p class="text-base font-semibold text-flame-pea-600 dark:text-flame-pea-400">404</p>
                     <h1 class="mt-4 text-5xl font-semibold tracking-tight text-balance sm:text-7xl">Page not found</h1>
                     <p class="mt-6 text-lg font-medium text-pretty text-neutral-500 sm:text-xl/8 dark:text-neutral-400">
-                        Sorry, we couldn’t find the page you’re looking for.
+                        Oops. This page went out for snacks and never came back.
                     </p>
                     <div class="mt-10 flex items-center justify-center gap-x-6">
                         <A
