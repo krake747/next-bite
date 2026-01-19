@@ -17,6 +17,7 @@
     "dependencies": {
         "@formisch/solid": "^0.7.5",
         "@kobalte/core": "^0.13.11",
+        "@solidjs/router": "^0.15.4",
         "@tailwindcss/vite": "^4.1.18",
         "convex": "^1.31.5",
         "cva": "1.0.0-beta.4",
@@ -29,7 +30,7 @@
     "devDependencies": {
         "@types/node": "^25.0.9",
         "oxfmt": "^0.24.0",
-        "oxlint": "^1.39.0",
+        "oxlint": "^1.40.0",
         "typescript": "~5.9.3",
         "vite": "^8.0.0",
         "vite-plugin-solid": "^2.11.10"
