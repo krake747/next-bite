@@ -2,11 +2,17 @@ import { createSignal } from "solid-js"
 import { Card, CardContent, CardFooter, CardHeader } from "../ui/card"
 import { Badge } from "../ui/badge"
 import { MapPin, Utensils, ExternalLink, SquarePen } from "lucide-solid"
-import { type Restaurant } from "../core/hooks"
+import { useUpdateRestaurant, type Restaurant } from "../core/hooks"
 import { EditRestaurantDialog } from "./edit-restaurant-dialog"
+import { StarRating } from "../ui/star-rating"
 
 export function RestaurantCard(props: { restaurant: Restaurant }) {
     const [showEdit, setShowEdit] = createSignal(false)
+    const updateRestaurant = useUpdateRestaurant()
+
+    const handleRate = async (rating: number) => {
+        await updateRestaurant({ id: props.restaurant._id, rating })
+    }
 
     return (
         <>
@@ -38,6 +44,9 @@ export function RestaurantCard(props: { restaurant: Restaurant }) {
                             </a>
                         )}
                     </div>
+                </CardContent>
+                <CardContent>
+                    <StarRating rating={props.restaurant.rating ?? 0} onRate={handleRate} />
                 </CardContent>
                 <CardFooter class="flex items-center justify-between text-neutral-500 dark:text-neutral-400">
                     <span>

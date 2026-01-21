@@ -1,10 +1,11 @@
 import { For, Show } from "solid-js"
 import { Dialog } from "@kobalte/core/dialog"
-import { createForm, Field, Form, reset } from "@formisch/solid"
+import { createForm, Field, Form, reset, setInput } from "@formisch/solid"
 import { useUpdateRestaurant, useFriends, type Restaurant } from "../core/hooks"
 import { Button } from "../ui/button"
 import { FieldWrapper, Input, Textarea, Select } from "../ui/field"
 import { RestaurantSchema, type RestaurantOutput } from "../core/schemas"
+import { StarRating } from "../ui/star-rating"
 
 export function EditRestaurantDialog(props: {
     show: boolean
@@ -22,6 +23,7 @@ export function EditRestaurantDialog(props: {
             notes: props.restaurant.notes ?? "",
             link: props.restaurant.link ?? "",
             addedBy: props.restaurant.addedBy,
+            rating: props.restaurant.rating ?? 0,
         },
     })
 
@@ -117,6 +119,16 @@ export function EditRestaurantDialog(props: {
                                                 )}
                                             </Show>
                                         </Select>
+                                    </FieldWrapper>
+                                )}
+                            </Field>
+                            <Field of={form} path={["rating"]}>
+                                {(field) => (
+                                    <FieldWrapper errors={field.errors}>
+                                        <StarRating
+                                            rating={typeof field.input === "number" ? field.input : 0}
+                                            onRate={(rating) => setInput(form, { path: ["rating"], input: rating })}
+                                        />
                                     </FieldWrapper>
                                 )}
                             </Field>

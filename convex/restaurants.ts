@@ -11,6 +11,7 @@ export const add = mutation({
         notes: v.optional(v.string()),
         link: v.optional(v.string()),
         addedBy: v.string(),
+        rating: v.optional(v.number()),
     },
     handler: async (ctx, args) => ctx.db.insert("restaurants", args),
 })
@@ -24,6 +25,7 @@ export const update = mutation({
         notes: v.optional(v.string()),
         link: v.optional(v.string()),
         addedBy: v.optional(v.string()),
+        rating: v.optional(v.number()),
     },
     handler: async (ctx, args) => {
         const { id, ...updates } = args

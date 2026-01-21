@@ -9,6 +9,7 @@ export default defineSchema({
         notes: v.optional(v.string()),
         link: v.optional(v.string()),
         addedBy: v.string(),
+        rating: v.optional(v.number()),
     }),
     friends: defineTable({
         name: v.string(),
