@@ -13,7 +13,7 @@ export const RestaurantSchema = v.object({
             v.transform((val) => (typeof val === "string" ? parseFloat(val) || 0 : val)),
             v.number(),
             v.minValue(0, "Rating must be at least 0"),
-            v.maxValue(5, "Rating must be at most 5")
+            v.maxValue(6, "Rating must be at most 6")
         )
     ),
 })

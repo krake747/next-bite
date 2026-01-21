@@ -4,7 +4,7 @@ import { Badge } from "../ui/badge"
 import { MapPin, Utensils, ExternalLink, SquarePen } from "lucide-solid"
 import { useUpdateRestaurant, type Restaurant } from "../core/hooks"
 import { EditRestaurantDialog } from "./edit-restaurant-dialog"
-import { StarRating } from "../ui/star-rating"
+import { EmojiRating } from "../ui/emoji-rating"
 
 export function RestaurantCard(props: { restaurant: Restaurant }) {
     const [showEdit, setShowEdit] = createSignal(false)
@@ -46,7 +46,7 @@ export function RestaurantCard(props: { restaurant: Restaurant }) {
                     </div>
                 </CardContent>
                 <CardContent>
-                    <StarRating rating={props.restaurant.rating ?? 0} onRate={handleRate} />
+                    <EmojiRating rating={props.restaurant.rating ?? 0} onRate={handleRate} />
                 </CardContent>
                 <CardFooter class="flex items-center justify-between text-neutral-500 dark:text-neutral-400">
                     <span>

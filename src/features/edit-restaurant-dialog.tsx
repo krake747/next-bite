@@ -5,7 +5,7 @@ import { useUpdateRestaurant, useFriends, type Restaurant } from "../core/hooks"
 import { Button } from "../ui/button"
 import { FieldWrapper, Input, Textarea, Select } from "../ui/field"
 import { RestaurantSchema, type RestaurantOutput } from "../core/schemas"
-import { StarRating } from "../ui/star-rating"
+import { EmojiRating } from "../ui/emoji-rating"
 
 export function EditRestaurantDialog(props: {
     show: boolean
@@ -125,7 +125,7 @@ export function EditRestaurantDialog(props: {
                             <Field of={form} path={["rating"]}>
                                 {(field) => (
                                     <FieldWrapper errors={field.errors}>
-                                        <StarRating
+                                        <EmojiRating
                                             rating={typeof field.input === "number" ? field.input : 0}
                                             onRate={(rating) => setInput(form, { path: ["rating"], input: rating })}
                                         />
