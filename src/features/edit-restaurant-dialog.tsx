@@ -23,7 +23,7 @@ export function EditRestaurantDialog(props: {
             notes: props.restaurant.notes ?? "",
             link: props.restaurant.link ?? "",
             addedBy: props.restaurant.addedBy,
-            rating: props.restaurant.rating ?? 0,
+            rating: props.restaurant.rating ?? null,
         },
     })
 
@@ -126,7 +126,9 @@ export function EditRestaurantDialog(props: {
                                 {(field) => (
                                     <FieldWrapper errors={field.errors}>
                                         <EmojiRating
-                                            rating={typeof field.input === "number" ? field.input : 0}
+                                            rating={
+                                                typeof field.input === "number" && field.input >= 0 ? field.input : null
+                                            }
                                             onRate={(rating) => setInput(form, { path: ["rating"], input: rating })}
                                         />
                                     </FieldWrapper>

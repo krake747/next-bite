@@ -9,7 +9,7 @@ export const RestaurantSchema = v.object({
     addedBy: v.pipe(v.string(), v.minLength(1, "Must select a friend")),
     rating: v.optional(
         v.pipe(
-            v.union([v.string(), v.number()]),
+            v.union([v.number(), v.null()]),
             v.transform((val) => (typeof val === "string" ? parseFloat(val) || 0 : val)),
             v.number(),
             v.minValue(0, "Rating must be at least 0"),

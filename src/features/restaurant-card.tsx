@@ -46,7 +46,7 @@ export function RestaurantCard(props: { restaurant: Restaurant }) {
                     </div>
                 </CardContent>
                 <CardContent>
-                    <EmojiRating rating={props.restaurant.rating ?? 0} onRate={handleRate} />
+                    <EmojiRating rating={props.restaurant.rating ?? null} onRate={handleRate} />
                 </CardContent>
                 <CardFooter class="flex items-center justify-between text-neutral-500 dark:text-neutral-400">
                     <span>
