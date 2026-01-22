@@ -2,12 +2,7 @@ import { createSignal, For } from "solid-js"
 
 function StarEmpty(props: { class?: string }) {
     return (
-        <svg
-            width="20"
-            height="20"
-            viewBox="0 0 30 30"
-            class={props.class}
-        >
+        <svg width="20" height="20" viewBox="0 0 30 30" class={props.class}>
             <path
                 style="fill:none;stroke-width:2;stroke-miterlimit:4"
                 stroke="currentColor"
@@ -19,12 +14,7 @@ function StarEmpty(props: { class?: string }) {
 
 function StarFull(props: { class?: string }) {
     return (
-        <svg
-            width="20"
-            height="20"
-            viewBox="0 0 30 30"
-            class={props.class}
-        >
+        <svg width="20" height="20" viewBox="0 0 30 30" class={props.class}>
             <path
                 style="fill:#F49F0A;stroke:none"
                 d="m 22.630603,26.30626 -7.47561,-3.78643 -7.3572061,4.01165 1.2910171,-8.2798 -6.0888041,-5.75745 8.2735021,-1.33077 3.594119,-7.56995 3.822288,7.45734 8.310092,1.07897 -5.911198,5.93965 z"
@@ -33,19 +23,13 @@ function StarFull(props: { class?: string }) {
     )
 }
 
-export function StarRating(props: {
-    rating: number
-    onRate: (rating: number) => void
-}) {
+export function StarRating(props: { rating: number; onRate: (rating: number) => void }) {
     const [hoverRating, setHoverRating] = createSignal<number | null>(null)
 
     const displayRating = () => hoverRating() ?? props.rating
 
     return (
-        <div
-            class="flex items-center gap-0.5"
-            onMouseLeave={() => setHoverRating(null)}
-        >
+        <div class="flex items-center gap-0.5" onMouseLeave={() => setHoverRating(null)}>
             <For each={[1, 2, 3, 4, 5]}>
                 {(star) => (
                     <button
