@@ -1,6 +1,6 @@
 # Our Next Bite
 
-[![Netlify Status](https://api.netlify.com/api/v1/badges/a733814f-3e1f-4b8f-9dab-87b931715958/deploy-status)](https://app.netlify.com/projects/magnificent-frangollo-7954c2/deploys)<
+[![Netlify Status](https://api.netlify.com/api/v1/badges/a733814f-3e1f-4b8f-9dab-87b931715958/deploy-status)](https://app.netlify.com/projects/magnificent-frangollo-7954c2/deploys)
 
 ![CodeRabbit Pull Request Reviews](https://img.shields.io/coderabbit/prs/github/krake747/next-bite?utm_source=oss&utm_medium=github&utm_campaign=krake747%2Fnext-bite&labelColor=171717&color=FF570A&link=https%3A%2F%2Fcoderabbit.ai&label=CodeRabbit+Reviews)
 
