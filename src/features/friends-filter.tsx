@@ -1,6 +1,6 @@
 import { For, type JSX } from "solid-js"
 import { Badge } from "../ui/badge"
-import { Funnel } from "lucide-solid"
+import Funnel from "lucide-solid/icons/funnel"
 import { cx } from "../ui/variants"
 import { useFriends, type Friend } from "../core/hooks"
 

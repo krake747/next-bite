@@ -1,4 +1,5 @@
-import { Moon, Sun } from "lucide-solid"
+import Moon from "lucide-solid/icons/moon"
+import Sun from "lucide-solid/icons/sun"
 import { createSignal, onMount } from "solid-js"
 import { Theme } from "../ui/constants"
 
