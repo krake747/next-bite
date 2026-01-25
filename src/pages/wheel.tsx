@@ -120,11 +120,20 @@ function useWheelStore(restaurants: Accessor<Restaurant[]>) {
         selected: null,
     })
 
-    const segments = createMemo(() => {
+    const [lockedSegments, setLockedSegments] = createSignal<Restaurant[]>([])
+
+    createEffect(() => {
         const rest = restaurants()
-        // Ensure even number of segments for better visual balance, remove last if odd
-        return rest.length % 2 === 1 ? rest.slice(0, -1) : rest
+        if (rest.length % 2 === 0) {
+            setLockedSegments(rest)
+            return
+        }
+
+        const dropIdx = Math.floor(Math.random() * rest.length)
+        setLockedSegments(rest.filter((_, i) => i !== dropIdx))
     })
+
+    const segments = createMemo(() => lockedSegments())
 
     const segmentCount = createMemo(() => segments().length)
     const hasSegments = createMemo(() => segmentCount() > 0)
@@ -293,6 +302,7 @@ function SpinWheelButton(props: ComponentProps<"button">) {
             disabled={wheel.isSpinning() || wheel.segments().length === 0}
             class={cx("size-18 rounded-full bg-neutral-50", props.class)}
             variant="secondary"
+            aria-label="Spin the wheel"
         >
             <RotateCw
                 class="size-6"
