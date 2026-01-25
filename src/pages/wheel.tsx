@@ -43,7 +43,14 @@ export function Wheel() {
                         <Suspense fallback={<EmptyWheelState />}>
                             <SpinningWheel />
                         </Suspense>
-                        <WinnerDisplay />
+                        <Show when={wheel.selected()} fallback={<Instructions />}>
+                            {(restaurant) => (
+                                <>
+                                    <WinnerMessage />
+                                    <RestaurantCard restaurant={restaurant()} />
+                                </>
+                            )}
+                        </Show>
                     </div>
                 </main>
                 <Footer />
@@ -294,21 +301,6 @@ function SpinWheelButton(props: JSX.HTMLAttributes<HTMLButtonElement>) {
                 }}
             />
         </Button>
-    )
-}
-
-function WinnerDisplay() {
-    const wheel = useWheel()
-
-    return (
-        <Show when={wheel.selected()} fallback={<Instructions />}>
-            {(restaurant) => (
-                <>
-                    <WinnerMessage />
-                    <RestaurantCard restaurant={restaurant()} />
-                </>
-            )}
-        </Show>
     )
 }
 
