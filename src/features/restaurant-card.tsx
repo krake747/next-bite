@@ -16,7 +16,7 @@ export function RestaurantCard(props: { restaurant: Restaurant } & ComponentProp
     const updateRestaurant = useUpdateRestaurant()
 
     const handleRate = async (rating: number) => {
-        await updateRestaurant({ id: props.restaurant._id, rating })
+        await updateRestaurant({ id: local.restaurant._id, rating })
     }
 
     return (
