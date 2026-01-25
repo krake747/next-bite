@@ -33,7 +33,9 @@ export function Wheel() {
                 <main class="container mx-auto max-w-7xl flex-1 px-4 pb-8">
                     <Header>
                         <HeaderTitle>Spin the wheel</HeaderTitle>
-                        <HeaderSubtitle>Let fate decide your next bite!</HeaderSubtitle>
+                        <HeaderSubtitle>
+                            Let fate decide your next bite! May the spins be ever in your favour.
+                        </HeaderSubtitle>
                     </Header>
                     <div class="flex flex-col items-center space-y-4">
                         <Button class="mb-8" onClick={() => navigate("/")}>
@@ -155,7 +157,7 @@ function useWheelStore(restaurants: Accessor<Restaurant[]>) {
     })
 
     const spin = () => {
-        if (isSpinning()) return
+        if (isSpinning() || !hasSegments()) return
 
         const spins = spinCount.min + Math.random() * (spinCount.max - spinCount.min)
         const randomAngle = Math.random() * 360
@@ -288,7 +290,7 @@ function SpinWheelButton(props: ComponentProps<"button">) {
     return (
         <Button
             onClick={wheel.spin}
-            disabled={wheel.isSpinning()}
+            disabled={wheel.isSpinning() || wheel.segments().length === 0}
             class={cx("size-18 rounded-full bg-neutral-50", props.class)}
             variant="secondary"
         >

@@ -37,7 +37,7 @@ src/
 ## Conventions
 
 - **SolidJS patterns only** (signals, memos, effects, stores, contexts)
-- `type` for objects and unions and preferred over `interface`
+- `type` for objects and unions is preferred over `interface`
 - Files: kebab-case | Components: PascalCase
 
 ## UI & Styling
