@@ -8,16 +8,7 @@ next-bite is a fun restaurant recommendation site built with SolidJS, TypeScript
 - Don't run builds after every change. This is a visual site; assume changes work unless reported otherwise.
 - **Typesafety is paramount.** Never cast types; fix at source instead.
 - Don't write unnecssary comments unless explicitly requested.
-
-## Project
-
-**next-bite** — restaurant recommendation app.
-
-- SolidJS (not Next.js)
-- Vite
-- Convex (backend/db)
-- Tailwind CSS v4
-- @kobalte/core (a11y UI)
+- Follow existing patterns
 
 ## Commands
 
@@ -45,9 +36,8 @@ src/
 
 ## Conventions
 
-- **SolidJS patterns only** (signals, memos)
-- Strict TypeScript, explicit types
-- `type` for objects and unions
+- **SolidJS patterns only** (signals, memos, effects, stores, contexts)
+- `type` for objects and unions and preferred over `interface`
 - Files: kebab-case | Components: PascalCase
 
 ## UI & Styling
@@ -65,13 +55,6 @@ src/
 - `createQuery` / `createMutation`
 - Handle errors with try/catch
 - Never throw during render
-
-## Workflow
-
-- Run `lint` before commits
-- Format code
-- Follow existing patterns
-- Test light/dark + responsive
 
 ## Gotchas
 
