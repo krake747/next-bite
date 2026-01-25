@@ -7,7 +7,7 @@ next-bite is a fun restaurant recommendation site built with SolidJS, TypeScript
 - Package manager: `pnpm`
 - Don't run builds after every change. This is a visual site; assume changes work unless reported otherwise.
 - **Typesafety is paramount.** Never cast types; fix at source instead.
-- Don't write unnecssary comments unless explicitly requested.
+- Don't write unnecessary comments unless explicitly requested.
 - Follow existing patterns
 
 ## Commands
@@ -26,7 +26,7 @@ pnpm convex:dev   # Convex local
 
 ## Structure
 
-```
+```ascii
 src/
   pages/     # Routes
   features/  # Feature logic

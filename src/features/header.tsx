@@ -1,6 +1,6 @@
 import UtensilsCrossed from "lucide-solid/icons/utensils-crossed"
 import { DarkModeToggle } from "./dark-mode-toggle"
-import type { JSX } from "solid-js"
+import type { ComponentProps, JSX } from "solid-js"
 
 export function Header(props: { children?: JSX.Element }) {
     return (
@@ -27,7 +27,7 @@ function DefaultChildren() {
     )
 }
 
-export function HeaderTitle(props: JSX.HTMLAttributes<HTMLHeadingElement>) {
+export function HeaderTitle(props: ComponentProps<"h1">) {
     return (
         <h1 class="text-4xl font-semibold tracking-tight text-neutral-900 sm:text-5xl lg:text-6xl dark:text-white">
             {props.children}
@@ -35,7 +35,7 @@ export function HeaderTitle(props: JSX.HTMLAttributes<HTMLHeadingElement>) {
     )
 }
 
-export function HeaderSubtitle(props: JSX.HTMLAttributes<HTMLParagraphElement>) {
+export function HeaderSubtitle(props: ComponentProps<"p">) {
     return (
         <p class="mt-4 text-lg font-medium text-pretty text-neutral-500 sm:text-xl/8 dark:text-neutral-400">
             {props.children}

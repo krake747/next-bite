@@ -8,8 +8,9 @@ import SquarePen from "lucide-solid/icons/square-pen"
 import { useUpdateRestaurant, type Restaurant } from "../core/hooks"
 import { EditRestaurantDialog } from "./edit-restaurant-dialog"
 import { EmojiRating } from "../ui/emoji-rating"
+import type { ComponentProps } from "solid-js/types/server/rendering.js"
 
-export function RestaurantCard(props: { restaurant: Restaurant }) {
+export function RestaurantCard(props: { restaurant: Restaurant } & ComponentProps<typeof Card>) {
     const [showEdit, setShowEdit] = createSignal(false)
     const updateRestaurant = useUpdateRestaurant()
 
@@ -19,7 +20,7 @@ export function RestaurantCard(props: { restaurant: Restaurant }) {
 
     return (
         <>
-            <Card>
+            <Card class={props.class}>
                 <CardHeader class="grid grid-cols-[1fr_auto]">
                     <h3 class="text-xl font-semibold">{props.restaurant.name} </h3>
                     <Badge variant="gray">

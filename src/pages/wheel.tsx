@@ -9,6 +9,7 @@ import {
     onCleanup,
     useContext,
     type Accessor,
+    type ComponentProps,
 } from "solid-js"
 import { createStore, produce } from "solid-js/store"
 import { Header, HeaderSubtitle, HeaderTitle } from "../features/header"
@@ -20,7 +21,6 @@ import RotateCw from "lucide-solid/icons/rotate-cw"
 import { RestaurantCard } from "../features/restaurant-card"
 import { useNavigate } from "@solidjs/router"
 import { cx } from "../ui/variants"
-import type { JSX } from "solid-js/h/jsx-runtime"
 
 export function Wheel() {
     const navigate = useNavigate()
@@ -47,7 +47,7 @@ export function Wheel() {
                             {(restaurant) => (
                                 <>
                                     <WinnerMessage />
-                                    <RestaurantCard restaurant={restaurant()} />
+                                    <RestaurantCard class="animate-fade-in" restaurant={restaurant()} />
                                 </>
                             )}
                         </Show>
@@ -120,6 +120,7 @@ function useWheelStore(restaurants: Accessor<Restaurant[]>) {
 
     const segments = createMemo(() => {
         const rest = restaurants()
+        // Ensure even number of segments for better visual balance, remove last if odd
         return rest.length % 2 === 1 ? rest.slice(0, -1) : rest
     })
 
@@ -276,7 +277,7 @@ function WheelSegment(props: { restaurant: Restaurant; idx: number }) {
     )
 }
 
-function SpinWheelButton(props: JSX.HTMLAttributes<HTMLButtonElement>) {
+function SpinWheelButton(props: ComponentProps<"button">) {
     const wheel = useWheel()
     const { spinDuration } = WHEEL_CONFIG
 
