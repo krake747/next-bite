@@ -1,5 +1,5 @@
 import { A } from "@solidjs/router"
-import { ArrowRight } from "lucide-solid"
+import ArrowRight from "lucide-solid/icons/arrow-right"
 
 export function NotFound() {
     return (

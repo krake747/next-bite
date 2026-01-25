@@ -1,39 +1,44 @@
-import { createSignal } from "solid-js"
+import { createSignal, splitProps } from "solid-js"
 import { Card, CardContent, CardFooter, CardHeader } from "../ui/card"
 import { Badge } from "../ui/badge"
-import { MapPin, Utensils, ExternalLink, SquarePen } from "lucide-solid"
+import MapPin from "lucide-solid/icons/map-pin"
+import Utensils from "lucide-solid/icons/utensils"
+import ExternalLink from "lucide-solid/icons/external-link"
+import SquarePen from "lucide-solid/icons/square-pen"
 import { useUpdateRestaurant, type Restaurant } from "../core/hooks"
 import { EditRestaurantDialog } from "./edit-restaurant-dialog"
 import { EmojiRating } from "../ui/emoji-rating"
+import type { ComponentProps } from "solid-js"
 
-export function RestaurantCard(props: { restaurant: Restaurant }) {
+export function RestaurantCard(props: { restaurant: Restaurant } & ComponentProps<typeof Card>) {
+    const [local, cardProps] = splitProps(props, ["restaurant"])
     const [showEdit, setShowEdit] = createSignal(false)
     const updateRestaurant = useUpdateRestaurant()
 
     const handleRate = async (rating: number) => {
-        await updateRestaurant({ id: props.restaurant._id, rating })
+        await updateRestaurant({ id: local.restaurant._id, rating })
     }
 
     return (
         <>
-            <Card>
+            <Card {...cardProps}>
                 <CardHeader class="grid grid-cols-[1fr_auto]">
-                    <h3 class="text-xl font-semibold">{props.restaurant.name} </h3>
+                    <h3 class="text-xl font-semibold">{local.restaurant.name} </h3>
                     <Badge variant="gray">
                         <Utensils class="mr-1.5 size-3" />
-                        {props.restaurant.cuisine}
+                        {local.restaurant.cuisine}
                     </Badge>
                 </CardHeader>
                 <CardContent class="flex flex-1 flex-col justify-between gap-2">
-                    <p class="text-neutral-500 dark:text-neutral-400">{props.restaurant.notes}</p>
+                    <p class="text-neutral-500 dark:text-neutral-400">{local.restaurant.notes}</p>
                     <div class="flex items-center justify-between text-sm text-neutral-600 dark:text-neutral-400">
                         <div class="flex items-center">
                             <MapPin class="mr-1.5 size-3.5 shrink-0" />
-                            {props.restaurant.location}
+                            {local.restaurant.location}
                         </div>
-                        {props.restaurant.link && (
+                        {local.restaurant.link && (
                             <a
-                                href={props.restaurant.link}
+                                href={local.restaurant.link}
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 class="flex items-center"
@@ -46,13 +51,13 @@ export function RestaurantCard(props: { restaurant: Restaurant }) {
                     </div>
                 </CardContent>
                 <CardContent>
-                    <EmojiRating rating={props.restaurant.rating ?? null} onRate={handleRate} />
+                    <EmojiRating rating={local.restaurant.rating ?? null} onRate={handleRate} />
                 </CardContent>
                 <CardFooter class="flex items-center justify-between text-neutral-500 dark:text-neutral-400">
                     <span>
                         Proposed by{" "}
                         <span class="font-medium text-neutral-900 dark:text-neutral-100">
-                            {props.restaurant.addedBy}
+                            {local.restaurant.addedBy}
                         </span>
                     </span>
                     <button
@@ -65,7 +70,7 @@ export function RestaurantCard(props: { restaurant: Restaurant }) {
                     </button>
                 </CardFooter>
             </Card>
-            <EditRestaurantDialog show={showEdit()} onOpenChange={setShowEdit} restaurant={props.restaurant} />
+            <EditRestaurantDialog show={showEdit()} onOpenChange={setShowEdit} restaurant={local.restaurant} />
         </>
     )
 }
