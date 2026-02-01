@@ -28,7 +28,7 @@
         "valibot": "^1.2.0"
     },
     "devDependencies": {
-        "@types/node": "^25.0.10",
+        "@types/node": "^25.1.0",
         "oxfmt": "^0.26.0",
         "oxlint": "^1.41.0",
         "typescript": "~5.9.3",
