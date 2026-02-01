@@ -15,7 +15,7 @@
         "lint:fix": "oxlint --fix"
     },
     "dependencies": {
-        "@formisch/solid": "^0.7.5",
+        "@formisch/solid": "^0.8.0",
         "@kobalte/core": "^0.13.11",
         "@solidjs/router": "^0.15.4",
         "@tailwindcss/vite": "^4.1.18",
@@ -29,10 +29,10 @@
     },
     "devDependencies": {
         "@types/node": "^25.2.0",
-        "oxfmt": "^0.26.0",
+        "oxfmt": "^0.27.0",
         "oxlint": "^1.42.0",
         "typescript": "~5.9.3",
-        "vite": "8.0.0-beta.10",
+        "vite": "8.0.0",
         "vite-plugin-solid": "^2.11.10"
     },
     "browserslist": {
@@ -60,7 +60,7 @@
     "packageManager": "pnpm@10.28.1",
     "pnpm": {
         "overrides": {
-            "vite": "8.0.0-beta.10"
+            "vite": "8.0.0-beta.11"
         }
     }
 }
