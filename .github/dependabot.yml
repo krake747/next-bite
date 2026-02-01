@@ -12,6 +12,16 @@ updates:
     labels:
       - "deps"
       - "auto-bump"
+    groups:
+      npm-minor-and-patch:
+        applies-to: version-updates
+        update-types:
+          - "minor"
+          - "patch"
+
+      npm-dev-dependencies:
+        dependency-type: "development"
+        applies-to: version-updates
 
   - package-ecosystem: "github-actions"
     directory: "/"
