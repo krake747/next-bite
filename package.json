@@ -29,7 +29,7 @@
     },
     "devDependencies": {
         "@types/node": "^25.2.0",
-        "oxfmt": "^0.26.0",
+        "oxfmt": "^0.27.0",
         "oxlint": "^1.42.0",
         "typescript": "~5.9.3",
         "vite": "8.0.0-beta.10",
