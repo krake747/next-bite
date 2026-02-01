@@ -24,8 +24,8 @@ importers:
         specifier: ^4.1.18
         version: 4.1.18(vite@8.0.0-beta.10(@types/node@25.0.10)(esbuild@0.27.0)(jiti@2.6.1))
       convex:
-        specifier: ^1.31.6
-        version: 1.31.6
+        specifier: ^1.31.7
+        version: 1.31.7
       cva:
         specifier: 1.0.0-beta.4
         version: 1.0.0-beta.4(typescript@5.9.3)
@@ -742,8 +742,8 @@ packages:
   convert-source-map@2.0.0:
     resolution: {integrity: sha512-Kvp459HrV2FEJ1CAsi1Ku+MY3kasH19TFykTz2xWmMeq6bk2NU3XXvfJ+Q61m0xktWwt+1HSYf3JZsTms3aRJg==}
 
-  convex@1.31.6:
-    resolution: {integrity: sha512-9cIsOzepa3s9DURRF+fZHxbNuzLgilg9XGQCc45v0Xx4FemqeIezpPFSJF9WHC9ckk43TDUUXLecvLVt9djPkw==}
+  convex@1.31.7:
+    resolution: {integrity: sha512-PtNMe1mAIOvA8Yz100QTOaIdgt2rIuWqencVXrb4McdhxBHZ8IJ1eXTnrgCC9HydyilGT1pOn+KNqT14mqn9fQ==}
     engines: {node: '>=18.0.0', npm: '>=7.0.0'}
     hasBin: true
     peerDependencies:
@@ -1771,7 +1771,7 @@ snapshots:
 
   convert-source-map@2.0.0: {}
 
-  convex@1.31.6:
+  convex@1.31.7:
     dependencies:
       esbuild: 0.27.0
       prettier: 3.8.1
