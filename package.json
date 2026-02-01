@@ -15,7 +15,7 @@
         "lint:fix": "oxlint --fix"
     },
     "dependencies": {
-        "@formisch/solid": "^0.7.5",
+        "@formisch/solid": "^0.8.0",
         "@kobalte/core": "^0.13.11",
         "@solidjs/router": "^0.15.4",
         "@tailwindcss/vite": "^4.1.18",
