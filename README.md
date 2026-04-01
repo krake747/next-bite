@@ -4,8 +4,8 @@
 
 ![CodeRabbit Pull Request Reviews](https://img.shields.io/coderabbit/prs/github/krake747/next-bite?utm_source=oss&utm_medium=github&utm_campaign=krake747%2Fnext-bite&labelColor=171717&color=FF570A&link=https%3A%2F%2Fcoderabbit.ai&label=CodeRabbit+Reviews)
 
-A fun web app for friends to share and discover restaurant recommendations. Never wonder where to eat next!
-Built with SolidJS, Vite, Tailwind CSS, Convex, Formisch, and Valibot.
+A fun web app for friends to share and discover restaurant recommendations. Never wonder where to
+eat next! Built with SolidJS, Vite, Tailwind CSS, Convex, Formisch, and Valibot.
 
 [Our next bite](https://nextbite.kevinkraemer.com)
 
@@ -81,8 +81,8 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## Contributing
 
-Feel free to open issues and pull requests to contribute to this project. Any contributions you make are
-greatly appreciated!
+Feel free to open issues and pull requests to contribute to this project. Any contributions you make
+are greatly appreciated!
 
 ## Acknowledgments
 
