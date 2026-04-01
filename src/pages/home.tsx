@@ -1,7 +1,6 @@
-import { For, createSignal, createMemo, Show, createEffect } from "solid-js"
-import { createStore } from "solid-js/store"
+import { For, createSignal, createMemo, Show } from "solid-js"
 import { Header, HeaderSubtitle, HeaderTitle } from "../features/header"
-import { useRestaurants, type Restaurant } from "../core/hooks"
+import { useRestaurants } from "../core/hooks"
 import { Footer } from "../features/footer"
 import { RestaurantCard } from "../features/restaurant-card"
 import { FriendsFilter } from "../features/friends-filter"
@@ -19,16 +18,12 @@ export function Home() {
     const [show, setShow] = createSignal(false)
 
     const restaurants = useRestaurants()
-    const [restaurantList, setRestaurantList] = createStore<Restaurant[]>([])
 
-    createEffect(() => {
+    const filteredRestaurants = createMemo(() => {
         const r = restaurants()
-        if (r) setRestaurantList(r)
+        if (!r) return []
+        return filter() ? r.filter((x) => x.addedBy === filter()) : r
     })
-
-    const filteredRestaurants = createMemo(() =>
-        filter() ? restaurantList.filter((r) => r.addedBy === filter()) : restaurantList,
-    )
 
     const count = createMemo(() => filteredRestaurants().length)
 

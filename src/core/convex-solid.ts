@@ -11,8 +11,16 @@ export function createQuery<T>(query: FunctionReference<"query">, args?: {}): ()
         throw new Error("No convex context")
     }
 
-    return from((setter) => {
-        const unsubber = convex!.onUpdate(query, args ?? {}, setter)
+    return from((setter: (value: T | undefined) => void) => {
+        const safeSetter = (value: T) => {
+            try {
+                setter(value)
+            } catch (error) {
+                console.error("Error in query setter:", error)
+                setter(undefined)
+            }
+        }
+        const unsubber = convex.onUpdate(query, args ?? {}, safeSetter)
         return unsubber
     })
 }
@@ -23,7 +31,14 @@ export function createMutation<T>(mutation: FunctionReference<"mutation">): (arg
         throw new Error("No convex context")
     }
 
-    return (args) => convex.mutation(mutation, args ?? {})
+    return async (args) => {
+        try {
+            return await convex.mutation(mutation, args ?? {})
+        } catch (error) {
+            console.error("Error in mutation:", error)
+            throw error
+        }
+    }
 }
 
 export function createAction<T>(action: FunctionReference<"action">): (args?: {}) => Promise<T> {
@@ -32,5 +47,12 @@ export function createAction<T>(action: FunctionReference<"action">): (args?: {}
         throw new Error("No convex context")
     }
 
-    return (args) => convex.action(action, args ?? {})
+    return async (args) => {
+        try {
+            return await convex.action(action, args ?? {})
+        } catch (error) {
+            console.error("Error in action:", error)
+            throw error
+        }
+    }
 }
