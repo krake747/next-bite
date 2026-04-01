@@ -1,4 +1,5 @@
-import { For, createSignal, createMemo } from "solid-js"
+import { For, createSignal, createMemo, Show, createEffect } from "solid-js"
+import { createStore } from "solid-js/store"
 import { Header, HeaderSubtitle, HeaderTitle } from "../features/header"
 import { useRestaurants, type Restaurant } from "../core/hooks"
 import { Footer } from "../features/footer"
@@ -17,9 +18,15 @@ export function Home() {
     const [show, setShow] = createSignal(false)
 
     const restaurants = useRestaurants()
+    const [restaurantList, setRestaurantList] = createStore<Restaurant[]>([])
+
+    createEffect(() => {
+        const r = restaurants()
+        if (r) setRestaurantList(r)
+    })
 
     const filteredRestaurants = createMemo(() =>
-        filter() ? restaurants().filter((r: Restaurant) => r.addedBy === filter()) : restaurants(),
+        filter() ? restaurantList.filter((r) => r.addedBy === filter()) : restaurantList,
     )
 
     const count = createMemo(() => filteredRestaurants().length)
@@ -31,23 +38,25 @@ export function Home() {
                     <HeaderTitle>Our next bite</HeaderTitle>
                     <HeaderSubtitle>{count()} places we're dreaming of trying together</HeaderSubtitle>
                 </Header>
-                <FriendsFilter filter={filter()} handleFilter={setFilter}>
-                    <div class="flex flex-col gap-2 sm:ml-auto sm:flex-row">
-                        <Button onClick={() => navigate("/wheel")}>
-                            <LoaderPinwheel class="size-4" />
-                            Spin the wheel
-                        </Button>
-                        <Button onClick={() => setShow(true)}>
-                            <Plus class="size-4" />
-                            Add Restaurant
-                        </Button>
+                <Show when={restaurants()} fallback={<span>Loading restaurants...</span>}>
+                    <FriendsFilter filter={filter()} handleFilter={setFilter}>
+                        <div class="flex flex-col gap-2 sm:ml-auto sm:flex-row">
+                            <Button onClick={() => navigate("/wheel")}>
+                                <LoaderPinwheel class="size-4" />
+                                Spin the wheel
+                            </Button>
+                            <Button onClick={() => setShow(true)}>
+                                <Plus class="size-4" />
+                                Add Restaurant
+                            </Button>
+                        </div>
+                    </FriendsFilter>
+                    <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                        <For each={filteredRestaurants()} fallback={<span>No restaurants found...</span>}>
+                            {(restaurant) => <RestaurantCard restaurant={restaurant} />}
+                        </For>
                     </div>
-                </FriendsFilter>
-                <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                    <For each={filteredRestaurants()} fallback={<span>No restaurants found...</span>}>
-                        {(restaurant) => <RestaurantCard restaurant={restaurant} />}
-                    </For>
-                </div>
+                </Show>
                 <AddRestaurantDialog show={show()} onOpenChange={setShow} />
             </main>
             <Footer />

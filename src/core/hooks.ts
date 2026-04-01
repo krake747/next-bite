@@ -2,15 +2,8 @@ import { createQuery, createMutation } from "./convex-solid"
 import { api } from "../../convex/_generated/api"
 import type { Doc } from "../../convex/_generated/dataModel"
 
-export const useRestaurants = () => {
-    const restaurants = createQuery<Restaurant[]>(api.restaurants.get)
-    return () => restaurants() ?? []
-}
-
-export const useFriends = () => {
-    const friends = createQuery<Friend[]>(api.friends.get)
-    return () => friends() ?? []
-}
+export const useRestaurants = () => createQuery<Restaurant[]>(api.restaurants.get)
+export const useFriends = () => createQuery<Friend[]>(api.friends.get)
 
 export const useAddRestaurant = () => createMutation(api.restaurants.add)
 export const useUpdateRestaurant = () => createMutation(api.restaurants.update)

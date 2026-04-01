@@ -25,7 +25,8 @@ import { cx } from "../ui/variants"
 export function Wheel() {
     const navigate = useNavigate()
     const restaurants = useRestaurants()
-    const wheel = useWheelStore(restaurants)
+    const safeRestaurants = () => restaurants() ?? []
+    const wheel = useWheelStore(safeRestaurants)
 
     return (
         <WheelContext.Provider value={wheel}>

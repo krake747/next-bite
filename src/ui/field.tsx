@@ -14,7 +14,7 @@ interface InputProps extends FieldElementProps {
     type?: string
     placeholder?: string
     input: string | undefined
-    errors: [string, ...string[]] | null
+    errors: string[] | null
 }
 
 export function Input(props: InputProps) {
@@ -34,7 +34,7 @@ interface TextareaProps extends FieldElementProps {
     placeholder?: string
     rows?: number
     input: string | undefined
-    errors: [string, ...string[]] | null
+    errors: string[] | null
 }
 
 export function Textarea(props: TextareaProps) {
@@ -53,7 +53,7 @@ export function Textarea(props: TextareaProps) {
 interface SelectProps extends FieldElementProps {
     children: JSX.Element
     input: string | undefined
-    errors: [string, ...string[]] | null
+    errors: string[] | null
 }
 
 export function Select(props: SelectProps) {
