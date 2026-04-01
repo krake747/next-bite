@@ -23,13 +23,15 @@ export function EditRestaurantDialog(props: {
             notes: props.restaurant.notes ?? "",
             link: props.restaurant.link ?? "",
             addedBy: props.restaurant.addedBy,
-            rating: props.restaurant.rating ?? null,
+            rating: props.restaurant.rating,
         },
     })
 
     const handleSubmit = async (output: RestaurantOutput) => {
         try {
-            await updateRestaurant({ id: props.restaurant._id, ...output })
+            const { rating, ...rest } = output
+            const updates = typeof rating === "number" ? { ...rest, rating } : rest
+            await updateRestaurant({ id: props.restaurant._id, ...updates })
             reset(form)
             props.onOpenChange(false)
         } catch (error) {
