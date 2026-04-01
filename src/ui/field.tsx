@@ -61,7 +61,6 @@ export function Select(props: SelectProps) {
     return (
         <select
             {...selectProps}
-            value={props.input ?? ""}
             class="w-full rounded border border-neutral-200 p-2 dark:border-neutral-600 dark:bg-neutral-700"
         >
             {props.children}
