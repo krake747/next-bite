@@ -1,4 +1,4 @@
-import { For, Show, createEffect, on } from "solid-js"
+import { For, Show } from "solid-js"
 import { Dialog } from "@kobalte/core/dialog"
 import { createForm, Field, Form, reset, setInput } from "@formisch/solid"
 import { useUpdateRestaurant, useFriends, type Restaurant } from "../core/hooks"
@@ -26,27 +26,6 @@ export function EditRestaurantDialog(props: {
             rating: props.restaurant.rating ?? null,
         },
     })
-
-    createEffect(
-        on(
-            () => [props.show, props.restaurant._id],
-            ([show]) => {
-                if (show) {
-                    reset(form, {
-                        initialInput: {
-                            name: props.restaurant.name,
-                            cuisine: props.restaurant.cuisine,
-                            location: props.restaurant.location,
-                            notes: props.restaurant.notes ?? "",
-                            link: props.restaurant.link ?? "",
-                            addedBy: props.restaurant.addedBy,
-                            rating: props.restaurant.rating ?? null,
-                        },
-                    })
-                }
-            },
-        ),
-    )
 
     const handleSubmit = async (output: RestaurantOutput) => {
         try {
