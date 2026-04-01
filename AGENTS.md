@@ -1,7 +1,7 @@
 # Agent Guidelines
 
-- This project is a customer facing web application built with SolidJS, TypeScript 6, Tailwind CSS
-  v4 and our own Convex wrapper.
+- This project is a side project web application built with SolidJS, TypeScript 6, Tailwind CSS v4
+  and our own Convex wrapper.
 - This project uses `pnpm` as a package manager.
 - We develop on WSL within Windows.
 - We do not add comments, unless explicitly asked to do so.

@@ -7,6 +7,7 @@ import { RestaurantCard } from "../features/restaurant-card"
 import { FriendsFilter } from "../features/friends-filter"
 import { AddRestaurantDialog } from "../features/add-restaurant-dialog"
 import { Button } from "../ui/button"
+import { Loading } from "../ui/loading"
 import LoaderPinwheel from "lucide-solid/icons/loader-pinwheel"
 import Plus from "lucide-solid/icons/plus"
 import { useNavigate } from "@solidjs/router"
@@ -38,7 +39,7 @@ export function Home() {
                     <HeaderTitle>Our next bite</HeaderTitle>
                     <HeaderSubtitle>{count()} places we're dreaming of trying together</HeaderSubtitle>
                 </Header>
-                <Show when={restaurants()} fallback={<span>Loading restaurants...</span>}>
+                <Show when={restaurants()} fallback={<Loading message="restaurants" />}>
                     <FriendsFilter filter={filter()} handleFilter={setFilter}>
                         <div class="flex flex-col gap-2 sm:ml-auto sm:flex-row">
                             <Button onClick={() => navigate("/wheel")}>

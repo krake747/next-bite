@@ -3,6 +3,7 @@ import { Dialog } from "@kobalte/core/dialog"
 import { createForm, Field, Form, reset, setInput } from "@formisch/solid"
 import { useUpdateRestaurant, useFriends, type Restaurant } from "../core/hooks"
 import { Button } from "../ui/button"
+import { Loading } from "../ui/loading"
 import { FieldWrapper, Input, Textarea, Select } from "../ui/field"
 import { RestaurantSchema, type RestaurantOutput } from "../core/schemas"
 import { EmojiRating } from "../ui/emoji-rating"
@@ -113,7 +114,14 @@ export function EditRestaurantDialog(props: {
                                             <option value="" selected={!field.input}>
                                                 Select friend
                                             </option>
-                                            <Show when={friends()} fallback={<option>Loading friends...</option>}>
+                                            <Show
+                                                when={friends()}
+                                                fallback={
+                                                    <option>
+                                                        <Loading message="friends" />
+                                                    </option>
+                                                }
+                                            >
                                                 {(friends) => (
                                                     <For each={friends()}>
                                                         {(f) => (
