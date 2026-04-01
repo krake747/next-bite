@@ -1,11 +1,13 @@
 # Agent Guidelines
 
-next-bite is a fun restaurant recommendation site built with SolidJS, TypeScript and Tailwind CSS v4.
+next-bite is a fun restaurant recommendation site built with SolidJS, TypeScript and Tailwind CSS
+v4.
 
 ## Essentials
 
 - Package manager: `pnpm`
-- Don't run builds after every change. This is a visual site; assume changes work unless reported otherwise.
+- Don't run builds after every change. This is a visual site; assume changes work unless reported
+  otherwise.
 - **Typesafety is paramount.** Never cast types; fix at source instead.
 - Don't write unnecessary comments unless explicitly requested.
 - Follow existing patterns
