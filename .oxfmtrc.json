@@ -4,11 +4,35 @@
     "printWidth": 120,
     "tabWidth": 4,
     "semi": false,
-    "experimentalTailwindcss": {
-        "stylesheet": "./src/index.css",
-        "attributes": ["class", "className", "classList"],
-        "functions": ["clsx", "cx"],
-        "preserveDuplicates": false,
-        "preserveWhitespace": false
-    }
+    "sortTailwindcss": {
+        "stylesheet": "src/index.css",
+        "functions": ["cx", "cva"],
+        "attributes": ["class", "className", "classList"]
+    },
+    "sortPackageJson": {
+        "sortScripts": true
+    },
+    "overrides": [
+        {
+            "files": ["*.json", "*.jsonc"],
+            "options": {
+                "tabWidth": 4,
+                "trailingComma": "none"
+            }
+        },
+        {
+            "files": ["*.yml", "*.yaml"],
+            "options": {
+                "tabWidth": 2
+            }
+        },
+        {
+            "files": ["*.md"],
+            "options": {
+                "printWidth": 100,
+                "tabWidth": 2,
+                "proseWrap": "always"
+            }
+        }
+    ]
 }
