@@ -23,13 +23,15 @@ export function EditRestaurantDialog(props: {
             notes: props.restaurant.notes ?? "",
             link: props.restaurant.link ?? "",
             addedBy: props.restaurant.addedBy,
-            rating: props.restaurant.rating ?? null,
+            rating: props.restaurant.rating,
         },
     })
 
     const handleSubmit = async (output: RestaurantOutput) => {
         try {
-            await updateRestaurant({ id: props.restaurant._id, ...output })
+            const { rating, ...rest } = output
+            const updates = typeof rating === "number" ? { ...rest, rating } : rest
+            await updateRestaurant({ id: props.restaurant._id, ...updates })
             reset(form)
             props.onOpenChange(false)
         } catch (error) {
@@ -110,11 +112,17 @@ export function EditRestaurantDialog(props: {
                                 {(field) => (
                                     <FieldWrapper errors={field.errors}>
                                         <Select {...field.props} input={field.input} errors={field.errors}>
-                                            <option value="">Select friend</option>
+                                            <option value="" selected={!field.input}>
+                                                Select friend
+                                            </option>
                                             <Show when={friends()} fallback={<option>Loading friends...</option>}>
                                                 {(friends) => (
                                                     <For each={friends()}>
-                                                        {(f) => <option value={f.name}>{f.name}</option>}
+                                                        {(f) => (
+                                                            <option value={f.name} selected={field.input === f.name}>
+                                                                {f.name}
+                                                            </option>
+                                                        )}
                                                     </For>
                                                 )}
                                             </Show>
