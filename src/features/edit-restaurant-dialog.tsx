@@ -112,7 +112,9 @@ export function EditRestaurantDialog(props: {
                                 {(field) => (
                                     <FieldWrapper errors={field.errors}>
                                         <Select {...field.props} input={field.input} errors={field.errors}>
-                                            <option value="" selected={!field.input}>Select friend</option>
+                                            <option value="" selected={!field.input}>
+                                                Select friend
+                                            </option>
                                             <Show when={friends()} fallback={<option>Loading friends...</option>}>
                                                 {(friends) => (
                                                     <For each={friends()}>
