@@ -67,7 +67,7 @@ export function Wheel() {
                             {(restaurant) => (
                                 <>
                                     <WinnerMessage />
-                                    <RestaurantCard class="animate-fade-in" restaurant={restaurant()} />
+                                    <RestaurantCard class="animate-fade-in w-full max-w-md" restaurant={restaurant()} />
                                 </>
                             )}
                         </Show>
