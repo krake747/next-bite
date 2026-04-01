@@ -17,31 +17,18 @@ export function EmojiRating(props: { rating: number | null; onRate: (rating: num
 
     const displayRating = () => hoverRating() ?? props.rating
 
-    // Returns the title to display in the span:
-    // - if hovering an emoji, show that emoji's title
-    // - else if a rating is selected, show the selected title
-    // - otherwise show a fallback
+    // hover > selected > fallback
     const selectedTitle = () => {
         const hoverIdx = hoverRating()
-        if (
-            typeof hoverIdx === "number" &&
-            !Number.isNaN(hoverIdx) &&
-            hoverIdx >= 0 &&
-            hoverIdx < RATING_EMOJIS.length
-        ) {
+        if (hoverIdx !== null) {
             const hoverEmoji = RATING_EMOJIS[hoverIdx]
-            return hoverEmoji != undefined ? EMOJI_TITLES[hoverEmoji] : ""
+            return hoverEmoji !== undefined ? EMOJI_TITLES[hoverEmoji] : ""
         }
 
         const selectedIdx = props.rating
-        if (
-            typeof selectedIdx === "number" &&
-            !Number.isNaN(selectedIdx) &&
-            selectedIdx >= 0 &&
-            selectedIdx < RATING_EMOJIS.length
-        ) {
+        if (selectedIdx !== null) {
             const selectedEmoji = RATING_EMOJIS[selectedIdx]
-            return selectedEmoji != undefined ? EMOJI_TITLES[selectedEmoji] : ""
+            return selectedEmoji !== undefined ? EMOJI_TITLES[selectedEmoji] : ""
         }
 
         return "No rating"
@@ -58,7 +45,10 @@ export function EmojiRating(props: { rating: number | null; onRate: (rating: num
                                 displayRating() === index() ? "opacity-100" : "opacity-30 grayscale"
                             }`}
                             onMouseEnter={() => setHoverRating(index())}
-                            onClick={() => props.onRate(index())}
+                            onClick={(e) => {
+                                e.preventDefault()
+                                props.onRate(index())
+                            }}
                             title={EMOJI_TITLES[emoji as (typeof RATING_EMOJIS)[number]]}
                         >
                             {emoji}

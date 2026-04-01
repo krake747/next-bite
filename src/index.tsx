@@ -8,6 +8,7 @@ import { NotFound } from "./pages/not-found.tsx"
 import { Route, Router } from "@solidjs/router"
 
 const root = document.getElementById("root")
+if (!root) throw new Error("Root element not found")
 
 render(
     () => (
@@ -19,5 +20,5 @@ render(
             </Router>
         </ConvexProvider>
     ),
-    root!,
+    root,
 )
