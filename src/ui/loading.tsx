@@ -4,7 +4,7 @@ export function Loading(props: { message?: string; class?: string }) {
     const [verb] = createSignal(LoadingVerbs[Math.floor(Math.random() * LoadingVerbs.length)])
 
     return (
-        <span class={props.class}>
+        <span data-component="loading" class={props.class}>
             {verb()}
             {props.message ? ` ${props.message}` : ""}...
         </span>
