@@ -9,10 +9,11 @@ if (!process.env.CONVEX_SITE_URL) {
     throw new Error("CONVEX_SITE_URL environment variable is not set")
 }
 
+const convexSiteUrl = process.env.CONVEX_SITE_URL
+
 export const authComponent = createClient<DataModel>(components.betterAuth)
 
 export const createAuth = (ctx: GenericCtx<DataModel>) => {
-    const convexSiteUrl = process.env.CONVEX_SITE_URL
     return betterAuth({
         baseURL: convexSiteUrl,
         trustedOrigins: [convexSiteUrl, "http://localhost:5173", "https://nextbite.kevinkraemer.com"],
