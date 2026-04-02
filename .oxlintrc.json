@@ -110,17 +110,12 @@
     },
     "settings": {
         "jsx-a11y": {
-            "polymorphicPropName": null,
+            "polymorphicPropName": "",
             "components": {},
             "attributes": {}
         },
         "next": {
             "rootDir": []
-        },
-        "react": {
-            "formComponents": [],
-            "linkComponents": [],
-            "version": null
         },
         "jsdoc": {
             "ignorePrivate": false,

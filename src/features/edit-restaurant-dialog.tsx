@@ -1,7 +1,7 @@
 import { For, Show } from "solid-js"
 import { Dialog } from "@kobalte/core/dialog"
 import { createForm, Field, Form, reset, setInput } from "@formisch/solid"
-import { useUpdateRestaurant, useFriends, type Restaurant } from "../core/hooks"
+import { useUpdateRestaurant, useFriends, useAuth, type Restaurant } from "../core/hooks"
 import { Button } from "../ui/button"
 import { Loading } from "../ui/loading"
 import { FieldWrapper, Input, Textarea, Select } from "../ui/field"
@@ -15,6 +15,7 @@ export function EditRestaurantDialog(props: {
 }) {
     const updateRestaurant = useUpdateRestaurant()
     const friends = useFriends()
+    const auth = useAuth()
     const form = createForm({
         schema: RestaurantSchema,
         initialInput: {
@@ -45,114 +46,134 @@ export function EditRestaurantDialog(props: {
                 <div class="fixed inset-0 flex items-center justify-center p-4">
                     <Dialog.Content class="w-full max-w-md rounded-lg bg-white p-6 dark:bg-neutral-800">
                         <Dialog.Title class="mb-4 text-lg font-semibold">Edit Restaurant</Dialog.Title>
-                        <Form of={form} onSubmit={handleSubmit} class="space-y-4">
-                            <Field of={form} path={["name"]}>
-                                {(field) => (
-                                    <FieldWrapper errors={field.errors}>
-                                        <Input
-                                            {...field.props}
-                                            input={field.input}
-                                            errors={field.errors}
-                                            placeholder="Name"
-                                        />
-                                    </FieldWrapper>
-                                )}
-                            </Field>
-                            <Field of={form} path={["cuisine"]}>
-                                {(field) => (
-                                    <FieldWrapper errors={field.errors}>
-                                        <Input
-                                            {...field.props}
-                                            input={field.input}
-                                            errors={field.errors}
-                                            placeholder="Cuisine"
-                                        />
-                                    </FieldWrapper>
-                                )}
-                            </Field>
-                            <Field of={form} path={["location"]}>
-                                {(field) => (
-                                    <FieldWrapper errors={field.errors}>
-                                        <Input
-                                            {...field.props}
-                                            input={field.input}
-                                            errors={field.errors}
-                                            placeholder="Location"
-                                        />
-                                    </FieldWrapper>
-                                )}
-                            </Field>
-                            <Field of={form} path={["notes"]}>
-                                {(field) => (
-                                    <FieldWrapper errors={field.errors}>
-                                        <Textarea
-                                            {...field.props}
-                                            input={field.input}
-                                            errors={field.errors}
-                                            placeholder="Notes (optional)"
-                                        />
-                                    </FieldWrapper>
-                                )}
-                            </Field>
-                            <Field of={form} path={["link"]}>
-                                {(field) => (
-                                    <FieldWrapper errors={field.errors}>
-                                        <Input
-                                            {...field.props}
-                                            input={field.input}
-                                            errors={field.errors}
-                                            type="url"
-                                            placeholder="Link (optional)"
-                                        />
-                                    </FieldWrapper>
-                                )}
-                            </Field>
-                            <Field of={form} path={["addedBy"]}>
-                                {(field) => (
-                                    <FieldWrapper errors={field.errors}>
-                                        <Select {...field.props} input={field.input} errors={field.errors}>
-                                            <option value="" selected={!field.input}>
-                                                Select friend
-                                            </option>
-                                            <Show
-                                                when={friends()}
-                                                fallback={
-                                                    <option>
-                                                        <Loading message="friends" />
-                                                    </option>
+
+                        <Show
+                            when={auth.isAuthenticated()}
+                            fallback={
+                                <div class="space-y-4 text-center">
+                                    <p class="text-neutral-600 dark:text-neutral-400">
+                                        Please sign in to edit restaurants.
+                                    </p>
+                                    <a href="/login">
+                                        <Button class="w-full">Sign In</Button>
+                                    </a>
+                                </div>
+                            }
+                        >
+                            <Form of={form} onSubmit={handleSubmit} class="space-y-4">
+                                <Field of={form} path={["name"]}>
+                                    {(field) => (
+                                        <FieldWrapper errors={field.errors}>
+                                            <Input
+                                                {...field.props}
+                                                input={field.input}
+                                                errors={field.errors}
+                                                placeholder="Name"
+                                            />
+                                        </FieldWrapper>
+                                    )}
+                                </Field>
+                                <Field of={form} path={["cuisine"]}>
+                                    {(field) => (
+                                        <FieldWrapper errors={field.errors}>
+                                            <Input
+                                                {...field.props}
+                                                input={field.input}
+                                                errors={field.errors}
+                                                placeholder="Cuisine"
+                                            />
+                                        </FieldWrapper>
+                                    )}
+                                </Field>
+                                <Field of={form} path={["location"]}>
+                                    {(field) => (
+                                        <FieldWrapper errors={field.errors}>
+                                            <Input
+                                                {...field.props}
+                                                input={field.input}
+                                                errors={field.errors}
+                                                placeholder="Location"
+                                            />
+                                        </FieldWrapper>
+                                    )}
+                                </Field>
+                                <Field of={form} path={["notes"]}>
+                                    {(field) => (
+                                        <FieldWrapper errors={field.errors}>
+                                            <Textarea
+                                                {...field.props}
+                                                input={field.input}
+                                                errors={field.errors}
+                                                placeholder="Notes (optional)"
+                                            />
+                                        </FieldWrapper>
+                                    )}
+                                </Field>
+                                <Field of={form} path={["link"]}>
+                                    {(field) => (
+                                        <FieldWrapper errors={field.errors}>
+                                            <Input
+                                                {...field.props}
+                                                input={field.input}
+                                                errors={field.errors}
+                                                type="url"
+                                                placeholder="Link (optional)"
+                                            />
+                                        </FieldWrapper>
+                                    )}
+                                </Field>
+                                <Field of={form} path={["addedBy"]}>
+                                    {(field) => (
+                                        <FieldWrapper errors={field.errors}>
+                                            <Select {...field.props} input={field.input} errors={field.errors}>
+                                                <option value="" selected={!field.input}>
+                                                    Select friend
+                                                </option>
+                                                <Show
+                                                    when={friends()}
+                                                    fallback={
+                                                        <option>
+                                                            <Loading message="friends" />
+                                                        </option>
+                                                    }
+                                                >
+                                                    {(friends) => (
+                                                        <For each={friends()}>
+                                                            {(f) => (
+                                                                <option
+                                                                    value={f.name}
+                                                                    selected={field.input === f.name}
+                                                                >
+                                                                    {f.name}
+                                                                </option>
+                                                            )}
+                                                        </For>
+                                                    )}
+                                                </Show>
+                                            </Select>
+                                        </FieldWrapper>
+                                    )}
+                                </Field>
+                                <Field of={form} path={["rating"]}>
+                                    {(field) => (
+                                        <FieldWrapper errors={field.errors}>
+                                            <EmojiRating
+                                                rating={
+                                                    typeof field.input === "number" && field.input >= 0
+                                                        ? field.input
+                                                        : null
                                                 }
-                                            >
-                                                {(friends) => (
-                                                    <For each={friends()}>
-                                                        {(f) => (
-                                                            <option value={f.name} selected={field.input === f.name}>
-                                                                {f.name}
-                                                            </option>
-                                                        )}
-                                                    </For>
-                                                )}
-                                            </Show>
-                                        </Select>
-                                    </FieldWrapper>
-                                )}
-                            </Field>
-                            <Field of={form} path={["rating"]}>
-                                {(field) => (
-                                    <FieldWrapper errors={field.errors}>
-                                        <EmojiRating
-                                            rating={
-                                                typeof field.input === "number" && field.input >= 0 ? field.input : null
-                                            }
-                                            onRate={(rating) => setInput(form, { path: ["rating"], input: rating })}
-                                        />
-                                    </FieldWrapper>
-                                )}
-                            </Field>
-                            <div class="flex justify-end gap-2">
-                                <Button onClick={() => props.onOpenChange(false)}>Cancel</Button>
-                                <Button type="submit">Update</Button>
-                            </div>
-                        </Form>
+                                                onRate={(rating) => setInput(form, { path: ["rating"], input: rating })}
+                                            />
+                                        </FieldWrapper>
+                                    )}
+                                </Field>
+                                <div class="flex justify-end gap-2">
+                                    <Button onClick={() => props.onOpenChange(false)}>Cancel</Button>
+                                    <Button type="submit">Update</Button>
+                                </div>
+                            </Form>
+                        </Show>
                     </Dialog.Content>
                 </div>
             </Dialog.Portal>

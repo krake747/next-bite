@@ -10,8 +10,10 @@ export default defineSchema({
         link: v.optional(v.string()),
         addedBy: v.string(),
         rating: v.optional(v.number()),
+        userId: v.optional(v.id("users")),
     }),
     friends: defineTable({
         name: v.string(),
     }),
+    // Better Auth tables will be added by the convex component
 })

@@ -49,6 +49,13 @@ CONVEX_DEPLOYMENT=your-deployment-name
 
 # Used by the application at runtime
 VITE_CONVEX_URL=https://your-deployment.convex.cloud
+VITE_CONVEX_SITE_URL=https://your-deployment.convex.site
+```
+
+Set the required Convex environment variable for authentication:
+
+```bash
+npx convex env set BETTER_AUTH_SECRET "$(openssl rand -base64 32)"
 ```
 
 Start Convex backend dev server (syncs to your cloud dev project)

@@ -12,7 +12,7 @@ const EMOJI_TITLES: Record<(typeof RATING_EMOJIS)[number], string> = {
     "🍆": "The food was horny and now so am I",
 }
 
-export function EmojiRating(props: { rating: number | null; onRate: (rating: number) => void }) {
+export function EmojiRating(props: { rating: number | null; onRate: (rating: number) => void | Promise<void> }) {
     const [hoverRating, setHoverRating] = createSignal<number | null>(null)
 
     const displayRating = () => hoverRating() ?? props.rating
@@ -34,6 +34,12 @@ export function EmojiRating(props: { rating: number | null; onRate: (rating: num
         return "No rating"
     }
 
+    const handleRate = async (index: number, button: HTMLButtonElement) => {
+        await props.onRate(index)
+        // Restore focus to prevent scroll jump on re-render
+        button.focus({ preventScroll: true })
+    }
+
     return (
         <div class="flex flex-col items-center gap-2">
             <div class="flex w-full items-center justify-between" onMouseLeave={() => setHoverRating(null)}>
@@ -47,7 +53,7 @@ export function EmojiRating(props: { rating: number | null; onRate: (rating: num
                             onMouseEnter={() => setHoverRating(index())}
                             onClick={(e) => {
                                 e.preventDefault()
-                                props.onRate(index())
+                                handleRate(index(), e.currentTarget)
                             }}
                             title={EMOJI_TITLES[emoji as (typeof RATING_EMOJIS)[number]]}
                         >

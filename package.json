@@ -15,10 +15,12 @@
         "preview": "vite preview"
     },
     "dependencies": {
+        "@convex-dev/better-auth": "^0.11.4",
         "@formisch/solid": "^0.9.4",
         "@kobalte/core": "^0.13.11",
         "@solidjs/router": "^0.16.1",
         "@tailwindcss/vite": "^4.2.2",
+        "better-auth": "^1.5.6",
         "convex": "^1.34.1",
         "cva": "1.0.0-beta.4",
         "lucide-solid": "^1.7.0",
