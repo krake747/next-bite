@@ -1,6 +1,6 @@
 import { For, createSignal, createMemo, Show } from "solid-js"
 import { Header, HeaderSubtitle, HeaderTitle } from "../features/header"
-import { useRestaurants } from "../core/hooks"
+import { useRestaurants, useAuth } from "../core/hooks"
 import { Footer } from "../features/footer"
 import { RestaurantCard } from "../features/restaurant-card"
 import { FriendsFilter } from "../features/friends-filter"
@@ -13,6 +13,7 @@ import { useNavigate } from "@solidjs/router"
 
 export function Home() {
     const navigate = useNavigate()
+    const auth = useAuth()
 
     const [filter, setFilter] = createSignal<string | null>(null)
     const [show, setShow] = createSignal(false)
@@ -41,10 +42,18 @@ export function Home() {
                                 <LoaderPinwheel class="size-4" />
                                 Spin the wheel
                             </Button>
-                            <Button onClick={() => setShow(true)}>
-                                <Plus class="size-4" />
-                                Add Restaurant
-                            </Button>
+                            <Show when={auth.isAuthenticated()}>
+                                <Button onClick={() => setShow(true)}>
+                                    <Plus class="size-4" />
+                                    Add Restaurant
+                                </Button>
+                            </Show>
+                            <Show when={!auth.isAuthenticated()}>
+                                <Button variant="secondary" onClick={() => navigate("/login")}>
+                                    <Plus class="size-4" aria-hidden="true" />
+                                    Sign in to add
+                                </Button>
+                            </Show>
                         </div>
                     </FriendsFilter>
                     <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
@@ -53,7 +62,9 @@ export function Home() {
                         </For>
                     </div>
                 </Show>
-                <AddRestaurantDialog show={show()} onOpenChange={setShow} />
+                <Show when={auth.isAuthenticated()}>
+                    <AddRestaurantDialog show={show()} onOpenChange={setShow} />
+                </Show>
             </main>
             <Footer />
         </div>

@@ -14,7 +14,7 @@ export function Footer() {
                     </a>
                 </div>
                 <p class="mt-8 text-center text-sm/6 text-neutral-600 md:order-1 md:mt-0 dark:text-neutral-400">
-                    &copy; {year} Kevin Kraemer. All rights reserved.
+                    © {year} Kevin Kraemer. All rights reserved. Made with SolidJS
                 </p>
             </div>
         </footer>

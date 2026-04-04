@@ -1,11 +1,11 @@
-import { createSignal, splitProps } from "solid-js"
+import { createSignal, splitProps, Show } from "solid-js"
 import { Card, CardContent, CardFooter, CardHeader } from "../ui/card"
 import { Badge } from "../ui/badge"
 import MapPin from "lucide-solid/icons/map-pin"
 import Utensils from "lucide-solid/icons/utensils"
 import ExternalLink from "lucide-solid/icons/external-link"
 import SquarePen from "lucide-solid/icons/square-pen"
-import { useUpdateRestaurant, type Restaurant } from "../core/hooks"
+import { useUpdateRestaurant, useAuth, type Restaurant } from "../core/hooks"
 import { EditRestaurantDialog } from "./edit-restaurant-dialog"
 import { EmojiRating } from "../ui/emoji-rating"
 import type { ComponentProps } from "solid-js"
@@ -14,6 +14,7 @@ export function RestaurantCard(props: { restaurant: Restaurant } & ComponentProp
     const [local, cardProps] = splitProps(props, ["restaurant"])
     const [showEdit, setShowEdit] = createSignal(false)
     const updateRestaurant = useUpdateRestaurant()
+    const auth = useAuth()
 
     const handleRate = async (rating: number) => {
         await updateRestaurant({ id: local.restaurant._id, rating })
@@ -60,14 +61,17 @@ export function RestaurantCard(props: { restaurant: Restaurant } & ComponentProp
                             {local.restaurant.addedBy}
                         </span>
                     </span>
-                    <button
-                        type="button"
-                        onClick={() => setShowEdit(true)}
-                        class="cursor-pointer text-neutral-500 hover:bg-neutral-100 hover:text-neutral-700 dark:text-neutral-400 dark:hover:bg-neutral-800 dark:hover:text-neutral-200"
-                        title="Edit restaurant"
-                    >
-                        <SquarePen class="size-4" />
-                    </button>
+                    <Show when={auth.isAuthenticated()}>
+                        <button
+                            type="button"
+                            onClick={() => setShowEdit(true)}
+                            aria-label="Edit restaurant"
+                            class="cursor-pointer text-neutral-500 hover:bg-neutral-100 hover:text-neutral-700 dark:text-neutral-400 dark:hover:bg-neutral-800 dark:hover:text-neutral-200"
+                            title="Edit restaurant"
+                        >
+                            <SquarePen class="size-4" aria-hidden="true" />
+                        </button>
+                    </Show>
                 </CardFooter>
             </Card>
             <EditRestaurantDialog show={showEdit()} onOpenChange={setShowEdit} restaurant={local.restaurant} />
