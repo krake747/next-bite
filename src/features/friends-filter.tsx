@@ -41,7 +41,7 @@ export function FriendsFilter(props: {
                     value={props.search}
                     onChange={props.handleSearch}
                     placeholder="Search restaurants..."
-                    class="w-full sm:w-48"
+                    class="w-full sm:w-56"
                 />
             </div>
             {props.children}
