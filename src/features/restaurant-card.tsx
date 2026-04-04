@@ -65,10 +65,11 @@ export function RestaurantCard(props: { restaurant: Restaurant } & ComponentProp
                         <button
                             type="button"
                             onClick={() => setShowEdit(true)}
+                            aria-label="Edit restaurant"
                             class="cursor-pointer text-neutral-500 hover:bg-neutral-100 hover:text-neutral-700 dark:text-neutral-400 dark:hover:bg-neutral-800 dark:hover:text-neutral-200"
                             title="Edit restaurant"
                         >
-                            <SquarePen class="size-4" />
+                            <SquarePen class="size-4" aria-hidden="true" />
                         </button>
                     </Show>
                 </CardFooter>

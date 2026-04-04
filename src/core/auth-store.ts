@@ -10,6 +10,24 @@ export type User = {
     image: string | null | undefined
 }
 
+function mapSessionUserToUserPayload(
+    user: SessionUser,
+): User {
+    return {
+        id: user.id,
+        email: user.email,
+        name: user.name,
+        image: user.image,
+    }
+}
+
+type SessionUser = {
+    id: string
+    email: string
+    name?: string | null | undefined
+    image?: string | null | undefined
+}
+
 function createAuthStore() {
     const [isAuthenticated, setIsAuthenticated] = createSignal(false)
     const [isLoading, setIsLoading] = createSignal(true)
@@ -30,20 +48,31 @@ function createAuthStore() {
     const initializeAuth = async () => {
         setIsLoading(true)
         try {
-            const { data: session } = await authClient.getSession()
+            const { data: session, error } = await authClient.getSession()
+
+            if (error) {
+                if (error.message?.includes("401") || error.message?.includes("unauthorized")) {
+                    clearUser()
+                }
+                return
+            }
 
             if (session?.user) {
-                saveUser({
-                    id: session.user.id,
-                    email: session.user.email,
-                    name: session.user.name,
-                    image: session.user.image,
-                })
+                saveUser(mapSessionUserToUserPayload(session.user))
             } else {
                 clearUser()
             }
-        } catch {
-            clearUser()
+        } catch (err) {
+            const errorMessage = err instanceof Error ? err.message : String(err)
+            const isAuthError =
+                errorMessage.includes("401") ||
+                errorMessage.includes("unauthorized") ||
+                errorMessage.includes("session") ||
+                errorMessage.includes("invalid")
+
+            if (isAuthError) {
+                clearUser()
+            }
         } finally {
             setIsLoading(false)
         }
@@ -60,12 +89,9 @@ function createAuthStore() {
             }
 
             if (result.data?.user) {
-                saveUser({
-                    id: result.data.user.id,
-                    email: result.data.user.email,
-                    name: result.data.user.name,
-                    image: result.data.user.image,
-                })
+                saveUser(mapSessionUserToUserPayload(result.data.user))
+            } else {
+                throw new Error("No user returned — email verification required")
             }
         } finally {
             setIsLoading(false)
@@ -83,12 +109,9 @@ function createAuthStore() {
             }
 
             if (result.data?.user) {
-                saveUser({
-                    id: result.data.user.id,
-                    email: result.data.user.email,
-                    name: result.data.user.name,
-                    image: result.data.user.image,
-                })
+                saveUser(mapSessionUserToUserPayload(result.data.user))
+            } else {
+                throw new Error("No user returned — email verification required")
             }
         } finally {
             setIsLoading(false)

@@ -24,7 +24,7 @@ export function createMutation<T>(mutation: FunctionReference<"mutation">): (arg
     }
 
     return async (args) => {
-        return await convex.mutation(mutation, args ?? {})
+        return convex.mutation(mutation, args ?? {})
     }
 }
 
@@ -35,6 +35,6 @@ export function createAction<T>(action: FunctionReference<"action">): (args?: {}
     }
 
     return async (args) => {
-        return await convex.action(action, args ?? {})
+        return convex.action(action, args ?? {})
     }
 }

@@ -15,10 +15,10 @@ export function Header(props: { children?: JSX.Element }) {
                     <UtensilsCrossed class="size-6 sm:size-8" />
                 </div>
                 {props.children ?? <DefaultChildren />}
-                <p class="mt-4 flex items-center justify-center gap-4">
+                <div class="mt-4 flex items-center justify-center gap-4">
                     <DarkModeToggle />
                     <AuthButton />
-                </p>
+                </div>
             </div>
         </header>
     )
@@ -39,10 +39,12 @@ function AuthButton() {
         >
             <div class="relative">
                 <button
+                    type="button"
                     onClick={() => setShowMenu(!showMenu())}
+                    aria-label="Open account menu"
                     class="flex size-10 items-center justify-center rounded-full bg-flame-pea-100 text-flame-pea-600 hover:bg-flame-pea-200 dark:bg-flame-pea-900 dark:text-flame-pea-400"
                 >
-                    <Show when={auth.user()?.image} fallback={<User class="size-5" />}>
+                    <Show when={auth.user()?.image} fallback={<User class="size-5" aria-hidden="true" />}>
                         {(image) => (
                             <img
                                 src={image()}
@@ -62,13 +64,14 @@ function AuthButton() {
                             <p class="text-xs text-neutral-500 dark:text-neutral-400">{auth.user()?.email}</p>
                         </div>
                         <button
+                            type="button"
                             onClick={() => {
                                 void auth.signOut()
                                 setShowMenu(false)
                             }}
                             class="flex w-full items-center gap-2 px-4 py-2 text-left text-sm text-neutral-700 hover:bg-neutral-100 dark:text-neutral-300 dark:hover:bg-neutral-700"
                         >
-                            <LogOut class="size-4" />
+                            <LogOut class="size-4" aria-hidden="true" />
                             Sign Out
                         </button>
                     </div>

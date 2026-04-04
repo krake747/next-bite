@@ -49,12 +49,10 @@ export function Home() {
                                 </Button>
                             </Show>
                             <Show when={!auth.isAuthenticated()}>
-                                <a href="/login">
-                                    <Button variant="secondary">
-                                        <Plus class="size-4" />
-                                        Sign in to add
-                                    </Button>
-                                </a>
+                                <Button variant="secondary" onClick={() => navigate("/login")}>
+                                    <Plus class="size-4" aria-hidden="true" />
+                                    Sign in to add
+                                </Button>
                             </Show>
                         </div>
                     </FriendsFilter>

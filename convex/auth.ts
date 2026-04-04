@@ -4,12 +4,9 @@ import { components } from "./_generated/api"
 import type { DataModel } from "./_generated/dataModel"
 import { betterAuth } from "better-auth"
 import authConfig from "./auth.config"
+import { getValidatedConvexSiteUrl } from "./env"
 
-if (!process.env.CONVEX_SITE_URL) {
-    throw new Error("CONVEX_SITE_URL environment variable is not set")
-}
-
-const convexSiteUrl = process.env.CONVEX_SITE_URL
+const convexSiteUrl = getValidatedConvexSiteUrl()
 
 export const authComponent = createClient<DataModel>(components.betterAuth)
 
