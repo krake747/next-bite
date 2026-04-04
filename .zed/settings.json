@@ -1,9 +1,4 @@
 {
-    "autosave": {
-        "after_delay": {
-            "milliseconds": 100
-        }
-    },
     "languages": {
         "CSS": {
             "tab_size": 4,
@@ -138,7 +133,7 @@
     },
     "lsp": {
         "oxlint": {
-            "llization_options": {
+            "initialization_options": {
                 "settings": {
                     "configPath": null,
                     "run": "onType",
