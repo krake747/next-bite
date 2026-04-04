@@ -10,9 +10,7 @@ export type User = {
     image: string | null | undefined
 }
 
-function mapSessionUserToUserPayload(
-    user: SessionUser,
-): User {
+function mapSessionUserToUserPayload(user: SessionUser): User {
     return {
         id: user.id,
         email: user.email,

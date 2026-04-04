@@ -50,16 +50,19 @@ export function Signup() {
     }
 
     return (
-        <Show when={!auth.isLoading()} fallback={
-            <div class="flex min-h-screen items-center justify-center bg-neutral-50 dark:bg-neutral-900">
-                <div class="text-center">
-                    <div class="inline-flex size-12 items-center justify-center rounded-full bg-flame-pea-100 text-flame-pea-600">
-                        <LoaderPinwheel class="size-6 animate-spin" aria-hidden="true" />
+        <Show
+            when={!auth.isLoading()}
+            fallback={
+                <div class="flex min-h-screen items-center justify-center bg-neutral-50 dark:bg-neutral-900">
+                    <div class="text-center">
+                        <div class="inline-flex size-12 items-center justify-center rounded-full bg-flame-pea-100 text-flame-pea-600">
+                            <LoaderPinwheel class="size-6 animate-spin" aria-hidden="true" />
+                        </div>
+                        <p class="mt-4 text-neutral-600 dark:text-neutral-400">Loading...</p>
                     </div>
-                    <p class="mt-4 text-neutral-600 dark:text-neutral-400">Loading...</p>
                 </div>
-            </div>
-        }>
+            }
+        >
             <div class="flex min-h-screen items-center justify-center bg-neutral-50 px-4 py-12 dark:bg-neutral-900">
                 <div class="w-full max-w-md space-y-8">
                     <div class="text-left">
