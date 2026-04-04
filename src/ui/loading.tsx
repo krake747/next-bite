@@ -1,4 +1,5 @@
 import { createSignal } from "solid-js"
+import LoaderPinwheel from "lucide-solid/icons/loader-pinwheel"
 
 export function Loading(props: { message?: string; class?: string }) {
     const [verb] = createSignal(LoadingVerbs[Math.floor(Math.random() * LoadingVerbs.length)])
@@ -8,6 +9,21 @@ export function Loading(props: { message?: string; class?: string }) {
             {verb()}
             {props.message ? ` ${props.message}` : ""}...
         </span>
+    )
+}
+
+export function LoadingPlaceholder() {
+    const [verb] = createSignal(LoadingVerbs[Math.floor(Math.random() * LoadingVerbs.length)])
+
+    return (
+        <div class="flex min-h-screen items-center justify-center bg-neutral-50 dark:bg-neutral-900">
+            <div class="space-y-4 text-center">
+                <div class="inline-flex size-12 items-center justify-center rounded-full bg-flame-pea-100 text-flame-pea-600">
+                    <LoaderPinwheel class="size-6 animate-spin" aria-hidden="true" />
+                </div>
+                <p class="text-neutral-600 dark:text-neutral-400">{verb()}...</p>
+            </div>
+        </div>
     )
 }
 

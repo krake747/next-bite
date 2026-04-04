@@ -16,6 +16,7 @@ export function Home() {
     const auth = useAuth()
 
     const [filter, setFilter] = createSignal<string | null>(null)
+    const [search, setSearch] = createSignal("")
     const [show, setShow] = createSignal(false)
 
     const restaurants = useRestaurants()
@@ -23,7 +24,12 @@ export function Home() {
     const filteredRestaurants = createMemo(() => {
         const r = restaurants()
         if (!r) return []
-        return filter() ? r.filter((x) => x.addedBy === filter()) : r
+        let result = filter() ? r.filter((x) => x.addedBy === filter()) : r
+        const searchTerm = search().trim().toLowerCase()
+        if (searchTerm) {
+            result = result.filter((x) => x.name.toLowerCase().includes(searchTerm))
+        }
+        return result
     })
 
     const count = createMemo(() => filteredRestaurants().length)
@@ -36,7 +42,12 @@ export function Home() {
                     <HeaderSubtitle>{count()} places we're dreaming of trying together</HeaderSubtitle>
                 </Header>
                 <Show when={restaurants()} fallback={<Loading message="restaurants" />}>
-                    <FriendsFilter filter={filter()} handleFilter={setFilter}>
+                    <FriendsFilter
+                        filter={filter()}
+                        handleFilter={setFilter}
+                        search={search()}
+                        handleSearch={setSearch}
+                    >
                         <div class="flex flex-col gap-2 sm:ml-auto sm:flex-row">
                             <Button onClick={() => navigate("/wheel")}>
                                 <LoaderPinwheel class="size-4" />

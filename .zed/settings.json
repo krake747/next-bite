@@ -1,9 +1,4 @@
 {
-    "autosave": {
-        "after_delay": {
-            "milliseconds": 100
-        }
-    },
     "languages": {
         "CSS": {
             "tab_size": 4,
