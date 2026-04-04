@@ -89,7 +89,7 @@ function createAuthStore() {
             if (result.data?.user) {
                 saveUser(mapSessionUserToUserPayload(result.data.user))
             } else {
-                throw new Error("No user returned — email verification required")
+                throw new Error("No user returned: email verification required")
             }
         } finally {
             setIsLoading(false)
@@ -109,7 +109,7 @@ function createAuthStore() {
             if (result.data?.user) {
                 saveUser(mapSessionUserToUserPayload(result.data.user))
             } else {
-                throw new Error("No user returned — email verification required")
+                throw new Error("No user returned: email verification required")
             }
         } finally {
             setIsLoading(false)
