@@ -1,13 +1,15 @@
 import { createSignal, createRoot } from "solid-js"
+import * as v from "valibot"
 import { authClient } from "./auth-client"
+import { UserSchema } from "./schemas"
 
 const USER_KEY = "nb:better_auth_user"
 
 export type User = {
     id: string
     email: string
-    name: string | null | undefined
-    image: string | null | undefined
+    name?: string | null | undefined
+    image?: string | null | undefined
 }
 
 function mapSessionUserToUserPayload(user: SessionUser): User {
@@ -43,34 +45,54 @@ function createAuthStore() {
         setIsAuthenticated(false)
     }
 
+    function restoreUserFromCache(): User | null {
+        const cachedUser = sessionStorage.getItem(USER_KEY)
+        if (!cachedUser) return null
+
+        try {
+            const parsed = JSON.parse(cachedUser) as unknown
+            if (v.is(UserSchema, parsed)) {
+                return parsed
+            }
+            sessionStorage.removeItem(USER_KEY)
+            return null
+        } catch {
+            sessionStorage.removeItem(USER_KEY)
+            return null
+        }
+    }
+
     const initializeAuth = async () => {
         setIsLoading(true)
+
         try {
             const { data: session, error } = await authClient.getSession()
 
-            if (error) {
-                if (error.message?.includes("401") || error.message?.includes("unauthorized")) {
-                    clearUser()
-                }
+            if (session?.user) {
+                saveUser(mapSessionUserToUserPayload(session.user))
                 return
             }
 
-            if (session?.user) {
-                saveUser(mapSessionUserToUserPayload(session.user))
-            } else {
+            if (error) {
+                const cachedUser = restoreUserFromCache()
+                if (cachedUser) {
+                    setUser(cachedUser)
+                    setIsAuthenticated(true)
+                    return
+                }
                 clearUser()
+                return
             }
-        } catch (err) {
-            const errorMessage = err instanceof Error ? err.message : String(err)
-            const isAuthError =
-                errorMessage.includes("401") ||
-                errorMessage.includes("unauthorized") ||
-                errorMessage.includes("session") ||
-                errorMessage.includes("invalid")
 
-            if (isAuthError) {
-                clearUser()
+            clearUser()
+        } catch {
+            const cachedUser = restoreUserFromCache()
+            if (cachedUser) {
+                setUser(cachedUser)
+                setIsAuthenticated(true)
+                return
             }
+            clearUser()
         } finally {
             setIsLoading(false)
         }

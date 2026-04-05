@@ -1,5 +1,5 @@
 import { createAuthClient } from "better-auth/solid"
-import { convexClient } from "@convex-dev/better-auth/client/plugins"
+import { convexClient, crossDomainClient } from "@convex-dev/better-auth/client/plugins"
 
 const CONVEX_SITE_URL = import.meta.env.VITE_CONVEX_SITE_URL
 
@@ -12,5 +12,5 @@ export const authClient = createAuthClient({
     fetchOptions: {
         credentials: "include",
     },
-    plugins: [convexClient()],
+    plugins: [crossDomainClient(), convexClient()],
 })
