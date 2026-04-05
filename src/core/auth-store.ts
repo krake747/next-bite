@@ -1,9 +1,5 @@
 import { createSignal, createRoot } from "solid-js"
-import * as v from "valibot"
 import { authClient } from "./auth-client"
-import { UserSchema } from "./schemas"
-
-const USER_KEY = "nb:better_auth_user"
 
 export type User = {
     id: string
@@ -34,64 +30,31 @@ function createAuthStore() {
     const [user, setUser] = createSignal<User | null>(null)
 
     const saveUser = (userData: User) => {
-        sessionStorage.setItem(USER_KEY, JSON.stringify(userData))
         setUser(userData)
         setIsAuthenticated(true)
     }
 
     const clearUser = () => {
-        sessionStorage.removeItem(USER_KEY)
         setUser(null)
         setIsAuthenticated(false)
-    }
-
-    function restoreUserFromCache(): User | null {
-        const cachedUser = sessionStorage.getItem(USER_KEY)
-        if (!cachedUser) return null
-
-        try {
-            const parsed = JSON.parse(cachedUser) as unknown
-            if (v.is(UserSchema, parsed)) {
-                return parsed
-            }
-            sessionStorage.removeItem(USER_KEY)
-            return null
-        } catch {
-            sessionStorage.removeItem(USER_KEY)
-            return null
-        }
     }
 
     const initializeAuth = async () => {
         setIsLoading(true)
 
         try {
-            const { data: session, error } = await authClient.getSession()
+            const result = await authClient.getSession()
 
-            if (session?.user) {
-                saveUser(mapSessionUserToUserPayload(session.user))
-                return
+            if (result.error) {
+                throw new Error(result.error.message)
             }
 
-            if (error) {
-                const cachedUser = restoreUserFromCache()
-                if (cachedUser) {
-                    setUser(cachedUser)
-                    setIsAuthenticated(true)
-                    return
-                }
+            if (result.data?.user) {
+                saveUser(mapSessionUserToUserPayload(result.data.user))
+            } else {
                 clearUser()
-                return
             }
-
-            clearUser()
         } catch {
-            const cachedUser = restoreUserFromCache()
-            if (cachedUser) {
-                setUser(cachedUser)
-                setIsAuthenticated(true)
-                return
-            }
             clearUser()
         } finally {
             setIsLoading(false)
