@@ -45,32 +45,48 @@ function createAuthStore() {
 
     const initializeAuth = async () => {
         setIsLoading(true)
-        try {
-            const { data: session, error } = await authClient.getSession()
 
-            if (error) {
-                if (error.message?.includes("401") || error.message?.includes("unauthorized")) {
-                    clearUser()
-                }
-                return
-            }
+        try {
+            // Try to get session from server with explicit credentials
+            const { data: session, error } = await authClient.getSession({
+                fetchOptions: { credentials: "include" },
+            })
 
             if (session?.user) {
                 saveUser(mapSessionUserToUserPayload(session.user))
-            } else {
-                clearUser()
+                return
             }
-        } catch (err) {
-            const errorMessage = err instanceof Error ? err.message : String(err)
-            const isAuthError =
-                errorMessage.includes("401") ||
-                errorMessage.includes("unauthorized") ||
-                errorMessage.includes("session") ||
-                errorMessage.includes("invalid")
 
-            if (isAuthError) {
+            // Fallback: check sessionStorage if server request fails
+            const cachedUser = sessionStorage.getItem(USER_KEY)
+            if (cachedUser) {
+                try {
+                    const userData = JSON.parse(cachedUser) as User
+                    setUser(userData)
+                    setIsAuthenticated(true)
+                    return
+                } catch {
+                    sessionStorage.removeItem(USER_KEY)
+                }
+            }
+
+            if (error) {
                 clearUser()
             }
+        } catch {
+            // On error, try to restore from cache before clearing
+            const cachedUser = sessionStorage.getItem(USER_KEY)
+            if (cachedUser) {
+                try {
+                    const userData = JSON.parse(cachedUser) as User
+                    setUser(userData)
+                    setIsAuthenticated(true)
+                    return
+                } catch {
+                    sessionStorage.removeItem(USER_KEY)
+                }
+            }
+            clearUser()
         } finally {
             setIsLoading(false)
         }
