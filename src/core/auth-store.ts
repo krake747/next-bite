@@ -43,10 +43,14 @@ function createAuthStore() {
         setIsLoading(true)
 
         try {
-            const { data: session } = await authClient.getSession()
+            const result = await authClient.getSession()
 
-            if (session?.user) {
-                saveUser(mapSessionUserToUserPayload(session.user))
+            if (result.error) {
+                throw new Error(result.error.message)
+            }
+
+            if (result.data?.user) {
+                saveUser(mapSessionUserToUserPayload(result.data.user))
             } else {
                 clearUser()
             }
