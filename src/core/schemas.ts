@@ -1,14 +1,5 @@
 import * as v from "valibot"
 
-export const UserSchema = v.object({
-    id: v.string(),
-    email: v.string(),
-    name: v.nullish(v.string()),
-    image: v.nullish(v.string()),
-})
-
-export type UserOutput = v.InferOutput<typeof UserSchema>
-
 export const RestaurantSchema = v.object({
     name: v.pipe(v.string(), v.minLength(1, "Name is required")),
     cuisine: v.pipe(v.string(), v.minLength(1, "Cuisine is required")),
