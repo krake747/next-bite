@@ -54,7 +54,7 @@ function Home() {
                         handleSearch={setSearch}
                     >
                         <div class="flex flex-col gap-2 sm:ml-auto sm:flex-row">
-                            <Button onClick={() => (navigate as unknown as (to: string) => void)("/wheel")}>
+                            <Button onClick={() => navigate({ to: Route.fullPath, from: Route.fullPath })}>
                                 <LoaderPinwheel class="size-4" />
                                 Spin the wheel
                             </Button>
@@ -67,7 +67,7 @@ function Home() {
                             <Show when={!auth.isAuthenticated()}>
                                 <Button
                                     variant="secondary"
-                                    onClick={() => (navigate as unknown as (to: string) => void)("/login")}
+                                    onClick={() => navigate({ to: "/login", from: Route.fullPath })}
                                 >
                                     <Plus class="size-4" aria-hidden="true" />
                                     Sign in to add

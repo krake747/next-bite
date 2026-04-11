@@ -33,7 +33,7 @@ function SignupPage() {
 
     createEffect(() => {
         if (auth.isAuthenticated()) {
-            navigate({ to: "/" })
+            navigate({ to: "/", replace: true, from: Route.fullPath })
         }
     })
 
@@ -47,7 +47,7 @@ function SignupPage() {
 
         try {
             await auth.signUpWithPassword(output.name, output.email, output.password)
-            navigate({ to: "/" })
+            navigate({ to: "/", replace: true, from: Route.fullPath })
         } catch (err) {
             setError(err instanceof Error ? err.message : "Sign up failed")
         }

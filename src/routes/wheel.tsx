@@ -50,7 +50,7 @@ function WheelPage() {
                     </Header>
                     <div class="flex flex-col items-center space-y-4">
                         <div class="mb-4 flex gap-2">
-                            <Button onClick={() => (navigate as unknown as (to: string) => void)("/")}>
+                            <Button onClick={() => navigate({ to: "/", from: Route.fullPath })}>
                                 <UtensilsCrossed class="size-4" />
                                 Go back home
                             </Button>

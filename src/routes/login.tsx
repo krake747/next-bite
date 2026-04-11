@@ -30,7 +30,7 @@ function LoginPage() {
 
     createEffect(() => {
         if (auth.isAuthenticated()) {
-            navigate({ to: "/" })
+            navigate({ to: "/", replace: true, from: Route.fullPath })
         }
     })
 
@@ -38,7 +38,7 @@ function LoginPage() {
         setError(null)
         try {
             await auth.signInWithPassword(output.email, output.password)
-            navigate({ to: "/" })
+            navigate({ to: "/", replace: true, from: Route.fullPath })
         } catch (err) {
             setError(err instanceof Error ? err.message : "Sign in failed")
         }
