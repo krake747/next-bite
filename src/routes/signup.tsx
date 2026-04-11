@@ -1,5 +1,5 @@
 import { createSignal, Show, createEffect } from "solid-js"
-import { useNavigate } from "@solidjs/router"
+import { createFileRoute, useNavigate } from "@tanstack/solid-router"
 import { createForm, Field, Form } from "@formisch/solid"
 import { useAuth } from "../core/hooks"
 import { Button } from "../ui/button"
@@ -18,7 +18,12 @@ const SignupSchema = v.object({
 
 type SignupInput = v.InferInput<typeof SignupSchema>
 
-export function Signup() {
+export const Route = createFileRoute("/signup")({
+    head: () => ({ meta: [{ title: "Sign Up - Next Bite" }] }),
+    component: SignupPage,
+})
+
+function SignupPage() {
     const navigate = useNavigate()
     const auth = useAuth()
 
@@ -26,10 +31,9 @@ export function Signup() {
 
     const form = createForm({ schema: SignupSchema })
 
-    // Reactive redirect if already authenticated
     createEffect(() => {
         if (auth.isAuthenticated()) {
-            navigate("/", { replace: true })
+            navigate({ to: "/" })
         }
     })
 
@@ -43,7 +47,7 @@ export function Signup() {
 
         try {
             await auth.signUpWithPassword(output.name, output.email, output.password)
-            navigate("/", { replace: true })
+            navigate({ to: "/" })
         } catch (err) {
             setError(err instanceof Error ? err.message : "Sign up failed")
         }
@@ -77,7 +81,7 @@ export function Signup() {
 
                     <div class="text-center">
                         <div class="mx-auto inline-flex size-12 items-center justify-center rounded-full bg-flame-pea-100 text-flame-pea-600">
-                            <UserIcon class="size-6" aria-hidden="true" />
+                            <UserIcon class="size-6" />
                         </div>
                         <h2 class="mt-4 text-3xl font-semibold tracking-tight text-neutral-900 dark:text-white">
                             Create an account

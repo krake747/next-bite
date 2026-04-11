@@ -1,5 +1,5 @@
 import { createSignal, Show, createEffect } from "solid-js"
-import { useNavigate } from "@solidjs/router"
+import { createFileRoute, useNavigate } from "@tanstack/solid-router"
 import { createForm, Field, Form } from "@formisch/solid"
 import { useAuth } from "../core/hooks"
 import { Button } from "../ui/button"
@@ -15,7 +15,12 @@ const LoginSchema = v.object({
 
 type LoginInput = v.InferInput<typeof LoginSchema>
 
-export function Login() {
+export const Route = createFileRoute("/login")({
+    head: () => ({ meta: [{ title: "Sign In - Next Bite" }] }),
+    component: LoginPage,
+})
+
+function LoginPage() {
     const navigate = useNavigate()
     const auth = useAuth()
 
@@ -23,10 +28,9 @@ export function Login() {
 
     const form = createForm({ schema: LoginSchema })
 
-    // Reactive redirect if already authenticated
     createEffect(() => {
         if (auth.isAuthenticated()) {
-            navigate("/", { replace: true })
+            navigate({ to: "/" })
         }
     })
 
@@ -34,7 +38,7 @@ export function Login() {
         setError(null)
         try {
             await auth.signInWithPassword(output.email, output.password)
-            navigate("/", { replace: true })
+            navigate({ to: "/" })
         } catch (err) {
             setError(err instanceof Error ? err.message : "Sign in failed")
         }
@@ -117,7 +121,7 @@ export function Login() {
 
                     <div class="text-center">
                         <p class="text-sm text-neutral-600 dark:text-neutral-400">
-                            Don't have an account?{" "}
+                            Do not have an account?{" "}
                             <a
                                 href="/signup"
                                 class="font-medium text-flame-pea-600 hover:text-flame-pea-500 dark:text-flame-pea-400"

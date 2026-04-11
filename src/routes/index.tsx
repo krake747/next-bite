@@ -1,4 +1,5 @@
 import { For, createSignal, createMemo, Show } from "solid-js"
+import { createFileRoute, useNavigate } from "@tanstack/solid-router"
 import { Header, HeaderSubtitle, HeaderTitle } from "../features/header"
 import { useRestaurants, useAuth } from "../core/hooks"
 import { Footer } from "../features/footer"
@@ -9,9 +10,13 @@ import { Button } from "../ui/button"
 import { Loading } from "../ui/loading"
 import LoaderPinwheel from "lucide-solid/icons/loader-pinwheel"
 import Plus from "lucide-solid/icons/plus"
-import { useNavigate } from "@solidjs/router"
 
-export function Home() {
+export const Route = createFileRoute("/")({
+    head: () => ({ meta: [{ title: "Our next bite" }] }),
+    component: Home,
+})
+
+function Home() {
     const navigate = useNavigate()
     const auth = useAuth()
 
@@ -49,7 +54,7 @@ export function Home() {
                         handleSearch={setSearch}
                     >
                         <div class="flex flex-col gap-2 sm:ml-auto sm:flex-row">
-                            <Button onClick={() => navigate("/wheel")}>
+                            <Button onClick={() => (navigate as unknown as (to: string) => void)("/wheel")}>
                                 <LoaderPinwheel class="size-4" />
                                 Spin the wheel
                             </Button>
@@ -60,7 +65,10 @@ export function Home() {
                                 </Button>
                             </Show>
                             <Show when={!auth.isAuthenticated()}>
-                                <Button variant="secondary" onClick={() => navigate("/login")}>
+                                <Button
+                                    variant="secondary"
+                                    onClick={() => (navigate as unknown as (to: string) => void)("/login")}
+                                >
                                     <Plus class="size-4" aria-hidden="true" />
                                     Sign in to add
                                 </Button>

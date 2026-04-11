@@ -1,7 +1,12 @@
-import { A } from "@solidjs/router"
+import { Link, createFileRoute } from "@tanstack/solid-router"
 import ArrowRight from "lucide-solid/icons/arrow-right"
 
-export function NotFound() {
+export const Route = createFileRoute("/$")({
+    head: () => ({ meta: [{ title: "Page Not Found - Next Bite" }] }),
+    component: NotFoundPage,
+})
+
+function NotFoundPage() {
     return (
         <div class="grid min-h-dvh grid-rows-1">
             <main class="grid min-h-full place-items-center px-6 py-24 sm:py-32 lg:px-8">
@@ -12,12 +17,12 @@ export function NotFound() {
                         Oops. This page went out for snacks and never came back.
                     </p>
                     <div class="mt-10 flex items-center justify-center gap-x-6">
-                        <A
-                            href="/"
+                        <Link
+                            to="/"
                             class="rounded-md bg-flame-pea-600 px-3.5 py-2.5 text-sm font-semibold text-white shadow-xs hover:bg-flame-pea-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-flame-pea-600 dark:bg-flame-pea-500 dark:hover:bg-flame-pea-400 dark:focus-visible:outline-flame-pea-500"
                         >
                             Go back home
-                        </A>
+                        </Link>
                         <a
                             href="https://github.com/krake747/next-bite"
                             class="inline-flex items-center gap-1 text-sm font-semibold"
