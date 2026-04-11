@@ -15,4 +15,10 @@ const router = createRouter({
     history: createBrowserHistory(),
 })
 
+declare module "@tanstack/solid-router" {
+    interface Register {
+        router: typeof router
+    }
+}
+
 render(() => <RouterProvider router={router} />, root)
