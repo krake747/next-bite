@@ -1,5 +1,5 @@
 import { createSignal, Show, createEffect } from "solid-js"
-import { createFileRoute, useNavigate } from "@tanstack/solid-router"
+import { createFileRoute, useNavigate, Link } from "@tanstack/solid-router"
 import { createForm, Field, Form } from "@formisch/solid"
 import { useAuth } from "../core/hooks"
 import { Button } from "../ui/button"
@@ -61,13 +61,13 @@ function LoginPage() {
             <div class="flex min-h-screen items-center justify-center bg-neutral-50 px-4 py-12 dark:bg-neutral-900">
                 <div class="w-full max-w-md space-y-8">
                     <div class="text-left">
-                        <a
-                            href="/"
+                        <Link
+                            to="/"
                             class="inline-flex items-center gap-2 text-sm text-neutral-600 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-white"
                         >
                             <ArrowLeft class="size-4" aria-hidden="true" />
                             Back to home
-                        </a>
+                        </Link>
                     </div>
 
                     <div class="text-center">
@@ -122,12 +122,12 @@ function LoginPage() {
                     <div class="text-center">
                         <p class="text-sm text-neutral-600 dark:text-neutral-400">
                             Do not have an account?{" "}
-                            <a
-                                href="/signup"
+                            <Link
+                                to="/signup"
                                 class="font-medium text-flame-pea-600 hover:text-flame-pea-500 dark:text-flame-pea-400"
                             >
                                 Sign up
-                            </a>
+                            </Link>
                         </p>
                     </div>
                 </div>
