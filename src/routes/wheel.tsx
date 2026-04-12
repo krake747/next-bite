@@ -12,6 +12,7 @@ import {
     type ComponentProps,
 } from "solid-js"
 import { createStore, produce } from "solid-js/store"
+import { createFileRoute, useNavigate } from "@tanstack/solid-router"
 import { Header, HeaderSubtitle, HeaderTitle } from "../features/header"
 import { useRestaurants, type Restaurant } from "../core/hooks"
 import { Footer } from "../features/footer"
@@ -19,14 +20,18 @@ import { Button } from "../ui/button"
 import UtensilsCrossed from "lucide-solid/icons/utensils-crossed"
 import RotateCw from "lucide-solid/icons/rotate-cw"
 import { RestaurantCard } from "../features/restaurant-card"
-import { useNavigate } from "@solidjs/router"
 import { cx } from "../ui/variants"
 import Settings from "lucide-solid/icons/settings"
 import Shuffle from "lucide-solid/icons/shuffle"
 import Check from "lucide-solid/icons/check"
 import AlertCircle from "lucide-solid/icons/circle-alert"
 
-export function Wheel() {
+export const Route = createFileRoute("/wheel")({
+    head: () => ({ meta: [{ title: "Spin the Wheel - Next Bite" }] }),
+    component: WheelPage,
+})
+
+function WheelPage() {
     const navigate = useNavigate()
     const restaurants = useRestaurants()
     const safeRestaurants = () => restaurants() ?? []
@@ -45,7 +50,7 @@ export function Wheel() {
                     </Header>
                     <div class="flex flex-col items-center space-y-4">
                         <div class="mb-4 flex gap-2">
-                            <Button onClick={() => navigate("/")}>
+                            <Button onClick={() => navigate({ to: "/", from: Route.fullPath })}>
                                 <UtensilsCrossed class="size-4" />
                                 Go back home
                             </Button>
@@ -192,7 +197,6 @@ function useWheelStore(restaurants: Accessor<Restaurant[]>) {
             return []
         }
 
-        // Random mode: shuffle and pick
         const shuffled = [...all].sort(() => Math.random() - 0.5)
         return shuffled.slice(0, count)
     })
@@ -256,7 +260,6 @@ function useWheelStore(restaurants: Accessor<Restaurant[]>) {
         setState(
             produce((s) => {
                 s.targetCount = count
-                // Trim selectedIds if they exceed the new target
                 if (s.selectedIds.length > count) {
                     s.selectedIds = s.selectedIds.slice(0, count)
                 }
@@ -294,7 +297,6 @@ function useWheelStore(restaurants: Accessor<Restaurant[]>) {
         availableCountOptions,
         hasEnoughRestaurants,
         canSpin,
-        // actions
         spin,
         setSelectionMode,
         setTargetCount,
@@ -571,7 +573,7 @@ function Instructions() {
 function WinnerMessage() {
     return (
         <div class="animate-fade-in text-center">
-            <h2 class="text-2xl font-bold text-neutral-900 dark:text-white">🎉 Winner! 🎉</h2>
+            <h2 class="text-2xl font-bold text-neutral-900 dark:text-white">Winner!</h2>
         </div>
     )
 }
