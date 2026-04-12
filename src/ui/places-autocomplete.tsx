@@ -13,6 +13,7 @@ type PlacesAutocompleteProps = {
     value: string
     onChange: (value: string, lat?: number, lng?: number) => void
     placeholder?: string
+    label?: string
     class?: string
 }
 
@@ -56,7 +57,7 @@ export function PlacesAutocomplete(props: PlacesAutocompleteProps) {
         autocompleteElement.style.colorScheme = isDark ? "dark" : "light"
 
         autocompleteElement.className =
-            "w-full rounded-md border border-neutral-300 bg-white text-sm dark:border-neutral-600 dark:bg-neutral-700 dark:text-neutral-100"
+            "w-full rounded-lg border border-neutral-200 bg-white text-neutral-900 text-sm placeholder:text-neutral-400 focus:border-flame-pea-500 focus:outline-none focus:ring-1 focus:ring-flame-pea-500 dark:border-white/10 dark:bg-white/5 dark:text-white dark:placeholder:text-neutral-500 dark:focus:border-flame-pea-400 dark:focus:ring-flame-pea-400"
 
         autocompleteElement.addEventListener("gmp-select", async (event: PlaceSelectEvent) => {
             const placePrediction = event.placePrediction
@@ -83,5 +84,12 @@ export function PlacesAutocomplete(props: PlacesAutocompleteProps) {
         }
     })
 
-    return <div ref={containerRef} class={props.class} />
+    return (
+        <div class="space-y-1.5">
+            {props.label && (
+                <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300">{props.label}</label>
+            )}
+            <div ref={containerRef} class={props.class} />
+        </div>
+    )
 }

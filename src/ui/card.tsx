@@ -7,7 +7,11 @@ export function Card(props: ComponentProps<"div">) {
             data-component="card"
             {...props}
             class={cx(
-                "flex flex-col divide-y divide-neutral-200 overflow-hidden rounded-lg bg-white shadow-sm hover:shadow-md dark:divide-white/10 dark:bg-neutral-800/50 dark:shadow-none dark:outline dark:-outline-offset-1 dark:outline-white/10",
+                "group relative flex flex-col overflow-hidden rounded-2xl bg-white",
+                "shadow-[0_1px_2px_rgba(0,0,0,0.02),0_4px_8px_rgba(0,0,0,0.03),0_8px_16px_rgba(0,0,0,0.02)]",
+                "transition-shadow duration-300 hover:shadow-[0_1px_2px_rgba(0,0,0,0.02),0_8px_16px_rgba(0,0,0,0.04),0_16px_32px_rgba(0,0,0,0.03)]",
+                "dark:border dark:border-white/8 dark:bg-[#262523] dark:shadow-[0_4px_12px_rgba(0,0,0,0.3)]",
+                "dark:hover:border-white/12 dark:hover:shadow-[0_8px_24px_rgba(0,0,0,0.4)]",
                 props.class,
             )}
         >
@@ -16,25 +20,13 @@ export function Card(props: ComponentProps<"div">) {
     )
 }
 
-export function CardHeader(props: ComponentProps<"div">) {
-    return (
-        <div data-component="card-header" {...props} class={cx("px-4 py-5 sm:px-6", props.class)}>
-            {props.children}
-        </div>
-    )
-}
-
-export function CardContent(props: ComponentProps<"div">) {
-    return (
-        <div data-component="card-content" {...props} class={cx("px-4 py-5 sm:p-6", props.class)}>
-            {props.children}
-        </div>
-    )
-}
-
 export function CardFooter(props: ComponentProps<"div">) {
     return (
-        <div data-component="card-footer" {...props} class={cx("px-4 py-4 sm:px-6", props.class)}>
+        <div
+            data-component="card-footer"
+            {...props}
+            class={cx("border-t border-neutral-100/80 px-6 py-4 dark:border-white/6", props.class)}
+        >
             {props.children}
         </div>
     )

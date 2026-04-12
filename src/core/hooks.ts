@@ -8,18 +8,16 @@ export const useFriends = () => createQuery<Friend[]>(api.friends.get)
 
 export const useAddRestaurant = () => createMutation(api.restaurants.add)
 export const useUpdateRestaurant = () => createMutation(api.restaurants.update)
-export const useAddFriend = () => createMutation(api.friends.add)
 
 export const useDeleteImage = () => createMutation(api.restaurants.deleteImage)
 
-export type UploadResult = {
+type UploadResult = {
     storageId: string
     url: string
 }
 
 export function useUploadImage() {
     return async (file: File): Promise<UploadResult> => {
-        // Use HTTP action endpoint for more reliable uploads
         const siteUrl = import.meta.env.VITE_CONVEX_SITE_URL
         if (!siteUrl) {
             throw new Error("VITE_CONVEX_SITE_URL is not defined")
@@ -41,12 +39,6 @@ export function useUploadImage() {
         const result = (await response.json()) as { storageId: string; url: string }
         return { storageId: result.storageId, url: result.url }
     }
-}
-
-// TODO: Implement actual async URL resolution if needed
-// Currently just passes through the URL directly as it's already a valid storage URL
-export function useStorageUrl(url: () => string | undefined) {
-    return { url, isLoading: () => false }
 }
 
 export const useAuth = () => authStore

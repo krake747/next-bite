@@ -1,12 +1,13 @@
 import { Show, Suspense, createSignal } from "solid-js"
-import { createFileRoute, useNavigate } from "@tanstack/solid-router"
-import { Header, HeaderSubtitle, HeaderTitle } from "../features/header"
+import { createFileRoute } from "@tanstack/solid-router"
+import { Header, HeaderSubtitle, HeaderTitle } from "./-layout/header"
+import { PageLayout } from "./-layout/page-layout"
+import { PageContainer } from "./-layout/page-container"
+import { BackNav } from "../features/back-nav"
 import { useRestaurants } from "../core/hooks"
-import { Footer } from "../features/footer"
 import { Button } from "../ui/button"
-import UtensilsCrossed from "lucide-solid/icons/utensils-crossed"
-import Settings from "lucide-solid/icons/settings"
-import { RestaurantCard } from "../features/restaurant-card"
+import Sparkles from "lucide-solid/icons/sparkles"
+import { RestaurantCard } from "../features/restaurants/restaurant-card"
 import { useWheelStore } from "../features/wheel/wheel-store"
 import { WheelProvider } from "../features/wheel/wheel-context"
 import { SpinningWheel } from "../features/wheel/spinning-wheel"
@@ -20,7 +21,6 @@ export const Route = createFileRoute("/wheel")({
 })
 
 function WheelPage() {
-    const navigate = useNavigate()
     const restaurants = useRestaurants()
     const safeRestaurants = () => restaurants() ?? []
     const wheel = useWheelStore(safeRestaurants)
@@ -28,46 +28,72 @@ function WheelPage() {
 
     return (
         <WheelProvider store={wheel}>
-            <div class="flex min-h-screen flex-col">
-                <main class="container mx-auto max-w-7xl flex-1 px-4 pb-8">
+            <PageLayout>
+                <PageContainer>
                     <Header>
                         <HeaderTitle>Spin the wheel</HeaderTitle>
-                        <HeaderSubtitle>
-                            Let fate decide your next bite! May the spins be ever in your favour.
-                        </HeaderSubtitle>
+                        <HeaderSubtitle>Let fate decide your next bite</HeaderSubtitle>
                     </Header>
-                    <div class="flex flex-col items-center space-y-4">
-                        <div class="mb-4 flex gap-2">
-                            <Button onClick={() => navigate({ to: "/", from: Route.fullPath })}>
-                                <UtensilsCrossed class="size-4" />
-                                Go back home
-                            </Button>
-                            <Button variant="secondary" onClick={() => setShowSettings(true)}>
-                                <Settings class="size-4" />
-                                Settings
-                            </Button>
-                        </div>
-                        <Suspense fallback={<EmptyWheelState />}>
-                            <Show when={showSettings()}>
+
+                    <BackNav
+                        backTo="/"
+                        showConfigure
+                        onConfigure={() => setShowSettings(true)}
+                        isSpinning={wheel.isSpinning()}
+                    />
+
+                    <div class="pt-8">
+                        <div class="mx-auto max-w-2xl">
+                            <Suspense fallback={<EmptyWheelState />}>
                                 <WheelConfigModal
+                                    show={showSettings()}
+                                    onOpenChange={setShowSettings}
                                     restaurants={safeRestaurants}
-                                    onClose={() => setShowSettings(false)}
                                 />
-                            </Show>
-                            <SpinningWheel />
-                        </Suspense>
-                        <Show when={wheel.selected()} fallback={<Instructions />}>
-                            {(restaurant) => (
-                                <>
-                                    <WinnerMessage />
-                                    <RestaurantCard class="animate-fade-in w-full max-w-md" restaurant={restaurant()} />
-                                </>
-                            )}
-                        </Show>
+                                {!showSettings() && (
+                                    <>
+                                        {/* Instructions always visible above wheel */}
+                                        <div class="mb-8">
+                                            <Instructions />
+                                        </div>
+
+                                        <div class="relative flex flex-col items-center">
+                                            <SpinningWheel />
+                                        </div>
+
+                                        {/* Winner content appears below wheel when selected */}
+                                        <Show when={wheel.selected()}>
+                                            {(selected) => (
+                                                <div class="mt-8 space-y-6">
+                                                    <WinnerMessage restaurantName={selected.name} />
+                                                    <div class="animate-card-reveal relative mx-auto w-full max-w-md">
+                                                        <div class="absolute -inset-4 rounded-3xl bg-flame-pea-500/10 blur-2xl" />
+                                                        <div class="relative">
+                                                            <RestaurantCard restaurant={selected()} />
+                                                        </div>
+                                                    </div>
+                                                    <div class="flex justify-center">
+                                                        <Button
+                                                            variant="primary"
+                                                            size="lg"
+                                                            onClick={() => wheel.spin()}
+                                                            disabled={wheel.isSpinning()}
+                                                            class="min-w-40"
+                                                        >
+                                                            <Sparkles class="size-5 transition-transform duration-200 group-hover:scale-110 group-hover:rotate-12" />
+                                                            <span>Spin Again</span>
+                                                        </Button>
+                                                    </div>
+                                                </div>
+                                            )}
+                                        </Show>
+                                    </>
+                                )}
+                            </Suspense>
+                        </div>
                     </div>
-                </main>
-                <Footer />
-            </div>
+                </PageContainer>
+            </PageLayout>
         </WheelProvider>
     )
 }

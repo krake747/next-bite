@@ -2,7 +2,36 @@ import { createMemo } from "solid-js"
 import { useWheel } from "./wheel-context"
 import { WHEEL_CONFIG_CONSTANTS } from "./wheel-store"
 import { type Restaurant } from "../../core/hooks"
-import { cx } from "../../ui/variants"
+
+const MAX_LABEL_LENGTH = 18
+
+const WHEEL_COLORS = [
+    { bg: "#b53920", name: "flame-red" },
+    { bg: "#8b4513", name: "saddle-brown" },
+    { bg: "#c45a3d", name: "terra-cotta" },
+    { bg: "#a0522d", name: "sienna" },
+    { bg: "#d47a5e", name: "coral" },
+    { bg: "#cd853f", name: "peru" },
+] as const
+
+function getRestaurantColorId(id: string): number {
+    let hash = 0
+    for (let i = 0; i < id.length; i++) {
+        const char = id.charCodeAt(i)
+        hash = (hash << 5) - hash + char
+        hash = hash & hash
+    }
+    return Math.abs(hash) % WHEEL_COLORS.length
+}
+
+function getContrastColor(bgColor: string): string {
+    const hex = bgColor.replace("#", "")
+    const r = parseInt(hex.substring(0, 2), 16)
+    const g = parseInt(hex.substring(2, 4), 16)
+    const b = parseInt(hex.substring(4, 6), 16)
+    const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255
+    return luminance > 0.5 ? "#000000" : "#ffffff"
+}
 
 export function WheelSegment(props: { restaurant: Restaurant; idx: number }) {
     const wheel = useWheel()
@@ -23,7 +52,7 @@ export function WheelSegment(props: { restaurant: Restaurant; idx: number }) {
         const [x2, y2] = point(end)
         const labelAngle = start + (end - start) / 2
 
-        const [x, y] = point(labelAngle, 0.6)
+        const [x, y] = point(labelAngle, 0.62)
 
         const rotationDeg = ((labelAngle * 180) / Math.PI + 360) % 360
         const rotation = rotationDeg > 180 ? rotationDeg - 180 : rotationDeg
@@ -36,22 +65,32 @@ export function WheelSegment(props: { restaurant: Restaurant; idx: number }) {
         }
     })
 
+    const colorIndex = getRestaurantColorId(props.restaurant._id)
+    const color = WHEEL_COLORS[colorIndex] ?? WHEEL_COLORS[0]
+    const contrastColor = getContrastColor(color.bg)
+    const displayName =
+        props.restaurant.name.length > MAX_LABEL_LENGTH
+            ? props.restaurant.name.slice(0, MAX_LABEL_LENGTH - 3) + "..."
+            : props.restaurant.name
+
     return (
-        <>
-            <path
-                d={segment().path}
-                class={props.idx % 2 === 0 ? "fill-flame-pea-700 dark:fill-flame-pea-600" : "fill-neutral-600"}
-            />
+        <g>
+            <path d={segment().path} fill={color.bg} />
             <text
                 x={segment().x}
                 y={segment().y}
-                class={cx("text-xs", props.idx % 2 === 0 ? "fill-white dark:fill-neutral-900" : "fill-white")}
+                fill={contrastColor}
                 text-anchor="middle"
                 dominant-baseline="middle"
                 transform={`rotate(${segment().rotation}, ${segment().x}, ${segment().y})`}
+                style={{
+                    "font-family": "var(--font-body)",
+                    "font-size": "13px",
+                    "font-weight": "500",
+                }}
             >
-                {props.restaurant.name}
+                {displayName}
             </text>
-        </>
+        </g>
     )
 }

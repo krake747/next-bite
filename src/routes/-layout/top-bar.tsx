@@ -1,27 +1,38 @@
 import { Show } from "solid-js"
 import { DropdownMenu } from "@kobalte/core/dropdown-menu"
+import { Link } from "@tanstack/solid-router"
 import UtensilsCrossed from "lucide-solid/icons/utensils-crossed"
 import User from "lucide-solid/icons/user"
 import LogOut from "lucide-solid/icons/log-out"
-import { DarkModeToggle } from "./dark-mode-toggle"
-import { useAuth } from "../core/hooks"
-import { Button } from "../ui/button"
-import type { ComponentProps, JSX } from "solid-js"
+import { ThemeToggle } from "./theme-toggle"
+import { useAuth } from "../../core/hooks"
 
-export function Header(props: { children?: JSX.Element }) {
+export function TopBar() {
     return (
-        <header class="px-6 py-16 sm:py-24 lg:px-8 lg:py-32 dark:bg-neutral-900">
-            <div class="mx-auto max-w-2xl text-center">
-                <div class="inline-flex size-12 items-center justify-center rounded-2xl bg-flame-pea-100 text-flame-pea-600 sm:size-16">
-                    <UtensilsCrossed class="size-6 sm:size-8" />
-                </div>
-                {props.children ?? <DefaultChildren />}
-                <div class="mt-4 flex items-center justify-center gap-4">
-                    <DarkModeToggle />
+        <div
+            data-component="top-bar"
+            class="sticky top-0 z-40 w-full border-b border-neutral-200/60 bg-[#faf9f7]/80 backdrop-blur-md dark:border-white/10 dark:bg-[#1a1918]/80"
+        >
+            <div class="mx-auto flex h-14 w-full max-w-350 items-center justify-between px-4 sm:px-6 lg:px-12">
+                <Link
+                    to="/"
+                    viewTransition
+                    class="flex items-center gap-2 text-neutral-900 transition-colors duration-150 ease hover:text-flame-pea-600 dark:text-neutral-100 dark:hover:text-flame-pea-400"
+                >
+                    <div class="flex size-8 items-center justify-center rounded-lg bg-flame-pea-100 text-flame-pea-600 dark:bg-flame-pea-900/50 dark:text-flame-pea-400">
+                        <UtensilsCrossed class="size-4" />
+                    </div>
+                    <span class="text-lg font-semibold" style={{ "font-family": "var(--font-display)" }}>
+                        Next Bite
+                    </span>
+                </Link>
+
+                <div class="flex items-center gap-3">
+                    <ThemeToggle />
                     <AuthButton />
                 </div>
             </div>
-        </header>
+        </div>
     )
 }
 
@@ -32,22 +43,26 @@ function AuthButton() {
         <Show
             when={auth.isAuthenticated()}
             fallback={
-                <a href="/login">
-                    <Button size="md">Sign In</Button>
-                </a>
+                <Link
+                    to="/login"
+                    viewTransition
+                    class="rounded-md bg-flame-pea-600 px-3 py-1.5 text-sm font-medium text-white transition-colors duration-150 ease hover:bg-flame-pea-700 dark:bg-flame-pea-500 dark:hover:bg-flame-pea-600"
+                >
+                    Sign In
+                </Link>
             }
         >
             <DropdownMenu>
                 <DropdownMenu.Trigger
                     aria-label="Open account menu"
-                    class="flex size-10 items-center justify-center rounded-full bg-flame-pea-100 text-flame-pea-600 hover:bg-flame-pea-200 dark:bg-flame-pea-900 dark:text-flame-pea-400"
+                    class="flex size-8 items-center justify-center rounded-full bg-flame-pea-100 text-flame-pea-600 transition-colors duration-150 ease hover:bg-flame-pea-200 dark:bg-flame-pea-900 dark:text-flame-pea-400 dark:hover:bg-flame-pea-800"
                 >
-                    <Show when={auth.user()?.image} fallback={<User class="size-5" aria-hidden="true" />}>
+                    <Show when={auth.user()?.image} fallback={<User class="size-4" aria-hidden="true" />}>
                         {(image) => (
                             <img
                                 src={image()}
                                 alt={auth.user()?.name ?? "User"}
-                                class="size-10 rounded-full object-cover"
+                                class="size-8 rounded-full object-cover"
                             />
                         )}
                     </Show>
@@ -73,30 +88,5 @@ function AuthButton() {
                 </DropdownMenu.Portal>
             </DropdownMenu>
         </Show>
-    )
-}
-
-function DefaultChildren() {
-    return (
-        <>
-            <HeaderTitle>Our next bite</HeaderTitle>
-            <HeaderSubtitle>We enjoy hanging out together and having a laugh</HeaderSubtitle>
-        </>
-    )
-}
-
-export function HeaderTitle(props: ComponentProps<"h1">) {
-    return (
-        <h1 class="text-4xl font-semibold tracking-tight text-neutral-900 sm:text-5xl lg:text-6xl dark:text-white">
-            {props.children}
-        </h1>
-    )
-}
-
-export function HeaderSubtitle(props: ComponentProps<"p">) {
-    return (
-        <p class="mt-4 text-lg font-medium text-pretty text-neutral-500 sm:text-xl/8 dark:text-neutral-400">
-            {props.children}
-        </p>
     )
 }
