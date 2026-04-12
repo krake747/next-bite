@@ -55,12 +55,12 @@ function Home() {
                                         navigate({ from: Route.fullPath, to: "/wheel", viewTransition: true })
                                     }
                                 >
-                                    <LoaderPinwheel class="size-4" />
+                                    <LoaderPinwheel class="size-4 transition-transform duration-200 group-hover:rotate-90" />
                                     Spin the wheel
                                 </Button>
                                 <Show when={auth.isAuthenticated()}>
                                     <Button variant="secondary" onClick={() => setShowAddDialog(true)}>
-                                        <Plus class="size-4" />
+                                        <Plus class="size-4 transition-transform duration-200 group-hover:rotate-90" />
                                         Add Restaurant
                                     </Button>
                                 </Show>
@@ -71,7 +71,10 @@ function Home() {
                                             navigate({ to: "/login", from: Route.fullPath, viewTransition: true })
                                         }
                                     >
-                                        <Plus class="size-4" aria-hidden="true" />
+                                        <Plus
+                                            class="size-4 transition-transform duration-200 group-hover:rotate-90"
+                                            aria-hidden="true"
+                                        />
                                         Sign in to add
                                     </Button>
                                 </Show>

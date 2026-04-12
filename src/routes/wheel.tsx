@@ -73,7 +73,7 @@ function WheelPage() {
                                                             disabled={wheel.isSpinning()}
                                                             class="min-w-40"
                                                         >
-                                                            <Sparkles class="size-5" />
+                                                            <Sparkles class="size-5 transition-transform duration-200 group-hover:scale-110 group-hover:rotate-12" />
                                                             <span>Spin Again</span>
                                                         </Button>
                                                     </div>

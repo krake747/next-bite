@@ -15,7 +15,7 @@ export function RestaurantList(props: RestaurantListProps) {
     const hasS = props.hasSearch ?? false
 
     return (
-        <div data-component="restaurant-list" class="grid gap-4 md:grid-cols-2 lg:grid-cols-3 lg:gap-6">
+        <div data-component="restaurant-list" class="grid gap-6 md:grid-cols-2 md:gap-10">
             <Show
                 when={props.restaurants().length > 0}
                 fallback={<EmptyRestaurantsState hasFilter={hasF} hasSearch={hasS} onAddClick={props.onAddClick} />}

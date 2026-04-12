@@ -67,8 +67,8 @@ export function Header(props: { children?: JSX.Element }) {
                             <div class="relative flex size-20 items-center justify-center rounded-2xl bg-linear-to-br from-flame-pea-500 to-flame-pea-600 text-white shadow-[0_8px_30px_rgb(181,57,32,0.3)] transition-all duration-200 hover:shadow-[0_10px_35px_rgb(181,57,32,0.35)] dark:from-flame-pea-600 dark:to-flame-pea-700 dark:shadow-[0_8px_30px_rgb(181,57,32,0.4)] dark:hover:shadow-[0_10px_35px_rgb(181,57,32,0.45)]">
                                 <UtensilsCrossed class="size-10" />
                             </div>
-                            <div class="absolute top-0 -right-3 size-4 rounded-full bg-yellow-400" />
-                            <div class="absolute -bottom-2 -left-2 size-3 rounded-full bg-flame-pea-400" />
+                            <div class="animate-float-dot-1 absolute top-0 -right-3 size-4 rounded-full bg-yellow-400" />
+                            <div class="animate-float-dot-2 absolute -bottom-2 -left-2 size-3 rounded-full bg-flame-pea-400" />
                         </div>
                     </div>
                 </div>
@@ -94,27 +94,14 @@ export function HeaderTitle(props: ComponentProps<"h1">) {
         >
             <span class="relative inline-block">
                 {props.children}
-                <svg
-                    class="absolute -bottom-2 left-0 h-2 w-full overflow-visible"
-                    viewBox="0 0 100 8"
-                    preserveAspectRatio="none"
-                >
-                    <defs>
-                        <linearGradient id="line-gradient" x1="0%" y1="0%" x2="100%" y2="0%">
-                            <stop offset="0%" stop-color="currentColor" stop-opacity="0.3" />
-                            <stop offset="50%" stop-color="currentColor" stop-opacity="1" />
-                            <stop offset="100%" stop-color="currentColor" stop-opacity="0.3" />
-                        </linearGradient>
-                    </defs>
-                    <path
-                        d="M0 6 Q25 0 50 6 T100 6"
-                        fill="none"
-                        stroke="url(#line-gradient)"
-                        stroke-width="2"
-                        class="animate-draw-line text-flame-pea-500 dark:text-flame-pea-400"
-                        stroke-linecap="round"
+                <div class="absolute -bottom-2 left-0 h-2 w-full overflow-hidden">
+                    <div
+                        class="animate-line-reveal h-full w-full origin-left bg-size-[100%_100%]"
+                        style={{
+                            "background-image": `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 8' preserveAspectRatio='none'%3E%3Cpath d='M0 6 Q25 0 50 6 T100 6' fill='none' stroke='%23eb6348' stroke-width='3' stroke-linecap='round'/%3E%3C/svg%3E")`,
+                        }}
                     />
-                </svg>
+                </div>
             </span>
         </h1>
     )
