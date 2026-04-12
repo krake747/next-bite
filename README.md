@@ -62,6 +62,24 @@ npx convex env set CONVEX_SITE_URL "https://your-deployment.convex.site"
 npx convex env set BETTER_AUTH_SECRET "$(openssl rand -base64 32)"
 ```
 
+### Google Maps Setup
+
+Create a Google Cloud project and enable the following APIs:
+
+- **Maps JavaScript API** - Required for displaying maps
+- **Places API** - Required for restaurant autocomplete
+
+Create an API key and add it to your `.env.local`:
+
+```env
+VITE_GOOGLE_MAPS_API_KEY=your-google-maps-api-key
+```
+
+**Note:** For Advanced Markers to work, you need a Map ID. For testing, you can use `DEMO_MAP_ID`.
+For production, create a Map ID in Google Cloud Console (Maps Management).
+
+The app includes a Luxembourg location bias for autocomplete suggestions.
+
 Start Convex backend dev server (syncs to your cloud dev project)
 
 ```bash

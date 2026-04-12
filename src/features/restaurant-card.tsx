@@ -5,6 +5,7 @@ import MapPin from "lucide-solid/icons/map-pin"
 import Utensils from "lucide-solid/icons/utensils"
 import ExternalLink from "lucide-solid/icons/external-link"
 import SquarePen from "lucide-solid/icons/square-pen"
+import { Map, AdvancedMarker } from "solid-google-maps"
 import { useUpdateRestaurant, useAuth, type Restaurant } from "../core/hooks"
 import { EditRestaurantDialog } from "./edit-restaurant-dialog"
 import { EmojiRating } from "../ui/emoji-rating"
@@ -16,8 +17,16 @@ export function RestaurantCard(props: { restaurant: Restaurant } & ComponentProp
     const updateRestaurant = useUpdateRestaurant()
     const auth = useAuth()
 
+    const hasLocation = () => local.restaurant.lat != null && local.restaurant.lng != null
+
     const handleRate = async (rating: number) => {
         await updateRestaurant({ id: local.restaurant._id, rating })
+    }
+
+    const openDirections = () => {
+        if (!hasLocation()) return
+        const url = `https://www.google.com/maps/dir/?api=1&destination=${local.restaurant.lat},${local.restaurant.lng}`
+        window.open(url, "_blank")
     }
 
     return (
@@ -30,12 +39,48 @@ export function RestaurantCard(props: { restaurant: Restaurant } & ComponentProp
                         {local.restaurant.cuisine}
                     </Badge>
                 </CardHeader>
+                <Show when={hasLocation()}>
+                    <CardContent class="p-0 px-4 pt-4">
+                        <div
+                            class="mb-4 aspect-video w-full cursor-pointer overflow-hidden rounded-md"
+                            style={{ height: "250px" }}
+                            onClick={openDirections}
+                            title="Get directions"
+                        >
+                            <Map
+                                center={{ lat: local.restaurant.lat!, lng: local.restaurant.lng! }}
+                                zoom={15}
+                                mapId="DEMO_MAP_ID"
+                                disableDefaultUI
+                                zoomControl={false}
+                                mapTypeControl={false}
+                                streetViewControl={false}
+                                fullscreenControl={false}
+                                style={{ width: "100%", height: "100%" }}
+                            >
+                                <AdvancedMarker
+                                    position={{ lat: local.restaurant.lat!, lng: local.restaurant.lng! }}
+                                    title={local.restaurant.name ?? null}
+                                />
+                            </Map>
+                        </div>
+                    </CardContent>
+                </Show>
                 <CardContent class="flex flex-1 flex-col justify-between gap-2">
                     <p class="text-neutral-500 dark:text-neutral-400">{local.restaurant.notes}</p>
                     <div class="flex items-center justify-between text-sm text-neutral-600 dark:text-neutral-400">
                         <div class="flex items-center">
                             <MapPin class="mr-1.5 size-3.5 shrink-0" />
-                            {local.restaurant.location}
+                            <Show when={hasLocation()} fallback={local.restaurant.location}>
+                                <a
+                                    href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(local.restaurant.location)}`}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    class="hover:underline"
+                                >
+                                    {local.restaurant.location}
+                                </a>
+                            </Show>
                         </div>
                         {local.restaurant.link && (
                             <a

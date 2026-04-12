@@ -6,6 +6,8 @@ export default defineSchema({
         name: v.string(),
         cuisine: v.string(),
         location: v.string(),
+        lat: v.optional(v.number()),
+        lng: v.optional(v.number()),
         notes: v.optional(v.string()),
         link: v.optional(v.string()),
         addedBy: v.string(),

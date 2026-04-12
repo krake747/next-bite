@@ -1,16 +1,26 @@
 import { For, Show } from "solid-js"
 import { Dialog } from "@kobalte/core/dialog"
-import { createForm, Field, Form, reset } from "@formisch/solid"
+import { createForm, Field, Form, reset, setInput } from "@formisch/solid"
 import { useAddRestaurant, useFriends, useAuth } from "../core/hooks"
 import { Button } from "../ui/button"
 import { FieldWrapper, Input, Textarea, Select } from "../ui/field"
 import { RestaurantSchema, type RestaurantOutput } from "../core/schemas"
+import { PlacesAutocomplete } from "../ui/places-autocomplete"
 
 export function AddRestaurantDialog(props: { show: boolean; onOpenChange: (open: boolean) => void }) {
     const addRestaurant = useAddRestaurant()
     const friends = useFriends()
     const auth = useAuth()
+
     const form = createForm({ schema: RestaurantSchema })
+
+    const handleLocationChange = (address: string, lat?: number, lng?: number) => {
+        setInput(form, { path: ["location"], input: address })
+        if (lat != null && lng != null) {
+            setInput(form, { path: ["lat"], input: lat })
+            setInput(form, { path: ["lng"], input: lng })
+        }
+    }
 
     const handleSubmit = async (output: RestaurantOutput) => {
         try {
@@ -27,7 +37,7 @@ export function AddRestaurantDialog(props: { show: boolean; onOpenChange: (open:
             <Dialog.Portal>
                 <Dialog.Overlay class="fixed inset-0 bg-black/50" />
                 <div class="fixed inset-0 flex items-center justify-center p-4">
-                    <Dialog.Content class="w-full max-w-md rounded-lg bg-white p-6 dark:bg-neutral-800">
+                    <Dialog.Content class="w-full max-w-lg rounded-lg bg-white p-6 dark:bg-neutral-800">
                         <Dialog.Title class="mb-4 text-lg font-semibold">Add Restaurant</Dialog.Title>
 
                         <Show
@@ -71,11 +81,10 @@ export function AddRestaurantDialog(props: { show: boolean; onOpenChange: (open:
                                 <Field of={form} path={["location"]}>
                                     {(field) => (
                                         <FieldWrapper errors={field.errors}>
-                                            <Input
-                                                {...field.props}
-                                                input={field.input}
-                                                errors={field.errors}
-                                                placeholder="Location"
+                                            <PlacesAutocomplete
+                                                value={field.input ?? ""}
+                                                onChange={handleLocationChange}
+                                                placeholder="Search for a restaurant..."
                                             />
                                         </FieldWrapper>
                                     )}

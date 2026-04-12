@@ -1,4 +1,5 @@
-import { Show, createSignal } from "solid-js"
+import { Show } from "solid-js"
+import { DropdownMenu } from "@kobalte/core/dropdown-menu"
 import UtensilsCrossed from "lucide-solid/icons/utensils-crossed"
 import User from "lucide-solid/icons/user"
 import LogOut from "lucide-solid/icons/log-out"
@@ -26,7 +27,6 @@ export function Header(props: { children?: JSX.Element }) {
 
 function AuthButton() {
     const auth = useAuth()
-    const [showMenu, setShowMenu] = createSignal(false)
 
     return (
         <Show
@@ -37,10 +37,8 @@ function AuthButton() {
                 </a>
             }
         >
-            <div class="relative">
-                <button
-                    type="button"
-                    onClick={() => setShowMenu(!showMenu())}
+            <DropdownMenu>
+                <DropdownMenu.Trigger
                     aria-label="Open account menu"
                     class="flex size-10 items-center justify-center rounded-full bg-flame-pea-100 text-flame-pea-600 hover:bg-flame-pea-200 dark:bg-flame-pea-900 dark:text-flame-pea-400"
                 >
@@ -53,30 +51,27 @@ function AuthButton() {
                             />
                         )}
                     </Show>
-                </button>
-
-                <Show when={showMenu()}>
-                    <div class="absolute top-full right-0 z-50 mt-2 w-48 rounded-lg border border-neutral-200 bg-white py-2 shadow-lg dark:border-neutral-700 dark:bg-neutral-800">
+                </DropdownMenu.Trigger>
+                <DropdownMenu.Portal>
+                    <DropdownMenu.Content class="z-50 mt-2 w-56 rounded-lg border border-neutral-200 bg-white py-2 shadow-lg dark:border-neutral-700 dark:bg-neutral-800">
                         <div class="border-b border-neutral-200 px-4 py-2 dark:border-neutral-700">
                             <p class="text-sm font-medium text-neutral-900 dark:text-white">
                                 {auth.user()?.name ?? "User"}
                             </p>
                             <p class="text-xs text-neutral-500 dark:text-neutral-400">{auth.user()?.email}</p>
                         </div>
-                        <button
-                            type="button"
-                            onClick={() => {
+                        <DropdownMenu.Item
+                            onSelect={() => {
                                 void auth.signOut()
-                                setShowMenu(false)
                             }}
-                            class="flex w-full items-center gap-2 px-4 py-2 text-left text-sm text-neutral-700 hover:bg-neutral-100 dark:text-neutral-300 dark:hover:bg-neutral-700"
+                            class="flex cursor-pointer items-center gap-2 px-4 py-2 text-sm text-neutral-700 hover:bg-neutral-100 focus:bg-neutral-100 dark:text-neutral-300 dark:hover:bg-neutral-700 dark:focus:bg-neutral-700"
                         >
                             <LogOut class="size-4" aria-hidden="true" />
                             Sign Out
-                        </button>
-                    </div>
-                </Show>
-            </div>
+                        </DropdownMenu.Item>
+                    </DropdownMenu.Content>
+                </DropdownMenu.Portal>
+            </DropdownMenu>
         </Show>
     )
 }
