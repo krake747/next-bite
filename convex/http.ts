@@ -11,7 +11,7 @@ const corsHeaders = {
     "Access-Control-Allow-Headers": "Content-Type",
 }
 
-const MAX_UPLOAD_BYTES = 10 * 1024 * 1024 // 10MB
+const MAX_UPLOAD_BYTES = 20 * 1024 * 1024 // 20MB
 const ALLOWED_CONTENT_TYPES = ["image/jpeg", "image/png", "image/webp", "image/gif"]
 
 // Register all Better Auth routes with CORS support

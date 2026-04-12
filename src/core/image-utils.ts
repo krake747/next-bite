@@ -2,7 +2,7 @@ import { MAX_IMAGES } from "./constants"
 
 export { MAX_IMAGES }
 
-export const MAX_FILE_SIZE = 5 * 1024 * 1024
+export const MAX_FILE_SIZE = 20 * 1024 * 1024
 
 const FULL_SIZE_WIDTH = 1920
 
