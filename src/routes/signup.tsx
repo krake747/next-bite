@@ -27,23 +27,23 @@ function SignupPage() {
     const navigate = useNavigate()
     const auth = useAuth()
 
-    const [error, setError] = createSignal<string | null>(null)
+    const [passwordError, setPasswordError] = createSignal<string | null>(null)
 
     const form = createForm({ schema: SignupSchema })
 
     const handleSubmit = async (output: SignupInput) => {
-        setError(null)
+        setPasswordError(null)
 
         if (output.password !== output.confirmPassword) {
-            setError("Passwords do not match")
+            setPasswordError("Passwords do not match")
             return
         }
 
         try {
             await auth.signUpWithPassword(output.name, output.email, output.password)
             navigate({ to: "/", replace: true, from: Route.fullPath })
-        } catch (err) {
-            setError(err instanceof Error ? err.message : "Sign up failed")
+        } catch {
+            return
         }
     }
 
@@ -84,7 +84,7 @@ function SignupPage() {
                     </div>
 
                     <div class="rounded-lg border border-neutral-200 bg-white p-6 dark:border-neutral-700 dark:bg-neutral-800">
-                        <Show when={error()}>
+                        <Show when={auth.error() || passwordError()}>
                             {(err) => (
                                 <div class="mb-4 rounded-md bg-red-50 p-3 text-sm text-red-600 dark:bg-red-900/20 dark:text-red-400">
                                     {err()}
