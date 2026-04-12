@@ -73,19 +73,11 @@ export function RestaurantCard(props: { restaurant: Restaurant } & ComponentProp
                                         loading="lazy"
                                     />
                                     <div class="pointer-events-none absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-black/70 to-transparent" />
-                                    <Show when={imageCount() > 1}>
+                                    <Show when={imageCount() > 0}>
                                         <div class="absolute right-2 bottom-2">
                                             <Button variant="secondary" size="md" onClick={() => setShowGallery(true)}>
                                                 <Images class="mr-1.5 size-4" />
-                                                View all {imageCount()}
-                                            </Button>
-                                        </div>
-                                    </Show>
-                                    <Show when={imageCount() === 1}>
-                                        <div class="absolute right-2 bottom-2">
-                                            <Button variant="secondary" size="md" onClick={() => setShowGallery(true)}>
-                                                <Images class="mr-1.5 size-4" />
-                                                View
+                                                {imageCount() > 1 ? `View all ${imageCount()}` : "View"}
                                             </Button>
                                         </div>
                                     </Show>

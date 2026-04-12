@@ -1,11 +1,14 @@
+import { MAX_IMAGES } from "./constants"
+
+export { MAX_IMAGES }
+
 export const MAX_FILE_SIZE = 5 * 1024 * 1024 // 5MB
 export const THUMBNAIL_WIDTH = 400
 export const FULL_SIZE_WIDTH = 1920
-export const MAX_IMAGES = 5
 
 export const VALID_IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp", "image/gif"]
 
-export interface ProcessedImage {
+export type ProcessedImage = {
     blob: Blob
     originalName: string
     originalSize: number
@@ -34,6 +37,18 @@ export async function processImage(
 
     const { maxWidth = FULL_SIZE_WIDTH, quality = 0.9 } = options
 
+    // GIFs are passed through without canvas processing to preserve animation
+    if (file.type === "image/gif") {
+        return {
+            blob: file,
+            originalName: file.name,
+            originalSize: file.size,
+            processedSize: file.size,
+            width: 0, // Dimensions unknown without loading
+            height: 0,
+        }
+    }
+
     return new Promise((resolve, reject) => {
         const img = new Image()
         const url = URL.createObjectURL(file)
@@ -55,9 +70,6 @@ export async function processImage(
 
             ctx.drawImage(img, 0, 0, width, height)
 
-            const outputType = file.type === "image/gif" ? "image/gif" : "image/jpeg"
-            const outputQuality = file.type === "image/gif" ? undefined : quality
-
             canvas.toBlob(
                 (blob) => {
                     if (!blob) {
@@ -74,8 +86,8 @@ export async function processImage(
                         height,
                     })
                 },
-                outputType,
-                outputQuality,
+                "image/jpeg",
+                quality,
             )
         }
 

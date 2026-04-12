@@ -3,16 +3,17 @@ import { cx } from "./variants"
 import { useUploadImage, useDeleteImage } from "../core/hooks"
 import { processImage, formatFileSize, MAX_IMAGES, MAX_FILE_SIZE } from "../core/image-utils"
 import { createFileUploader, createDropzone, type UploadFile } from "@solid-primitives/upload"
+import type { Id } from "../../convex/_generated/dataModel"
 import X from "lucide-solid/icons/x"
 import ImagePlus from "lucide-solid/icons/image-plus"
 import Upload from "lucide-solid/icons/upload"
 
-interface ImageUploadProps {
+type ImageUploadProps = {
     images: string[]
     onImagesChange: (images: string[]) => void
     maxImages?: number
     disabled?: boolean
-    restaurantId?: string
+    restaurantId?: Id<"restaurants">
 }
 
 function toFiles(uploadFiles: UploadFile[]): File[] {
@@ -82,11 +83,20 @@ export function ImageUpload(props: ImageUploadProps) {
         })
     }
 
-    const handleRemove = (index: number, imageUrl: string) => {
-        if (props.restaurantId) {
-            deleteImage({ restaurantId: props.restaurantId, imageUrl }).catch(console.error)
-        }
+    const handleRemove = async (index: number, imageUrl: string) => {
+        const originalImages = [...props.images]
+        // Optimistically update UI
         props.onImagesChange(props.images.filter((_, i) => i !== index))
+
+        if (props.restaurantId) {
+            try {
+                await deleteImage({ restaurantId: props.restaurantId, imageUrl })
+            } catch (error) {
+                // Rollback on failure
+                props.onImagesChange(originalImages)
+                console.error("Failed to delete image:", error)
+            }
+        }
     }
 
     const canAddMore = () => props.images.length < maxImages()

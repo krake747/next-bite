@@ -1,4 +1,4 @@
-import { createSignal, Show, For } from "solid-js"
+import { createSignal, Show, For, createEffect } from "solid-js"
 import { Dialog } from "@kobalte/core/dialog"
 import { cx } from "./variants"
 import { Button } from "./button"
@@ -7,7 +7,7 @@ import X from "lucide-solid/icons/x"
 import ChevronLeft from "lucide-solid/icons/chevron-left"
 import ChevronRight from "lucide-solid/icons/chevron-right"
 
-interface ImageGalleryModalProps {
+type ImageGalleryModalProps = {
     images: string[]
     show: boolean
     onOpenChange: (open: boolean) => void
@@ -17,6 +17,11 @@ interface ImageGalleryModalProps {
 export function ImageGalleryModal(props: ImageGalleryModalProps) {
     const [currentIndex, setCurrentIndex] = createSignal(props.initialIndex ?? 0)
     const [lightboxOpen, setLightboxOpen] = createSignal(false)
+
+    // Update currentIndex when initialIndex prop changes
+    createEffect(() => {
+        setCurrentIndex(props.initialIndex ?? 0)
+    })
 
     const currentImage = () => props.images[currentIndex()]
 
@@ -43,8 +48,12 @@ export function ImageGalleryModal(props: ImageGalleryModalProps) {
     return (
         <Dialog open={props.show} onOpenChange={props.onOpenChange}>
             <Dialog.Portal>
-                <Dialog.Overlay class="fixed inset-0 z-50 bg-black/90" onKeyDown={handleKeyDown}>
-                    <div class="fixed inset-0 flex flex-col">
+                <Dialog.Overlay class="fixed inset-0 z-50 bg-black/90">
+                    <Dialog.Content
+                        class="fixed inset-0 flex flex-col outline-none"
+                        onKeyDown={handleKeyDown}
+                        tabIndex={0}
+                    >
                         <div class="flex items-center justify-between p-4">
                             <Dialog.Title class="text-lg font-semibold text-white">
                                 Image Gallery ({currentIndex() + 1}/{props.images.length})
@@ -101,12 +110,16 @@ export function ImageGalleryModal(props: ImageGalleryModalProps) {
                                 </button>
 
                                 <div class="relative max-h-full max-w-full">
-                                    <LazyImage
-                                        src={currentImage()}
-                                        alt={`Image ${currentIndex() + 1}`}
-                                        class="max-h-[80vh] max-w-full object-contain"
-                                        loading="eager"
-                                    />
+                                    <Show when={currentImage()}>
+                                        {(imageSrc) => (
+                                            <LazyImage
+                                                src={imageSrc()}
+                                                alt={`Image ${currentIndex() + 1}`}
+                                                class="max-h-[80vh] max-w-full object-contain"
+                                                loading="eager"
+                                            />
+                                        )}
+                                    </Show>
                                 </div>
 
                                 <button
@@ -128,7 +141,7 @@ export function ImageGalleryModal(props: ImageGalleryModalProps) {
                                 </Button>
                             </div>
                         </Show>
-                    </div>
+                    </Dialog.Content>
                 </Dialog.Overlay>
             </Dialog.Portal>
         </Dialog>

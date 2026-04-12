@@ -1,7 +1,6 @@
 import { query, mutation } from "./_generated/server"
 import { v } from "convex/values"
-
-const MAX_IMAGES = 5
+import { MAX_IMAGES } from "../src/core/constants"
 
 export const get = query(async (ctx) => ctx.db.query("restaurants").collect())
 

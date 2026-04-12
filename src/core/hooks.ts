@@ -13,7 +13,7 @@ export const useAddFriend = () => createMutation(api.friends.add)
 
 export const useDeleteImage = () => createMutation(api.restaurants.deleteImage)
 
-export interface UploadResult {
+export type UploadResult = {
     storageId: string
     url: string
 }
@@ -40,30 +40,14 @@ export function useUploadImage() {
         }
 
         const result = (await response.json()) as { storageId: string; url: string }
-        console.log("Upload successful, storageId:", result.storageId, "url:", result.url)
         return { storageId: result.storageId, url: result.url }
     }
 }
 
+// TODO: Implement actual async URL resolution if needed
+// Currently just passes through the URL directly as it's already a valid storage URL
 export function useStorageUrl(url: () => string | undefined) {
-    const [resolvedUrl, setResolvedUrl] = createSignal<string | undefined>(undefined)
-    const [isLoading, setIsLoading] = createSignal(false)
-
-    createEffect(() => {
-        const directUrl = url()
-        if (!directUrl) {
-            setResolvedUrl(undefined)
-            setIsLoading(false)
-            return
-        }
-
-        setIsLoading(true)
-        // Just use the URL directly - it's already the correct storage URL
-        setResolvedUrl(directUrl)
-        setIsLoading(false)
-    })
-
-    return { url: resolvedUrl, isLoading }
+    return { url, isLoading: () => false }
 }
 
 export const useAuth = () => authStore

@@ -2,8 +2,8 @@ import { createSignal, Show, type ComponentProps } from "solid-js"
 import { splitProps } from "solid-js"
 import { cx } from "./variants"
 
-interface LazyImageProps extends Omit<ComponentProps<"img">, "src"> {
-    src: string | undefined
+type LazyImageProps = Omit<ComponentProps<"img">, "src"> & {
+    src?: string
     alt: string
     loading?: "eager" | "lazy"
     decoding?: "sync" | "async" | "auto"
