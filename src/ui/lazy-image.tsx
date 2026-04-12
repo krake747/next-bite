@@ -3,7 +3,7 @@ import { splitProps } from "solid-js"
 import { cx } from "./variants"
 
 type LazyImageProps = Omit<ComponentProps<"img">, "src"> & {
-    src?: string
+    src?: string | undefined
     alt: string
     loading?: "eager" | "lazy"
     decoding?: "sync" | "async" | "auto"
