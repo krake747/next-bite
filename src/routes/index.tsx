@@ -1,11 +1,12 @@
 import { For, createSignal, createMemo, Show } from "solid-js"
 import { createFileRoute, useNavigate } from "@tanstack/solid-router"
 import { Header, HeaderSubtitle, HeaderTitle, HeaderBadge } from "../features/header"
+import { PageLayout } from "../features/page-layout"
 import { useRestaurants, useAuth } from "../core/hooks"
-import { Footer } from "../features/footer"
 import { RestaurantCard } from "../features/restaurant-card"
 import { FriendsFilter } from "../features/friends-filter"
 import { AddRestaurantDialog } from "../features/add-restaurant-dialog"
+import { EmptyRestaurantsState } from "../features/empty-restaurants-state"
 import { Button } from "../ui/button"
 import { Loading } from "../ui/loading"
 import LoaderPinwheel from "lucide-solid/icons/loader-pinwheel"
@@ -40,44 +41,55 @@ function Home() {
     const count = createMemo(() => filteredRestaurants().length)
 
     return (
-        <div class="flex min-h-screen flex-col">
-            <main class="container mx-auto max-w-7xl flex-1 px-4 pb-8">
+        <PageLayout>
+            <div class="container mx-auto max-w-7xl px-4 pt-6 pb-8">
                 <Header>
                     <HeaderTitle>Our next bite</HeaderTitle>
                     <HeaderSubtitle>Places we're dreaming of trying together</HeaderSubtitle>
                     <HeaderBadge count={count()} />
                 </Header>
                 <Show when={restaurants()} fallback={<Loading message="restaurants" />}>
-                    <FriendsFilter
-                        filter={filter()}
-                        handleFilter={setFilter}
-                        search={search()}
-                        handleSearch={setSearch}
-                    >
-                        <div class="flex flex-col gap-2 sm:ml-auto sm:flex-row">
-                            <Button onClick={() => navigate({ from: Route.fullPath, to: "/wheel" })}>
-                                <LoaderPinwheel class="size-4" />
-                                Spin the wheel
-                            </Button>
-                            <Show when={auth.isAuthenticated()}>
-                                <Button onClick={() => setShow(true)}>
-                                    <Plus class="size-4" />
-                                    Add Restaurant
+                    <div class="pt-4">
+                        <FriendsFilter
+                            filter={filter()}
+                            handleFilter={setFilter}
+                            search={search()}
+                            handleSearch={setSearch}
+                        >
+                            <div class="flex w-full flex-col gap-2 sm:w-auto sm:flex-row">
+                                <Button onClick={() => navigate({ from: Route.fullPath, to: "/wheel" })}>
+                                    <LoaderPinwheel class="size-4" />
+                                    Spin the wheel
                                 </Button>
-                            </Show>
-                            <Show when={!auth.isAuthenticated()}>
-                                <Button
-                                    variant="secondary"
-                                    onClick={() => navigate({ to: "/login", from: Route.fullPath })}
-                                >
-                                    <Plus class="size-4" aria-hidden="true" />
-                                    Sign in to add
-                                </Button>
-                            </Show>
-                        </div>
-                    </FriendsFilter>
-                    <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                        <For each={filteredRestaurants()} fallback={<span>No restaurants found...</span>}>
+                                <Show when={auth.isAuthenticated()}>
+                                    <Button variant="secondary" onClick={() => setShow(true)}>
+                                        <Plus class="size-4" />
+                                        Add Restaurant
+                                    </Button>
+                                </Show>
+                                <Show when={!auth.isAuthenticated()}>
+                                    <Button
+                                        variant="secondary"
+                                        onClick={() => navigate({ to: "/login", from: Route.fullPath })}
+                                    >
+                                        <Plus class="size-4" aria-hidden="true" />
+                                        Sign in to add
+                                    </Button>
+                                </Show>
+                            </div>
+                        </FriendsFilter>
+                    </div>
+                    <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-3 lg:gap-6">
+                        <For
+                            each={filteredRestaurants()}
+                            fallback={
+                                <EmptyRestaurantsState
+                                    hasFilter={!!filter()}
+                                    hasSearch={!!search().trim()}
+                                    onAddClick={() => setShow(true)}
+                                />
+                            }
+                        >
                             {(restaurant) => <RestaurantCard restaurant={restaurant} />}
                         </For>
                     </div>
@@ -85,8 +97,7 @@ function Home() {
                 <Show when={auth.isAuthenticated()}>
                     <AddRestaurantDialog show={show()} onOpenChange={setShow} />
                 </Show>
-            </main>
-            <Footer />
-        </div>
+            </div>
+        </PageLayout>
     )
 }

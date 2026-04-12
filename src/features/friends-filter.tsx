@@ -1,5 +1,4 @@
 import { For, type JSX } from "solid-js"
-import { Badge } from "../ui/badge"
 import { Loading } from "../ui/loading"
 import { SearchInput } from "../ui/search-input"
 import Funnel from "lucide-solid/icons/funnel"
@@ -18,33 +17,62 @@ export function FriendsFilter(props: {
     const toggleFilter = (name: string) => () => props.handleFilter(name === props.filter ? null : name)
 
     return (
-        <div class="mb-4 flex flex-col-reverse gap-4 sm:flex-row">
-            <div class="flex flex-col gap-3 sm:flex-row sm:items-center">
-                <div class="flex items-center gap-1.5 sm:gap-2">
-                    <Funnel class={cx("mr-1 size-4 text-neutral-500", props.filter && "fill-neutral-500")} />
+        <div class="mb-6 flex flex-col gap-4 sm:flex-row sm:items-start">
+            {/* Left side: Filters and Search */}
+            <div class="flex flex-1 flex-col gap-3">
+                {/* Filter badges row */}
+                <div class="flex flex-wrap items-center gap-2">
+                    <div class="flex items-center gap-1.5 text-neutral-500">
+                        <Funnel
+                            class={cx(
+                                "size-4",
+                                props.filter &&
+                                    "fill-neutral-500 text-neutral-600 dark:fill-neutral-400 dark:text-neutral-300",
+                            )}
+                        />
+                        <span class="text-xs font-medium tracking-wide uppercase">Filter</span>
+                    </div>
+                    <div class="h-4 w-px bg-neutral-200 dark:bg-neutral-700" />
                     <For each={friends()} fallback={<Loading message="friends" />}>
                         {(friend) => (
-                            <Badge
-                                as="button"
-                                class={cx(
-                                    "cursor-pointer",
-                                    props.filter === friend.name && "bg-flame-pea-100 text-flame-pea-800",
-                                )}
+                            <button
+                                type="button"
                                 onClick={toggleFilter(friend.name)}
+                                class={cx(
+                                    "inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium transition-all",
+                                    props.filter === friend.name
+                                        ? "bg-flame-pea-600 text-white shadow-sm dark:bg-flame-pea-500"
+                                        : "bg-neutral-100 text-neutral-600 hover:bg-neutral-200 dark:bg-neutral-800 dark:text-neutral-400 dark:hover:bg-neutral-700",
+                                )}
                             >
                                 {friend.name}
-                            </Badge>
+                            </button>
                         )}
                     </For>
+                    {props.filter && (
+                        <button
+                            type="button"
+                            onClick={() => props.handleFilter(null)}
+                            class="text-xs font-medium text-flame-pea-600 underline-offset-2 transition-colors hover:text-flame-pea-700 hover:underline dark:text-flame-pea-400"
+                        >
+                            Clear
+                        </button>
+                    )}
                 </div>
-                <SearchInput
-                    value={props.search}
-                    onChange={props.handleSearch}
-                    placeholder="Search restaurants..."
-                    class="w-full sm:w-56"
-                />
+
+                {/* Search row */}
+                <div class="flex items-center">
+                    <SearchInput
+                        value={props.search}
+                        onChange={props.handleSearch}
+                        placeholder="Search restaurants..."
+                        class="flex-1"
+                    />
+                </div>
             </div>
-            {props.children}
+
+            {/* Right side: Action buttons */}
+            <div class="flex shrink-0 flex-col gap-2 sm:flex-row">{props.children}</div>
         </div>
     )
 }

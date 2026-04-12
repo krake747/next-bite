@@ -2,7 +2,6 @@ import { splitProps } from "solid-js"
 import Search from "lucide-solid/icons/search"
 import X from "lucide-solid/icons/x"
 import { cx } from "./variants"
-import { Button } from "./button"
 
 interface SearchInputProps {
     value: string
@@ -23,27 +22,26 @@ export function SearchInput(props: SearchInputProps) {
     }
 
     return (
-        <div class={cx("flex items-center gap-2", props.class)}>
-            <div class="relative flex-1">
-                <Search class="pointer-events-none absolute top-1/2 left-2.5 size-4 -translate-y-1/2 text-neutral-400" />
-                <input
-                    {...local}
-                    type="text"
-                    value={props.value}
-                    onInput={handleInput}
-                    placeholder={props.placeholder ?? "Search..."}
-                    class="w-full rounded border border-neutral-200 bg-white py-1.5 pr-3 pl-9 text-sm ring-flame-pea-300 transition-all outline-none focus:border-flame-pea-400 focus:ring-2 dark:border-neutral-600 dark:bg-neutral-700 dark:text-neutral-100"
-                />
-            </div>
-            <Button
-                variant="secondary"
-                onClick={clearSearch}
-                disabled={!props.value}
-                class="shrink-0 px-2 py-1.5"
-                aria-label="Clear search"
-            >
-                <X class="size-4" />
-            </Button>
+        <div class={cx("relative flex items-center", props.class)}>
+            <Search class="pointer-events-none absolute left-0 size-4 text-neutral-400" />
+            <input
+                {...local}
+                type="text"
+                value={props.value}
+                onInput={handleInput}
+                placeholder={props.placeholder ?? "Search..."}
+                class="w-full border-b border-neutral-200 bg-transparent py-1.5 pr-6 pl-6 text-sm text-neutral-900 transition-colors placeholder:text-neutral-400 focus:border-flame-pea-500 focus:outline-none dark:border-neutral-700 dark:text-neutral-100 dark:focus:border-flame-pea-500"
+            />
+            {props.value && (
+                <button
+                    type="button"
+                    onClick={clearSearch}
+                    class="absolute right-0 flex size-5 items-center justify-center rounded-full text-neutral-400 transition-colors hover:bg-neutral-100 hover:text-neutral-600 dark:hover:bg-neutral-800 dark:hover:text-neutral-300"
+                    aria-label="Clear search"
+                >
+                    <X class="size-3.5" />
+                </button>
+            )}
         </div>
     )
 }

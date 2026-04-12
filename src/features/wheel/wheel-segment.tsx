@@ -2,7 +2,27 @@ import { createMemo } from "solid-js"
 import { useWheel } from "./wheel-context"
 import { WHEEL_CONFIG_CONSTANTS } from "./wheel-store"
 import { type Restaurant } from "../../core/hooks"
-import { cx } from "../../ui/variants"
+
+// Warm color palette for restaurants
+const WHEEL_COLORS = [
+    { bg: "#b53920", name: "flame-red" }, // flame-pea-700
+    { bg: "#8b4513", name: "saddle-brown" }, // warm brown
+    { bg: "#c45a3d", name: "terra-cotta" }, // flame-pea-600
+    { bg: "#a0522d", name: "sienna" }, // earthy brown
+    { bg: "#d47a5e", name: "coral" }, // flame-pea-500
+    { bg: "#cd853f", name: "peru" }, // tan
+] as const
+
+// Simple hash function to get consistent color for a restaurant
+function getRestaurantColorId(id: string): number {
+    let hash = 0
+    for (let i = 0; i < id.length; i++) {
+        const char = id.charCodeAt(i)
+        hash = (hash << 5) - hash + char
+        hash = hash & hash // Convert to 32bit integer
+    }
+    return Math.abs(hash) % WHEEL_COLORS.length
+}
 
 export function WheelSegment(props: { restaurant: Restaurant; idx: number }) {
     const wheel = useWheel()
@@ -23,7 +43,7 @@ export function WheelSegment(props: { restaurant: Restaurant; idx: number }) {
         const [x2, y2] = point(end)
         const labelAngle = start + (end - start) / 2
 
-        const [x, y] = point(labelAngle, 0.6)
+        const [x, y] = point(labelAngle, 0.62)
 
         const rotationDeg = ((labelAngle * 180) / Math.PI + 360) % 360
         const rotation = rotationDeg > 180 ? rotationDeg - 180 : rotationDeg
@@ -36,22 +56,29 @@ export function WheelSegment(props: { restaurant: Restaurant; idx: number }) {
         }
     })
 
+    // Color based on restaurant ID (consistent regardless of wheel position)
+    const colorIndex = getRestaurantColorId(props.restaurant._id)
+    const color = WHEEL_COLORS[colorIndex]!
+
     return (
-        <>
-            <path
-                d={segment().path}
-                class={props.idx % 2 === 0 ? "fill-flame-pea-700 dark:fill-flame-pea-600" : "fill-neutral-600"}
-            />
+        <g>
+            <path d={segment().path} fill={color.bg} />
             <text
                 x={segment().x}
                 y={segment().y}
-                class={cx("text-xs", props.idx % 2 === 0 ? "fill-white dark:fill-neutral-900" : "fill-white")}
+                fill="white"
                 text-anchor="middle"
                 dominant-baseline="middle"
                 transform={`rotate(${segment().rotation}, ${segment().x}, ${segment().y})`}
+                style={{
+                    "font-family": "var(--font-body)",
+                    "font-size": "13px",
+                    "font-weight": "500",
+                }}
             >
-                {props.restaurant.name}
+                {/* Truncate long names */}
+                {props.restaurant.name.length > 18 ? props.restaurant.name.slice(0, 16) + "..." : props.restaurant.name}
             </text>
-        </>
+        </g>
     )
 }

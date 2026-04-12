@@ -37,6 +37,16 @@
         @apply text-neutral-100;
         background-color: #1a1918;
     }
+
+    /* Hide scrollbar */
+    ::-webkit-scrollbar {
+        display: none;
+    }
+
+    html {
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+    }
 }
 
 @layer utilities {

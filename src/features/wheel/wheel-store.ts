@@ -58,50 +58,49 @@ export function useWheelStore(restaurants: Accessor<Restaurant[]>) {
 
     const totalCount = createMemo(() => restaurants().length)
 
-    const maxEvenCount = createMemo(() => {
-        const total = totalCount()
-        return total % 2 === 0 ? total : total - 1
-    })
-
     const validTargetCount = createMemo(() => {
         const target = state.targetCount
-        const max = maxEvenCount()
-        return Math.min(target, max)
+        const total = totalCount()
+        return Math.min(target, total)
     })
 
     const availableCountOptions = createMemo(() => {
-        const max = maxEvenCount()
+        const total = totalCount()
         const options: number[] = []
-        for (let i = 2; i <= max; i += 2) {
+        for (let i = 1; i <= total; i++) {
             options.push(i)
         }
         return options
     })
 
-    const hasEnoughRestaurants = createMemo(() => totalCount() >= 2)
+    const hasEnoughRestaurants = createMemo(() => totalCount() >= 1)
 
     const canSpin = createMemo(() => {
         if (!hasEnoughRestaurants()) return false
         if (state.selectionMode === "manual") {
-            return state.selectedIds.length === validTargetCount() && state.selectedIds.length >= 2
+            // In manual mode, allow spin if at least 1 restaurant is selected (up to target)
+            const selectedCount = state.selectedIds.length
+            return selectedCount >= 1 && selectedCount <= validTargetCount()
         }
-        return validTargetCount() >= 2
+        // Random mode: always can spin if there are restaurants
+        return validTargetCount() >= 1
     })
 
     const lockedSegments = createMemo((): Restaurant[] => {
         const all = restaurants()
-        const count = validTargetCount()
-
-        if (count < 2) return []
 
         if (state.selectionMode === "manual") {
+            // In manual mode, use the actually selected restaurants
             const selected = all.filter((r) => state.selectedIds.includes(r._id))
-            if (selected.length >= 2) {
-                return selected.slice(0, count)
+            if (selected.length >= 1) {
+                return selected
             }
             return []
         }
 
+        // Random mode: pick up to target count
+        const count = validTargetCount()
+        if (count < 1) return []
         const shuffled = [...all].sort(() => Math.random() - 0.5)
         return shuffled.slice(0, count)
     })
@@ -155,6 +154,10 @@ export function useWheelStore(restaurants: Accessor<Restaurant[]>) {
         setState(
             produce((s) => {
                 s.selectionMode = mode
+                // Clear selected restaurants when switching to random mode
+                if (mode === "random") {
+                    s.selectedIds = []
+                }
                 s.selected = null
                 s.spinStart = null
             }),
@@ -180,7 +183,7 @@ export function useWheelStore(restaurants: Accessor<Restaurant[]>) {
                 const idx = s.selectedIds.indexOf(id)
                 if (idx > -1) {
                     s.selectedIds.splice(idx, 1)
-                } else if (s.selectedIds.length < s.targetCount) {
+                } else {
                     s.selectedIds.push(id)
                 }
                 s.selected = null
@@ -198,7 +201,6 @@ export function useWheelStore(restaurants: Accessor<Restaurant[]>) {
         targetCount: validTargetCount,
         selectedIds: createMemo(() => state.selectedIds),
         totalCount,
-        maxEvenCount,
         availableCountOptions,
         hasEnoughRestaurants,
         canSpin,

@@ -52,7 +52,7 @@ export function RestaurantCard(props: { restaurant: Restaurant } & ComponentProp
                             loading="lazy"
                         />
                         {/* Gradient overlay */}
-                        <div class="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
+                        <div class="pointer-events-none absolute inset-0 bg-linear-to-t from-black/60 via-black/20 to-transparent" />
                         {/* Cuisine badge - absolute positioned */}
                         <div class="absolute top-4 right-4">
                             <Badge variant="editorial">
@@ -92,7 +92,16 @@ export function RestaurantCard(props: { restaurant: Restaurant } & ComponentProp
                 <div class="flex flex-col gap-5 p-6">
                     {/* Restaurant Header */}
                     <div class="flex flex-col gap-2">
-                        <div class="flex items-start justify-between gap-3">
+                        {/* Category badge - shown when no image */}
+                        <Show when={!hasImages()}>
+                            <div class="flex">
+                                <Badge variant="editorial">
+                                    <Utensils class="mr-1.5 size-3.5" />
+                                    {local.restaurant.cuisine}
+                                </Badge>
+                            </div>
+                        </Show>
+                        <div class="flex items-center justify-between gap-3">
                             <h3
                                 class="leading-tight font-semibold"
                                 style={{
@@ -132,19 +141,19 @@ export function RestaurantCard(props: { restaurant: Restaurant } & ComponentProp
 
                     {/* Notes Section */}
                     <Show when={local.restaurant.notes}>
-                        <div>
+                        <div class="h-12">
                             <p
                                 class={`leading-relaxed text-neutral-600 dark:text-neutral-400 ${
-                                    notesExpanded() ? "" : "line-clamp-4"
+                                    notesExpanded() ? "" : "line-clamp-2"
                                 }`}
                             >
                                 {local.restaurant.notes}
                             </p>
-                            <Show when={(local.restaurant.notes?.length ?? 0) > 120}>
+                            <Show when={(local.restaurant.notes?.length ?? 0) > 80}>
                                 <button
                                     type="button"
                                     onClick={() => setNotesExpanded(!notesExpanded())}
-                                    class="mt-2 text-sm font-medium text-flame-pea-700 transition-colors hover:text-flame-pea-600 dark:text-flame-pea-400 dark:hover:text-flame-pea-300"
+                                    class="mt-1 text-sm font-medium text-flame-pea-700 transition-colors hover:text-flame-pea-600 dark:text-flame-pea-400 dark:hover:text-flame-pea-300"
                                 >
                                     {notesExpanded() ? "Show less" : "Read more"}
                                 </button>
