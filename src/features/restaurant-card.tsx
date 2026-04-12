@@ -28,6 +28,7 @@ export function RestaurantCard(props: { restaurant: Restaurant } & ComponentProp
     const hasLocation = () => local.restaurant.lat != null && local.restaurant.lng != null
     const hasImages = () => (local.restaurant.images?.length ?? 0) > 0
     const imageCount = () => local.restaurant.images?.length ?? 0
+    const imageSrc = () => (hasImages() ? local.restaurant.images?.[0] : undefined)
 
     const handleRate = async (rating: number) => {
         await updateRestaurant({ id: local.restaurant._id, rating })
@@ -43,25 +44,52 @@ export function RestaurantCard(props: { restaurant: Restaurant } & ComponentProp
         <>
             <Card {...cardProps}>
                 {/* Hero Image Section - Always Visible */}
-                <Show when={hasImages()}>
-                    <div class="relative aspect-video w-full overflow-hidden rounded-t-xl">
+                <div class="relative aspect-video w-full overflow-hidden rounded-t-xl">
+                    <Show
+                        when={hasImages()}
+                        fallback={
+                            <div class="absolute inset-0 flex items-center justify-center bg-[#f5f4f2] dark:bg-[#2d2b29]">
+                                <div class="text-center">
+                                    <Utensils class="mx-auto mb-2 size-12 text-neutral-300 dark:text-neutral-600" />
+                                    <p class="text-sm font-medium text-neutral-400 dark:text-neutral-500">
+                                        {local.restaurant.cuisine}
+                                    </p>
+                                </div>
+                            </div>
+                        }
+                    >
                         <LazyImage
-                            src={local.restaurant.images?.[0]}
+                            src={imageSrc()}
                             alt={`${local.restaurant.name} - main image`}
                             aspectRatio="16/9"
                             loading="lazy"
                         />
-                        {/* Gradient overlay */}
                         <div class="pointer-events-none absolute inset-0 bg-linear-to-t from-black/60 via-black/20 to-transparent" />
-                        {/* Cuisine badge - absolute positioned */}
-                        <div class="absolute top-4 right-4">
-                            <Badge variant="editorial">
-                                <Utensils class="mr-1.5 size-3.5" />
-                                {local.restaurant.cuisine}
-                            </Badge>
-                        </div>
-                        {/* View gallery button */}
-                        <Show when={imageCount() > 1}>
+                    </Show>
+                    {/* Cuisine badge - always shown in image area */}
+                    <div class="absolute top-4 right-4">
+                        <Badge variant="editorial">
+                            <Utensils class="mr-1.5 size-3.5" />
+                            {local.restaurant.cuisine}
+                        </Badge>
+                    </div>
+                    {/* View gallery button - only when has images */}
+                    <Show when={hasImages()}>
+                        <Show
+                            when={imageCount() > 1}
+                            fallback={
+                                <div class="absolute right-4 bottom-4">
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowGallery(true)}
+                                        class="flex items-center gap-1.5 rounded-lg bg-white/90 px-3 py-2 text-sm font-medium text-neutral-900 shadow-sm backdrop-blur-sm transition-colors hover:bg-white"
+                                    >
+                                        <Images class="size-4" />
+                                        View
+                                    </button>
+                                </div>
+                            }
+                        >
                             <div class="absolute right-4 bottom-4">
                                 <button
                                     type="button"
@@ -73,34 +101,13 @@ export function RestaurantCard(props: { restaurant: Restaurant } & ComponentProp
                                 </button>
                             </div>
                         </Show>
-                        <Show when={imageCount() === 1}>
-                            <div class="absolute right-4 bottom-4">
-                                <button
-                                    type="button"
-                                    onClick={() => setShowGallery(true)}
-                                    class="flex items-center gap-1.5 rounded-lg bg-white/90 px-3 py-2 text-sm font-medium text-neutral-900 shadow-sm backdrop-blur-sm transition-colors hover:bg-white"
-                                >
-                                    <Images class="size-4" />
-                                    View
-                                </button>
-                            </div>
-                        </Show>
-                    </div>
-                </Show>
+                    </Show>
+                </div>
 
                 {/* Content Area */}
                 <div class="flex flex-col gap-5 p-6">
                     {/* Restaurant Header */}
                     <div class="flex flex-col gap-2">
-                        {/* Category badge - shown when no image */}
-                        <Show when={!hasImages()}>
-                            <div class="flex">
-                                <Badge variant="editorial">
-                                    <Utensils class="mr-1.5 size-3.5" />
-                                    {local.restaurant.cuisine}
-                                </Badge>
-                            </div>
-                        </Show>
                         <div class="flex items-center justify-between gap-3">
                             <h3
                                 class="leading-tight font-semibold"

@@ -16,22 +16,6 @@ export function Card(props: ComponentProps<"div">) {
     )
 }
 
-export function CardHeader(props: ComponentProps<"div">) {
-    return (
-        <div data-component="card-header" {...props} class={cx("p-6", props.class)}>
-            {props.children}
-        </div>
-    )
-}
-
-export function CardContent(props: ComponentProps<"div">) {
-    return (
-        <div data-component="card-content" {...props} class={cx("p-6", props.class)}>
-            {props.children}
-        </div>
-    )
-}
-
 export function CardFooter(props: ComponentProps<"div">) {
     return (
         <div

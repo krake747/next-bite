@@ -33,7 +33,7 @@ function WheelPage() {
                     {/* Magazine-style header */}
                     <Header>
                         <div class="flex flex-col items-start">
-                            <div class="inline-flex items-center gap-2 rounded-full bg-flame-pea-100 px-3 py-1 text-xs font-semibold tracking-wide text-flame-pea-700 uppercase dark:bg-flame-pea-900/50 dark:text-flame-pea-400">
+                            <div class="inline-flex items-center gap-2 rounded-full bg-flame-pea-100 px-2 py-1 text-xs font-semibold tracking-wide text-flame-pea-700 uppercase dark:bg-flame-pea-900/50 dark:text-flame-pea-400">
                                 <Sparkles class="size-3" />
                                 Decision Time
                             </div>

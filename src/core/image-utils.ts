@@ -2,13 +2,13 @@ import { MAX_IMAGES } from "./constants"
 
 export { MAX_IMAGES }
 
-export const MAX_FILE_SIZE = 5 * 1024 * 1024 // 5MB
-export const THUMBNAIL_WIDTH = 400
-export const FULL_SIZE_WIDTH = 1920
+export const MAX_FILE_SIZE = 5 * 1024 * 1024
 
-export const VALID_IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp", "image/gif"]
+const FULL_SIZE_WIDTH = 1920
 
-export type ProcessedImage = {
+const VALID_IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp", "image/gif"]
+
+type ProcessedImage = {
     blob: Blob
     originalName: string
     originalSize: number
@@ -98,10 +98,6 @@ export async function processImage(
 
         img.src = url
     })
-}
-
-export async function createThumbnail(file: File): Promise<ProcessedImage> {
-    return processImage(file, { maxWidth: THUMBNAIL_WIDTH, quality: 0.8 })
 }
 
 function calculateDimensions(

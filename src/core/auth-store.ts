@@ -1,7 +1,7 @@
 import { createSignal, createRoot } from "solid-js"
 import { authClient } from "./auth-client"
 
-export type User = {
+type User = {
     id: string
     email: string
     name?: string | null | undefined
