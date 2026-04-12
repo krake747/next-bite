@@ -202,6 +202,7 @@ function SignupPage() {
                                 Already have an account?{" "}
                                 <Link
                                     to="/login"
+                                    viewTransition
                                     class="font-semibold text-flame-pea-600 transition-colors hover:text-flame-pea-500 dark:text-flame-pea-400 dark:hover:text-flame-pea-300"
                                 >
                                     Sign in
@@ -211,6 +212,7 @@ function SignupPage() {
                         <div class="mt-4 text-center">
                             <Link
                                 to="/"
+                                viewTransition
                                 class="group inline-flex items-center gap-2 text-sm text-neutral-500 transition-colors hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-white"
                             >
                                 <UtensilsCrossed

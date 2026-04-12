@@ -1,12 +1,13 @@
-import { For, createSignal, createMemo, Show } from "solid-js"
+import { createSignal, createMemo, Show } from "solid-js"
 import { createFileRoute, useNavigate } from "@tanstack/solid-router"
 import { Header, HeaderSubtitle, HeaderTitle, HeaderBadge } from "../features/header"
 import { PageLayout } from "../features/page-layout"
+import { PageContainer } from "../features/page-container"
 import { useRestaurants, useAuth } from "../core/hooks"
-import { RestaurantCard } from "../features/restaurant-card"
+import { useFilterState } from "../features/use-filter"
 import { FriendsFilter } from "../features/friends-filter"
+import { RestaurantList } from "../features/restaurant-list"
 import { AddRestaurantDialog } from "../features/add-restaurant-dialog"
-import { EmptyRestaurantsState } from "../features/empty-restaurants-state"
 import { Button } from "../ui/button"
 import { Loading } from "../ui/loading"
 import LoaderPinwheel from "lucide-solid/icons/loader-pinwheel"
@@ -20,29 +21,21 @@ export const Route = createFileRoute("/")({
 function Home() {
     const navigate = useNavigate()
     const auth = useAuth()
-
-    const [filter, setFilter] = createSignal<string | null>(null)
-    const [search, setSearch] = createSignal("")
-    const [show, setShow] = createSignal(false)
-
     const restaurants = useRestaurants()
+    const [showAddDialog, setShowAddDialog] = createSignal(false)
 
-    const filteredRestaurants = createMemo(() => {
-        const r = restaurants()
-        if (!r) return []
-        let result = filter() ? r.filter((x) => x.addedBy === filter()) : r
-        const searchTerm = search().trim().toLowerCase()
-        if (searchTerm) {
-            result = result.filter((x) => x.name.toLowerCase().includes(searchTerm))
-        }
-        return result
-    })
+    const restaurantListState = () => restaurants() ?? []
+    const count = createMemo(() => restaurantListState().length)
 
-    const count = createMemo(() => filteredRestaurants().length)
+    const filterState = useFilterState()
+
+    const filteredRestaurants = () => {
+        return filterState.filtered(restaurantListState(), (r) => r.name)
+    }
 
     return (
         <PageLayout>
-            <div class="container mx-auto w-full max-w-350 px-6 pt-6 pb-8 sm:px-8 lg:px-12">
+            <PageContainer>
                 <Header>
                     <HeaderTitle>Our next bite</HeaderTitle>
                     <HeaderSubtitle>Places we're dreaming of trying together</HeaderSubtitle>
@@ -51,18 +44,22 @@ function Home() {
                 <Show when={restaurants()} fallback={<Loading message="restaurants" />}>
                     <div class="pt-4">
                         <FriendsFilter
-                            filter={filter()}
-                            handleFilter={setFilter}
-                            search={search()}
-                            handleSearch={setSearch}
+                            filter={filterState.filter()}
+                            handleFilter={(name) => filterState.setFilter(name)}
+                            search={filterState.search()}
+                            handleSearch={(value) => filterState.setSearch(value)}
                         >
                             <div class="flex w-full flex-col gap-2 sm:w-auto sm:flex-row">
-                                <Button onClick={() => navigate({ from: Route.fullPath, to: "/wheel" })}>
+                                <Button
+                                    onClick={() =>
+                                        navigate({ from: Route.fullPath, to: "/wheel", viewTransition: true })
+                                    }
+                                >
                                     <LoaderPinwheel class="size-4" />
                                     Spin the wheel
                                 </Button>
                                 <Show when={auth.isAuthenticated()}>
-                                    <Button variant="secondary" onClick={() => setShow(true)}>
+                                    <Button variant="secondary" onClick={() => setShowAddDialog(true)}>
                                         <Plus class="size-4" />
                                         Add Restaurant
                                     </Button>
@@ -70,7 +67,9 @@ function Home() {
                                 <Show when={!auth.isAuthenticated()}>
                                     <Button
                                         variant="secondary"
-                                        onClick={() => navigate({ to: "/login", from: Route.fullPath })}
+                                        onClick={() =>
+                                            navigate({ to: "/login", from: Route.fullPath, viewTransition: true })
+                                        }
                                     >
                                         <Plus class="size-4" aria-hidden="true" />
                                         Sign in to add
@@ -79,25 +78,17 @@ function Home() {
                             </div>
                         </FriendsFilter>
                     </div>
-                    <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-3 lg:gap-6">
-                        <For
-                            each={filteredRestaurants()}
-                            fallback={
-                                <EmptyRestaurantsState
-                                    hasFilter={!!filter()}
-                                    hasSearch={!!search().trim()}
-                                    onAddClick={() => setShow(true)}
-                                />
-                            }
-                        >
-                            {(restaurant) => <RestaurantCard restaurant={restaurant} />}
-                        </For>
-                    </div>
+                    <RestaurantList
+                        restaurants={filteredRestaurants}
+                        hasFilter={!!filterState.filter()}
+                        hasSearch={!!filterState.search()}
+                        onAddClick={() => setShowAddDialog(true)}
+                    />
                 </Show>
                 <Show when={auth.isAuthenticated()}>
-                    <AddRestaurantDialog show={show()} onOpenChange={setShow} />
+                    <AddRestaurantDialog show={showAddDialog()} onOpenChange={setShowAddDialog} />
                 </Show>
-            </div>
+            </PageContainer>
         </PageLayout>
     )
 }

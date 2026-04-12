@@ -3,7 +3,10 @@ import type { ComponentProps, JSX } from "solid-js"
 
 export function Header(props: { children?: JSX.Element }) {
     return (
-        <header class="relative overflow-hidden border-b border-neutral-200/60 bg-[#faf9f7] dark:border-white/10 dark:bg-[#1a1918]">
+        <header
+            data-component="header"
+            class="relative overflow-hidden border-b border-neutral-200/60 bg-[#faf9f7] dark:border-white/10 dark:bg-[#1a1918]"
+        >
             <div
                 class="pointer-events-none absolute inset-0 opacity-[0.02] dark:opacity-[0.03]"
                 style={{
@@ -34,7 +37,7 @@ export function Header(props: { children?: JSX.Element }) {
                 }}
             />
 
-            <div class="relative mx-auto w-full max-w-350 px-6 py-16 sm:px-8 sm:py-20 lg:px-12 lg:py-24">
+            <div class="relative mx-auto w-full max-w-350 px-4 py-10 sm:px-6 sm:py-14 lg:px-12 lg:py-20">
                 <div class="flex min-h-70 items-center justify-between gap-12">
                     <div class="max-w-2xl flex-1">{props.children ?? <DefaultChildren />}</div>
 

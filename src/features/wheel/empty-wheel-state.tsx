@@ -29,7 +29,7 @@ export function EmptyWheelState() {
 
             <p class="mb-2 text-base text-neutral-600 dark:text-neutral-400">Add a restaurant to spin the wheel</p>
 
-            <Link to="/" class="mt-4">
+            <Link to="/" viewTransition class="mt-4">
                 <Button>
                     <Plus class="size-4" />
                     Add Restaurants

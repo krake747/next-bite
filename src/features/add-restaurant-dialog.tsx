@@ -68,32 +68,34 @@ export function AddRestaurantDialog(props: { show: boolean; onOpenChange: (open:
                             }
                         >
                             <Form of={form} onSubmit={handleSubmit} class="space-y-4">
-                                <Field of={form} path={["name"]}>
-                                    {(field) => (
-                                        <FieldWrapper errors={field.errors}>
-                                            <Input
-                                                {...field.props}
-                                                input={field.input}
-                                                errors={field.errors}
-                                                label="Restaurant name"
-                                                placeholder="The fancy burger place"
-                                            />
-                                        </FieldWrapper>
-                                    )}
-                                </Field>
-                                <Field of={form} path={["cuisine"]}>
-                                    {(field) => (
-                                        <FieldWrapper errors={field.errors}>
-                                            <Input
-                                                {...field.props}
-                                                input={field.input}
-                                                errors={field.errors}
-                                                label="Cuisine"
-                                                placeholder="Burgers, Italian, etc."
-                                            />
-                                        </FieldWrapper>
-                                    )}
-                                </Field>
+                                <div class="grid grid-cols-2 gap-4">
+                                    <Field of={form} path={["name"]}>
+                                        {(field) => (
+                                            <FieldWrapper errors={field.errors}>
+                                                <Input
+                                                    {...field.props}
+                                                    input={field.input}
+                                                    errors={field.errors}
+                                                    label="Restaurant name"
+                                                    placeholder="The fancy burger place"
+                                                />
+                                            </FieldWrapper>
+                                        )}
+                                    </Field>
+                                    <Field of={form} path={["cuisine"]}>
+                                        {(field) => (
+                                            <FieldWrapper errors={field.errors}>
+                                                <Input
+                                                    {...field.props}
+                                                    input={field.input}
+                                                    errors={field.errors}
+                                                    label="Cuisine"
+                                                    placeholder="Burgers, Italian, etc."
+                                                />
+                                            </FieldWrapper>
+                                        )}
+                                    </Field>
+                                </div>
                                 <Field of={form} path={["location"]}>
                                     {(field) => (
                                         <FieldWrapper errors={field.errors}>
@@ -120,41 +122,43 @@ export function AddRestaurantDialog(props: { show: boolean; onOpenChange: (open:
                                         </FieldWrapper>
                                     )}
                                 </Field>
-                                <Field of={form} path={["link"]}>
-                                    {(field) => (
-                                        <FieldWrapper errors={field.errors}>
-                                            <Input
-                                                {...field.props}
-                                                input={field.input}
-                                                errors={field.errors}
-                                                type="url"
-                                                label="Menu link"
-                                                placeholder="https://menu.com/..."
-                                            />
-                                        </FieldWrapper>
-                                    )}
-                                </Field>
-                                <Field of={form} path={["addedBy"]}>
-                                    {(field) => (
-                                        <FieldWrapper errors={field.errors}>
-                                            <Select
-                                                {...field.props}
-                                                input={field.input}
-                                                errors={field.errors}
-                                                label="Added by"
-                                            >
-                                                <option value="">Select friend</option>
-                                                <Show when={friends()}>
-                                                    {(friends) => (
-                                                        <For each={friends()}>
-                                                            {(f) => <option value={f.name}>{f.name}</option>}
-                                                        </For>
-                                                    )}
-                                                </Show>
-                                            </Select>
-                                        </FieldWrapper>
-                                    )}
-                                </Field>
+                                <div class="grid grid-cols-2 gap-4">
+                                    <Field of={form} path={["link"]}>
+                                        {(field) => (
+                                            <FieldWrapper errors={field.errors}>
+                                                <Input
+                                                    {...field.props}
+                                                    input={field.input}
+                                                    errors={field.errors}
+                                                    type="url"
+                                                    label="Menu link"
+                                                    placeholder="https://menu.com/..."
+                                                />
+                                            </FieldWrapper>
+                                        )}
+                                    </Field>
+                                    <Field of={form} path={["addedBy"]}>
+                                        {(field) => (
+                                            <FieldWrapper errors={field.errors}>
+                                                <Select
+                                                    {...field.props}
+                                                    input={field.input}
+                                                    errors={field.errors}
+                                                    label="Added by"
+                                                >
+                                                    <option value="">Select friend</option>
+                                                    <Show when={friends()}>
+                                                        {(friends) => (
+                                                            <For each={friends()}>
+                                                                {(f) => <option value={f.name}>{f.name}</option>}
+                                                            </For>
+                                                        )}
+                                                    </Show>
+                                                </Select>
+                                            </FieldWrapper>
+                                        )}
+                                    </Field>
+                                </div>
                                 <ImageUpload images={images()} onImagesChange={setImages} maxImages={5} />
                                 <div class="flex justify-end gap-2 pt-2">
                                     <Button variant="secondary" onClick={() => props.onOpenChange(false)}>

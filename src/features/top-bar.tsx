@@ -9,10 +9,14 @@ import { useAuth } from "../core/hooks"
 
 export function TopBar() {
     return (
-        <div class="sticky top-0 z-40 w-full border-b border-neutral-200/60 bg-[#faf9f7]/80 backdrop-blur-md dark:border-white/10 dark:bg-[#1a1918]/80">
-            <div class="mx-auto flex h-14 w-full max-w-350 items-center justify-between px-6 sm:px-8 lg:px-12">
+        <div
+            data-component="top-bar"
+            class="sticky top-0 z-40 w-full border-b border-neutral-200/60 bg-[#faf9f7]/80 backdrop-blur-md dark:border-white/10 dark:bg-[#1a1918]/80"
+        >
+            <div class="mx-auto flex h-14 w-full max-w-350 items-center justify-between px-4 sm:px-6 lg:px-12">
                 <Link
                     to="/"
+                    viewTransition
                     class="flex items-center gap-2 text-neutral-900 transition-colors duration-150 ease hover:text-flame-pea-600 dark:text-neutral-100 dark:hover:text-flame-pea-400"
                 >
                     <div class="flex size-8 items-center justify-center rounded-lg bg-flame-pea-100 text-flame-pea-600 dark:bg-flame-pea-900/50 dark:text-flame-pea-400">
@@ -41,6 +45,7 @@ function AuthButton() {
             fallback={
                 <Link
                     to="/login"
+                    viewTransition
                     class="rounded-md bg-flame-pea-600 px-3 py-1.5 text-sm font-medium text-white transition-colors duration-150 ease hover:bg-flame-pea-700 dark:bg-flame-pea-500 dark:hover:bg-flame-pea-600"
                 >
                     Sign In

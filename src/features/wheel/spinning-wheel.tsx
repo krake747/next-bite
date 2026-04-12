@@ -15,7 +15,7 @@ export function SpinningWheel() {
     })
 
     return (
-        <div class="relative">
+        <div class="relative z-0">
             <div
                 class="absolute inset-0 rounded-full bg-linear-to-br from-amber-200 via-neutral-200 to-flame-pea-100 p-2 dark:from-amber-900/30 dark:via-neutral-800 dark:to-flame-pea-900/20"
                 style={{

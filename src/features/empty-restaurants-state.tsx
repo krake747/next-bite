@@ -56,7 +56,7 @@ export function EmptyRestaurantsState(props: { hasFilter?: boolean; hasSearch?: 
                 <Show
                     when={auth.isAuthenticated()}
                     fallback={
-                        <Button variant="secondary" onClick={() => navigate({ to: "/login" })}>
+                        <Button variant="secondary" onClick={() => navigate({ to: "/login", viewTransition: true })}>
                             <Sparkles class="size-4" />
                             Sign in to add restaurants
                         </Button>

@@ -101,32 +101,34 @@ export function EditRestaurantDialog(props: {
                             }
                         >
                             <Form of={form} onSubmit={handleSubmit} class="space-y-4">
-                                <Field of={form} path={["name"]}>
-                                    {(field) => (
-                                        <FieldWrapper errors={field.errors}>
-                                            <Input
-                                                {...field.props}
-                                                input={field.input}
-                                                errors={field.errors}
-                                                label="Restaurant name"
-                                                placeholder="The fancy burger place"
-                                            />
-                                        </FieldWrapper>
-                                    )}
-                                </Field>
-                                <Field of={form} path={["cuisine"]}>
-                                    {(field) => (
-                                        <FieldWrapper errors={field.errors}>
-                                            <Input
-                                                {...field.props}
-                                                input={field.input}
-                                                errors={field.errors}
-                                                label="Cuisine"
-                                                placeholder="Burgers, Italian, etc."
-                                            />
-                                        </FieldWrapper>
-                                    )}
-                                </Field>
+                                <div class="grid grid-cols-2 gap-4">
+                                    <Field of={form} path={["name"]}>
+                                        {(field) => (
+                                            <FieldWrapper errors={field.errors}>
+                                                <Input
+                                                    {...field.props}
+                                                    input={field.input}
+                                                    errors={field.errors}
+                                                    label="Restaurant name"
+                                                    placeholder="The fancy burger place"
+                                                />
+                                            </FieldWrapper>
+                                        )}
+                                    </Field>
+                                    <Field of={form} path={["cuisine"]}>
+                                        {(field) => (
+                                            <FieldWrapper errors={field.errors}>
+                                                <Input
+                                                    {...field.props}
+                                                    input={field.input}
+                                                    errors={field.errors}
+                                                    label="Cuisine"
+                                                    placeholder="Burgers, Italian, etc."
+                                                />
+                                            </FieldWrapper>
+                                        )}
+                                    </Field>
+                                </div>
                                 <Field of={form} path={["location"]}>
                                     {(field) => (
                                         <FieldWrapper errors={field.errors}>
@@ -153,21 +155,21 @@ export function EditRestaurantDialog(props: {
                                         </FieldWrapper>
                                     )}
                                 </Field>
-                                <Field of={form} path={["link"]}>
-                                    {(field) => (
-                                        <FieldWrapper errors={field.errors}>
-                                            <Input
-                                                {...field.props}
-                                                input={field.input}
-                                                errors={field.errors}
-                                                type="url"
-                                                label="Menu link"
-                                                placeholder="https://menu.com/..."
-                                            />
-                                        </FieldWrapper>
-                                    )}
-                                </Field>
                                 <div class="grid grid-cols-2 gap-4">
+                                    <Field of={form} path={["link"]}>
+                                        {(field) => (
+                                            <FieldWrapper errors={field.errors}>
+                                                <Input
+                                                    {...field.props}
+                                                    input={field.input}
+                                                    errors={field.errors}
+                                                    type="url"
+                                                    label="Menu link"
+                                                    placeholder="https://menu.com/..."
+                                                />
+                                            </FieldWrapper>
+                                        )}
+                                    </Field>
                                     <Field of={form} path={["addedBy"]}>
                                         {(field) => (
                                             <FieldWrapper errors={field.errors}>
@@ -205,28 +207,28 @@ export function EditRestaurantDialog(props: {
                                             </FieldWrapper>
                                         )}
                                     </Field>
-                                    <Field of={form} path={["rating"]}>
-                                        {(field) => (
-                                            <FieldWrapper errors={field.errors}>
-                                                <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300">
-                                                    Rating
-                                                </label>
-                                                <div class="mt-2">
-                                                    <EmojiRating
-                                                        rating={
-                                                            typeof field.input === "number" && field.input >= 0
-                                                                ? field.input
-                                                                : null
-                                                        }
-                                                        onRate={(rating) =>
-                                                            setInput(form, { path: ["rating"], input: rating })
-                                                        }
-                                                    />
-                                                </div>
-                                            </FieldWrapper>
-                                        )}
-                                    </Field>
                                 </div>
+                                <Field of={form} path={["rating"]}>
+                                    {(field) => (
+                                        <FieldWrapper errors={field.errors}>
+                                            <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300">
+                                                Rating
+                                            </label>
+                                            <div class="mt-2">
+                                                <EmojiRating
+                                                    rating={
+                                                        typeof field.input === "number" && field.input >= 0
+                                                            ? field.input
+                                                            : null
+                                                    }
+                                                    onRate={(rating) =>
+                                                        setInput(form, { path: ["rating"], input: rating })
+                                                    }
+                                                />
+                                            </div>
+                                        </FieldWrapper>
+                                    )}
+                                </Field>
                                 <ImageUpload
                                     images={images()}
                                     onImagesChange={setImages}
@@ -234,7 +236,9 @@ export function EditRestaurantDialog(props: {
                                     restaurantId={props.restaurant._id}
                                 />
                                 <div class="flex justify-end gap-2 pt-2">
-                                    <Button onClick={() => props.onOpenChange(false)}>Cancel</Button>
+                                    <Button variant="secondary" onClick={() => props.onOpenChange(false)}>
+                                        Cancel
+                                    </Button>
                                     <Button type="submit">Save Changes</Button>
                                 </div>
                             </Form>
