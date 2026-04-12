@@ -4,9 +4,9 @@ import { createForm, Field, Form } from "@formisch/solid"
 import { useAuth } from "../core/hooks"
 import { Button } from "../ui/button"
 import { FieldWrapper, Input } from "../ui/field"
+import { LoadingPlaceholder } from "../ui/loading"
 import UtensilsCrossed from "lucide-solid/icons/utensils-crossed"
 import UserIcon from "lucide-solid/icons/user"
-import LoaderPinwheel from "lucide-solid/icons/loader-pinwheel"
 import * as v from "valibot"
 
 const SignupSchema = v.object({
@@ -48,19 +48,7 @@ function SignupPage() {
     }
 
     return (
-        <Show
-            when={!auth.isLoading()}
-            fallback={
-                <div class="flex min-h-screen items-center justify-center bg-[#faf9f7] dark:bg-[#1a1918]">
-                    <div class="text-center">
-                        <div class="inline-flex size-12 items-center justify-center rounded-full bg-flame-pea-100 text-flame-pea-600">
-                            <LoaderPinwheel class="size-6 animate-spin" aria-hidden="true" />
-                        </div>
-                        <p class="mt-4 text-neutral-600 dark:text-neutral-400">Loading...</p>
-                    </div>
-                </div>
-            }
-        >
+        <Show when={!auth.isLoading()} fallback={<LoadingPlaceholder />}>
             <div class="relative flex min-h-screen flex-col overflow-hidden bg-[#faf9f7] dark:bg-[#1a1918]">
                 <div
                     class="pointer-events-none absolute inset-0 opacity-[0.02] dark:opacity-[0.03]"

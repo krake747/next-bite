@@ -48,6 +48,42 @@ export function Header(props: { children?: JSX.Element }) {
                 style={{ "animation-delay": "2s", transform: `translateY(${parallax3()}px)` }}
             />
 
+            {/* Additional floating blobs - varied sizes */}
+            <div
+                class="animate-float pointer-events-none absolute top-[5%] right-[5%] h-20 w-20 rounded-full bg-flame-pea-200/12 blur-2xl will-change-transform"
+                style={{ "animation-delay": "0.5s", transform: `translateY(${scrollY() * 0.12}px)` }}
+            />
+            <div
+                class="animate-float pointer-events-none absolute top-[40%] left-[25%] h-12 w-12 rounded-full bg-orange-400/10 blur-[30px] will-change-transform"
+                style={{ "animation-delay": "1.5s", transform: `translateY(${scrollY() * -0.15}px)` }}
+            />
+            <div
+                class="animate-float pointer-events-none absolute bottom-[30%] left-[5%] h-40 w-40 rounded-full bg-flame-pea-500/8 blur-[100px] will-change-transform"
+                style={{ "animation-delay": "2.5s", transform: `translateY(${scrollY() * 0.06}px)` }}
+            />
+            <div
+                class="animate-float pointer-events-none absolute top-[70%] right-[5%] h-28 w-28 rounded-full bg-orange-200/10 blur-[70px] will-change-transform"
+                style={{ "animation-delay": "3s", transform: `translateY(${scrollY() * -0.08}px)` }}
+            />
+
+            {/* Small accent dots */}
+            <div
+                class="animate-float pointer-events-none absolute top-[15%] left-[35%] h-4 w-4 rounded-full bg-flame-pea-400/20 blur-[10px] will-change-transform"
+                style={{ "animation-delay": "0.8s" }}
+            />
+            <div
+                class="animate-float pointer-events-none absolute top-[55%] right-[12%] h-3 w-3 rounded-full bg-orange-400/25 blur-sm will-change-transform"
+                style={{ "animation-delay": "1.8s" }}
+            />
+            <div
+                class="animate-float pointer-events-none absolute top-[85%] left-[20%] h-5 w-5 rounded-full bg-flame-pea-300/18 blur-md will-change-transform"
+                style={{ "animation-delay": "2.3s" }}
+            />
+            <div
+                class="animate-float pointer-events-none absolute top-[35%] right-[45%] h-2 w-2 rounded-full bg-flame-pea-500/30 blur-[6px] will-change-transform"
+                style={{ "animation-delay": "3.2s" }}
+            />
+
             <div
                 class="pointer-events-none absolute inset-0 opacity-[0.015] dark:opacity-[0.02]"
                 style={{
@@ -64,6 +100,39 @@ export function Header(props: { children?: JSX.Element }) {
                         <div class="relative">
                             <div class="absolute inset-0 rounded-full bg-flame-pea-500/20 blur-2xl" />
                             <div class="absolute inset-0 animate-pulse rounded-full bg-flame-pea-400/10 blur-xl" />
+
+                            {/* Floating orbs around the icon */}
+                            <div
+                                class="animate-float pointer-events-none absolute -top-8 -left-8 h-14 w-14 rounded-full bg-flame-pea-300/15 blur-[25px] will-change-transform"
+                                style={{ "animation-delay": "0.3s" }}
+                            />
+                            <div
+                                class="animate-float pointer-events-none absolute -top-4 -right-10 h-10 w-10 rounded-full bg-orange-300/12 blur-[20px] will-change-transform"
+                                style={{ "animation-delay": "0.7s" }}
+                            />
+                            <div
+                                class="animate-float pointer-events-none absolute -right-6 -bottom-6 h-16 w-16 rounded-full bg-flame-pea-400/10 blur-[30px] will-change-transform"
+                                style={{ "animation-delay": "1.1s" }}
+                            />
+                            <div
+                                class="animate-float pointer-events-none absolute -bottom-2 -left-12 h-8 w-8 rounded-full bg-orange-400/10 blur-[18px] will-change-transform"
+                                style={{ "animation-delay": "1.5s" }}
+                            />
+
+                            {/* Tiny accent dots */}
+                            <div
+                                class="animate-float pointer-events-none absolute -top-2 left-1/2 h-2 w-2 -translate-x-1/2 rounded-full bg-flame-pea-500/30 blur-xs will-change-transform"
+                                style={{ "animation-delay": "0.5s" }}
+                            />
+                            <div
+                                class="animate-float pointer-events-none absolute top-1/2 -right-6 h-1.5 w-1.5 -translate-y-1/2 rounded-full bg-orange-500/25 blur-[3px] will-change-transform"
+                                style={{ "animation-delay": "0.9s" }}
+                            />
+                            <div
+                                class="animate-float pointer-events-none absolute -bottom-3 left-1/4 h-2.5 w-2.5 rounded-full bg-flame-pea-300/25 blur-[5px] will-change-transform"
+                                style={{ "animation-delay": "1.3s" }}
+                            />
+
                             <div class="relative flex size-20 items-center justify-center rounded-2xl bg-linear-to-br from-flame-pea-500 to-flame-pea-600 text-white shadow-[0_8px_30px_rgb(181,57,32,0.3)] transition-all duration-200 hover:shadow-[0_10px_35px_rgb(181,57,32,0.35)] dark:from-flame-pea-600 dark:to-flame-pea-700 dark:shadow-[0_8px_30px_rgb(181,57,32,0.4)] dark:hover:shadow-[0_10px_35px_rgb(181,57,32,0.45)]">
                                 <UtensilsCrossed class="size-10" />
                             </div>

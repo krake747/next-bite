@@ -2,6 +2,7 @@ import { For, type JSX } from "solid-js"
 import { Loading } from "../ui/loading"
 import { SearchInput } from "../ui/search-input"
 import Funnel from "lucide-solid/icons/funnel"
+import ArrowUpDown from "lucide-solid/icons/arrow-up-down"
 import { cx } from "../ui/variants"
 import { useFriends } from "../core/hooks"
 
@@ -10,6 +11,8 @@ export function FriendsFilter(props: {
     handleFilter: (name: string | null) => void
     search: string
     handleSearch: (value: string) => void
+    sortOrder: "added" | "name"
+    onSortChange: (order: "added" | "name") => void
     children: JSX.Element
 }) {
     const friends = useFriends()
@@ -58,13 +61,23 @@ export function FriendsFilter(props: {
                     )}
                 </div>
 
-                <div class="flex max-w-md items-center">
+                <div class="flex max-w-md items-center gap-3">
                     <SearchInput
                         value={props.search}
                         onChange={props.handleSearch}
                         placeholder="Search restaurants..."
                         class="w-full"
                     />
+                    <div class="flex items-center gap-1.5">
+                        <ArrowUpDown class="size-3.5 text-neutral-400" />
+                        <button
+                            type="button"
+                            onClick={() => props.onSortChange(props.sortOrder === "added" ? "name" : "added")}
+                            class="text-xs font-medium whitespace-nowrap text-neutral-600 transition-colors hover:text-flame-pea-600 dark:text-neutral-400 dark:hover:text-flame-pea-400"
+                        >
+                            {props.sortOrder === "added" ? "Recently added" : "Name (A-Z)"}
+                        </button>
+                    </div>
                 </div>
             </div>
 

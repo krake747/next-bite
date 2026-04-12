@@ -28,9 +28,29 @@ function Home() {
     const count = createMemo(() => restaurantListState().length)
 
     const filterState = useFilterState()
+    const [sortOrder, setSortOrder] = createSignal<"added" | "name">("added")
 
     const filteredRestaurants = () => {
-        return filterState.filtered(restaurantListState(), (r) => r.name)
+        let result = restaurantListState()
+
+        // Filter by friend (addedBy)
+        const friendFilter = filterState.filter()
+        if (friendFilter) {
+            result = result.filter((r) => r.addedBy === friendFilter)
+        }
+
+        // Filter by search term (restaurant name)
+        const searchTerm = filterState.search().trim().toLowerCase()
+        if (searchTerm) {
+            result = result.filter((r) => r.name.toLowerCase().includes(searchTerm))
+        }
+
+        // Sort
+        if (sortOrder() === "name") {
+            result = [...result].sort((a, b) => a.name.localeCompare(b.name))
+        }
+
+        return result
     }
 
     return (
@@ -48,6 +68,8 @@ function Home() {
                             handleFilter={(name) => filterState.setFilter(name)}
                             search={filterState.search()}
                             handleSearch={(value) => filterState.setSearch(value)}
+                            sortOrder={sortOrder()}
+                            onSortChange={setSortOrder}
                         >
                             <div class="flex w-full flex-col gap-2 sm:w-auto sm:flex-row">
                                 <Button
@@ -86,6 +108,7 @@ function Home() {
                         hasFilter={!!filterState.filter()}
                         hasSearch={!!filterState.search()}
                         onAddClick={() => setShowAddDialog(true)}
+                        sortOrder={sortOrder()}
                     />
                 </Show>
                 <Show when={auth.isAuthenticated()}>

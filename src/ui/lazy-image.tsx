@@ -2,6 +2,9 @@ import { createSignal, Show, type ComponentProps } from "solid-js"
 import { splitProps } from "solid-js"
 import { cx } from "./variants"
 
+// Track loaded images globally to prevent flicker on re-renders
+const loadedImages = new Set<string>()
+
 type LazyImageProps = Omit<ComponentProps<"img">, "src"> & {
     src?: string | undefined
     alt: string
@@ -12,8 +15,20 @@ type LazyImageProps = Omit<ComponentProps<"img">, "src"> & {
 
 export function LazyImage(props: LazyImageProps) {
     const [local, imgProps] = splitProps(props, ["src", "alt", "aspectRatio"])
-    const [isLoaded, setIsLoaded] = createSignal(false)
+    // Check if image was already loaded in this session
+    const [isLoaded, setIsLoaded] = createSignal(local.src ? loadedImages.has(local.src) : false)
     const [hasError, setHasError] = createSignal(false)
+
+    const handleLoad = () => {
+        if (local.src) {
+            loadedImages.add(local.src)
+        }
+        setIsLoaded(true)
+    }
+
+    const handleError = () => {
+        setHasError(true)
+    }
 
     return (
         <div
@@ -43,8 +58,8 @@ export function LazyImage(props: LazyImageProps) {
                             isLoaded() ? "opacity-100" : "opacity-0",
                             imgProps.class,
                         )}
-                        onLoad={() => setIsLoaded(true)}
-                        onError={() => setHasError(true)}
+                        onLoad={handleLoad}
+                        onError={handleError}
                     />
                 )}
             </Show>

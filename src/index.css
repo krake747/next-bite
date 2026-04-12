@@ -49,9 +49,9 @@
 
 @layer base {
     :root {
-        --font-display: "Playfair Display Variable", Georgia, serif;
-        --font-body: "Source Sans 3 Variable", system-ui, sans-serif;
-        font-family: "Source Sans 3 Variable", system-ui, sans-serif;
+        --font-display: "Fraunces Variable", Georgia, serif;
+        --font-body: "Manrope Variable", system-ui, sans-serif;
+        font-family: "Manrope Variable", system-ui, sans-serif;
         color-scheme: light dark;
         font-synthesis: none;
         text-rendering: optimizelegibility;

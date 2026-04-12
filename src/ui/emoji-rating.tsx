@@ -12,61 +12,70 @@ const EMOJI_TITLES: Record<(typeof RATING_EMOJIS)[number], string> = {
     "🍆": "The food was horny and now so am I",
 }
 
+const RATING_COLORS = [
+    "#b53920", // flame-pea-700 - terrible (deep red)
+    "#db573d", // flame-pea-600 - bad
+    "#eb6348", // flame-pea-500 - meh
+    "#7d2b1f", // muted brown-red - neutral
+    "#f58974", // flame-pea-400 - good
+    "#fab5a7", // flame-pea-300 - great (soft peach)
+    "#fde7e3", // flame-pea-100 - amazing (warm cream)
+] as const
+
 export function EmojiRating(props: { rating: number | null; onRate: (rating: number) => void | Promise<void> }) {
     const [hoverRating, setHoverRating] = createSignal<number | null>(null)
 
     const displayRating = () => hoverRating() ?? props.rating
 
-    // hover > selected > fallback
     const selectedTitle = () => {
-        const hoverIdx = hoverRating()
-        if (hoverIdx !== null) {
-            const hoverEmoji = RATING_EMOJIS[hoverIdx]
-            return hoverEmoji !== undefined ? EMOJI_TITLES[hoverEmoji] : ""
-        }
+        const idx = hoverRating() ?? props.rating
+        if (idx === null) return "Tap an emoji to rate"
+        const emoji = RATING_EMOJIS[idx]
+        return emoji !== undefined ? EMOJI_TITLES[emoji] : ""
+    }
 
-        const selectedIdx = props.rating
-        if (selectedIdx !== null) {
-            const selectedEmoji = RATING_EMOJIS[selectedIdx]
-            return selectedEmoji !== undefined ? EMOJI_TITLES[selectedEmoji] : ""
-        }
-
-        return "No rating"
+    const activeColor = () => {
+        const idx = displayRating()
+        return idx !== null ? RATING_COLORS[idx] : "#b53920"
     }
 
     const handleRate = async (index: number, button: HTMLButtonElement) => {
         await props.onRate(index)
-        // Restore focus to prevent scroll jump on re-render
         button.focus({ preventScroll: true })
     }
 
     return (
-        <div class="flex flex-col gap-3">
-            <div class="flex items-center justify-between gap-1" onMouseLeave={() => setHoverRating(null)}>
+        <div class="flex w-full flex-col items-center gap-2">
+            {/* Emoji scale */}
+            <div class="flex items-center gap-0.5" onMouseLeave={() => setHoverRating(null)}>
                 <For each={RATING_EMOJIS}>
-                    {(emoji, index) => (
-                        <button
-                            type="button"
-                            class={`cursor-pointer p-1 text-2xl transition-transform duration-150 hover:scale-110 focus:outline-none sm:text-2xl ${
-                                displayRating() === index() ? "opacity-100" : "opacity-40 grayscale"
-                            }`}
-                            onMouseEnter={() => setHoverRating(index())}
-                            onClick={(e) => {
-                                e.preventDefault()
-                                handleRate(index(), e.currentTarget)
-                            }}
-                            title={EMOJI_TITLES[emoji as (typeof RATING_EMOJIS)[number]]}
-                        >
-                            {emoji}
-                        </button>
-                    )}
+                    {(emoji, index) => {
+                        const isActive = () => displayRating() === index()
+
+                        return (
+                            <button
+                                type="button"
+                                onMouseEnter={() => setHoverRating(index())}
+                                onClick={(e) => {
+                                    e.preventDefault()
+                                    handleRate(index(), e.currentTarget)
+                                }}
+                                class={`flex size-8 items-center justify-center text-lg transition-all duration-200 focus:outline-none sm:size-9 sm:text-xl ${
+                                    isActive() ? "scale-110" : "hover:scale-105"
+                                } ${isActive() ? "opacity-100" : "opacity-40 grayscale hover:opacity-70 hover:grayscale-[50%]"}`}
+                                style={isActive() ? { color: activeColor() } : undefined}
+                            >
+                                {emoji}
+                            </button>
+                        )
+                    }}
                 </For>
             </div>
-            <div class="flex h-10 items-center justify-center overflow-hidden">
-                <span class="line-clamp-2 text-center text-sm leading-tight text-neutral-500 italic">
-                    {selectedTitle()}
-                </span>
-            </div>
+
+            {/* Message - full width, centered, can wrap */}
+            <p class="max-w-full text-center text-sm leading-snug font-medium text-flame-pea-700 italic transition-colors duration-200 dark:text-flame-pea-400">
+                {selectedTitle()}
+            </p>
         </div>
     )
 }
