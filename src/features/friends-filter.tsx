@@ -18,9 +18,7 @@ export function FriendsFilter(props: {
 
     return (
         <div class="mb-6 flex flex-col gap-4 sm:flex-row sm:items-start">
-            {/* Left side: Filters and Search */}
             <div class="flex flex-1 flex-col gap-3">
-                {/* Filter badges row */}
                 <div class="flex flex-wrap items-center gap-2">
                     <div class="flex items-center gap-1.5 text-neutral-500">
                         <Funnel
@@ -60,7 +58,6 @@ export function FriendsFilter(props: {
                     )}
                 </div>
 
-                {/* Search row */}
                 <div class="flex items-center">
                     <SearchInput
                         value={props.search}
@@ -71,7 +68,6 @@ export function FriendsFilter(props: {
                 </div>
             </div>
 
-            {/* Right side: Action buttons */}
             <div class="flex shrink-0 flex-col gap-2 sm:flex-row">{props.children}</div>
         </div>
     )

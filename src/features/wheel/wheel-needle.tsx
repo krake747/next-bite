@@ -1,9 +1,7 @@
 export function WheelNeedle() {
     return (
         <div class="pointer-events-none absolute top-0 left-1/2 z-10 -translate-x-1/2 -translate-y-1">
-            {/* Needle container with drop shadow */}
             <div class="relative">
-                {/* Main needle triangle - pointing DOWN into the wheel with amber color */}
                 <div
                     class="size-0 border-t-28 border-r-14 border-l-14 border-t-amber-500 border-r-transparent border-l-transparent"
                     style={{
@@ -11,7 +9,6 @@ export function WheelNeedle() {
                     }}
                 />
 
-                {/* Highlight line on needle */}
                 <div class="absolute top-1 left-1/2 h-3.5 w-0.5 -translate-x-1/2 bg-linear-to-b from-white/40 to-transparent" />
             </div>
         </div>

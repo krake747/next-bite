@@ -43,7 +43,6 @@ export function RestaurantCard(props: { restaurant: Restaurant } & ComponentProp
     return (
         <>
             <Card {...cardProps}>
-                {/* Hero Image Section - Always Visible */}
                 <div class="relative aspect-video w-full overflow-hidden rounded-t-xl">
                     <Show
                         when={hasImages()}
@@ -66,14 +65,12 @@ export function RestaurantCard(props: { restaurant: Restaurant } & ComponentProp
                         />
                         <div class="pointer-events-none absolute inset-0 bg-linear-to-t from-black/60 via-black/20 to-transparent" />
                     </Show>
-                    {/* Cuisine badge - always shown in image area */}
                     <div class="absolute top-4 right-4">
                         <Badge variant="editorial">
                             <Utensils class="mr-1.5 size-3.5" />
                             {local.restaurant.cuisine}
                         </Badge>
                     </div>
-                    {/* View gallery button - only when has images */}
                     <Show when={hasImages()}>
                         <Show
                             when={imageCount() > 1}
@@ -104,9 +101,7 @@ export function RestaurantCard(props: { restaurant: Restaurant } & ComponentProp
                     </Show>
                 </div>
 
-                {/* Content Area */}
                 <div class="flex flex-col gap-5 p-6">
-                    {/* Restaurant Header */}
                     <div class="flex flex-col gap-2">
                         <div class="flex items-center justify-between gap-3">
                             <h3
@@ -146,7 +141,6 @@ export function RestaurantCard(props: { restaurant: Restaurant } & ComponentProp
                         </div>
                     </div>
 
-                    {/* Notes Section */}
                     <Show when={local.restaurant.notes}>
                         <div class="h-12">
                             <p
@@ -168,12 +162,10 @@ export function RestaurantCard(props: { restaurant: Restaurant } & ComponentProp
                         </div>
                     </Show>
 
-                    {/* Rating Section - Visual Anchor */}
                     <div class="rounded-lg bg-neutral-50/80 p-4 dark:bg-white/5">
                         <EmojiRating rating={local.restaurant.rating ?? null} onRate={handleRate} />
                     </div>
 
-                    {/* Collapsible Sections */}
                     <div class="flex flex-col gap-2">
                         <Show when={hasLocation()}>
                             <Collapsible open={showMap()} onOpenChange={setShowMap}>
@@ -217,7 +209,6 @@ export function RestaurantCard(props: { restaurant: Restaurant } & ComponentProp
                     </div>
                 </div>
 
-                {/* Footer */}
                 <CardFooter class="flex items-center justify-between text-sm text-neutral-500 dark:text-neutral-400">
                     <span>
                         Proposed by{" "}

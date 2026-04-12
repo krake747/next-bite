@@ -29,10 +29,8 @@ export function SpinWheelButton(props: ComponentProps<"button">) {
             )}
             aria-label={isSpinning() ? "Wheel spinning" : canSpin() ? "Spin the wheel" : "Add more restaurants to spin"}
         >
-            {/* Inner ring decoration */}
             <div class="absolute inset-2 rounded-full border-2 border-white/20" />
 
-            {/* Icon with rotation */}
             <RotateCw
                 class={cx(
                     "size-8 transition-transform duration-200 sm:size-10",
@@ -46,7 +44,6 @@ export function SpinWheelButton(props: ComponentProps<"button">) {
                 }}
             />
 
-            {/* Ripple effect when spinning */}
             <Show when={isSpinning()}>
                 <span class="absolute inset-0 animate-ping rounded-full bg-flame-pea-700/20" />
                 <span class="absolute -inset-2 animate-pulse rounded-full bg-flame-pea-700/10" />

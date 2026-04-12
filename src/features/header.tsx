@@ -4,7 +4,6 @@ import type { ComponentProps, JSX } from "solid-js"
 export function Header(props: { children?: JSX.Element }) {
     return (
         <header class="relative overflow-hidden border-b border-neutral-200/60 bg-[#faf9f7] dark:border-white/10 dark:bg-[#1a1918]">
-            {/* Noise texture */}
             <div
                 class="pointer-events-none absolute inset-0 opacity-[0.02] dark:opacity-[0.03]"
                 style={{
@@ -12,13 +11,11 @@ export function Header(props: { children?: JSX.Element }) {
                 }}
             />
 
-            {/* Gradient mesh background */}
             <div class="pointer-events-none absolute inset-0">
                 <div class="absolute top-0 left-0 h-full w-1/2 bg-linear-to-br from-flame-pea-100/40 via-transparent to-transparent dark:from-flame-pea-900/20" />
                 <div class="absolute right-0 bottom-0 h-full w-1/2 bg-linear-to-tl from-orange-100/30 via-transparent to-transparent dark:from-orange-900/10" />
             </div>
 
-            {/* Floating orbs */}
             <div class="animate-float pointer-events-none absolute top-[20%] left-[10%] h-32 w-32 rounded-full bg-flame-pea-300/15 blur-[80px] will-change-transform" />
             <div
                 class="animate-float pointer-events-none absolute right-[15%] bottom-[10%] h-24 w-24 rounded-full bg-orange-300/10 blur-[60px] will-change-transform"
@@ -29,7 +26,6 @@ export function Header(props: { children?: JSX.Element }) {
                 style={{ "animation-delay": "2s" }}
             />
 
-            {/* Grid pattern */}
             <div
                 class="pointer-events-none absolute inset-0 opacity-[0.015] dark:opacity-[0.02]"
                 style={{
@@ -40,20 +36,15 @@ export function Header(props: { children?: JSX.Element }) {
 
             <div class="relative mx-auto w-full max-w-350 px-6 py-16 sm:px-8 sm:py-20 lg:px-12 lg:py-24">
                 <div class="flex min-h-70 items-center justify-between gap-12">
-                    {/* Main content */}
                     <div class="max-w-2xl flex-1">{props.children ?? <DefaultChildren />}</div>
 
-                    {/* Visual anchor */}
                     <div class="hidden shrink-0 items-center justify-center sm:flex">
                         <div class="relative">
-                            {/* Outer glow ring */}
                             <div class="absolute inset-0 rounded-full bg-flame-pea-500/20 blur-2xl" />
                             <div class="absolute inset-0 animate-pulse rounded-full bg-flame-pea-400/10 blur-xl" />
-                            {/* Main icon container */}
                             <div class="relative flex size-20 items-center justify-center rounded-2xl bg-linear-to-br from-flame-pea-500 to-flame-pea-600 text-white shadow-[0_8px_30px_rgb(181,57,32,0.3)] dark:from-flame-pea-600 dark:to-flame-pea-700 dark:shadow-[0_8px_30px_rgb(181,57,32,0.4)]">
                                 <UtensilsCrossed class="size-10" />
                             </div>
-                            {/* Floating accents */}
                             <div class="absolute top-0 -right-3 size-4 rounded-full bg-yellow-400" />
                             <div class="absolute -bottom-2 -left-2 size-3 rounded-full bg-flame-pea-400" />
                         </div>
@@ -81,7 +72,6 @@ export function HeaderTitle(props: ComponentProps<"h1">) {
         >
             <span class="relative inline-block">
                 {props.children}
-                {/* Accent underline */}
                 <svg class="absolute -bottom-2 left-0 h-2 w-full" viewBox="0 0 100 8" preserveAspectRatio="none">
                     <path
                         d="M0 6 Q25 0 50 6 T100 6"

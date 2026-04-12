@@ -50,7 +50,6 @@ function LoginPage() {
             }
         >
             <div class="relative flex min-h-screen flex-col overflow-hidden bg-[#faf9f7] dark:bg-[#1a1918]">
-                {/* Noise texture */}
                 <div
                     class="pointer-events-none absolute inset-0 opacity-[0.02] dark:opacity-[0.03]"
                     style={{
@@ -58,20 +57,17 @@ function LoginPage() {
                     }}
                 />
 
-                {/* Gradient mesh background */}
                 <div class="pointer-events-none absolute inset-0">
                     <div class="absolute top-0 left-0 h-full w-1/2 bg-linear-to-br from-flame-pea-100/40 via-transparent to-transparent dark:from-flame-pea-900/20" />
                     <div class="absolute right-0 bottom-0 h-full w-1/2 bg-linear-to-tl from-orange-100/30 via-transparent to-transparent dark:from-orange-900/10" />
                 </div>
 
-                {/* Floating orbs */}
                 <div class="animate-float pointer-events-none absolute top-[20%] left-[10%] h-32 w-32 rounded-full bg-flame-pea-300/15 blur-[80px] will-change-transform" />
                 <div
                     class="animate-float pointer-events-none absolute right-[15%] bottom-[10%] h-24 w-24 rounded-full bg-orange-300/10 blur-[60px] will-change-transform"
                     style={{ "animation-delay": "1s" }}
                 />
 
-                {/* Grid pattern */}
                 <div
                     class="pointer-events-none absolute inset-0 opacity-[0.015] dark:opacity-[0.02]"
                     style={{
@@ -80,10 +76,8 @@ function LoginPage() {
                     }}
                 />
 
-                {/* Main content */}
                 <div class="relative z-10 flex flex-1 items-center justify-center px-4 py-12">
                     <div class="w-full max-w-md">
-                        {/* Header */}
                         <div class="mb-8 text-center">
                             <div class="mx-auto mb-6 inline-flex">
                                 <div class="relative">
@@ -119,7 +113,6 @@ function LoginPage() {
                             </p>
                         </div>
 
-                        {/* Form card */}
                         <div class="relative rounded-2xl border border-neutral-200/60 bg-white/80 p-6 shadow-[0_4px_20px_rgb(0,0,0,0.08)] backdrop-blur-sm dark:border-white/10 dark:bg-white/5 dark:shadow-[0_4px_20px_rgb(0,0,0,0.3)]">
                             <Show when={auth.error()}>
                                 {(err) => (
@@ -164,7 +157,6 @@ function LoginPage() {
                             </Form>
                         </div>
 
-                        {/* Sign up link */}
                         <div class="mt-6 text-center">
                             <p class="text-sm text-neutral-600 dark:text-neutral-400">
                                 Do not have an account?{" "}
@@ -177,7 +169,6 @@ function LoginPage() {
                             </p>
                         </div>
 
-                        {/* Back to home */}
                         <div class="mt-4 text-center">
                             <Link
                                 to="/"

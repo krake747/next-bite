@@ -15,7 +15,6 @@ export function EmptyRestaurantsState(props: { hasFilter?: boolean; hasSearch?: 
 
     return (
         <div class="col-span-full flex flex-col items-center justify-center py-16 text-center">
-            {/* Decorative element */}
             <div class="relative mb-6">
                 <div class="flex h-20 w-20 items-center justify-center rounded-full bg-linear-to-br from-flame-pea-100 to-flame-pea-200 dark:from-flame-pea-900/30 dark:to-flame-pea-800/20">
                     <Show
@@ -25,12 +24,10 @@ export function EmptyRestaurantsState(props: { hasFilter?: boolean; hasSearch?: 
                         <SearchX class="h-8 w-8 text-flame-pea-600 dark:text-flame-pea-400" />
                     </Show>
                 </div>
-                {/* Decorative dots */}
                 <div class="absolute -top-1 -right-1 h-3 w-3 rounded-full bg-flame-pea-400/60" />
                 <div class="absolute -bottom-1 -left-1 h-2 w-2 rounded-full bg-amber-400/60" />
             </div>
 
-            {/* Title */}
             <h3
                 class="mb-2 text-xl font-semibold text-neutral-900 dark:text-neutral-100"
                 style={{ "font-family": "var(--font-display)" }}
@@ -40,7 +37,6 @@ export function EmptyRestaurantsState(props: { hasFilter?: boolean; hasSearch?: 
                 </Show>
             </h3>
 
-            {/* Description */}
             <p class="mb-6 max-w-sm text-neutral-600 dark:text-neutral-400">
                 <Show
                     when={isSearching()}
@@ -56,7 +52,6 @@ export function EmptyRestaurantsState(props: { hasFilter?: boolean; hasSearch?: 
                 </Show>
             </p>
 
-            {/* Action */}
             <Show when={!isSearching()}>
                 <Show
                     when={auth.isAuthenticated()}

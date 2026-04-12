@@ -78,7 +78,7 @@ export function Select(props: SelectProps) {
             )}
             <select
                 {...selectProps}
-                class="w-full rounded-lg border border-neutral-200 bg-white px-3 py-2.5 text-neutral-900 focus:border-flame-pea-500 focus:ring-1 focus:ring-flame-pea-500 focus:outline-none dark:border-white/10 dark:bg-white/5 dark:text-white dark:focus:border-flame-pea-400 dark:focus:ring-flame-pea-400"
+                class="w-full rounded-lg border border-neutral-200 bg-white px-3 py-2.5 text-neutral-900 focus:border-flame-pea-500 focus:ring-1 focus:ring-flame-pea-500 focus:outline-none dark:border-white/20 dark:bg-[#1a1918] dark:text-white dark:focus:border-flame-pea-400 dark:focus:ring-flame-pea-400"
             >
                 {props.children}
             </select>

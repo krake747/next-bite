@@ -16,7 +16,6 @@ export function SpinningWheel() {
 
     return (
         <div class="relative">
-            {/* Outer decorative ring */}
             <div
                 class="absolute inset-0 rounded-full bg-linear-to-br from-amber-200 via-neutral-200 to-flame-pea-100 p-2 dark:from-amber-900/30 dark:via-neutral-800 dark:to-flame-pea-900/20"
                 style={{
@@ -29,7 +28,6 @@ export function SpinningWheel() {
                 <div class="size-full rounded-full bg-white shadow-inner dark:bg-[#1a1918]" />
             </div>
 
-            {/* Main wheel container */}
             <div class="relative flex items-center justify-center overflow-clip rounded-full bg-white shadow-xl dark:bg-[#1a1918]">
                 <svg
                     width={size}
@@ -49,10 +47,8 @@ export function SpinningWheel() {
                 </svg>
             </div>
 
-            {/* Needle */}
             <WheelNeedle />
 
-            {/* Center button */}
             <SpinWheelButton class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" />
         </div>
     )

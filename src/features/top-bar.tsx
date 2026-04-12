@@ -11,7 +11,6 @@ export function TopBar() {
     return (
         <div class="sticky top-0 z-40 w-full border-b border-neutral-200/60 bg-[#faf9f7]/80 backdrop-blur-md dark:border-white/10 dark:bg-[#1a1918]/80">
             <div class="mx-auto flex h-14 w-full max-w-350 items-center justify-between px-6 sm:px-8 lg:px-12">
-                {/* Logo */}
                 <Link
                     to="/"
                     class="flex items-center gap-2 text-neutral-900 transition-colors duration-150 ease hover:text-flame-pea-600 dark:text-neutral-100 dark:hover:text-flame-pea-400"
@@ -24,7 +23,6 @@ export function TopBar() {
                     </span>
                 </Link>
 
-                {/* Actions */}
                 <div class="flex items-center gap-3">
                     <DarkModeToggle />
                     <AuthButton />

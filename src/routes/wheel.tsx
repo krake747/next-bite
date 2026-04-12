@@ -30,21 +30,17 @@ function WheelPage() {
         <WheelProvider store={wheel}>
             <PageLayout>
                 <div class="container mx-auto w-full max-w-350 px-6 pt-6 pb-8 sm:px-8 lg:px-12">
-                    {/* Hero header */}
                     <Header>
                         <div class="flex flex-col items-start">
-                            {/* Glowing tag */}
                             <div class="group relative inline-flex items-center gap-2 rounded-full bg-linear-to-r from-flame-pea-500 to-orange-500 px-4 py-1.5 text-xs font-bold tracking-widest text-white uppercase shadow-[0_4px_15px_rgb(181,57,32,0.3)] transition-all duration-200 ease-out hover:shadow-[0_6px_20px_rgb(181,57,32,0.4)] dark:from-flame-pea-600 dark:to-orange-600 dark:shadow-[0_4px_15px_rgb(181,57,32,0.5)]">
                                 <Sparkles class="size-3" />
                                 <span>Decision Time</span>
-                                {/* Shine effect */}
                                 <div class="absolute inset-0 -translate-x-full skew-x-12 bg-linear-to-r from-transparent via-white/20 to-transparent transition-transform duration-300 ease-out group-hover:translate-x-full" />
                             </div>
                             <HeaderTitle class="mt-5">Spin the wheel</HeaderTitle>
                             <HeaderSubtitle class="max-w-md">
                                 Let fate decide your next bite. May the culinary odds be ever in your favor.
                             </HeaderSubtitle>
-                            {/* CTA buttons */}
                             <div class="mt-8 flex items-center gap-4">
                                 <div class="flex items-center gap-1 text-sm font-medium text-neutral-500 dark:text-neutral-400">
                                     <span class="flex size-5 items-center justify-center rounded-full bg-neutral-200 dark:bg-white/10">
@@ -70,7 +66,6 @@ function WheelPage() {
                         </div>
                     </Header>
 
-                    {/* Action bar */}
                     <div class="border-b border-neutral-200/60 py-4 dark:border-white/10">
                         <div class="flex items-center justify-between gap-4">
                             <Link
@@ -88,7 +83,6 @@ function WheelPage() {
                         </div>
                     </div>
 
-                    {/* Wheel content */}
                     <div class="pt-8">
                         <div class="mx-auto max-w-2xl">
                             <Suspense fallback={<EmptyWheelState />}>
@@ -98,13 +92,9 @@ function WheelPage() {
                                         onClose={() => setShowSettings(false)}
                                     />
                                 </Show>
-
-                                {/* Wheel container */}
                                 <div class="relative flex flex-col items-center">
                                     <SpinningWheel />
                                 </div>
-
-                                {/* Messages area */}
                                 <div class="mt-8">
                                     <Show when={wheel.selected()} fallback={<Instructions />}>
                                         {(restaurant) => (

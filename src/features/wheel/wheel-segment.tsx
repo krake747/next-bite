@@ -76,7 +76,6 @@ export function WheelSegment(props: { restaurant: Restaurant; idx: number }) {
                     "font-weight": "500",
                 }}
             >
-                {/* Truncate long names */}
                 {props.restaurant.name.length > 18 ? props.restaurant.name.slice(0, 16) + "..." : props.restaurant.name}
             </text>
         </g>

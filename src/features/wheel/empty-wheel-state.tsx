@@ -6,7 +6,6 @@ import Plus from "lucide-solid/icons/plus"
 export function EmptyWheelState() {
     return (
         <div class="flex flex-col items-center py-12 text-center">
-            {/* Decorative circle with dashed border */}
             <div class="relative mb-6">
                 <div class="flex size-48 items-center justify-center rounded-full border-2 border-dashed border-flame-pea-300 bg-linear-to-br from-flame-pea-50 to-white sm:size-56 dark:border-flame-pea-800 dark:from-flame-pea-900/20 dark:to-[#1a1918]">
                     <div class="text-center">
@@ -24,7 +23,6 @@ export function EmptyWheelState() {
                     </div>
                 </div>
 
-                {/* Decorative elements */}
                 <div class="absolute -top-2 -right-2 size-4 rounded-full bg-flame-pea-400/30 dark:bg-flame-pea-500/30" />
                 <div class="absolute -bottom-1 -left-3 size-3 rounded-full bg-flame-pea-300/40 dark:bg-flame-pea-600/30" />
             </div>

@@ -7,6 +7,7 @@ import { FieldWrapper, Input, Textarea, Select } from "../ui/field"
 import { RestaurantSchema, type RestaurantOutput } from "../core/schemas"
 import { PlacesAutocomplete } from "../ui/places-autocomplete"
 import { ImageUpload } from "../ui/image-upload"
+import UtensilsCrossed from "lucide-solid/icons/utensils-crossed"
 
 export function AddRestaurantDialog(props: { show: boolean; onOpenChange: (open: boolean) => void }) {
     const addRestaurant = useAddRestaurant()
@@ -38,15 +39,25 @@ export function AddRestaurantDialog(props: { show: boolean; onOpenChange: (open:
     return (
         <Dialog open={props.show} onOpenChange={props.onOpenChange}>
             <Dialog.Portal>
-                <Dialog.Overlay class="fixed inset-0 bg-black/50" />
+                <Dialog.Overlay class="fixed inset-0 bg-black/50 backdrop-blur-sm" />
                 <div class="fixed inset-0 flex items-center justify-center p-4">
-                    <Dialog.Content class="w-full max-w-lg rounded-lg bg-white p-6 dark:bg-neutral-800">
-                        <Dialog.Title class="mb-4 text-lg font-semibold">Add Restaurant</Dialog.Title>
+                    <Dialog.Content class="relative w-full max-w-lg overflow-hidden rounded-2xl border border-neutral-200/60 bg-[#faf9f7]/95 p-6 shadow-[0_8px_30px_rgb(0,0,0,0.12)] backdrop-blur-md dark:border-white/10 dark:bg-[#1a1918]/95 dark:shadow-[0_8px_30px_rgb(0,0,0,0.4)]">
+                        <div class="mb-6 flex items-center gap-3">
+                            <div class="flex size-10 items-center justify-center rounded-xl bg-linear-to-br from-flame-pea-500 to-flame-pea-600 text-white dark:from-flame-pea-600 dark:to-flame-pea-700">
+                                <UtensilsCrossed class="size-5" />
+                            </div>
+                            <Dialog.Title
+                                class="text-xl font-semibold text-neutral-900 dark:text-white"
+                                style={{ "font-family": "var(--font-display)" }}
+                            >
+                                Add Restaurant
+                            </Dialog.Title>
+                        </div>
 
                         <Show
                             when={auth.isAuthenticated()}
                             fallback={
-                                <div class="space-y-4 text-center">
+                                <div class="space-y-4 py-8 text-center">
                                     <p class="text-neutral-600 dark:text-neutral-400">
                                         Please sign in to add restaurants.
                                     </p>
@@ -64,7 +75,8 @@ export function AddRestaurantDialog(props: { show: boolean; onOpenChange: (open:
                                                 {...field.props}
                                                 input={field.input}
                                                 errors={field.errors}
-                                                placeholder="Name"
+                                                label="Restaurant name"
+                                                placeholder="The fancy burger place"
                                             />
                                         </FieldWrapper>
                                     )}
@@ -76,7 +88,8 @@ export function AddRestaurantDialog(props: { show: boolean; onOpenChange: (open:
                                                 {...field.props}
                                                 input={field.input}
                                                 errors={field.errors}
-                                                placeholder="Cuisine"
+                                                label="Cuisine"
+                                                placeholder="Burgers, Italian, etc."
                                             />
                                         </FieldWrapper>
                                     )}
@@ -87,6 +100,7 @@ export function AddRestaurantDialog(props: { show: boolean; onOpenChange: (open:
                                             <PlacesAutocomplete
                                                 value={field.input ?? ""}
                                                 onChange={handleLocationChange}
+                                                label="Location"
                                                 placeholder="Search for a restaurant..."
                                             />
                                         </FieldWrapper>
@@ -99,7 +113,9 @@ export function AddRestaurantDialog(props: { show: boolean; onOpenChange: (open:
                                                 {...field.props}
                                                 input={field.input}
                                                 errors={field.errors}
-                                                placeholder="Notes (optional)"
+                                                label="Notes"
+                                                placeholder="What to order..."
+                                                rows={3}
                                             />
                                         </FieldWrapper>
                                     )}
@@ -112,7 +128,8 @@ export function AddRestaurantDialog(props: { show: boolean; onOpenChange: (open:
                                                 input={field.input}
                                                 errors={field.errors}
                                                 type="url"
-                                                placeholder="Link (optional)"
+                                                label="Menu link"
+                                                placeholder="https://menu.com/..."
                                             />
                                         </FieldWrapper>
                                     )}
@@ -120,7 +137,12 @@ export function AddRestaurantDialog(props: { show: boolean; onOpenChange: (open:
                                 <Field of={form} path={["addedBy"]}>
                                     {(field) => (
                                         <FieldWrapper errors={field.errors}>
-                                            <Select {...field.props} input={field.input} errors={field.errors}>
+                                            <Select
+                                                {...field.props}
+                                                input={field.input}
+                                                errors={field.errors}
+                                                label="Added by"
+                                            >
                                                 <option value="">Select friend</option>
                                                 <Show when={friends()}>
                                                     {(friends) => (
@@ -134,11 +156,11 @@ export function AddRestaurantDialog(props: { show: boolean; onOpenChange: (open:
                                     )}
                                 </Field>
                                 <ImageUpload images={images()} onImagesChange={setImages} maxImages={5} />
-                                <div class="flex justify-end gap-2">
+                                <div class="flex justify-end gap-2 pt-2">
                                     <Button variant="secondary" onClick={() => props.onOpenChange(false)}>
                                         Cancel
                                     </Button>
-                                    <Button type="submit">Add</Button>
+                                    <Button type="submit">Add Restaurant</Button>
                                 </div>
                             </Form>
                         </Show>

@@ -62,7 +62,6 @@ export function EmojiRating(props: { rating: number | null; onRate: (rating: num
                     )}
                 </For>
             </div>
-            {/* Fixed height caption container - prevents layout shift */}
             <div class="flex h-10 items-center justify-center overflow-hidden">
                 <span class="line-clamp-2 text-center text-sm leading-tight text-neutral-500 italic">
                     {selectedTitle()}

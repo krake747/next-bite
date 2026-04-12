@@ -9,6 +9,7 @@ import { RestaurantSchema, type RestaurantOutput } from "../core/schemas"
 import { EmojiRating } from "../ui/emoji-rating"
 import { PlacesAutocomplete } from "../ui/places-autocomplete"
 import { ImageUpload } from "../ui/image-upload"
+import UtensilsCrossed from "lucide-solid/icons/utensils-crossed"
 
 export function EditRestaurantDialog(props: {
     show: boolean
@@ -71,15 +72,25 @@ export function EditRestaurantDialog(props: {
     return (
         <Dialog open={props.show} onOpenChange={props.onOpenChange}>
             <Dialog.Portal>
-                <Dialog.Overlay class="fixed inset-0 bg-black/50" />
+                <Dialog.Overlay class="fixed inset-0 bg-black/50 backdrop-blur-sm" />
                 <div class="fixed inset-0 flex items-center justify-center p-4">
-                    <Dialog.Content class="w-full max-w-md rounded-lg bg-white p-6 dark:bg-neutral-800">
-                        <Dialog.Title class="mb-4 text-lg font-semibold">Edit Restaurant</Dialog.Title>
+                    <Dialog.Content class="relative w-full max-w-lg overflow-hidden rounded-2xl border border-neutral-200/60 bg-[#faf9f7]/95 p-6 shadow-[0_8px_30px_rgb(0,0,0,0.12)] backdrop-blur-md dark:border-white/10 dark:bg-[#1a1918]/95 dark:shadow-[0_8px_30px_rgb(0,0,0,0.4)]">
+                        <div class="mb-6 flex items-center gap-3">
+                            <div class="flex size-10 items-center justify-center rounded-xl bg-linear-to-br from-flame-pea-500 to-flame-pea-600 text-white dark:from-flame-pea-600 dark:to-flame-pea-700">
+                                <UtensilsCrossed class="size-5" />
+                            </div>
+                            <Dialog.Title
+                                class="text-xl font-semibold text-neutral-900 dark:text-white"
+                                style={{ "font-family": "var(--font-display)" }}
+                            >
+                                Edit Restaurant
+                            </Dialog.Title>
+                        </div>
 
                         <Show
                             when={auth.isAuthenticated()}
                             fallback={
-                                <div class="space-y-4 text-center">
+                                <div class="space-y-4 py-8 text-center">
                                     <p class="text-neutral-600 dark:text-neutral-400">
                                         Please sign in to edit restaurants.
                                     </p>
@@ -97,7 +108,8 @@ export function EditRestaurantDialog(props: {
                                                 {...field.props}
                                                 input={field.input}
                                                 errors={field.errors}
-                                                placeholder="Name"
+                                                label="Restaurant name"
+                                                placeholder="The fancy burger place"
                                             />
                                         </FieldWrapper>
                                     )}
@@ -109,7 +121,8 @@ export function EditRestaurantDialog(props: {
                                                 {...field.props}
                                                 input={field.input}
                                                 errors={field.errors}
-                                                placeholder="Cuisine"
+                                                label="Cuisine"
+                                                placeholder="Burgers, Italian, etc."
                                             />
                                         </FieldWrapper>
                                     )}
@@ -120,6 +133,7 @@ export function EditRestaurantDialog(props: {
                                             <PlacesAutocomplete
                                                 value={field.input ?? ""}
                                                 onChange={handleLocationChange}
+                                                label="Location"
                                                 placeholder="Search for a restaurant..."
                                             />
                                         </FieldWrapper>
@@ -132,7 +146,9 @@ export function EditRestaurantDialog(props: {
                                                 {...field.props}
                                                 input={field.input}
                                                 errors={field.errors}
-                                                placeholder="Notes (optional)"
+                                                label="Notes"
+                                                placeholder="What to order..."
+                                                rows={3}
                                             />
                                         </FieldWrapper>
                                     )}
@@ -145,66 +161,81 @@ export function EditRestaurantDialog(props: {
                                                 input={field.input}
                                                 errors={field.errors}
                                                 type="url"
-                                                placeholder="Link (optional)"
+                                                label="Menu link"
+                                                placeholder="https://menu.com/..."
                                             />
                                         </FieldWrapper>
                                     )}
                                 </Field>
-                                <Field of={form} path={["addedBy"]}>
-                                    {(field) => (
-                                        <FieldWrapper errors={field.errors}>
-                                            <Select {...field.props} input={field.input} errors={field.errors}>
-                                                <option value="" selected={!field.input}>
-                                                    Select friend
-                                                </option>
-                                                <Show
-                                                    when={friends()}
-                                                    fallback={
-                                                        <option>
-                                                            <Loading message="friends" />
-                                                        </option>
-                                                    }
+                                <div class="grid grid-cols-2 gap-4">
+                                    <Field of={form} path={["addedBy"]}>
+                                        {(field) => (
+                                            <FieldWrapper errors={field.errors}>
+                                                <Select
+                                                    {...field.props}
+                                                    input={field.input}
+                                                    errors={field.errors}
+                                                    label="Added by"
                                                 >
-                                                    {(friends) => (
-                                                        <For each={friends()}>
-                                                            {(f) => (
-                                                                <option
-                                                                    value={f.name}
-                                                                    selected={field.input === f.name}
-                                                                >
-                                                                    {f.name}
-                                                                </option>
-                                                            )}
-                                                        </For>
-                                                    )}
-                                                </Show>
-                                            </Select>
-                                        </FieldWrapper>
-                                    )}
-                                </Field>
-                                <Field of={form} path={["rating"]}>
-                                    {(field) => (
-                                        <FieldWrapper errors={field.errors}>
-                                            <EmojiRating
-                                                rating={
-                                                    typeof field.input === "number" && field.input >= 0
-                                                        ? field.input
-                                                        : null
-                                                }
-                                                onRate={(rating) => setInput(form, { path: ["rating"], input: rating })}
-                                            />
-                                        </FieldWrapper>
-                                    )}
-                                </Field>
+                                                    <option value="" selected={!field.input}>
+                                                        Select friend
+                                                    </option>
+                                                    <Show
+                                                        when={friends()}
+                                                        fallback={
+                                                            <option>
+                                                                <Loading message="friends" />
+                                                            </option>
+                                                        }
+                                                    >
+                                                        {(friends) => (
+                                                            <For each={friends()}>
+                                                                {(f) => (
+                                                                    <option
+                                                                        value={f.name}
+                                                                        selected={field.input === f.name}
+                                                                    >
+                                                                        {f.name}
+                                                                    </option>
+                                                                )}
+                                                            </For>
+                                                        )}
+                                                    </Show>
+                                                </Select>
+                                            </FieldWrapper>
+                                        )}
+                                    </Field>
+                                    <Field of={form} path={["rating"]}>
+                                        {(field) => (
+                                            <FieldWrapper errors={field.errors}>
+                                                <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300">
+                                                    Rating
+                                                </label>
+                                                <div class="mt-2">
+                                                    <EmojiRating
+                                                        rating={
+                                                            typeof field.input === "number" && field.input >= 0
+                                                                ? field.input
+                                                                : null
+                                                        }
+                                                        onRate={(rating) =>
+                                                            setInput(form, { path: ["rating"], input: rating })
+                                                        }
+                                                    />
+                                                </div>
+                                            </FieldWrapper>
+                                        )}
+                                    </Field>
+                                </div>
                                 <ImageUpload
                                     images={images()}
                                     onImagesChange={setImages}
                                     maxImages={5}
                                     restaurantId={props.restaurant._id}
                                 />
-                                <div class="flex justify-end gap-2">
+                                <div class="flex justify-end gap-2 pt-2">
                                     <Button onClick={() => props.onOpenChange(false)}>Cancel</Button>
-                                    <Button type="submit">Update</Button>
+                                    <Button type="submit">Save Changes</Button>
                                 </div>
                             </Form>
                         </Show>

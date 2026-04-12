@@ -23,7 +23,6 @@ export function WheelConfigModal(props: { restaurants: () => Restaurant[]; onClo
     return (
         <div class="fixed inset-0 z-50 flex items-center justify-center bg-neutral-950/60 p-4 backdrop-blur-sm">
             <div class="max-h-[85vh] w-full max-w-md overflow-hidden rounded-xl border border-neutral-200/80 bg-[#faf9f7] shadow-2xl dark:border-neutral-700 dark:bg-[#1a1918]">
-                {/* Header */}
                 <div class="border-b border-neutral-200/60 bg-white px-5 py-4 dark:border-neutral-700 dark:bg-[#1f1e1d]">
                     <div class="flex items-center justify-between">
                         <div class="flex items-center gap-3">
@@ -52,7 +51,6 @@ export function WheelConfigModal(props: { restaurants: () => Restaurant[]; onClo
                     </div>
                 </div>
 
-                {/* Content */}
                 <div class="space-y-5 overflow-y-auto p-5">
                     <Show when={!wheel.hasEnoughRestaurants()}>
                         <div class="flex items-start gap-3 rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700 dark:bg-red-900/20 dark:text-red-400">
@@ -62,7 +60,6 @@ export function WheelConfigModal(props: { restaurants: () => Restaurant[]; onClo
                     </Show>
 
                     <Show when={wheel.hasEnoughRestaurants()}>
-                        {/* Selection Mode */}
                         <div class="space-y-3">
                             <label class="block text-xs font-semibold tracking-wide text-neutral-500 uppercase dark:text-neutral-400">
                                 Selection Mode
@@ -95,7 +92,6 @@ export function WheelConfigModal(props: { restaurants: () => Restaurant[]; onClo
                             </div>
                         </div>
 
-                        {/* Number of Restaurants */}
                         <div class="space-y-3">
                             <div class="flex items-center justify-between">
                                 <label class="block text-xs font-semibold tracking-wide text-neutral-500 uppercase dark:text-neutral-400">
@@ -130,7 +126,6 @@ export function WheelConfigModal(props: { restaurants: () => Restaurant[]; onClo
                             </div>
                         </div>
 
-                        {/* Manual Selection */}
                         <Show when={wheel.selectionMode() === "manual"}>
                             <div class="space-y-3">
                                 <div class="flex items-center justify-between">
@@ -149,7 +144,6 @@ export function WheelConfigModal(props: { restaurants: () => Restaurant[]; onClo
                                     </span>
                                 </div>
 
-                                {/* Search Input */}
                                 <div class="relative">
                                     <Search class="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-neutral-400" />
                                     <input
@@ -221,7 +215,6 @@ export function WheelConfigModal(props: { restaurants: () => Restaurant[]; onClo
                     </Show>
                 </div>
 
-                {/* Footer */}
                 <div class="border-t border-neutral-200/60 bg-white px-5 py-4 dark:border-neutral-700 dark:bg-[#1f1e1d]">
                     <Button class="w-full" onClick={props.onClose} disabled={!wheel.hasEnoughRestaurants()}>
                         Done
