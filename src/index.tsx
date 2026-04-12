@@ -1,10 +1,10 @@
 /* @refresh reload */
 import { render } from "solid-js/web"
 import { RouterProvider, createRouter, createBrowserHistory } from "@tanstack/solid-router"
-import "@fontsource-variable/playfair-display/wght.css"
-import "@fontsource-variable/source-sans-3/wght.css"
-import "./index.css"
 import { routeTree } from "./routeTree.gen"
+
+import "./fonts.css"
+import "./index.css"
 
 const root = document.getElementById("root")
 if (!root) {
