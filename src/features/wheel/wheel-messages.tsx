@@ -76,7 +76,7 @@ export function Instructions() {
             >
                 Press the button to give the wheel a whirl.
             </p>
-            <p class="mt-2 text-sm text-neutral-500 dark:text-neutral-500">
+            <p class="mt-3 text-sm text-neutral-500 dark:text-neutral-500">
                 Let fate (or your stomach) decide where to dine.
             </p>
         </div>

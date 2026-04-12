@@ -16,16 +16,62 @@ export function SpinningWheel() {
 
     return (
         <div class="relative z-0">
+            {/* Metallic chrome ring with conic gradient for realistic metal effect */}
             <div
-                class="absolute inset-0 rounded-full bg-linear-to-br from-amber-200 via-neutral-200 to-flame-pea-100 p-2 dark:from-amber-900/30 dark:via-neutral-800 dark:to-flame-pea-900/20"
+                class="absolute inset-0 rounded-full p-3"
                 style={{
-                    width: `${size + 24}px`,
-                    height: `${size + 24}px`,
-                    top: "-12px",
-                    left: "-12px",
+                    width: `${size + 28}px`,
+                    height: `${size + 28}px`,
+                    top: "-14px",
+                    left: "-14px",
+                    background: `conic-gradient(
+                        from 0deg,
+                        #c9a961 0deg,
+                        #f4e8c1 15deg,
+                        #8b7355 30deg,
+                        #d4af37 45deg,
+                        #fff8dc 60deg,
+                        #b8860b 75deg,
+                        #e6d5a8 90deg,
+                        #cd853f 105deg,
+                        #f5deb3 120deg,
+                        #d4af37 135deg,
+                        #fffacd 150deg,
+                        #b8860b 165deg,
+                        #c9a961 180deg,
+                        #f4e8c1 195deg,
+                        #8b7355 210deg,
+                        #d4af37 225deg,
+                        #fff8dc 240deg,
+                        #b8860b 255deg,
+                        #e6d5a8 270deg,
+                        #cd853f 285deg,
+                        #f5deb3 300deg,
+                        #d4af37 315deg,
+                        #fffacd 330deg,
+                        #b8860b 345deg,
+                        #c9a961 360deg
+                    )`,
+                    boxShadow: `
+                        0 0 0 1px rgba(0,0,0,0.1),
+                        0 4px 20px rgba(0,0,0,0.15),
+                        inset 0 2px 4px rgba(255,255,255,0.3),
+                        inset 0 -2px 4px rgba(0,0,0,0.1)
+                    `,
                 }}
             >
-                <div class="size-full rounded-full bg-white shadow-inner dark:bg-[#1a1918]" />
+                {/* Inner groove effect */}
+                <div
+                    class="size-full rounded-full"
+                    style={{
+                        background: `linear-gradient(145deg, #1a1918 0%, #2d2b29 50%, #1a1918 100%)`,
+                        boxShadow: `
+                            inset 0 3px 8px rgba(0,0,0,0.4),
+                            inset 0 -2px 4px rgba(255,255,255,0.05),
+                            0 1px 2px rgba(255,255,255,0.1)
+                        `,
+                    }}
+                />
             </div>
 
             <div class="relative flex items-center justify-center overflow-clip rounded-full bg-white shadow-xl dark:bg-[#1a1918]">
