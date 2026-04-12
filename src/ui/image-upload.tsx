@@ -174,7 +174,7 @@ function ImagePreview(props: { imageUrl: string; index: number; onRemove: () => 
                 <button
                     type="button"
                     onClick={props.onRemove}
-                    class="absolute top-1 right-1 rounded-full bg-red-600 p-1 text-white opacity-0 shadow-md transition-opacity group-hover:opacity-100 hover:bg-red-700 focus:opacity-100"
+                    class="absolute top-1 right-1 rounded-full bg-red-600 p-1 text-white opacity-0 shadow-md transition-opacity duration-150 ease group-hover:opacity-100 hover:bg-red-700 focus:opacity-100"
                     aria-label="Remove image"
                 >
                     <X class="size-3" />

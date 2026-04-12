@@ -87,7 +87,7 @@ export function ImageGalleryModal(props: ImageGalleryModalProps) {
                                                         src={imageUrl}
                                                         alt={`Image ${index() + 1}`}
                                                         aspectRatio="1"
-                                                        class="transition-transform duration-300 group-hover:scale-105"
+                                                        class="transition-transform duration-200 ease-out group-hover:scale-105"
                                                     />
                                                 </button>
                                             )}
@@ -101,7 +101,7 @@ export function ImageGalleryModal(props: ImageGalleryModalProps) {
                                     type="button"
                                     onClick={handlePrevious}
                                     class={cx(
-                                        "absolute left-4 rounded-full bg-white/20 p-3 text-white backdrop-blur-sm transition-colors hover:bg-white/30",
+                                        "absolute left-4 rounded-full bg-white/20 p-3 text-white backdrop-blur-sm transition-colors duration-150 ease hover:bg-white/30",
                                         props.images.length <= 1 && "hidden",
                                     )}
                                     aria-label="Previous image"
@@ -126,7 +126,7 @@ export function ImageGalleryModal(props: ImageGalleryModalProps) {
                                     type="button"
                                     onClick={handleNext}
                                     class={cx(
-                                        "absolute right-4 rounded-full bg-white/20 p-3 text-white backdrop-blur-sm transition-colors hover:bg-white/30",
+                                        "absolute right-4 rounded-full bg-white/20 p-3 text-white backdrop-blur-sm transition-colors duration-150 ease hover:bg-white/30",
                                         props.images.length <= 1 && "hidden",
                                     )}
                                     aria-label="Next image"

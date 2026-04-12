@@ -177,13 +177,13 @@ export function RestaurantCard(props: { restaurant: Restaurant } & ComponentProp
                     <div class="flex flex-col gap-2">
                         <Show when={hasLocation()}>
                             <Collapsible open={showMap()} onOpenChange={setShowMap}>
-                                <Collapsible.Trigger class="flex w-full items-center justify-between rounded-lg px-3 py-2.5 text-sm text-neutral-600 transition-colors hover:bg-neutral-100 hover:text-neutral-900 dark:text-neutral-400 dark:hover:bg-white/5 dark:hover:text-neutral-100">
+                                <Collapsible.Trigger class="flex w-full items-center justify-between rounded-lg px-3 py-2.5 text-sm text-neutral-600 transition-colors duration-150 ease hover:bg-neutral-100 hover:text-neutral-900 dark:text-neutral-400 dark:hover:bg-white/5 dark:hover:text-neutral-100">
                                     <div class="flex items-center gap-2">
                                         <MapPin class="size-4" />
                                         <span>View on Map</span>
                                     </div>
                                     <ChevronDown
-                                        class="size-4 transition-transform duration-200"
+                                        class="size-4 transition-transform duration-200 ease-out"
                                         classList={{ "rotate-180": showMap() }}
                                     />
                                 </Collapsible.Trigger>

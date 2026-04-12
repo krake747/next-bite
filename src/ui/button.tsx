@@ -3,7 +3,7 @@ import { cva, type VariantProps } from "./variants"
 import { splitProps, type ComponentProps } from "solid-js"
 
 const button = cva({
-    base: "inline-flex cursor-pointer items-center justify-center font-semibold shadow-xs focus-visible:outline-2 focus-visible:outline-offset-2 dark:shadow-none",
+    base: "inline-flex cursor-pointer items-center justify-center font-semibold shadow-xs focus-visible:outline-2 focus-visible:outline-offset-2 active:scale-[0.97] dark:shadow-none",
     variants: {
         variant: {
             primary:

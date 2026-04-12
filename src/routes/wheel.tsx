@@ -29,18 +29,44 @@ function WheelPage() {
     return (
         <WheelProvider store={wheel}>
             <PageLayout>
-                <div class="container mx-auto max-w-7xl px-4 pt-6 pb-8">
-                    {/* Magazine-style header */}
+                <div class="container mx-auto w-full max-w-350 px-6 pt-6 pb-8 sm:px-8 lg:px-12">
+                    {/* Hero header */}
                     <Header>
                         <div class="flex flex-col items-start">
-                            <div class="inline-flex items-center gap-2 rounded-full bg-flame-pea-100 px-2 py-1 text-xs font-semibold tracking-wide text-flame-pea-700 uppercase dark:bg-flame-pea-900/50 dark:text-flame-pea-400">
+                            {/* Glowing tag */}
+                            <div class="group relative inline-flex items-center gap-2 rounded-full bg-linear-to-r from-flame-pea-500 to-orange-500 px-4 py-1.5 text-xs font-bold tracking-widest text-white uppercase shadow-[0_4px_15px_rgb(181,57,32,0.3)] transition-all duration-200 ease-out hover:shadow-[0_6px_20px_rgb(181,57,32,0.4)] dark:from-flame-pea-600 dark:to-orange-600 dark:shadow-[0_4px_15px_rgb(181,57,32,0.5)]">
                                 <Sparkles class="size-3" />
-                                Decision Time
+                                <span>Decision Time</span>
+                                {/* Shine effect */}
+                                <div class="absolute inset-0 -translate-x-full skew-x-12 bg-linear-to-r from-transparent via-white/20 to-transparent transition-transform duration-300 ease-out group-hover:translate-x-full" />
                             </div>
-                            <HeaderTitle class="mt-3">Spin the wheel</HeaderTitle>
+                            <HeaderTitle class="mt-5">Spin the wheel</HeaderTitle>
                             <HeaderSubtitle class="max-w-md">
                                 Let fate decide your next bite. May the culinary odds be ever in your favor.
                             </HeaderSubtitle>
+                            {/* CTA buttons */}
+                            <div class="mt-8 flex items-center gap-4">
+                                <div class="flex items-center gap-1 text-sm font-medium text-neutral-500 dark:text-neutral-400">
+                                    <span class="flex size-5 items-center justify-center rounded-full bg-neutral-200 dark:bg-white/10">
+                                        1
+                                    </span>
+                                    <span class="ml-2">Spin</span>
+                                </div>
+                                <div class="h-4 w-px bg-neutral-300 dark:bg-neutral-600" />
+                                <div class="flex items-center gap-1 text-sm font-medium text-neutral-500 dark:text-neutral-400">
+                                    <span class="flex size-5 items-center justify-center rounded-full bg-neutral-200 dark:bg-white/10">
+                                        2
+                                    </span>
+                                    <span class="ml-2">Discover</span>
+                                </div>
+                                <div class="h-4 w-px bg-neutral-300 dark:bg-neutral-600" />
+                                <div class="flex items-center gap-1 text-sm font-medium text-neutral-500 dark:text-neutral-400">
+                                    <span class="flex size-5 items-center justify-center rounded-full bg-neutral-200 dark:bg-white/10">
+                                        3
+                                    </span>
+                                    <span class="ml-2">Eat</span>
+                                </div>
+                            </div>
                         </div>
                     </Header>
 
@@ -50,9 +76,9 @@ function WheelPage() {
                             <Link
                                 to="/"
                                 from={Route.fullPath}
-                                class="group inline-flex items-center gap-2 text-sm font-medium text-neutral-600 transition-colors hover:text-flame-pea-700 dark:text-neutral-400 dark:hover:text-flame-pea-400"
+                                class="group inline-flex items-center gap-2 text-sm font-medium text-neutral-600 transition-colors duration-150 ease hover:text-flame-pea-700 dark:text-neutral-400 dark:hover:text-flame-pea-400"
                             >
-                                <ArrowLeft class="size-4 transition-transform group-hover:-translate-x-0.5" />
+                                <ArrowLeft class="size-4 transition-transform duration-150 ease-out group-hover:-translate-x-0.5" />
                                 Back to restaurants
                             </Link>
                             <Button variant="secondary" size="md" onClick={() => setShowSettings(true)}>

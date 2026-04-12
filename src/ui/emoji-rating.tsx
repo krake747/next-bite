@@ -47,7 +47,7 @@ export function EmojiRating(props: { rating: number | null; onRate: (rating: num
                     {(emoji, index) => (
                         <button
                             type="button"
-                            class={`cursor-pointer p-1 text-2xl transition-transform duration-200 hover:scale-125 focus:outline-none sm:text-2xl ${
+                            class={`cursor-pointer p-1 text-2xl transition-transform duration-150 hover:scale-110 focus:outline-none sm:text-2xl ${
                                 displayRating() === index() ? "opacity-100" : "opacity-40 grayscale"
                             }`}
                             onMouseEnter={() => setHoverRating(index())}

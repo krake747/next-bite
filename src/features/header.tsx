@@ -4,32 +4,58 @@ import type { ComponentProps, JSX } from "solid-js"
 export function Header(props: { children?: JSX.Element }) {
     return (
         <header class="relative overflow-hidden border-b border-neutral-200/60 bg-[#faf9f7] dark:border-white/10 dark:bg-[#1a1918]">
-            {/* Subtle texture overlay */}
+            {/* Noise texture */}
             <div
-                class="pointer-events-none absolute inset-0 opacity-[0.03] dark:opacity-[0.05]"
+                class="pointer-events-none absolute inset-0 opacity-[0.02] dark:opacity-[0.03]"
                 style={{
-                    "background-image": `url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E")`,
+                    "background-image": `url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")`,
                 }}
             />
 
-            {/* Decorative diagonal stripe */}
-            <div class="pointer-events-none absolute inset-0 overflow-hidden">
-                <div class="absolute -top-20 -right-20 h-[200%] w-32 rotate-12 bg-linear-to-b from-flame-pea-100/50 via-flame-pea-50/30 to-transparent dark:from-flame-pea-900/20 dark:via-flame-pea-900/10" />
+            {/* Gradient mesh background */}
+            <div class="pointer-events-none absolute inset-0">
+                <div class="absolute top-0 left-0 h-full w-1/2 bg-linear-to-br from-flame-pea-100/40 via-transparent to-transparent dark:from-flame-pea-900/20" />
+                <div class="absolute right-0 bottom-0 h-full w-1/2 bg-linear-to-tl from-orange-100/30 via-transparent to-transparent dark:from-orange-900/10" />
             </div>
 
-            <div class="relative mx-auto max-w-7xl px-4 py-12 sm:px-6 sm:py-16 lg:px-8 lg:py-20">
-                <div class="flex items-start justify-between gap-8">
-                    {/* Main content - left side */}
-                    <div class="flex-1">{props.children ?? <DefaultChildren />}</div>
+            {/* Floating orbs */}
+            <div class="animate-float pointer-events-none absolute top-[20%] left-[10%] h-32 w-32 rounded-full bg-flame-pea-300/15 blur-[80px] will-change-transform" />
+            <div
+                class="animate-float pointer-events-none absolute right-[15%] bottom-[10%] h-24 w-24 rounded-full bg-orange-300/10 blur-[60px] will-change-transform"
+                style={{ "animation-delay": "1s" }}
+            />
+            <div
+                class="animate-float pointer-events-none absolute top-[60%] right-[30%] h-16 w-16 rounded-full bg-flame-pea-400/10 blur-[50px] will-change-transform"
+                style={{ "animation-delay": "2s" }}
+            />
 
-                    {/* Visual anchor - right side */}
-                    <div class="hidden shrink-0 flex-col items-end gap-4 sm:flex">
+            {/* Grid pattern */}
+            <div
+                class="pointer-events-none absolute inset-0 opacity-[0.015] dark:opacity-[0.02]"
+                style={{
+                    "background-image": `linear-gradient(rgba(0,0,0,0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(0,0,0,0.05) 1px, transparent 1px)`,
+                    "background-size": "60px 60px",
+                }}
+            />
+
+            <div class="relative mx-auto w-full max-w-350 px-6 py-16 sm:px-8 sm:py-20 lg:px-12 lg:py-24">
+                <div class="flex min-h-70 items-center justify-between gap-12">
+                    {/* Main content */}
+                    <div class="max-w-2xl flex-1">{props.children ?? <DefaultChildren />}</div>
+
+                    {/* Visual anchor */}
+                    <div class="hidden shrink-0 items-center justify-center sm:flex">
                         <div class="relative">
-                            <div class="flex size-16 items-center justify-center rounded-2xl bg-flame-pea-100 text-flame-pea-600 shadow-sm lg:size-20 dark:bg-flame-pea-900/50 dark:text-flame-pea-400">
-                                <UtensilsCrossed class="size-8 lg:size-10" />
+                            {/* Outer glow ring */}
+                            <div class="absolute inset-0 rounded-full bg-flame-pea-500/20 blur-2xl" />
+                            <div class="absolute inset-0 animate-pulse rounded-full bg-flame-pea-400/10 blur-xl" />
+                            {/* Main icon container */}
+                            <div class="relative flex size-20 items-center justify-center rounded-2xl bg-linear-to-br from-flame-pea-500 to-flame-pea-600 text-white shadow-[0_8px_30px_rgb(181,57,32,0.3)] dark:from-flame-pea-600 dark:to-flame-pea-700 dark:shadow-[0_8px_30px_rgb(181,57,32,0.4)]">
+                                <UtensilsCrossed class="size-10" />
                             </div>
-                            {/* Small decorative circle */}
-                            <div class="absolute -bottom-2 -left-2 size-6 rounded-full bg-flame-pea-500/20 dark:bg-flame-pea-500/30" />
+                            {/* Floating accents */}
+                            <div class="absolute top-0 -right-3 size-4 rounded-full bg-yellow-400" />
+                            <div class="absolute -bottom-2 -left-2 size-3 rounded-full bg-flame-pea-400" />
                         </div>
                     </div>
                 </div>
@@ -50,29 +76,37 @@ function DefaultChildren() {
 export function HeaderTitle(props: ComponentProps<"h1">) {
     return (
         <h1
-            class="text-4xl leading-[0.9] font-semibold tracking-tight text-neutral-900 sm:text-5xl lg:text-6xl dark:text-white"
+            class="relative text-5xl leading-tight font-semibold tracking-tight text-neutral-900 sm:text-6xl lg:text-7xl dark:text-white"
             style={{ "font-family": "var(--font-display)" }}
         >
-            {props.children}
+            <span class="relative inline-block">
+                {props.children}
+                {/* Accent underline */}
+                <svg class="absolute -bottom-2 left-0 h-2 w-full" viewBox="0 0 100 8" preserveAspectRatio="none">
+                    <path
+                        d="M0 6 Q25 0 50 6 T100 6"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        class="text-flame-pea-500 dark:text-flame-pea-400"
+                    />
+                </svg>
+            </span>
         </h1>
     )
 }
 
 export function HeaderSubtitle(props: ComponentProps<"p">) {
-    return (
-        <p class="mt-4 max-w-lg text-lg leading-relaxed font-medium text-pretty text-neutral-600 dark:text-neutral-400">
-            {props.children}
-        </p>
-    )
+    return <p class="mt-6 max-w-xl text-xl leading-relaxed text-neutral-600 dark:text-neutral-400">{props.children}</p>
 }
 
 export function HeaderBadge(props: { count: number }) {
     return (
-        <div class="mt-4 inline-flex items-center gap-2 rounded-full bg-flame-pea-100 py-2 pr-4 pl-2 text-sm font-semibold text-flame-pea-700 dark:bg-flame-pea-900/50 dark:text-flame-pea-400">
-            <span class="flex size-6 items-center justify-center rounded-full bg-flame-pea-600 text-xs text-white dark:bg-flame-pea-500">
+        <div class="mt-8 inline-flex items-center gap-3 rounded-full bg-white/80 px-1 py-1 text-sm font-semibold text-neutral-700 shadow-[0_2px_10px_rgb(0,0,0,0.08)] ring-1 ring-black/5 backdrop-blur-sm dark:bg-white/10 dark:text-neutral-200 dark:shadow-[0_2px_10px_rgb(0,0,0,0.3)] dark:ring-white/10">
+            <span class="flex h-8 w-8 items-center justify-center rounded-full bg-linear-to-br from-flame-pea-500 to-flame-pea-600 text-white shadow-inner">
                 {props.count}
             </span>
-            <span>places to try</span>
+            <span class="pr-3">places to try</span>
         </div>
     )
 }

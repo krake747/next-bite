@@ -39,7 +39,7 @@ export function LazyImage(props: LazyImageProps) {
                         loading={props.loading ?? "lazy"}
                         decoding={props.decoding ?? "async"}
                         class={cx(
-                            "h-full w-full object-cover transition-opacity duration-400",
+                            "h-full w-full object-cover transition-opacity duration-200 ease-out",
                             isLoaded() ? "opacity-100" : "opacity-0",
                             imgProps.class,
                         )}

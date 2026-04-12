@@ -42,7 +42,7 @@ function Home() {
 
     return (
         <PageLayout>
-            <div class="container mx-auto max-w-7xl px-4 pt-6 pb-8">
+            <div class="container mx-auto w-full max-w-350 px-6 pt-6 pb-8 sm:px-8 lg:px-12">
                 <Header>
                     <HeaderTitle>Our next bite</HeaderTitle>
                     <HeaderSubtitle>Places we're dreaming of trying together</HeaderSubtitle>
