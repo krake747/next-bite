@@ -1,4 +1,4 @@
-import { For, Show } from "solid-js"
+import { For, Show, createSignal } from "solid-js"
 import { Dialog } from "@kobalte/core/dialog"
 import { createForm, Field, Form, reset, setInput } from "@formisch/solid"
 import { useAddRestaurant, useFriends, useAuth } from "../core/hooks"
@@ -6,11 +6,13 @@ import { Button } from "../ui/button"
 import { FieldWrapper, Input, Textarea, Select } from "../ui/field"
 import { RestaurantSchema, type RestaurantOutput } from "../core/schemas"
 import { PlacesAutocomplete } from "../ui/places-autocomplete"
+import { ImageUpload } from "../ui/image-upload"
 
 export function AddRestaurantDialog(props: { show: boolean; onOpenChange: (open: boolean) => void }) {
     const addRestaurant = useAddRestaurant()
     const friends = useFriends()
     const auth = useAuth()
+    const [images, setImages] = createSignal<string[]>([])
 
     const form = createForm({ schema: RestaurantSchema })
 
@@ -24,8 +26,9 @@ export function AddRestaurantDialog(props: { show: boolean; onOpenChange: (open:
 
     const handleSubmit = async (output: RestaurantOutput) => {
         try {
-            await addRestaurant(output)
+            await addRestaurant({ ...output, images: images() })
             reset(form)
+            setImages([])
             props.onOpenChange(false)
         } catch (error) {
             console.error("Error adding restaurant:", error)
@@ -130,6 +133,7 @@ export function AddRestaurantDialog(props: { show: boolean; onOpenChange: (open:
                                         </FieldWrapper>
                                     )}
                                 </Field>
+                                <ImageUpload images={images()} onImagesChange={setImages} maxImages={5} />
                                 <div class="flex justify-end gap-2">
                                     <Button variant="secondary" onClick={() => props.onOpenChange(false)}>
                                         Cancel

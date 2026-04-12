@@ -1,4 +1,4 @@
-import { createEffect, For, Show } from "solid-js"
+import { createEffect, For, Show, createSignal } from "solid-js"
 import { Dialog } from "@kobalte/core/dialog"
 import { createForm, Field, Form, reset, setInput } from "@formisch/solid"
 import { useUpdateRestaurant, useFriends, useAuth, type Restaurant } from "../core/hooks"
@@ -8,6 +8,7 @@ import { FieldWrapper, Input, Textarea, Select } from "../ui/field"
 import { RestaurantSchema, type RestaurantOutput } from "../core/schemas"
 import { EmojiRating } from "../ui/emoji-rating"
 import { PlacesAutocomplete } from "../ui/places-autocomplete"
+import { ImageUpload } from "../ui/image-upload"
 
 export function EditRestaurantDialog(props: {
     show: boolean
@@ -17,6 +18,7 @@ export function EditRestaurantDialog(props: {
     const updateRestaurant = useUpdateRestaurant()
     const friends = useFriends()
     const auth = useAuth()
+    const [images, setImages] = createSignal<string[]>(props.restaurant.images ?? [])
 
     const form = createForm({
         schema: RestaurantSchema,
@@ -44,6 +46,7 @@ export function EditRestaurantDialog(props: {
             setInput(form, { path: ["link"], input: props.restaurant.link ?? "" })
             setInput(form, { path: ["addedBy"], input: props.restaurant.addedBy })
             setInput(form, { path: ["rating"], input: props.restaurant.rating })
+            setImages(props.restaurant.images ?? [])
         }
     })
 
@@ -57,7 +60,7 @@ export function EditRestaurantDialog(props: {
 
     const handleSubmit = async (output: RestaurantOutput) => {
         try {
-            await updateRestaurant({ id: props.restaurant._id, ...output })
+            await updateRestaurant({ id: props.restaurant._id, ...output, images: images() })
             reset(form)
             props.onOpenChange(false)
         } catch (error) {
@@ -193,6 +196,12 @@ export function EditRestaurantDialog(props: {
                                         </FieldWrapper>
                                     )}
                                 </Field>
+                                <ImageUpload
+                                    images={images()}
+                                    onImagesChange={setImages}
+                                    maxImages={5}
+                                    restaurantId={props.restaurant._id}
+                                />
                                 <div class="flex justify-end gap-2">
                                     <Button onClick={() => props.onOpenChange(false)}>Cancel</Button>
                                     <Button type="submit">Update</Button>

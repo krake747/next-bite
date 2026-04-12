@@ -17,6 +17,9 @@ importers:
       '@kobalte/core':
         specifier: ^0.13.11
         version: 0.13.11(solid-js@1.9.12)
+      '@solid-primitives/upload':
+        specifier: ^0.1.4
+        version: 0.1.4(solid-js@1.9.12)
       '@tailwindcss/vite':
         specifier: ^4.2.2
         version: 4.2.2(vite@8.0.8(@types/node@25.6.0)(esbuild@0.27.7)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.8.3))
@@ -1082,6 +1085,11 @@ packages:
 
   '@solid-primitives/trigger@1.2.3':
     resolution: {integrity: sha512-Za2JebEiDyfamjmDwRaESYqBBYOlgYGzB8kHYH0QrkXyLf2qNADlKdGN+z3vWSLCTDcKxChS43Kssjuc0OZhng==}
+    peerDependencies:
+      solid-js: ^1.6.12
+
+  '@solid-primitives/upload@0.1.4':
+    resolution: {integrity: sha512-67NUwiYFt52JKv38A52iiPBYhahfD0IeScH5YHFPQkVIIVceuMuFVuFpbRL1BNdb9+cYPaS6+KwTP+3oZ5aG4w==}
     peerDependencies:
       solid-js: ^1.6.12
 
@@ -2818,6 +2826,11 @@ snapshots:
       solid-js: 1.9.12
 
   '@solid-primitives/trigger@1.2.3(solid-js@1.9.12)':
+    dependencies:
+      '@solid-primitives/utils': 6.4.0(solid-js@1.9.12)
+      solid-js: 1.9.12
+
+  '@solid-primitives/upload@0.1.4(solid-js@1.9.12)':
     dependencies:
       '@solid-primitives/utils': 6.4.0(solid-js@1.9.12)
       solid-js: 1.9.12
