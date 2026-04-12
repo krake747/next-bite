@@ -23,7 +23,7 @@
         "@solid-primitives/upload": "^0.1.4",
         "@tailwindcss/vite": "^4.2.2",
         "@tanstack/solid-router": "^1.168.17",
-        "better-auth": "~1.5.6",
+        "better-auth": "~1.6.2",
         "convex": "^1.35.1",
         "cva": "1.0.0-beta.4",
         "lucide-solid": "^1.8.0",
