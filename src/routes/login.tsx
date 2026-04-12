@@ -1,4 +1,4 @@
-import { createSignal, Show, createEffect } from "solid-js"
+import { createSignal, Show } from "solid-js"
 import { createFileRoute, useNavigate, Link } from "@tanstack/solid-router"
 import { createForm, Field, Form } from "@formisch/solid"
 import { useAuth } from "../core/hooks"
@@ -27,12 +27,6 @@ function LoginPage() {
     const [error, setError] = createSignal<string | null>(null)
 
     const form = createForm({ schema: LoginSchema })
-
-    createEffect(() => {
-        if (auth.isAuthenticated()) {
-            navigate({ to: "/", replace: true, from: Route.fullPath })
-        }
-    })
 
     const handleEmailSubmit = async (output: LoginInput) => {
         setError(null)

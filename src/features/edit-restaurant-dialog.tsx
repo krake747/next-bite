@@ -1,4 +1,4 @@
-import { For, Show } from "solid-js"
+import { createEffect, For, Show } from "solid-js"
 import { Dialog } from "@kobalte/core/dialog"
 import { createForm, Field, Form, reset, setInput } from "@formisch/solid"
 import { useUpdateRestaurant, useFriends, useAuth, type Restaurant } from "../core/hooks"
@@ -7,6 +7,7 @@ import { Loading } from "../ui/loading"
 import { FieldWrapper, Input, Textarea, Select } from "../ui/field"
 import { RestaurantSchema, type RestaurantOutput } from "../core/schemas"
 import { EmojiRating } from "../ui/emoji-rating"
+import { PlacesAutocomplete } from "../ui/places-autocomplete"
 
 export function EditRestaurantDialog(props: {
     show: boolean
@@ -16,18 +17,43 @@ export function EditRestaurantDialog(props: {
     const updateRestaurant = useUpdateRestaurant()
     const friends = useFriends()
     const auth = useAuth()
+
     const form = createForm({
         schema: RestaurantSchema,
         initialInput: {
             name: props.restaurant.name,
             cuisine: props.restaurant.cuisine,
             location: props.restaurant.location,
+            lat: props.restaurant.lat,
+            lng: props.restaurant.lng,
             notes: props.restaurant.notes ?? "",
             link: props.restaurant.link ?? "",
             addedBy: props.restaurant.addedBy,
             rating: props.restaurant.rating,
         },
     })
+
+    createEffect(() => {
+        if (props.show) {
+            setInput(form, { path: ["name"], input: props.restaurant.name })
+            setInput(form, { path: ["cuisine"], input: props.restaurant.cuisine })
+            setInput(form, { path: ["location"], input: props.restaurant.location ?? "" })
+            setInput(form, { path: ["lat"], input: props.restaurant.lat })
+            setInput(form, { path: ["lng"], input: props.restaurant.lng })
+            setInput(form, { path: ["notes"], input: props.restaurant.notes ?? "" })
+            setInput(form, { path: ["link"], input: props.restaurant.link ?? "" })
+            setInput(form, { path: ["addedBy"], input: props.restaurant.addedBy })
+            setInput(form, { path: ["rating"], input: props.restaurant.rating })
+        }
+    })
+
+    const handleLocationChange = (address: string, lat?: number, lng?: number) => {
+        setInput(form, { path: ["location"], input: address })
+        if (lat != null && lng != null) {
+            setInput(form, { path: ["lat"], input: lat })
+            setInput(form, { path: ["lng"], input: lng })
+        }
+    }
 
     const handleSubmit = async (output: RestaurantOutput) => {
         try {
@@ -88,11 +114,10 @@ export function EditRestaurantDialog(props: {
                                 <Field of={form} path={["location"]}>
                                     {(field) => (
                                         <FieldWrapper errors={field.errors}>
-                                            <Input
-                                                {...field.props}
-                                                input={field.input}
-                                                errors={field.errors}
-                                                placeholder="Location"
+                                            <PlacesAutocomplete
+                                                value={field.input ?? ""}
+                                                onChange={handleLocationChange}
+                                                placeholder="Search for a restaurant..."
                                             />
                                         </FieldWrapper>
                                     )}

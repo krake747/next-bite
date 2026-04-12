@@ -54,7 +54,7 @@ function Home() {
                         handleSearch={setSearch}
                     >
                         <div class="flex flex-col gap-2 sm:ml-auto sm:flex-row">
-                            <Button onClick={() => navigate({ to: Route.fullPath, from: Route.fullPath })}>
+                            <Button onClick={() => navigate({ from: Route.fullPath, to: "/wheel" })}>
                                 <LoaderPinwheel class="size-4" />
                                 Spin the wheel
                             </Button>
