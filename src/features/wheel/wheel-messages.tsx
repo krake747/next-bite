@@ -3,7 +3,7 @@ import Sparkles from "lucide-solid/icons/sparkles"
 import UtensilsCrossed from "lucide-solid/icons/utensils-crossed"
 import Star from "lucide-solid/icons/star"
 
-interface Particle {
+type Particle = {
     id: number
     x: number
     y: number
@@ -11,6 +11,8 @@ interface Particle {
     duration: number
     delay: number
     color: string
+    randSign: number
+    randY: number
 }
 
 const PARTICLE_COLORS = ["#f97316", "#fbbf24", "#f59e0b", "#ef4444", "#ec4899"]
@@ -26,7 +28,9 @@ function CelebrationParticles() {
             size: Math.random() * 6 + 4,
             duration: Math.random() * 1000 + 1500,
             delay: Math.random() * 800,
-            color: PARTICLE_COLORS[Math.floor(Math.random() * PARTICLE_COLORS.length)]!,
+            color: PARTICLE_COLORS[Math.floor(Math.random() * PARTICLE_COLORS.length)] ?? PARTICLE_COLORS[0],
+            randSign: Math.random() > 0.5 ? 1 : -1,
+            randY: Math.random() * 50,
         }))
         setParticles(newParticles)
     })
@@ -45,6 +49,8 @@ function CelebrationParticles() {
                             background: particle.color,
                             "animation-duration": `${particle.duration}ms`,
                             "animation-delay": `${particle.delay}ms`,
+                            "--rand-sign": particle.randSign,
+                            "--rand-y": `${particle.randY}px`,
                         }}
                     />
                 )}
@@ -101,13 +107,13 @@ export function WinnerMessage(props: { restaurantName: string }) {
             </div>
 
             <div class="relative mb-2 flex items-center justify-center gap-2">
-                <div class="h-px w-8 bg-gradient-to-r from-transparent to-flame-pea-400/50" />
+                <div class="h-px w-8 bg-linear-to-r from-transparent to-flame-pea-400/50" />
                 <div class="flex items-center gap-1 text-xs font-medium tracking-widest text-flame-pea-600 uppercase dark:text-flame-pea-400">
                     <Star class="size-3 fill-current" />
                     Winner
                     <Star class="size-3 fill-current" />
                 </div>
-                <div class="h-px w-8 bg-gradient-to-l from-transparent to-flame-pea-400/50" />
+                <div class="h-px w-8 bg-linear-to-l from-transparent to-flame-pea-400/50" />
             </div>
 
             <h2

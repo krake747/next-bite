@@ -36,21 +36,20 @@ export function RestaurantCard(props: { restaurant: Restaurant } & ComponentProp
         await updateRestaurant({ id: local.restaurant._id, rating })
     }
 
-    const openDirections = () => {
-        if (!hasLocation()) return
-        const url = `https://www.google.com/maps/dir/?api=1&destination=${local.restaurant.lat},${local.restaurant.lng}`
-        window.open(url, "_blank")
+    const directionsUrl = () => {
+        if (!hasLocation()) return undefined
+        return `https://www.google.com/maps/dir/?api=1&destination=${local.restaurant.lat},${local.restaurant.lng}`
     }
 
     return (
         <>
             <Card {...cardProps}>
                 {/* Image Section - 2:1 ultra-wide for compact cards */}
-                <div class="relative aspect-[2/1] w-full overflow-hidden">
+                <div class="relative aspect-2/1 w-full overflow-hidden">
                     <Show
                         when={hasImages()}
                         fallback={
-                            <div class="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-[#f5f4f2] to-[#ebe9e6] dark:from-[#2d2b29] dark:to-[#262523]">
+                            <div class="absolute inset-0 flex items-center justify-center bg-linear-to-br from-[#f5f4f2] to-[#ebe9e6] dark:from-[#2d2b29] dark:to-[#262523]">
                                 <div class="flex items-center gap-2">
                                     <Utensils class="size-5 text-neutral-400 dark:text-neutral-500" />
                                     <span
@@ -70,7 +69,7 @@ export function RestaurantCard(props: { restaurant: Restaurant } & ComponentProp
                             loading="lazy"
                         />
                         {/* Elegant gradient overlay */}
-                        <div class="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
+                        <div class="pointer-events-none absolute inset-0 bg-linear-to-t from-black/70 via-black/20 to-transparent" />
                     </Show>
 
                     {/* Cuisine Badge - Top left */}
@@ -183,7 +182,7 @@ export function RestaurantCard(props: { restaurant: Restaurant } & ComponentProp
                             >
                                 "
                             </div>
-                            <div class="border-l-2 border-flame-pea-300/60 bg-gradient-to-r from-flame-pea-50/50 to-transparent py-2 pr-3 pl-6 dark:border-flame-pea-700/40 dark:from-flame-pea-950/20">
+                            <div class="border-l-2 border-flame-pea-300/60 bg-linear-to-r from-flame-pea-50/50 to-transparent py-2 pr-3 pl-6 dark:border-flame-pea-700/40 dark:from-flame-pea-950/20">
                                 <p
                                     class={`text-sm leading-relaxed text-neutral-700 dark:text-neutral-300 ${
                                         notesExpanded() ? "" : "line-clamp-2"
@@ -208,7 +207,7 @@ export function RestaurantCard(props: { restaurant: Restaurant } & ComponentProp
                     {/* Map Section */}
                     <Show when={hasLocation()}>
                         <Collapsible open={showMap()} onOpenChange={setShowMap}>
-                            <Collapsible.Trigger class="group/trigger flex w-full items-center justify-between rounded-xl border border-transparent px-3 py-2.5 text-sm text-neutral-600 transition-all duration-200 hover:border-neutral-200 hover:bg-neutral-50 dark:text-neutral-400 dark:hover:border-white/[0.08] dark:hover:bg-white/[0.03]">
+                            <Collapsible.Trigger class="group/trigger flex w-full items-center justify-between rounded-xl border border-transparent px-3 py-2.5 text-sm text-neutral-600 transition-all duration-200 hover:border-neutral-200 hover:bg-neutral-50 dark:text-neutral-400 dark:hover:border-white/8 dark:hover:bg-white/3">
                                 <div class="flex items-center gap-3">
                                     <div class="flex size-7 items-center justify-center rounded-full bg-neutral-100 transition-colors duration-200 group-hover/trigger:bg-flame-pea-100 dark:bg-neutral-800 dark:group-hover/trigger:bg-flame-pea-950/40">
                                         <Navigation class="size-3.5 text-neutral-500 transition-colors duration-200 group-hover/trigger:text-flame-pea-600 dark:text-neutral-500 dark:group-hover/trigger:text-flame-pea-400" />
@@ -221,9 +220,11 @@ export function RestaurantCard(props: { restaurant: Restaurant } & ComponentProp
                                 />
                             </Collapsible.Trigger>
                             <Collapsible.Content>
-                                <div
-                                    class="mt-2 aspect-video w-full cursor-pointer overflow-hidden rounded-xl border border-neutral-200 shadow-inner transition-shadow duration-200 hover:shadow-md dark:border-white/[0.08]"
-                                    onClick={openDirections}
+                                <a
+                                    href={directionsUrl()}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    class="mt-2 block aspect-video w-full cursor-pointer overflow-hidden rounded-xl border border-neutral-200 shadow-inner transition-shadow duration-200 hover:shadow-md dark:border-white/8"
                                     title="Get directions"
                                 >
                                     <Map
@@ -243,7 +244,7 @@ export function RestaurantCard(props: { restaurant: Restaurant } & ComponentProp
                                             title={local.restaurant.name ?? null}
                                         />
                                     </Map>
-                                </div>
+                                </a>
                                 <p class="mt-2 text-center text-xs text-neutral-500 dark:text-neutral-500">
                                     Click map to get directions
                                 </p>

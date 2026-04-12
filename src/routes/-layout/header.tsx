@@ -16,6 +16,10 @@ export function Header(props: { children?: JSX.Element }) {
     const parallax1 = createMemo(() => scrollY() * 0.15)
     const parallax2 = createMemo(() => scrollY() * -0.1)
     const parallax3 = createMemo(() => scrollY() * 0.08)
+    const parallaxTopRight = createMemo(() => `translateY(${scrollY() * 0.12}px)`)
+    const parallaxLeftMiddle = createMemo(() => `translateY(${scrollY() * -0.15}px)`)
+    const parallaxLeftBottom = createMemo(() => `translateY(${scrollY() * 0.06}px)`)
+    const parallaxRightBottom = createMemo(() => `translateY(${scrollY() * -0.08}px)`)
 
     return (
         <header
@@ -51,19 +55,19 @@ export function Header(props: { children?: JSX.Element }) {
             {/* Additional floating blobs - varied sizes */}
             <div
                 class="animate-float pointer-events-none absolute top-[5%] right-[5%] h-20 w-20 rounded-full bg-flame-pea-200/12 blur-2xl will-change-transform"
-                style={{ "animation-delay": "0.5s", transform: `translateY(${scrollY() * 0.12}px)` }}
+                style={{ "animation-delay": "0.5s", transform: parallaxTopRight() }}
             />
             <div
                 class="animate-float pointer-events-none absolute top-[40%] left-[25%] h-12 w-12 rounded-full bg-orange-400/10 blur-[30px] will-change-transform"
-                style={{ "animation-delay": "1.5s", transform: `translateY(${scrollY() * -0.15}px)` }}
+                style={{ "animation-delay": "1.5s", transform: parallaxLeftMiddle() }}
             />
             <div
                 class="animate-float pointer-events-none absolute bottom-[30%] left-[5%] h-40 w-40 rounded-full bg-flame-pea-500/8 blur-[100px] will-change-transform"
-                style={{ "animation-delay": "2.5s", transform: `translateY(${scrollY() * 0.06}px)` }}
+                style={{ "animation-delay": "2.5s", transform: parallaxLeftBottom() }}
             />
             <div
                 class="animate-float pointer-events-none absolute top-[70%] right-[5%] h-28 w-28 rounded-full bg-orange-200/10 blur-[70px] will-change-transform"
-                style={{ "animation-delay": "3s", transform: `translateY(${scrollY() * -0.08}px)` }}
+                style={{ "animation-delay": "3s", transform: parallaxRightBottom() }}
             />
 
             {/* Small accent dots */}

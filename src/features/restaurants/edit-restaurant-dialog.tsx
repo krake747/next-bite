@@ -36,8 +36,13 @@ export function EditRestaurantDialog(props: {
         },
     })
 
+    const [previousShow, setPreviousShow] = createSignal(props.show)
+
     createEffect(() => {
-        if (props.show) {
+        const currentShow = props.show
+        const prevShow = previousShow()
+        // Only reset form when dialog transitions from closed to open
+        if (currentShow && !prevShow) {
             setInput(form, { path: ["name"], input: props.restaurant.name })
             setInput(form, { path: ["cuisine"], input: props.restaurant.cuisine })
             setInput(form, { path: ["location"], input: props.restaurant.location ?? "" })
@@ -49,6 +54,7 @@ export function EditRestaurantDialog(props: {
             setInput(form, { path: ["rating"], input: props.restaurant.rating })
             setImages(props.restaurant.images ?? [])
         }
+        setPreviousShow(currentShow)
     })
 
     const handleLocationChange = (address: string, lat?: number, lng?: number) => {
@@ -56,6 +62,9 @@ export function EditRestaurantDialog(props: {
         if (lat != null && lng != null) {
             setInput(form, { path: ["lat"], input: lat })
             setInput(form, { path: ["lng"], input: lng })
+        } else {
+            setInput(form, { path: ["lat"], input: undefined })
+            setInput(form, { path: ["lng"], input: undefined })
         }
     }
 
@@ -94,9 +103,9 @@ export function EditRestaurantDialog(props: {
                                     <p class="text-neutral-600 dark:text-neutral-400">
                                         Please sign in to edit restaurants.
                                     </p>
-                                    <a href="/login">
-                                        <Button class="w-full">Sign In</Button>
-                                    </a>
+                                    <Button as="a" href="/login" class="w-full">
+                                        Sign In
+                                    </Button>
                                 </div>
                             }
                         >

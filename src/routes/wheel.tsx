@@ -62,29 +62,31 @@ function WheelPage() {
                                         </div>
 
                                         {/* Winner content appears below wheel when selected */}
-                                        {wheel.selected() && (
-                                            <div class="mt-8 space-y-6">
-                                                <WinnerMessage restaurantName={wheel.selected()!.name} />
-                                                <div class="animate-card-reveal relative mx-auto w-full max-w-md">
-                                                    <div class="absolute -inset-4 rounded-3xl bg-flame-pea-500/10 blur-2xl" />
-                                                    <div class="relative">
-                                                        <RestaurantCard restaurant={wheel.selected()!} />
+                                        <Show when={wheel.selected()}>
+                                            {(selected) => (
+                                                <div class="mt-8 space-y-6">
+                                                    <WinnerMessage restaurantName={selected.name} />
+                                                    <div class="animate-card-reveal relative mx-auto w-full max-w-md">
+                                                        <div class="absolute -inset-4 rounded-3xl bg-flame-pea-500/10 blur-2xl" />
+                                                        <div class="relative">
+                                                            <RestaurantCard restaurant={selected} />
+                                                        </div>
+                                                    </div>
+                                                    <div class="flex justify-center">
+                                                        <Button
+                                                            variant="primary"
+                                                            size="lg"
+                                                            onClick={() => wheel.spin()}
+                                                            disabled={wheel.isSpinning()}
+                                                            class="min-w-40"
+                                                        >
+                                                            <Sparkles class="size-5 transition-transform duration-200 group-hover:scale-110 group-hover:rotate-12" />
+                                                            <span>Spin Again</span>
+                                                        </Button>
                                                     </div>
                                                 </div>
-                                                <div class="flex justify-center">
-                                                    <Button
-                                                        variant="primary"
-                                                        size="lg"
-                                                        onClick={() => wheel.spin()}
-                                                        disabled={wheel.isSpinning()}
-                                                        class="min-w-40"
-                                                    >
-                                                        <Sparkles class="size-5 transition-transform duration-200 group-hover:scale-110 group-hover:rotate-12" />
-                                                        <span>Spin Again</span>
-                                                    </Button>
-                                                </div>
-                                            </div>
-                                        )}
+                                            )}
+                                        </Show>
                                     </>
                                 )}
                             </Suspense>

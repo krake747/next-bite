@@ -52,7 +52,7 @@ export function SpinningWheel() {
                         #b8860b 345deg,
                         #c9a961 360deg
                     )`,
-                    boxShadow: `
+                    "box-shadow": `
                         0 0 0 1px rgba(0,0,0,0.1),
                         0 4px 20px rgba(0,0,0,0.15),
                         inset 0 2px 4px rgba(255,255,255,0.3),
@@ -65,7 +65,7 @@ export function SpinningWheel() {
                     class="size-full rounded-full"
                     style={{
                         background: `linear-gradient(145deg, #1a1918 0%, #2d2b29 50%, #1a1918 100%)`,
-                        boxShadow: `
+                        "box-shadow": `
                             inset 0 3px 8px rgba(0,0,0,0.4),
                             inset 0 -2px 4px rgba(255,255,255,0.05),
                             0 1px 2px rgba(255,255,255,0.1)

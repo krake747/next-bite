@@ -1,10 +1,10 @@
-import { createContext, useContext, createSignal, onMount } from "solid-js"
+import { createContext, useContext, createSignal, onMount, type JSX } from "solid-js"
 
 const ThemeKey = "next-bite-theme"
 
 type Theme = "light" | "dark"
 
-interface ThemeContextValue {
+type ThemeContextValue = {
     theme: () => Theme
     toggleTheme: () => void
     isDark: () => boolean
@@ -12,14 +12,18 @@ interface ThemeContextValue {
 
 const ThemeContext = createContext<ThemeContextValue>()
 
-export function ThemeProvider(props: { children: any }) {
+function isValidTheme(value: string | null): value is Theme {
+    return value === "light" || value === "dark"
+}
+
+export function ThemeProvider(props: { children: JSX.Element }) {
     const [theme, setTheme] = createSignal<Theme>("light")
 
     onMount(() => {
         const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches
         const stored = localStorage.getItem(ThemeKey)
 
-        const initial = (stored as Theme) || (prefersDark ? "dark" : "light")
+        const initial: Theme = isValidTheme(stored) ? stored : prefersDark ? "dark" : "light"
         setTheme(initial)
         document.documentElement.classList.toggle("dark", initial === "dark")
     })

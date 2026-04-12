@@ -3,7 +3,7 @@ import { Button } from "../ui/button"
 import ArrowLeft from "lucide-solid/icons/arrow-left"
 import Settings from "lucide-solid/icons/settings"
 
-interface BackNavProps {
+type BackNavProps = {
     backTo?: string
     onBack?: () => void
     showConfigure?: boolean

@@ -183,7 +183,7 @@ export function useWheelStore(restaurants: Accessor<Restaurant[]>) {
                 const idx = s.selectedIds.indexOf(id)
                 if (idx > -1) {
                     s.selectedIds.splice(idx, 1)
-                } else {
+                } else if (s.selectedIds.length < s.targetCount) {
                     s.selectedIds.push(id)
                 }
                 s.selected = null

@@ -1,6 +1,5 @@
 import UtensilsCrossed from "lucide-solid/icons/utensils-crossed"
 import { Link } from "@tanstack/solid-router"
-import { Button } from "../../ui/button"
 import Plus from "lucide-solid/icons/plus"
 
 export function EmptyWheelState() {
@@ -29,11 +28,13 @@ export function EmptyWheelState() {
 
             <p class="mb-2 text-base text-neutral-600 dark:text-neutral-400">Add a restaurant to spin the wheel</p>
 
-            <Link to="/" viewTransition class="mt-4">
-                <Button>
-                    <Plus class="size-4" />
-                    Add Restaurants
-                </Button>
+            <Link
+                to="/"
+                viewTransition
+                class="mt-4 inline-flex items-center justify-center gap-x-1.5 rounded-md bg-flame-pea-700 px-3 py-2 text-sm font-semibold text-white shadow-xs hover:bg-flame-pea-600 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-flame-pea-700 active:scale-[0.97] dark:bg-flame-pea-600 dark:text-neutral-900 dark:hover:bg-flame-pea-500 dark:focus-visible:outline-flame-pea-50"
+            >
+                <Plus class="size-4" />
+                Add Restaurants
             </Link>
         </div>
     )

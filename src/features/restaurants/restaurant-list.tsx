@@ -6,7 +6,7 @@ import type { Restaurant } from "../../core/hooks"
 // Track which restaurant IDs have already been animated (persists across re-renders)
 const animatedRestaurantIds = new Set<string>()
 
-interface RestaurantListProps {
+type RestaurantListProps = {
     restaurants: Accessor<Restaurant[]>
     hasFilter?: boolean
     hasSearch?: boolean
@@ -15,9 +15,6 @@ interface RestaurantListProps {
 }
 
 export function RestaurantList(props: RestaurantListProps) {
-    const hasF = props.hasFilter ?? false
-    const hasS = props.hasSearch ?? false
-
     // Track previous sort order to detect changes
     let previousSortOrder = props.sortOrder
 
@@ -51,7 +48,13 @@ export function RestaurantList(props: RestaurantListProps) {
         <div data-component="restaurant-list" class="grid gap-8 md:grid-cols-2 md:gap-10">
             <Show
                 when={props.restaurants().length > 0}
-                fallback={<EmptyRestaurantsState hasFilter={hasF} hasSearch={hasS} onAddClick={props.onAddClick} />}
+                fallback={
+                    <EmptyRestaurantsState
+                        hasFilter={props.hasFilter ?? false}
+                        hasSearch={props.hasSearch ?? false}
+                        onAddClick={props.onAddClick}
+                    />
+                }
             >
                 <For each={props.restaurants()}>
                     {(restaurant, index) => {

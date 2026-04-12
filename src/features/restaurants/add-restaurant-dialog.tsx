@@ -22,6 +22,9 @@ export function AddRestaurantDialog(props: { show: boolean; onOpenChange: (open:
         if (lat != null && lng != null) {
             setInput(form, { path: ["lat"], input: lat })
             setInput(form, { path: ["lng"], input: lng })
+        } else {
+            setInput(form, { path: ["lat"], input: undefined })
+            setInput(form, { path: ["lng"], input: undefined })
         }
     }
 
@@ -61,9 +64,9 @@ export function AddRestaurantDialog(props: { show: boolean; onOpenChange: (open:
                                     <p class="text-neutral-600 dark:text-neutral-400">
                                         Please sign in to add restaurants.
                                     </p>
-                                    <a href="/login">
-                                        <Button class="w-full">Sign In</Button>
-                                    </a>
+                                    <Button as="a" href="/login" class="w-full">
+                                        Sign In
+                                    </Button>
                                 </div>
                             }
                         >

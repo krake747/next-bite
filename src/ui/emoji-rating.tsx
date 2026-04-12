@@ -1,6 +1,17 @@
 import { createSignal, For } from "solid-js"
+import { cx } from "./variants"
 
 const RATING_EMOJIS = ["🚑", "💩", "🤡", "😐", "😏", "😍", "🍆"] as const
+
+const EMOJI_LABELS = [
+    "1 out of 7 - Terrible",
+    "2 out of 7 - Bad",
+    "3 out of 7 - Poor",
+    "4 out of 7 - Okay",
+    "5 out of 7 - Good",
+    "6 out of 7 - Great",
+    "7 out of 7 - Amazing",
+] as const
 
 const EMOJI_TITLES: Record<(typeof RATING_EMOJIS)[number], string> = {
     "🚑": 'That place is "call an ambalamb" bad',
@@ -46,7 +57,6 @@ export function EmojiRating(props: { rating: number | null; onRate: (rating: num
 
     return (
         <div class="flex w-full flex-col items-center gap-2">
-            {/* Emoji scale */}
             <div class="flex items-center gap-0.5" onMouseLeave={() => setHoverRating(null)}>
                 <For each={RATING_EMOJIS}>
                     {(emoji, index) => {
@@ -60,9 +70,14 @@ export function EmojiRating(props: { rating: number | null; onRate: (rating: num
                                     e.preventDefault()
                                     handleRate(index(), e.currentTarget)
                                 }}
-                                class={`flex size-8 items-center justify-center text-lg transition-all duration-200 focus:outline-none sm:size-9 sm:text-xl ${
-                                    isActive() ? "scale-110" : "hover:scale-105"
-                                } ${isActive() ? "opacity-100" : "opacity-40 grayscale hover:opacity-70 hover:grayscale-[50%]"}`}
+                                aria-label={EMOJI_LABELS[index()]}
+                                class={cx(
+                                    "flex size-8 items-center justify-center text-lg transition-all duration-200 focus:outline-none sm:size-9 sm:text-xl",
+                                    isActive() ? "scale-110" : "hover:scale-105",
+                                    isActive()
+                                        ? "opacity-100"
+                                        : "opacity-40 grayscale hover:opacity-70 hover:grayscale-50",
+                                )}
                                 style={isActive() ? { color: activeColor() } : undefined}
                             >
                                 {emoji}
@@ -71,8 +86,6 @@ export function EmojiRating(props: { rating: number | null; onRate: (rating: num
                     }}
                 </For>
             </div>
-
-            {/* Message - full width, centered, can wrap */}
             <p class="max-w-full text-center text-sm leading-snug font-medium text-flame-pea-700 italic transition-colors duration-200 dark:text-flame-pea-400">
                 {selectedTitle()}
             </p>

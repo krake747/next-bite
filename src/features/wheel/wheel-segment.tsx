@@ -3,25 +3,34 @@ import { useWheel } from "./wheel-context"
 import { WHEEL_CONFIG_CONSTANTS } from "./wheel-store"
 import { type Restaurant } from "../../core/hooks"
 
-// Warm color palette for restaurants
+const MAX_LABEL_LENGTH = 18
+
 const WHEEL_COLORS = [
-    { bg: "#b53920", name: "flame-red" }, // flame-pea-700
-    { bg: "#8b4513", name: "saddle-brown" }, // warm brown
-    { bg: "#c45a3d", name: "terra-cotta" }, // flame-pea-600
-    { bg: "#a0522d", name: "sienna" }, // earthy brown
-    { bg: "#d47a5e", name: "coral" }, // flame-pea-500
-    { bg: "#cd853f", name: "peru" }, // tan
+    { bg: "#b53920", name: "flame-red" },
+    { bg: "#8b4513", name: "saddle-brown" },
+    { bg: "#c45a3d", name: "terra-cotta" },
+    { bg: "#a0522d", name: "sienna" },
+    { bg: "#d47a5e", name: "coral" },
+    { bg: "#cd853f", name: "peru" },
 ] as const
 
-// Simple hash function to get consistent color for a restaurant
 function getRestaurantColorId(id: string): number {
     let hash = 0
     for (let i = 0; i < id.length; i++) {
         const char = id.charCodeAt(i)
         hash = (hash << 5) - hash + char
-        hash = hash & hash // Convert to 32bit integer
+        hash = hash & hash
     }
     return Math.abs(hash) % WHEEL_COLORS.length
+}
+
+function getContrastColor(bgColor: string): string {
+    const hex = bgColor.replace("#", "")
+    const r = parseInt(hex.substring(0, 2), 16)
+    const g = parseInt(hex.substring(2, 4), 16)
+    const b = parseInt(hex.substring(4, 6), 16)
+    const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255
+    return luminance > 0.5 ? "#000000" : "#ffffff"
 }
 
 export function WheelSegment(props: { restaurant: Restaurant; idx: number }) {
@@ -56,9 +65,13 @@ export function WheelSegment(props: { restaurant: Restaurant; idx: number }) {
         }
     })
 
-    // Color based on restaurant ID (consistent regardless of wheel position)
     const colorIndex = getRestaurantColorId(props.restaurant._id)
-    const color = WHEEL_COLORS[colorIndex]!
+    const color = WHEEL_COLORS[colorIndex] ?? WHEEL_COLORS[0]
+    const contrastColor = getContrastColor(color.bg)
+    const displayName =
+        props.restaurant.name.length > MAX_LABEL_LENGTH
+            ? props.restaurant.name.slice(0, MAX_LABEL_LENGTH - 3) + "..."
+            : props.restaurant.name
 
     return (
         <g>
@@ -66,7 +79,7 @@ export function WheelSegment(props: { restaurant: Restaurant; idx: number }) {
             <text
                 x={segment().x}
                 y={segment().y}
-                fill="white"
+                fill={contrastColor}
                 text-anchor="middle"
                 dominant-baseline="middle"
                 transform={`rotate(${segment().rotation}, ${segment().x}, ${segment().y})`}
@@ -76,7 +89,7 @@ export function WheelSegment(props: { restaurant: Restaurant; idx: number }) {
                     "font-weight": "500",
                 }}
             >
-                {props.restaurant.name.length > 18 ? props.restaurant.name.slice(0, 16) + "..." : props.restaurant.name}
+                {displayName}
             </text>
         </g>
     )

@@ -2,8 +2,39 @@ import { createSignal, Show, type ComponentProps } from "solid-js"
 import { splitProps } from "solid-js"
 import { cx } from "./variants"
 
-// Track loaded images globally to prevent flicker on re-renders
-const loadedImages = new Set<string>()
+const MAX_LOADED_IMAGES = 100
+
+class BoundedImageCache {
+    private cache: Map<string, boolean>
+    private order: string[]
+
+    constructor(private maxSize: number) {
+        this.cache = new Map()
+        this.order = []
+    }
+
+    has(key: string): boolean {
+        return this.cache.has(key)
+    }
+
+    add(key: string): void {
+        if (this.cache.has(key)) {
+            const idx = this.order.indexOf(key)
+            if (idx > -1) {
+                this.order.splice(idx, 1)
+            }
+        } else if (this.order.length >= this.maxSize) {
+            const oldest = this.order.shift()
+            if (oldest) {
+                this.cache.delete(oldest)
+            }
+        }
+        this.cache.set(key, true)
+        this.order.push(key)
+    }
+}
+
+const loadedImages = new BoundedImageCache(MAX_LOADED_IMAGES)
 
 type LazyImageProps = Omit<ComponentProps<"img">, "src"> & {
     src?: string | undefined
@@ -15,7 +46,6 @@ type LazyImageProps = Omit<ComponentProps<"img">, "src"> & {
 
 export function LazyImage(props: LazyImageProps) {
     const [local, imgProps] = splitProps(props, ["src", "alt", "aspectRatio"])
-    // Check if image was already loaded in this session
     const [isLoaded, setIsLoaded] = createSignal(local.src ? loadedImages.has(local.src) : false)
     const [hasError, setHasError] = createSignal(false)
 

@@ -49,8 +49,9 @@
 
 @layer base {
     :root {
-        --font-display: "Fraunces Variable", Georgia, serif;
+        --font-display: "Fraunces Variable", georgia, serif;
         --font-body: "Manrope Variable", system-ui, sans-serif;
+
         font-family: "Manrope Variable", system-ui, sans-serif;
         color-scheme: light dark;
         font-synthesis: none;
@@ -173,7 +174,10 @@
     }
     100% {
         opacity: 0;
-        transform: translate(calc((var(--size, 50px) - 50%) * (random(2) - 1) * 3), calc(-100px - random(50px)))
+        transform: translate(
+                calc((var(--size, 50px) - 50%) * var(--rand-sign, 1) * 3),
+                calc(-100px - var(--rand-y, 25px))
+            )
             scale(0);
     }
 }

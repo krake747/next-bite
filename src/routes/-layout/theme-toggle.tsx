@@ -7,11 +7,13 @@ export function ThemeToggle() {
 
     return (
         <button
+            type="button"
             class="flex cursor-pointer items-center gap-1.5 text-sm text-neutral-500 dark:text-neutral-400"
             onClick={toggleTheme}
+            aria-label={isDark() ? "Switch to light theme" : "Switch to dark theme"}
         >
             {isDark() ? <Sun class="size-4 text-amber-400" /> : <Moon class="size-4 text-neutral-900" />}
-            {isDark() ? "Light" : "Dark "}
+            {isDark() ? "Light" : "Dark"}
         </button>
     )
 }
