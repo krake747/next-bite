@@ -36,8 +36,8 @@ export function LoadingPlaceholder() {
             />
 
             <div class="relative z-10 flex flex-1 items-center justify-center">
-                <div class="space-y-6 text-center">
-                    <div class="relative mx-auto">
+                <div class="flex flex-col items-center justify-center space-y-6">
+                    <div class="relative">
                         <div class="absolute inset-0 animate-pulse rounded-full bg-flame-pea-500/20 blur-2xl" />
                         <div class="absolute inset-0 rounded-full bg-flame-pea-400/10 blur-xl" />
                         <div class="relative flex size-16 items-center justify-center rounded-2xl bg-linear-to-br from-flame-pea-500 to-flame-pea-600 text-white shadow-[0_8px_30px_rgb(181,57,32,0.3)] dark:from-flame-pea-600 dark:to-flame-pea-700 dark:shadow-[0_8px_30px_rgb(181,57,32,0.4)]">

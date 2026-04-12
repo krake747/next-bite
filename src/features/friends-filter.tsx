@@ -58,12 +58,12 @@ export function FriendsFilter(props: {
                     )}
                 </div>
 
-                <div class="flex items-center">
+                <div class="flex max-w-md items-center">
                     <SearchInput
                         value={props.search}
                         onChange={props.handleSearch}
                         placeholder="Search restaurants..."
-                        class="flex-1"
+                        class="w-full"
                     />
                 </div>
             </div>

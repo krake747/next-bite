@@ -1,7 +1,22 @@
 import UtensilsCrossed from "lucide-solid/icons/utensils-crossed"
-import type { ComponentProps, JSX } from "solid-js"
+import { createSignal, onMount, onCleanup, createMemo, type ComponentProps, type JSX } from "solid-js"
 
 export function Header(props: { children?: JSX.Element }) {
+    const [scrollY, setScrollY] = createSignal(0)
+
+    onMount(() => {
+        const handleScroll = () => {
+            setScrollY(window.scrollY)
+        }
+        window.addEventListener("scroll", handleScroll, { passive: true })
+        onCleanup(() => window.removeEventListener("scroll", handleScroll))
+    })
+
+    // Parallax multipliers for each blob
+    const parallax1 = createMemo(() => scrollY() * 0.15)
+    const parallax2 = createMemo(() => scrollY() * -0.1)
+    const parallax3 = createMemo(() => scrollY() * 0.08)
+
     return (
         <header
             data-component="header"
@@ -19,14 +34,18 @@ export function Header(props: { children?: JSX.Element }) {
                 <div class="absolute right-0 bottom-0 h-full w-1/2 bg-linear-to-tl from-orange-100/30 via-transparent to-transparent dark:from-orange-900/10" />
             </div>
 
-            <div class="animate-float pointer-events-none absolute top-[20%] left-[10%] h-32 w-32 rounded-full bg-flame-pea-300/15 blur-[80px] will-change-transform" />
+            {/* Parallax floating blobs */}
+            <div
+                class="animate-float pointer-events-none absolute top-[20%] left-[10%] h-32 w-32 rounded-full bg-flame-pea-300/15 blur-[80px] will-change-transform"
+                style={{ transform: `translateY(${parallax1()}px)` }}
+            />
             <div
                 class="animate-float pointer-events-none absolute right-[15%] bottom-[10%] h-24 w-24 rounded-full bg-orange-300/10 blur-[60px] will-change-transform"
-                style={{ "animation-delay": "1s" }}
+                style={{ "animation-delay": "1s", transform: `translateY(${parallax2()}px)` }}
             />
             <div
                 class="animate-float pointer-events-none absolute top-[60%] right-[30%] h-16 w-16 rounded-full bg-flame-pea-400/10 blur-[50px] will-change-transform"
-                style={{ "animation-delay": "2s" }}
+                style={{ "animation-delay": "2s", transform: `translateY(${parallax3()}px)` }}
             />
 
             <div
@@ -45,7 +64,7 @@ export function Header(props: { children?: JSX.Element }) {
                         <div class="relative">
                             <div class="absolute inset-0 rounded-full bg-flame-pea-500/20 blur-2xl" />
                             <div class="absolute inset-0 animate-pulse rounded-full bg-flame-pea-400/10 blur-xl" />
-                            <div class="relative flex size-20 items-center justify-center rounded-2xl bg-linear-to-br from-flame-pea-500 to-flame-pea-600 text-white shadow-[0_8px_30px_rgb(181,57,32,0.3)] dark:from-flame-pea-600 dark:to-flame-pea-700 dark:shadow-[0_8px_30px_rgb(181,57,32,0.4)]">
+                            <div class="relative flex size-20 items-center justify-center rounded-2xl bg-linear-to-br from-flame-pea-500 to-flame-pea-600 text-white shadow-[0_8px_30px_rgb(181,57,32,0.3)] transition-all duration-200 hover:shadow-[0_10px_35px_rgb(181,57,32,0.35)] dark:from-flame-pea-600 dark:to-flame-pea-700 dark:shadow-[0_8px_30px_rgb(181,57,32,0.4)] dark:hover:shadow-[0_10px_35px_rgb(181,57,32,0.45)]">
                                 <UtensilsCrossed class="size-10" />
                             </div>
                             <div class="absolute top-0 -right-3 size-4 rounded-full bg-yellow-400" />
@@ -75,13 +94,25 @@ export function HeaderTitle(props: ComponentProps<"h1">) {
         >
             <span class="relative inline-block">
                 {props.children}
-                <svg class="absolute -bottom-2 left-0 h-2 w-full" viewBox="0 0 100 8" preserveAspectRatio="none">
+                <svg
+                    class="absolute -bottom-2 left-0 h-2 w-full overflow-visible"
+                    viewBox="0 0 100 8"
+                    preserveAspectRatio="none"
+                >
+                    <defs>
+                        <linearGradient id="line-gradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                            <stop offset="0%" stop-color="currentColor" stop-opacity="0.3" />
+                            <stop offset="50%" stop-color="currentColor" stop-opacity="1" />
+                            <stop offset="100%" stop-color="currentColor" stop-opacity="0.3" />
+                        </linearGradient>
+                    </defs>
                     <path
                         d="M0 6 Q25 0 50 6 T100 6"
                         fill="none"
-                        stroke="currentColor"
+                        stroke="url(#line-gradient)"
                         stroke-width="2"
-                        class="text-flame-pea-500 dark:text-flame-pea-400"
+                        class="animate-draw-line text-flame-pea-500 dark:text-flame-pea-400"
+                        stroke-linecap="round"
                     />
                 </svg>
             </span>
@@ -95,7 +126,7 @@ export function HeaderSubtitle(props: ComponentProps<"p">) {
 
 export function HeaderBadge(props: { count: number }) {
     return (
-        <div class="mt-8 inline-flex items-center gap-3 rounded-full bg-white/80 px-1 py-1 text-sm font-semibold text-neutral-700 shadow-[0_2px_10px_rgb(0,0,0,0.08)] ring-1 ring-black/5 backdrop-blur-sm dark:bg-white/10 dark:text-neutral-200 dark:shadow-[0_2px_10px_rgb(0,0,0,0.3)] dark:ring-white/10">
+        <div class="mt-8 inline-flex items-center gap-3 rounded-full bg-white/80 px-1 py-1 text-sm font-semibold text-neutral-700 shadow-[0_2px_10px_rgb(0,0,0,0.08)] ring-1 ring-black/5 backdrop-blur-sm transition-shadow duration-200 hover:shadow-[0_4px_16px_rgb(0,0,0,0.12)] dark:bg-white/10 dark:text-neutral-200 dark:shadow-[0_2px_10px_rgb(0,0,0,0.3)] dark:ring-white/10 dark:hover:shadow-[0_4px_16px_rgb(0,0,0,0.4)]">
             <span class="flex h-8 w-8 items-center justify-center rounded-full bg-linear-to-br from-flame-pea-500 to-flame-pea-600 text-white shadow-inner">
                 {props.count}
             </span>

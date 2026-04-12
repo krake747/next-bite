@@ -1,5 +1,66 @@
+import { createSignal, createEffect, For } from "solid-js"
 import Sparkles from "lucide-solid/icons/sparkles"
 import UtensilsCrossed from "lucide-solid/icons/utensils-crossed"
+import Star from "lucide-solid/icons/star"
+
+interface Particle {
+    id: number
+    x: number
+    y: number
+    size: number
+    duration: number
+    delay: number
+    color: string
+}
+
+const PARTICLE_COLORS = ["#f97316", "#fbbf24", "#f59e0b", "#ef4444", "#ec4899"]
+
+function CelebrationParticles() {
+    const [particles, setParticles] = createSignal<Particle[]>([])
+
+    createEffect(() => {
+        const newParticles: Particle[] = Array.from({ length: 24 }, (_, i) => ({
+            id: i,
+            x: Math.random() * 100,
+            y: Math.random() * 100,
+            size: Math.random() * 6 + 4,
+            duration: Math.random() * 1000 + 1500,
+            delay: Math.random() * 800,
+            color: PARTICLE_COLORS[Math.floor(Math.random() * PARTICLE_COLORS.length)]!,
+        }))
+        setParticles(newParticles)
+    })
+
+    return (
+        <div class="pointer-events-none absolute inset-0 overflow-hidden">
+            <For each={particles()}>
+                {(particle) => (
+                    <div
+                        class="animate-celebrate-particle absolute rounded-full"
+                        style={{
+                            left: `${particle.x}%`,
+                            top: `${particle.y}%`,
+                            width: `${particle.size}px`,
+                            height: `${particle.size}px`,
+                            background: particle.color,
+                            "animation-duration": `${particle.duration}ms`,
+                            "animation-delay": `${particle.delay}ms`,
+                        }}
+                    />
+                )}
+            </For>
+        </div>
+    )
+}
+
+function SpotlightRing() {
+    return (
+        <div class="pointer-events-none absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
+            <div class="animate-ping-slow absolute -inset-8 rounded-full bg-flame-pea-500/20 blur-2xl" />
+            <div class="animate-pulse-slow absolute -inset-12 rounded-full bg-flame-pea-400/10 blur-3xl" />
+        </div>
+    )
+}
 
 export function Instructions() {
     return (
@@ -22,21 +83,43 @@ export function Instructions() {
     )
 }
 
-export function WinnerMessage() {
+export function WinnerMessage(props: { restaurantName: string }) {
     return (
-        <div class="animate-fade-in text-center">
-            <div class="mb-3 flex justify-center">
-                <div class="flex size-14 items-center justify-center rounded-full bg-linear-to-br from-flame-pea-600 to-flame-pea-800 shadow-lg">
-                    <Sparkles class="size-7 text-white" />
+        <div class="animate-winner-reveal relative text-center">
+            <div class="absolute inset-0 -mx-6 -mt-20 mb-12 flex items-center justify-center">
+                <SpotlightRing />
+                <CelebrationParticles />
+            </div>
+
+            <div class="relative mb-6 flex justify-center">
+                <div class="relative">
+                    <div class="animate-winner-glow absolute inset-0 rounded-full bg-flame-pea-400/30 blur-2xl" />
+                    <div class="relative flex size-20 items-center justify-center rounded-full bg-linear-to-br from-flame-pea-500 via-flame-pea-600 to-flame-pea-800 shadow-2xl ring-4 ring-flame-pea-400/30">
+                        <Sparkles class="size-10 text-white" />
+                    </div>
                 </div>
             </div>
+
+            <div class="relative mb-2 flex items-center justify-center gap-2">
+                <div class="h-px w-8 bg-gradient-to-r from-transparent to-flame-pea-400/50" />
+                <div class="flex items-center gap-1 text-xs font-medium tracking-widest text-flame-pea-600 uppercase dark:text-flame-pea-400">
+                    <Star class="size-3 fill-current" />
+                    Winner
+                    <Star class="size-3 fill-current" />
+                </div>
+                <div class="h-px w-8 bg-gradient-to-l from-transparent to-flame-pea-400/50" />
+            </div>
+
             <h2
-                class="text-3xl leading-tight font-semibold tracking-tight text-flame-pea-700 dark:text-flame-pea-400"
+                class="animate-title-reveal bg-linear-to-br from-neutral-900 via-neutral-800 to-neutral-900 bg-clip-text text-4xl leading-tight font-bold tracking-tight text-transparent dark:from-neutral-100 dark:via-neutral-200 dark:to-neutral-400"
                 style={{ "font-family": "var(--font-display)" }}
             >
-                We have a winner!
+                {props.restaurantName}
             </h2>
-            <p class="mt-2 text-sm text-neutral-500 dark:text-neutral-500">Your next culinary adventure awaits</p>
+
+            <p class="animate-fade-in-up mt-3 text-base text-neutral-600 dark:text-neutral-400">
+                Your next culinary adventure awaits
+            </p>
         </div>
     )
 }

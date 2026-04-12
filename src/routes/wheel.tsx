@@ -57,21 +57,24 @@ function WheelPage() {
                                         </div>
                                         <div class="mt-8">
                                             {wheel.selected() ? (
-                                                <div class="space-y-6">
-                                                    <WinnerMessage />
-                                                    <RestaurantCard
-                                                        class="animate-fade-in mx-auto w-full max-w-md"
-                                                        restaurant={wheel.selected()!}
-                                                    />
+                                                <div class="space-y-8">
+                                                    <WinnerMessage restaurantName={wheel.selected()!.name} />
+                                                    <div class="animate-card-reveal relative mx-auto w-full max-w-md">
+                                                        <div class="absolute -inset-4 rounded-3xl bg-flame-pea-500/10 blur-2xl" />
+                                                        <div class="relative">
+                                                            <RestaurantCard restaurant={wheel.selected()!} />
+                                                        </div>
+                                                    </div>
                                                     <div class="flex justify-center">
                                                         <Button
-                                                            variant="secondary"
-                                                            size="md"
+                                                            variant="primary"
+                                                            size="lg"
                                                             onClick={() => wheel.spin()}
                                                             disabled={wheel.isSpinning()}
+                                                            class="min-w-40"
                                                         >
-                                                            <Sparkles class="size-4" />
-                                                            Spin Again
+                                                            <Sparkles class="size-5" />
+                                                            <span>Spin Again</span>
                                                         </Button>
                                                     </div>
                                                 </div>
