@@ -1,4 +1,4 @@
-import { createSignal, Show } from "solid-js"
+import { Show } from "solid-js"
 import { createFileRoute, useNavigate, Link } from "@tanstack/solid-router"
 import { createForm, Field, Form } from "@formisch/solid"
 import { useAuth } from "../core/hooks"
@@ -24,17 +24,14 @@ function LoginPage() {
     const navigate = useNavigate()
     const auth = useAuth()
 
-    const [error, setError] = createSignal<string | null>(null)
-
     const form = createForm({ schema: LoginSchema })
 
     const handleEmailSubmit = async (output: LoginInput) => {
-        setError(null)
         try {
             await auth.signInWithPassword(output.email, output.password)
             navigate({ to: "/", replace: true, from: Route.fullPath })
-        } catch (err) {
-            setError(err instanceof Error ? err.message : "Sign in failed")
+        } catch {
+            // Error is already set in auth store
         }
     }
 
@@ -72,7 +69,7 @@ function LoginPage() {
                     </div>
 
                     <div class="rounded-lg border border-neutral-200 bg-white p-6 dark:border-neutral-700 dark:bg-neutral-800">
-                        <Show when={error()}>
+                        <Show when={auth.error()}>
                             {(err) => (
                                 <div class="mb-4 rounded-md bg-red-50 p-3 text-sm text-red-600 dark:bg-red-900/20 dark:text-red-400">
                                     {err()}

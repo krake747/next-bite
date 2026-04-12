@@ -8,7 +8,14 @@ export type User = {
     image?: string | null | undefined
 }
 
-function mapSessionUserToUserPayload(user: User): User {
+type SessionUser = {
+    id: string
+    email: string
+    name?: string | null | undefined
+    image?: string | null | undefined
+}
+
+function mapSessionUserToUserPayload(user: SessionUser): User {
     return {
         id: user.id,
         email: user.email,
@@ -17,38 +24,84 @@ function mapSessionUserToUserPayload(user: User): User {
     }
 }
 
+const SESSION_KEY = "nb:session"
+
+function saveSessionToStorage(user: User): void {
+    try {
+        localStorage.setItem(SESSION_KEY, JSON.stringify(user))
+    } catch {
+        // Storage unavailable
+    }
+}
+
+function getSessionFromStorage(): User | null {
+    try {
+        const stored = localStorage.getItem(SESSION_KEY)
+        return stored ? JSON.parse(stored) : null
+    } catch {
+        return null
+    }
+}
+
+function clearSessionFromStorage(): void {
+    try {
+        localStorage.removeItem(SESSION_KEY)
+    } catch {
+        // Storage unavailable
+    }
+}
+
 function createAuthStore() {
     const [isAuthenticated, setIsAuthenticated] = createSignal(false)
     const [isLoading, setIsLoading] = createSignal(true)
     const [user, setUser] = createSignal<User | null>(null)
+    const [error, setError] = createSignal<string | null>(null)
 
     const saveUser = (userData: User) => {
         setUser(userData)
         setIsAuthenticated(true)
+        saveSessionToStorage(userData)
     }
 
     const clearUser = () => {
         setUser(null)
         setIsAuthenticated(false)
+        clearSessionFromStorage()
     }
 
     const initializeAuth = async () => {
         setIsLoading(true)
+        setError(null)
+
+        const cachedUser = getSessionFromStorage()
 
         try {
             const result = await authClient.getSession()
 
             if (result.error) {
+                if (cachedUser) {
+                    setUser(cachedUser)
+                    setIsAuthenticated(true)
+                    return
+                }
                 throw new Error(result.error.message)
             }
 
             if (result.data?.user) {
                 saveUser(mapSessionUserToUserPayload(result.data.user))
+            } else if (cachedUser) {
+                setUser(cachedUser)
+                setIsAuthenticated(true)
             } else {
                 clearUser()
             }
         } catch {
-            clearUser()
+            if (cachedUser) {
+                setUser(cachedUser)
+                setIsAuthenticated(true)
+            } else {
+                clearUser()
+            }
         } finally {
             setIsLoading(false)
         }
@@ -56,11 +109,13 @@ function createAuthStore() {
 
     const signInWithPassword = async (email: string, password: string) => {
         setIsLoading(true)
+        setError(null)
 
         try {
             const result = await authClient.signIn.email({ email, password })
 
             if (result.error) {
+                setError(result.error.message)
                 throw new Error(result.error.message)
             }
 
@@ -76,11 +131,13 @@ function createAuthStore() {
 
     const signUpWithPassword = async (name: string, email: string, password: string) => {
         setIsLoading(true)
+        setError(null)
 
         try {
             const result = await authClient.signUp.email({ name, email, password })
 
             if (result.error) {
+                setError(result.error.message)
                 throw new Error(result.error.message)
             }
 
@@ -109,6 +166,7 @@ function createAuthStore() {
         isAuthenticated,
         isLoading,
         user,
+        error,
         initializeAuth,
         signInWithPassword,
         signUpWithPassword,
