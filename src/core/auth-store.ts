@@ -115,8 +115,9 @@ function createAuthStore() {
             const result = await authClient.signIn.email({ email, password })
 
             if (result.error) {
-                setError(result.error.message)
-                throw new Error(result.error.message)
+                const message = result.error.message ?? "Sign in failed"
+                setError(message)
+                throw new Error(message)
             }
 
             if (result.data?.user) {
@@ -137,8 +138,9 @@ function createAuthStore() {
             const result = await authClient.signUp.email({ name, email, password })
 
             if (result.error) {
-                setError(result.error.message)
-                throw new Error(result.error.message)
+                const message = result.error.message ?? "Sign up failed"
+                setError(message)
+                throw new Error(message)
             }
 
             if (result.data?.user) {
