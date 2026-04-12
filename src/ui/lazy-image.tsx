@@ -7,8 +7,10 @@ const MAX_LOADED_IMAGES = 100
 class BoundedImageCache {
     private cache: Map<string, boolean>
     private order: string[]
+    private maxSize: number
 
-    constructor(private maxSize: number) {
+    constructor(maxSize: number) {
+        this.maxSize = maxSize
         this.cache = new Map()
         this.order = []
     }

@@ -1,4 +1,4 @@
-import { Suspense, createSignal } from "solid-js"
+import { Show, Suspense, createSignal } from "solid-js"
 import { createFileRoute } from "@tanstack/solid-router"
 import { Header, HeaderSubtitle, HeaderTitle } from "./-layout/header"
 import { PageLayout } from "./-layout/page-layout"
@@ -69,7 +69,7 @@ function WheelPage() {
                                                     <div class="animate-card-reveal relative mx-auto w-full max-w-md">
                                                         <div class="absolute -inset-4 rounded-3xl bg-flame-pea-500/10 blur-2xl" />
                                                         <div class="relative">
-                                                            <RestaurantCard restaurant={selected} />
+                                                            <RestaurantCard restaurant={selected()} />
                                                         </div>
                                                     </div>
                                                     <div class="flex justify-center">

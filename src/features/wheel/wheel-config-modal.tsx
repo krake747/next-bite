@@ -84,7 +84,7 @@ export function WheelConfigModal(props: {
                                 <div class="space-y-3">
                                     <div class="flex items-center justify-between">
                                         <label
-                                            htmlFor="target-count-select"
+                                            for="target-count-select"
                                             class="block text-sm font-medium text-neutral-700 dark:text-neutral-300"
                                         >
                                             Number of Restaurants

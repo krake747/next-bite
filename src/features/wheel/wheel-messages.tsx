@@ -21,17 +21,20 @@ function CelebrationParticles() {
     const [particles, setParticles] = createSignal<Particle[]>([])
 
     createEffect(() => {
-        const newParticles: Particle[] = Array.from({ length: 24 }, (_, i) => ({
-            id: i,
-            x: Math.random() * 100,
-            y: Math.random() * 100,
-            size: Math.random() * 6 + 4,
-            duration: Math.random() * 1000 + 1500,
-            delay: Math.random() * 800,
-            color: PARTICLE_COLORS[Math.floor(Math.random() * PARTICLE_COLORS.length)] ?? PARTICLE_COLORS[0],
-            randSign: Math.random() > 0.5 ? 1 : -1,
-            randY: Math.random() * 50,
-        }))
+        const newParticles: Particle[] = Array.from({ length: 24 }, (_, i) => {
+            const color = PARTICLE_COLORS[Math.floor(Math.random() * PARTICLE_COLORS.length)]!
+            return {
+                id: i,
+                x: Math.random() * 100,
+                y: Math.random() * 100,
+                size: Math.random() * 6 + 4,
+                duration: Math.random() * 1000 + 1500,
+                delay: Math.random() * 800,
+                color,
+                randSign: Math.random() > 0.5 ? 1 : -1,
+                randY: Math.random() * 50,
+            }
+        })
         setParticles(newParticles)
     })
 
