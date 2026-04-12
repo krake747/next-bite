@@ -17,15 +17,15 @@ export function LazyImage(props: LazyImageProps) {
 
     return (
         <div
-            class={cx("relative overflow-hidden bg-neutral-100 dark:bg-neutral-800", local.aspectRatio && "w-full")}
+            class={cx("relative overflow-hidden", local.aspectRatio && "w-full")}
             style={local.aspectRatio ? { "aspect-ratio": local.aspectRatio } : undefined}
         >
             <Show when={!isLoaded() && !hasError()}>
-                <div class="absolute inset-0 animate-pulse bg-neutral-200 dark:bg-neutral-700" />
+                <div class="absolute inset-0 animate-pulse bg-[#e8e6e3] dark:bg-[#2d2b29]" />
             </Show>
 
             <Show when={hasError()}>
-                <div class="absolute inset-0 flex items-center justify-center bg-neutral-100 dark:bg-neutral-800">
+                <div class="absolute inset-0 flex items-center justify-center bg-[#f5f4f2] dark:bg-[#2d2b29]">
                     <span class="text-sm text-neutral-500">Failed to load image</span>
                 </div>
             </Show>
@@ -39,7 +39,7 @@ export function LazyImage(props: LazyImageProps) {
                         loading={props.loading ?? "lazy"}
                         decoding={props.decoding ?? "async"}
                         class={cx(
-                            "h-full w-full object-cover transition-opacity duration-300",
+                            "h-full w-full object-cover transition-opacity duration-400",
                             isLoaded() ? "opacity-100" : "opacity-0",
                             imgProps.class,
                         )}

@@ -41,14 +41,14 @@ export function EmojiRating(props: { rating: number | null; onRate: (rating: num
     }
 
     return (
-        <div class="flex flex-col items-center gap-2">
-            <div class="flex w-full items-center justify-between" onMouseLeave={() => setHoverRating(null)}>
+        <div class="flex flex-col gap-3">
+            <div class="flex items-center justify-between gap-1" onMouseLeave={() => setHoverRating(null)}>
                 <For each={RATING_EMOJIS}>
                     {(emoji, index) => (
                         <button
                             type="button"
-                            class={`cursor-pointer p-0.5 text-xl transition-transform hover:scale-125 ${
-                                displayRating() === index() ? "opacity-100" : "opacity-30 grayscale"
+                            class={`cursor-pointer p-1 text-2xl transition-transform duration-200 hover:scale-125 focus:outline-none sm:text-2xl ${
+                                displayRating() === index() ? "opacity-100" : "opacity-40 grayscale"
                             }`}
                             onMouseEnter={() => setHoverRating(index())}
                             onClick={(e) => {
@@ -62,7 +62,12 @@ export function EmojiRating(props: { rating: number | null; onRate: (rating: num
                     )}
                 </For>
             </div>
-            <span class="text-sm text-gray-400">{selectedTitle()}</span>
+            {/* Fixed height caption container - prevents layout shift */}
+            <div class="flex h-10 items-center justify-center overflow-hidden">
+                <span class="line-clamp-2 text-center text-sm leading-tight text-neutral-500 italic">
+                    {selectedTitle()}
+                </span>
+            </div>
         </div>
     )
 }

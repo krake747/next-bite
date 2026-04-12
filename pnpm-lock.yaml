@@ -11,6 +11,12 @@ importers:
       '@convex-dev/better-auth':
         specifier: ^0.11.4
         version: 0.11.4(@standard-schema/spec@1.1.0)(better-auth@1.5.6(@opentelemetry/api@1.9.1)(react@19.2.5)(solid-js@1.9.12))(convex@1.35.1(react@19.2.5))(react@19.2.5)(typescript@6.0.2)
+      '@fontsource-variable/playfair-display':
+        specifier: ^5.2.8
+        version: 5.2.8
+      '@fontsource-variable/source-sans-3':
+        specifier: ^5.2.9
+        version: 5.2.9
       '@formisch/solid':
         specifier: ^0.9.4
         version: 0.9.4(solid-js@1.9.12)(typescript@6.0.2)(valibot@1.3.1(typescript@6.0.2))
@@ -590,6 +596,12 @@ packages:
 
   '@floating-ui/utils@0.2.11':
     resolution: {integrity: sha512-RiB/yIh78pcIxl6lLMG0CgBXAZ2Y0eVHqMPYugu+9U0AeT6YBeiJpf7lbdJNIugFP5SIjwNRgo4DhR1Qxi26Gg==}
+
+  '@fontsource-variable/playfair-display@5.2.8':
+    resolution: {integrity: sha512-ZzVIXPOrL85yyOvZYoBzUszIJM+xKkHqni4IYn2CVLaGQQdJR8sBeC8yFNgjxSJ7ludTwta8qpULeOFuk5X75A==}
+
+  '@fontsource-variable/source-sans-3@5.2.9':
+    resolution: {integrity: sha512-K9fkQbb0BNnRmmaU+Gpr6U4IaYKpNzA8t07J6aam2i+6v84RT72MVpar8OBr3yYAEznj4riKivPQ2nAF2fPKsw==}
 
   '@formisch/solid@0.9.4':
     resolution: {integrity: sha512-eI8GkxU3cuZz7syaAMRl2osQk0v+MnWx+roim+9CO+ANydDgfWj551bHxDZCevN4lthbauN04GRJgE7GZlzHWg==}
@@ -2474,6 +2486,10 @@ snapshots:
       '@floating-ui/utils': 0.2.11
 
   '@floating-ui/utils@0.2.11': {}
+
+  '@fontsource-variable/playfair-display@5.2.8': {}
+
+  '@fontsource-variable/source-sans-3@5.2.9': {}
 
   '@formisch/solid@0.9.4(solid-js@1.9.12)(typescript@6.0.2)(valibot@1.3.1(typescript@6.0.2))':
     dependencies:

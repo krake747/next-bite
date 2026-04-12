@@ -1,5 +1,5 @@
 import { createSignal, splitProps, Show } from "solid-js"
-import { Card, CardContent, CardFooter, CardHeader } from "../ui/card"
+import { Card, CardFooter } from "../ui/card"
 import { Badge } from "../ui/badge"
 import MapPin from "lucide-solid/icons/map-pin"
 import Utensils from "lucide-solid/icons/utensils"
@@ -14,7 +14,6 @@ import { EditRestaurantDialog } from "./edit-restaurant-dialog"
 import { EmojiRating } from "../ui/emoji-rating"
 import { LazyImage } from "../ui/lazy-image"
 import { ImageGalleryModal } from "../ui/image-gallery-modal"
-import { Button } from "../ui/button"
 import type { ComponentProps } from "solid-js"
 
 export function RestaurantCard(props: { restaurant: Restaurant } & ComponentProps<typeof Card>) {
@@ -22,7 +21,7 @@ export function RestaurantCard(props: { restaurant: Restaurant } & ComponentProp
     const [showEdit, setShowEdit] = createSignal(false)
     const [showGallery, setShowGallery] = createSignal(false)
     const [showMap, setShowMap] = createSignal(false)
-    const [showImages, setShowImages] = createSignal(false)
+    const [notesExpanded, setNotesExpanded] = createSignal(false)
     const updateRestaurant = useUpdateRestaurant()
     const auth = useAuth()
 
@@ -43,126 +42,167 @@ export function RestaurantCard(props: { restaurant: Restaurant } & ComponentProp
     return (
         <>
             <Card {...cardProps}>
-                <CardHeader class="grid grid-cols-[1fr_auto]">
-                    <h3 class="text-xl font-semibold">{local.restaurant.name} </h3>
-                    <Badge variant="gray">
-                        <Utensils class="mr-1.5 size-3" />
-                        {local.restaurant.cuisine}
-                    </Badge>
-                </CardHeader>
-
+                {/* Hero Image Section - Always Visible */}
                 <Show when={hasImages()}>
-                    <CardContent class="p-0 px-4 pt-4">
-                        <Collapsible open={showImages()} onOpenChange={setShowImages}>
-                            <Collapsible.Trigger class="flex w-full items-center justify-between py-2 text-sm text-neutral-600 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-neutral-100">
-                                <div class="flex items-center gap-1.5">
+                    <div class="relative aspect-video w-full overflow-hidden rounded-t-xl">
+                        <LazyImage
+                            src={local.restaurant.images?.[0]}
+                            alt={`${local.restaurant.name} - main image`}
+                            aspectRatio="16/9"
+                            loading="lazy"
+                        />
+                        {/* Gradient overlay */}
+                        <div class="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
+                        {/* Cuisine badge - absolute positioned */}
+                        <div class="absolute top-4 right-4">
+                            <Badge variant="editorial">
+                                <Utensils class="mr-1.5 size-3.5" />
+                                {local.restaurant.cuisine}
+                            </Badge>
+                        </div>
+                        {/* View gallery button */}
+                        <Show when={imageCount() > 1}>
+                            <div class="absolute right-4 bottom-4">
+                                <button
+                                    type="button"
+                                    onClick={() => setShowGallery(true)}
+                                    class="flex items-center gap-1.5 rounded-lg bg-white/90 px-3 py-2 text-sm font-medium text-neutral-900 shadow-sm backdrop-blur-sm transition-colors hover:bg-white"
+                                >
                                     <Images class="size-4" />
-                                    <span>Images ({imageCount()})</span>
-                                </div>
-                                <ChevronDown
-                                    class="size-4 transition-transform duration-200"
-                                    classList={{ "rotate-180": showImages() }}
-                                />
-                            </Collapsible.Trigger>
-                            <Collapsible.Content>
-                                <div class="relative mb-4 aspect-video w-full overflow-hidden rounded-md">
-                                    <LazyImage
-                                        src={local.restaurant.images?.[0]}
-                                        alt={`${local.restaurant.name} - main image`}
-                                        aspectRatio="16/9"
-                                        loading="lazy"
-                                    />
-                                    <div class="pointer-events-none absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-black/70 to-transparent" />
-                                    <Show when={imageCount() > 0}>
-                                        <div class="absolute right-2 bottom-2">
-                                            <Button variant="secondary" size="md" onClick={() => setShowGallery(true)}>
-                                                <Images class="mr-1.5 size-4" />
-                                                {imageCount() > 1 ? `View all ${imageCount()}` : "View"}
-                                            </Button>
-                                        </div>
-                                    </Show>
-                                </div>
-                            </Collapsible.Content>
-                        </Collapsible>
-                    </CardContent>
+                                    {imageCount()} photos
+                                </button>
+                            </div>
+                        </Show>
+                        <Show when={imageCount() === 1}>
+                            <div class="absolute right-4 bottom-4">
+                                <button
+                                    type="button"
+                                    onClick={() => setShowGallery(true)}
+                                    class="flex items-center gap-1.5 rounded-lg bg-white/90 px-3 py-2 text-sm font-medium text-neutral-900 shadow-sm backdrop-blur-sm transition-colors hover:bg-white"
+                                >
+                                    <Images class="size-4" />
+                                    View
+                                </button>
+                            </div>
+                        </Show>
+                    </div>
                 </Show>
 
-                <Show when={hasLocation()}>
-                    <CardContent class="p-0 px-4 pt-2">
-                        <Collapsible open={showMap()} onOpenChange={setShowMap}>
-                            <Collapsible.Trigger class="flex w-full items-center justify-between py-2 text-sm text-neutral-600 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-neutral-100">
-                                <div class="flex items-center gap-1.5">
-                                    <MapPin class="size-4" />
-                                    <span>Map</span>
-                                </div>
-                                <ChevronDown
-                                    class="size-4 transition-transform duration-200"
-                                    classList={{ "rotate-180": showMap() }}
-                                />
-                            </Collapsible.Trigger>
-                            <Collapsible.Content>
-                                <div
-                                    class="mb-4 aspect-video w-full cursor-pointer overflow-hidden rounded-md"
-                                    style={{ height: "250px" }}
-                                    onClick={openDirections}
-                                    title="Get directions"
+                {/* Content Area */}
+                <div class="flex flex-col gap-5 p-6">
+                    {/* Restaurant Header */}
+                    <div class="flex flex-col gap-2">
+                        <div class="flex items-start justify-between gap-3">
+                            <h3
+                                class="leading-tight font-semibold"
+                                style={{
+                                    "font-family": "var(--font-display)",
+                                    "font-size": "26px",
+                                }}
+                            >
+                                {local.restaurant.name}
+                            </h3>
+                            <Show when={local.restaurant.link}>
+                                <a
+                                    href={local.restaurant.link}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    class="flex shrink-0 items-center gap-1 rounded-md bg-neutral-100 px-2 py-1 text-xs font-medium text-neutral-700 transition-colors hover:bg-flame-pea-100 hover:text-flame-pea-700 dark:bg-neutral-800 dark:text-neutral-300 dark:hover:bg-flame-pea-900/30 dark:hover:text-flame-pea-400"
+                                    title="View menu"
                                 >
-                                    <Map
-                                        center={{ lat: local.restaurant.lat!, lng: local.restaurant.lng! }}
-                                        zoom={15}
-                                        mapId="DEMO_MAP_ID"
-                                        disableDefaultUI
-                                        zoomControl={false}
-                                        mapTypeControl={false}
-                                        streetViewControl={false}
-                                        fullscreenControl={false}
-                                        scrollwheel={false}
-                                        style={{ width: "100%", height: "100%" }}
-                                    >
-                                        <AdvancedMarker
-                                            position={{ lat: local.restaurant.lat!, lng: local.restaurant.lng! }}
-                                            title={local.restaurant.name ?? null}
-                                        />
-                                    </Map>
-                                </div>
-                            </Collapsible.Content>
-                        </Collapsible>
-                    </CardContent>
-                </Show>
-                <CardContent class="flex flex-1 flex-col justify-between gap-2">
-                    <p class="text-neutral-500 dark:text-neutral-400">{local.restaurant.notes}</p>
-                    <div class="flex items-center justify-between text-sm text-neutral-600 dark:text-neutral-400">
-                        <div class="flex items-center">
-                            <MapPin class="mr-1.5 size-3.5 shrink-0" />
+                                    <ExternalLink class="size-3.5" />
+                                    Menu
+                                </a>
+                            </Show>
+                        </div>
+                        <div class="flex items-center gap-2 text-sm text-neutral-600 dark:text-neutral-400">
+                            <MapPin class="size-4 shrink-0" />
                             <Show when={hasLocation()} fallback={local.restaurant.location}>
                                 <a
                                     href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(local.restaurant.location)}`}
                                     target="_blank"
                                     rel="noopener noreferrer"
-                                    class="hover:underline"
+                                    class="truncate hover:text-flame-pea-600 hover:underline dark:hover:text-flame-pea-400"
                                 >
                                     {local.restaurant.location}
                                 </a>
                             </Show>
                         </div>
-                        {local.restaurant.link && (
-                            <a
-                                href={local.restaurant.link}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                class="flex items-center"
-                                title="Visit menu"
-                            >
-                                <ExternalLink class="mr-1.5 size-3.5 shrink-0" />
-                                Menu
-                            </a>
-                        )}
                     </div>
-                </CardContent>
-                <CardContent>
-                    <EmojiRating rating={local.restaurant.rating ?? null} onRate={handleRate} />
-                </CardContent>
-                <CardFooter class="flex items-center justify-between text-neutral-500 dark:text-neutral-400">
+
+                    {/* Notes Section */}
+                    <Show when={local.restaurant.notes}>
+                        <div>
+                            <p
+                                class={`leading-relaxed text-neutral-600 dark:text-neutral-400 ${
+                                    notesExpanded() ? "" : "line-clamp-4"
+                                }`}
+                            >
+                                {local.restaurant.notes}
+                            </p>
+                            <Show when={(local.restaurant.notes?.length ?? 0) > 120}>
+                                <button
+                                    type="button"
+                                    onClick={() => setNotesExpanded(!notesExpanded())}
+                                    class="mt-2 text-sm font-medium text-flame-pea-700 transition-colors hover:text-flame-pea-600 dark:text-flame-pea-400 dark:hover:text-flame-pea-300"
+                                >
+                                    {notesExpanded() ? "Show less" : "Read more"}
+                                </button>
+                            </Show>
+                        </div>
+                    </Show>
+
+                    {/* Rating Section - Visual Anchor */}
+                    <div class="rounded-lg bg-neutral-50/80 p-4 dark:bg-white/5">
+                        <EmojiRating rating={local.restaurant.rating ?? null} onRate={handleRate} />
+                    </div>
+
+                    {/* Collapsible Sections */}
+                    <div class="flex flex-col gap-2">
+                        <Show when={hasLocation()}>
+                            <Collapsible open={showMap()} onOpenChange={setShowMap}>
+                                <Collapsible.Trigger class="flex w-full items-center justify-between rounded-lg px-3 py-2.5 text-sm text-neutral-600 transition-colors hover:bg-neutral-100 hover:text-neutral-900 dark:text-neutral-400 dark:hover:bg-white/5 dark:hover:text-neutral-100">
+                                    <div class="flex items-center gap-2">
+                                        <MapPin class="size-4" />
+                                        <span>View on Map</span>
+                                    </div>
+                                    <ChevronDown
+                                        class="size-4 transition-transform duration-200"
+                                        classList={{ "rotate-180": showMap() }}
+                                    />
+                                </Collapsible.Trigger>
+                                <Collapsible.Content>
+                                    <div
+                                        class="mt-2 aspect-video w-full cursor-pointer overflow-hidden rounded-lg"
+                                        onClick={openDirections}
+                                        title="Get directions"
+                                    >
+                                        <Map
+                                            center={{ lat: local.restaurant.lat!, lng: local.restaurant.lng! }}
+                                            zoom={15}
+                                            mapId="DEMO_MAP_ID"
+                                            disableDefaultUI
+                                            zoomControl={false}
+                                            mapTypeControl={false}
+                                            streetViewControl={false}
+                                            fullscreenControl={false}
+                                            scrollwheel={false}
+                                            style={{ width: "100%", height: "100%" }}
+                                        >
+                                            <AdvancedMarker
+                                                position={{ lat: local.restaurant.lat!, lng: local.restaurant.lng! }}
+                                                title={local.restaurant.name ?? null}
+                                            />
+                                        </Map>
+                                    </div>
+                                </Collapsible.Content>
+                            </Collapsible>
+                        </Show>
+                    </div>
+                </div>
+
+                {/* Footer */}
+                <CardFooter class="flex items-center justify-between text-sm text-neutral-500 dark:text-neutral-400">
                     <span>
                         Proposed by{" "}
                         <span class="font-medium text-neutral-900 dark:text-neutral-100">
@@ -174,7 +214,7 @@ export function RestaurantCard(props: { restaurant: Restaurant } & ComponentProp
                             type="button"
                             onClick={() => setShowEdit(true)}
                             aria-label="Edit restaurant"
-                            class="cursor-pointer text-neutral-500 hover:bg-neutral-100 hover:text-neutral-700 dark:text-neutral-400 dark:hover:bg-neutral-800 dark:hover:text-neutral-200"
+                            class="flex h-8 w-8 items-center justify-center rounded-md text-neutral-500 transition-colors hover:bg-neutral-100 hover:text-neutral-700 dark:text-neutral-400 dark:hover:bg-white/10 dark:hover:text-neutral-200"
                             title="Edit restaurant"
                         >
                             <SquarePen class="size-4" aria-hidden="true" />

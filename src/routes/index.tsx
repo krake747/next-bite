@@ -1,6 +1,6 @@
 import { For, createSignal, createMemo, Show } from "solid-js"
 import { createFileRoute, useNavigate } from "@tanstack/solid-router"
-import { Header, HeaderSubtitle, HeaderTitle } from "../features/header"
+import { Header, HeaderSubtitle, HeaderTitle, HeaderBadge } from "../features/header"
 import { useRestaurants, useAuth } from "../core/hooks"
 import { Footer } from "../features/footer"
 import { RestaurantCard } from "../features/restaurant-card"
@@ -44,7 +44,8 @@ function Home() {
             <main class="container mx-auto max-w-7xl flex-1 px-4 pb-8">
                 <Header>
                     <HeaderTitle>Our next bite</HeaderTitle>
-                    <HeaderSubtitle>{count()} places we're dreaming of trying together</HeaderSubtitle>
+                    <HeaderSubtitle>Places we're dreaming of trying together</HeaderSubtitle>
+                    <HeaderBadge count={count()} />
                 </Header>
                 <Show when={restaurants()} fallback={<Loading message="restaurants" />}>
                     <FriendsFilter
