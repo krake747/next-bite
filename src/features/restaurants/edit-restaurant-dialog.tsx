@@ -1,21 +1,55 @@
-import { For, Show, createSignal } from "solid-js"
+import { createEffect, For, Show, createSignal } from "solid-js"
 import { Dialog } from "@kobalte/core/dialog"
 import { createForm, Field, Form, reset, setInput } from "@formisch/solid"
-import { useAddRestaurant, useFriends, useAuth } from "../core/hooks"
-import { Button } from "../ui/button"
-import { FieldWrapper, Input, Textarea, Select } from "../ui/field"
-import { RestaurantSchema, type RestaurantOutput } from "../core/schemas"
-import { PlacesAutocomplete } from "../ui/places-autocomplete"
-import { ImageUpload } from "../ui/image-upload"
+import { useUpdateRestaurant, useFriends, useAuth, type Restaurant } from "../../core/hooks"
+import { Button } from "../../ui/button"
+import { Loading } from "../../ui/loading"
+import { FieldWrapper, Input, Textarea, Select } from "../../ui/field"
+import { RestaurantSchema, type RestaurantOutput } from "../../core/schemas"
+import { EmojiRating } from "../../ui/emoji-rating"
+import { PlacesAutocomplete } from "../../ui/places-autocomplete"
+import { ImageUpload } from "../../ui/image-upload"
 import UtensilsCrossed from "lucide-solid/icons/utensils-crossed"
 
-export function AddRestaurantDialog(props: { show: boolean; onOpenChange: (open: boolean) => void }) {
-    const addRestaurant = useAddRestaurant()
+export function EditRestaurantDialog(props: {
+    show: boolean
+    onOpenChange: (open: boolean) => void
+    restaurant: Restaurant
+}) {
+    const updateRestaurant = useUpdateRestaurant()
     const friends = useFriends()
     const auth = useAuth()
-    const [images, setImages] = createSignal<string[]>([])
+    const [images, setImages] = createSignal<string[]>(props.restaurant.images ?? [])
 
-    const form = createForm({ schema: RestaurantSchema })
+    const form = createForm({
+        schema: RestaurantSchema,
+        initialInput: {
+            name: props.restaurant.name,
+            cuisine: props.restaurant.cuisine,
+            location: props.restaurant.location,
+            lat: props.restaurant.lat,
+            lng: props.restaurant.lng,
+            notes: props.restaurant.notes ?? "",
+            link: props.restaurant.link ?? "",
+            addedBy: props.restaurant.addedBy,
+            rating: props.restaurant.rating,
+        },
+    })
+
+    createEffect(() => {
+        if (props.show) {
+            setInput(form, { path: ["name"], input: props.restaurant.name })
+            setInput(form, { path: ["cuisine"], input: props.restaurant.cuisine })
+            setInput(form, { path: ["location"], input: props.restaurant.location ?? "" })
+            setInput(form, { path: ["lat"], input: props.restaurant.lat })
+            setInput(form, { path: ["lng"], input: props.restaurant.lng })
+            setInput(form, { path: ["notes"], input: props.restaurant.notes ?? "" })
+            setInput(form, { path: ["link"], input: props.restaurant.link ?? "" })
+            setInput(form, { path: ["addedBy"], input: props.restaurant.addedBy })
+            setInput(form, { path: ["rating"], input: props.restaurant.rating })
+            setImages(props.restaurant.images ?? [])
+        }
+    })
 
     const handleLocationChange = (address: string, lat?: number, lng?: number) => {
         setInput(form, { path: ["location"], input: address })
@@ -27,12 +61,11 @@ export function AddRestaurantDialog(props: { show: boolean; onOpenChange: (open:
 
     const handleSubmit = async (output: RestaurantOutput) => {
         try {
-            await addRestaurant({ ...output, images: images() })
+            await updateRestaurant({ id: props.restaurant._id, ...output, images: images() })
             reset(form)
-            setImages([])
             props.onOpenChange(false)
         } catch (error) {
-            console.error("Error adding restaurant:", error)
+            console.error("Error updating restaurant:", error)
         }
     }
 
@@ -50,7 +83,7 @@ export function AddRestaurantDialog(props: { show: boolean; onOpenChange: (open:
                                 class="text-xl font-semibold text-neutral-900 dark:text-white"
                                 style={{ "font-family": "var(--font-display)" }}
                             >
-                                Add Restaurant
+                                Edit Restaurant
                             </Dialog.Title>
                         </div>
 
@@ -59,7 +92,7 @@ export function AddRestaurantDialog(props: { show: boolean; onOpenChange: (open:
                             fallback={
                                 <div class="space-y-4 py-8 text-center">
                                     <p class="text-neutral-600 dark:text-neutral-400">
-                                        Please sign in to add restaurants.
+                                        Please sign in to edit restaurants.
                                     </p>
                                     <a href="/login">
                                         <Button class="w-full">Sign In</Button>
@@ -146,11 +179,27 @@ export function AddRestaurantDialog(props: { show: boolean; onOpenChange: (open:
                                                     errors={field.errors}
                                                     label="Added by"
                                                 >
-                                                    <option value="">Select friend</option>
-                                                    <Show when={friends()}>
+                                                    <option value="" selected={!field.input}>
+                                                        Select friend
+                                                    </option>
+                                                    <Show
+                                                        when={friends()}
+                                                        fallback={
+                                                            <option>
+                                                                <Loading message="friends" />
+                                                            </option>
+                                                        }
+                                                    >
                                                         {(friends) => (
                                                             <For each={friends()}>
-                                                                {(f) => <option value={f.name}>{f.name}</option>}
+                                                                {(f) => (
+                                                                    <option
+                                                                        value={f.name}
+                                                                        selected={field.input === f.name}
+                                                                    >
+                                                                        {f.name}
+                                                                    </option>
+                                                                )}
                                                             </For>
                                                         )}
                                                     </Show>
@@ -159,12 +208,38 @@ export function AddRestaurantDialog(props: { show: boolean; onOpenChange: (open:
                                         )}
                                     </Field>
                                 </div>
-                                <ImageUpload images={images()} onImagesChange={setImages} maxImages={5} />
+                                <Field of={form} path={["rating"]}>
+                                    {(field) => (
+                                        <FieldWrapper errors={field.errors}>
+                                            <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300">
+                                                Rating
+                                            </label>
+                                            <div class="mt-2">
+                                                <EmojiRating
+                                                    rating={
+                                                        typeof field.input === "number" && field.input >= 0
+                                                            ? field.input
+                                                            : null
+                                                    }
+                                                    onRate={(rating) =>
+                                                        setInput(form, { path: ["rating"], input: rating })
+                                                    }
+                                                />
+                                            </div>
+                                        </FieldWrapper>
+                                    )}
+                                </Field>
+                                <ImageUpload
+                                    images={images()}
+                                    onImagesChange={setImages}
+                                    maxImages={5}
+                                    restaurantId={props.restaurant._id}
+                                />
                                 <div class="flex justify-end gap-2 pt-2">
                                     <Button variant="secondary" onClick={() => props.onOpenChange(false)}>
                                         Cancel
                                     </Button>
-                                    <Button type="submit">Add Restaurant</Button>
+                                    <Button type="submit">Save Changes</Button>
                                 </div>
                             </Form>
                         </Show>

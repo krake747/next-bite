@@ -1,11 +1,11 @@
 import { Show } from "solid-js"
 import { useNavigate } from "@tanstack/solid-router"
-import { Button } from "../ui/button"
+import { Button } from "../../ui/button"
 import Utensils from "lucide-solid/icons/utensils"
 import Plus from "lucide-solid/icons/plus"
 import SearchX from "lucide-solid/icons/search-x"
 import Sparkles from "lucide-solid/icons/sparkles"
-import { useAuth } from "../core/hooks"
+import { useAuth } from "../../core/hooks"
 
 export function EmptyRestaurantsState(props: { hasFilter?: boolean; hasSearch?: boolean; onAddClick?: () => void }) {
     const navigate = useNavigate()

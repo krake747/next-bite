@@ -4,8 +4,8 @@ import { Link } from "@tanstack/solid-router"
 import UtensilsCrossed from "lucide-solid/icons/utensils-crossed"
 import User from "lucide-solid/icons/user"
 import LogOut from "lucide-solid/icons/log-out"
-import { DarkModeToggle } from "./dark-mode-toggle"
-import { useAuth } from "../core/hooks"
+import { ThemeToggle } from "./theme-toggle"
+import { useAuth } from "../../core/hooks"
 
 export function TopBar() {
     return (
@@ -28,7 +28,7 @@ export function TopBar() {
                 </Link>
 
                 <div class="flex items-center gap-3">
-                    <DarkModeToggle />
+                    <ThemeToggle />
                     <AuthButton />
                 </div>
             </div>

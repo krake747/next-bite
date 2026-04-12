@@ -1,7 +1,7 @@
 import { For, Show, type Accessor } from "solid-js"
 import { RestaurantCard } from "./restaurant-card"
 import { EmptyRestaurantsState } from "./empty-restaurants-state"
-import type { Restaurant } from "../core/hooks"
+import type { Restaurant } from "../../core/hooks"
 
 interface RestaurantListProps {
     restaurants: Accessor<Restaurant[]>

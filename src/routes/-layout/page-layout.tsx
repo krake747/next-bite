@@ -1,6 +1,6 @@
 import type { JSX } from "solid-js"
-import { TopBar } from "../features/top-bar"
-import { Footer } from "../features/footer"
+import { TopBar } from "./top-bar"
+import { Footer } from "./footer"
 
 export function PageLayout(props: { children: JSX.Element }) {
     return (
