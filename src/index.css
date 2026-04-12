@@ -124,6 +124,12 @@
         opacity: 0;
     }
 
+    .animate-card-enter {
+        animation: card-enter 600ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        opacity: 0;
+        transform: translateY(24px) scale(0.98);
+    }
+
     .animate-line-reveal {
         animation: line-reveal 800ms 300ms cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
         transform: scaleX(0);
@@ -242,6 +248,21 @@
     0% {
         opacity: 0;
         transform: translateY(20px) scale(0.98);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+@keyframes card-enter {
+    0% {
+        opacity: 0;
+        transform: translateY(24px) scale(0.98);
+    }
+    60% {
+        opacity: 1;
+        transform: translateY(-2px) scale(1.002);
     }
     100% {
         opacity: 1;

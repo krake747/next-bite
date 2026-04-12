@@ -15,12 +15,22 @@ export function RestaurantList(props: RestaurantListProps) {
     const hasS = props.hasSearch ?? false
 
     return (
-        <div data-component="restaurant-list" class="grid gap-6 md:grid-cols-2 md:gap-10">
+        <div data-component="restaurant-list" class="grid gap-8 md:grid-cols-2 md:gap-10">
             <Show
                 when={props.restaurants().length > 0}
                 fallback={<EmptyRestaurantsState hasFilter={hasF} hasSearch={hasS} onAddClick={props.onAddClick} />}
             >
-                <For each={props.restaurants()}>{(restaurant) => <RestaurantCard restaurant={restaurant} />}</For>
+                <For each={props.restaurants()}>
+                    {(restaurant, index) => (
+                        <RestaurantCard
+                            restaurant={restaurant}
+                            style={{
+                                "animation-delay": `${index() * 100}ms`,
+                            }}
+                            class="animate-card-enter"
+                        />
+                    )}
+                </For>
             </Show>
         </div>
     )
