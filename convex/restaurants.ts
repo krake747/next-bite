@@ -1,6 +1,8 @@
 import { query, mutation } from "./_generated/server"
 import { v } from "convex/values"
 
+const MAX_IMAGES = 5
+
 export const get = query(async (ctx) => ctx.db.query("restaurants").collect())
 
 export const add = mutation({
@@ -14,8 +16,17 @@ export const add = mutation({
         link: v.optional(v.string()),
         addedBy: v.string(),
         rating: v.optional(v.number()),
+        images: v.optional(v.array(v.string())),
     },
-    handler: async (ctx, args) => ctx.db.insert("restaurants", args),
+    handler: async (ctx, args) => {
+        const { images, ...rest } = args
+
+        if (images && images.length > MAX_IMAGES) {
+            throw new Error(`Maximum ${MAX_IMAGES} images allowed`)
+        }
+
+        return ctx.db.insert("restaurants", { ...rest, ...(images !== undefined ? { images } : {}) })
+    },
 })
 
 export const update = mutation({
@@ -30,9 +41,40 @@ export const update = mutation({
         link: v.optional(v.string()),
         addedBy: v.optional(v.string()),
         rating: v.optional(v.number()),
+        images: v.optional(v.array(v.string())),
     },
     handler: async (ctx, args) => {
-        const { id, ...updates } = args
-        return ctx.db.patch(id, updates)
+        const { id, images, ...updates } = args
+
+        if (images && images.length > MAX_IMAGES) {
+            throw new Error(`Maximum ${MAX_IMAGES} images allowed`)
+        }
+
+        const updateData: typeof updates & { images?: typeof images } = updates
+        if (images !== undefined) {
+            updateData.images = images
+        }
+
+        return ctx.db.patch(id, updateData)
+    },
+})
+
+export const deleteImage = mutation({
+    args: {
+        restaurantId: v.id("restaurants"),
+        imageUrl: v.string(),
+    },
+    handler: async (ctx, args) => {
+        const restaurant = await ctx.db.get(args.restaurantId)
+        if (!restaurant) {
+            throw new Error("Restaurant not found")
+        }
+
+        const currentImages = restaurant.images ?? []
+        const updatedImages = currentImages.filter((url) => url !== args.imageUrl)
+
+        if (updatedImages.length !== currentImages.length) {
+            await ctx.db.patch(args.restaurantId, { images: updatedImages })
+        }
     },
 })
