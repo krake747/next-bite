@@ -12,7 +12,7 @@ function RootComponent() {
     return (
         <>
             <HeadContent />
-            <APIProvider apiKey={import.meta.env.VITE_GOOGLE_MAPS_API_KEY ?? ""} libraries={["places", "marker"]}>
+            <APIProvider apiKey={import.meta.env.VITE_GOOGLE_MAPS_API_KEY} libraries={["places", "marker"]}>
                 <AuthProvider>
                     <Suspense fallback={<Loading />}>
                         <Outlet />

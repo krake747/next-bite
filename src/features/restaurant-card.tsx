@@ -40,31 +40,33 @@ export function RestaurantCard(props: { restaurant: Restaurant } & ComponentProp
                     </Badge>
                 </CardHeader>
                 <Show when={hasLocation()}>
-                    <CardContent class="p-0 px-4 pt-4">
-                        <div
-                            class="mb-4 aspect-video w-full cursor-pointer overflow-hidden rounded-md"
-                            style={{ height: "250px" }}
-                            onClick={openDirections}
-                            title="Get directions"
-                        >
-                            <Map
-                                center={{ lat: local.restaurant.lat!, lng: local.restaurant.lng! }}
-                                zoom={15}
-                                mapId="DEMO_MAP_ID"
-                                disableDefaultUI
-                                zoomControl={false}
-                                mapTypeControl={false}
-                                streetViewControl={false}
-                                fullscreenControl={false}
-                                style={{ width: "100%", height: "100%" }}
+                    {(hasLoc) => (
+                        <CardContent class="p-0 px-4 pt-4">
+                            <div
+                                class="mb-4 aspect-video w-full cursor-pointer overflow-hidden rounded-md"
+                                style={{ height: "250px" }}
+                                onClick={openDirections}
+                                title="Get directions"
                             >
-                                <AdvancedMarker
-                                    position={{ lat: local.restaurant.lat!, lng: local.restaurant.lng! }}
-                                    title={local.restaurant.name ?? null}
-                                />
-                            </Map>
-                        </div>
-                    </CardContent>
+                                <Map
+                                    center={{ lat: hasLoc().lat, lng: hasLoc().lng }}
+                                    zoom={15}
+                                    mapId="DEMO_MAP_ID"
+                                    disableDefaultUI
+                                    zoomControl={false}
+                                    mapTypeControl={false}
+                                    streetViewControl={false}
+                                    fullscreenControl={false}
+                                    style={{ width: "100%", height: "100%" }}
+                                >
+                                    <AdvancedMarker
+                                        position={{ lat: hasLoc().lat, lng: hasLoc().lng }}
+                                        title={local.restaurant.name ?? null}
+                                    />
+                                </Map>
+                            </div>
+                        </CardContent>
+                    )}
                 </Show>
                 <CardContent class="flex flex-1 flex-col justify-between gap-2">
                     <p class="text-neutral-500 dark:text-neutral-400">{local.restaurant.notes}</p>
