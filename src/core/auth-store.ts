@@ -26,18 +26,31 @@ function mapSessionUserToUserPayload(user: SessionUser): User {
 
 const SESSION_KEY = "nb:session"
 
+function isValidUser(value: unknown): value is User {
+    return (
+        typeof value === "object" &&
+        value !== null &&
+        "id" in value &&
+        typeof (value as Record<string, unknown>).id === "string" &&
+        "email" in value &&
+        typeof (value as Record<string, unknown>).email === "string"
+    )
+}
+
 function saveSessionToStorage(user: User): void {
     try {
         localStorage.setItem(SESSION_KEY, JSON.stringify(user))
     } catch {
-        // Storage unavailable
+        return
     }
 }
 
 function getSessionFromStorage(): User | null {
     try {
         const stored = localStorage.getItem(SESSION_KEY)
-        return stored ? JSON.parse(stored) : null
+        if (!stored) return null
+        const parsed = JSON.parse(stored) as unknown
+        return isValidUser(parsed) ? parsed : null
     } catch {
         return null
     }
@@ -47,7 +60,7 @@ function clearSessionFromStorage(): void {
     try {
         localStorage.removeItem(SESSION_KEY)
     } catch {
-        // Storage unavailable
+        return
     }
 }
 
@@ -89,9 +102,6 @@ function createAuthStore() {
 
             if (result.data?.user) {
                 saveUser(mapSessionUserToUserPayload(result.data.user))
-            } else if (cachedUser) {
-                setUser(cachedUser)
-                setIsAuthenticated(true)
             } else {
                 clearUser()
             }
@@ -125,6 +135,12 @@ function createAuthStore() {
             } else {
                 throw new Error("No user returned: email verification required")
             }
+        } catch (err) {
+            if (!error()) {
+                const message = err instanceof Error ? err.message : "Sign in failed"
+                setError(message)
+            }
+            throw err
         } finally {
             setIsLoading(false)
         }
@@ -148,6 +164,12 @@ function createAuthStore() {
             } else {
                 throw new Error("No user returned: email verification required")
             }
+        } catch (err) {
+            if (!error()) {
+                const message = err instanceof Error ? err.message : "Sign up failed"
+                setError(message)
+            }
+            throw err
         } finally {
             setIsLoading(false)
         }

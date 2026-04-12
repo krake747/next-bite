@@ -31,7 +31,7 @@ function LoginPage() {
             await auth.signInWithPassword(output.email, output.password)
             navigate({ to: "/", replace: true, from: Route.fullPath })
         } catch {
-            // Error is already set in auth store
+            return
         }
     }
 
