@@ -18,7 +18,6 @@
         "@convex-dev/better-auth": "^0.11.4",
         "@formisch/solid": "^0.9.4",
         "@kobalte/core": "^0.13.11",
-        "@solidjs/signals": "^0.13.11",
         "@tailwindcss/vite": "^4.2.2",
         "@tanstack/solid-router": "^1.168.17",
         "better-auth": "^1.6.2",

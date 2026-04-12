@@ -85,7 +85,6 @@ export function AddRestaurantDialog(props: { show: boolean; onOpenChange: (open:
                                                 value={field.input ?? ""}
                                                 onChange={handleLocationChange}
                                                 placeholder="Search for a restaurant..."
-                                                class="w-full rounded-md border border-neutral-300 bg-white px-3 py-2 text-sm dark:border-neutral-600 dark:bg-neutral-700 dark:text-neutral-100"
                                             />
                                         </FieldWrapper>
                                     )}

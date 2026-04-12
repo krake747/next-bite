@@ -8,20 +8,13 @@ export type User = {
     image?: string | null | undefined
 }
 
-function mapSessionUserToUserPayload(user: SessionUser): User {
+function mapSessionUserToUserPayload(user: User): User {
     return {
         id: user.id,
         email: user.email,
         name: user.name,
         image: user.image,
     }
-}
-
-type SessionUser = {
-    id: string
-    email: string
-    name?: string | null | undefined
-    image?: string | null | undefined
 }
 
 function createAuthStore() {

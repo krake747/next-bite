@@ -27,7 +27,7 @@ export function LoadingPlaceholder() {
     )
 }
 
-export const LoadingVerbs = [
+const LoadingVerbs = [
     "Accomplishing",
     "Actioning",
     "Actualizing",
