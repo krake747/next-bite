@@ -1,4 +1,3 @@
-import { createSignal, createEffect } from "solid-js"
 import { createQuery, createMutation } from "./convex-solid"
 import { api } from "../../convex/_generated/api"
 import type { Doc, Id } from "../../convex/_generated/dataModel"
