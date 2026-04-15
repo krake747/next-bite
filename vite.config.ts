@@ -5,19 +5,7 @@ import { tanstackRouter } from "@tanstack/router-plugin/vite"
 
 export default defineConfig({
     build: {
-        rolldownOptions: {
-            output: {
-                codeSplitting: {
-                    groups: [
-                        {
-                            name: "vendor",
-                            test: /node_modules/,
-                            entriesAware: true,
-                        },
-                    ],
-                },
-            },
-        },
+        license: { fileName: "license.md" },
     },
     plugins: [
         tanstackRouter({
