@@ -80,6 +80,31 @@ For production, create a Map ID in Google Cloud Console (Maps Management).
 
 The app includes a Luxembourg location bias for autocomplete suggestions.
 
+### Analytics Setup (Optional)
+
+This app supports PostHog and Google Tag Manager for analytics. Both are optional.
+
+#### PostHog
+
+Create a project at https://app.posthog.com and get your API key (starts with `phc_`).
+
+#### Google Tag Manager
+
+Create a GTM container at https://tagmanager.google.com and get your container ID (format:
+`GTM-XXXXXX`).
+
+#### Deploying to Netlify
+
+Push environment variables to Netlify:
+
+```bash
+netlify env:set VITE_POSTHOG_KEY "your-posthog-key"
+netlify env:set VITE_GTM_ID "GTM-XXXXXX"
+```
+
+Vite interpolates these at build time using `%VITE_*%` syntax in `index.html`. The scripts
+automatically detect unsubstituted tokens and skip initialization when not set.
+
 Start Convex backend dev server (syncs to your cloud dev project)
 
 ```bash

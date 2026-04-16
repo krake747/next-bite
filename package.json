@@ -12,6 +12,7 @@
         "fmt:check": "oxfmt --check",
         "lint": "oxlint",
         "lint:fix": "oxlint --fix",
+        "netlify": "pnpx netlify",
         "preview": "vite preview --port=5173"
     },
     "dependencies": {
