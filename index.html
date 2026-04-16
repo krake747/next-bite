@@ -21,7 +21,7 @@
         </script>
         <!-- Google Tag Manager -->
         <script>
-            (function (w, d, s, l, i) {
+            ;(function (w, d, s, l, i) {
                 if (!i || i.startsWith("%VITE_")) return
                 w[l] = w[l] || []
                 w[l].push({ "gtm.start": new Date().getTime(), event: "gtm.js" })
@@ -33,7 +33,10 @@
                 f.parentNode.insertBefore(j, f)
 
                 var n = d.createElement("noscript")
-                n.innerHTML = '<iframe src="https://www.googletagmanager.com/ns.html?id=' + i + '" height="0" width="0" style="display:none;visibility:hidden"></iframe>'
+                n.innerHTML =
+                    '<iframe src="https://www.googletagmanager.com/ns.html?id=' +
+                    i +
+                    '" height="0" width="0" style="display:none;visibility:hidden"></iframe>'
                 d.body.insertBefore(n.firstChild, d.body.firstChild)
             })(window, document, "script", "dataLayer", "%VITE_GTM_ID%")
         </script>
