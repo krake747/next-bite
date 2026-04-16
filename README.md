@@ -102,8 +102,8 @@ netlify env:set VITE_POSTHOG_KEY "your-posthog-key"
 netlify env:set VITE_GTM_ID "GTM-XXXXXX"
 ```
 
-Vite interpolates these at build time using `%VITE_*%` syntax in `index.html`. If not set, the
-literal `%VITE_*%` string remains in the HTML (no effect).
+Vite interpolates these at build time using `%VITE_*%` syntax in `index.html`. The scripts
+automatically detect unsubstituted tokens and skip initialization when not set.
 
 Start Convex backend dev server (syncs to your cloud dev project)
 
