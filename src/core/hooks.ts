@@ -7,12 +7,14 @@ export const useRestaurants = () => createQuery<Restaurant[]>(api.restaurants.ge
 export const useFriends = () => createQuery<Friend[]>(api.friends.get)
 
 export const useAddRestaurant = () => createMutation(api.restaurants.add)
+export const useAddRestaurantWithHours = () => createMutation(api.restaurants.addWithOpeningHours)
 export const useUpdateRestaurant = () => createMutation(api.restaurants.update)
 
 export const useDeleteImage = () => createMutation(api.restaurants.deleteImage)
 export const useCleanupStorage = () => createMutation(api.restaurants.cleanupStorage)
 export const useRefreshOpeningHours = () => createMutation(api.restaurants.refreshOpeningHours)
 export const useLookupPlaceIdAndHours = () => createMutation(api.restaurants.lookupPlaceIdAndHours)
+export const useAddRestaurantWithHours = () => createMutation(api.restaurants.addWithOpeningHours)
 
 export type ImageRecord = {
     url: string

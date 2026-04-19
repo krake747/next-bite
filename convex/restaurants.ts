@@ -1,4 +1,4 @@
-import { query, mutation, internalAction } from "./_generated/server"
+import { query, mutation, action, internalAction } from "./_generated/server"
 import { v } from "convex/values"
 import type { Id } from "./_generated/dataModel"
 import { MAX_IMAGES } from "../src/core/constants"
@@ -16,10 +16,12 @@ type OpeningHoursData = {
 async function fetchOpeningHoursFromGoogle(placeId: string): Promise<OpeningHoursData> {
     const apiKey = process.env.GOOGLE_MAPS_API_KEY
     if (!apiKey) {
+        console.log("fetchOpeningHoursFromGoogle: No API key")
         return { openNow: true, periods: [], weekdayText: [] }
     }
 
     try {
+        console.log("fetchOpeningHoursFromGoogle: Fetching for placeId:", placeId)
         const response = await fetch(`https://places.googleapis.com/v1/places/${placeId}?fields=currentOpeningHours`, {
             headers: {
                 "X-Goog-Api-Key": apiKey,
@@ -28,10 +30,13 @@ async function fetchOpeningHoursFromGoogle(placeId: string): Promise<OpeningHour
         })
 
         if (!response.ok) {
+            const errorText = await response.text()
+            console.log("fetchOpeningHoursFromGoogle: API error:", response.status, errorText)
             return { openNow: true, periods: [], weekdayText: [] }
         }
 
         const data = await response.json()
+        console.log("fetchOpeningHoursFromGoogle: Result:", JSON.stringify(data.currentOpeningHours))
         return (
             data.currentOpeningHours || {
                 openNow: true,
@@ -39,7 +44,8 @@ async function fetchOpeningHoursFromGoogle(placeId: string): Promise<OpeningHour
                 weekdayText: [],
             }
         )
-    } catch {
+    } catch (err) {
+        console.log("fetchOpeningHoursFromGoogle: Catch error:", err)
         return { openNow: true, periods: [], weekdayText: [] }
     }
 }
@@ -47,12 +53,15 @@ async function fetchOpeningHoursFromGoogle(placeId: string): Promise<OpeningHour
 async function lookupPlaceIdFromGoogle(name: string, location: string): Promise<string | null> {
     const apiKey = process.env.GOOGLE_MAPS_API_KEY
     if (!apiKey) {
+        console.log("lookupPlaceIdFromGoogle: No API key")
         return null
     }
 
     try {
         const query = `${name}, ${location}`
         const encodedQuery = encodeURIComponent(query)
+        console.log("lookupPlaceIdFromGoogle: Searching for:", query)
+
         const response = await fetch(
             `https://places.googleapis.com/v1/places:searchText?textQuery=${encodedQuery}&fields=places/id`,
             {
@@ -64,12 +73,16 @@ async function lookupPlaceIdFromGoogle(name: string, location: string): Promise<
         )
 
         if (!response.ok) {
+            const errorText = await response.text()
+            console.log("lookupPlaceIdFromGoogle: API error:", response.status, errorText)
             return null
         }
 
         const data = await response.json()
+        console.log("lookupPlaceIdFromGoogle: Result:", JSON.stringify(data))
         return data.places?.[0]?.id ?? null
-    } catch {
+    } catch (err) {
+        console.log("lookupPlaceIdFromGoogle: Catch error:", err)
         return null
     }
 }
@@ -104,22 +117,53 @@ export const add = mutation({
         ),
     },
     handler: async (ctx, args) => {
-        const { images, openingHours: providedHours, placeId, ...rest } = args
+        const { images, placeId, ...rest } = args
 
         if (images && images.length > MAX_IMAGES) {
             throw new Error(`Maximum ${MAX_IMAGES} images allowed`)
-        }
-
-        let finalHours = providedHours
-        if (!finalHours && placeId) {
-            finalHours = await fetchOpeningHoursFromGoogle(placeId)
         }
 
         const restaurantData = {
             ...rest,
             ...(images !== undefined ? { images } : {}),
             placeId,
-            openingHours: finalHours,
+        }
+
+        return ctx.db.insert("restaurants", restaurantData)
+    },
+})
+
+export const addWithOpeningHours = action({
+    args: {
+        name: v.string(),
+        cuisine: v.string(),
+        location: v.string(),
+        lat: v.optional(v.number()),
+        lng: v.optional(v.number()),
+        notes: v.optional(v.string()),
+        link: v.optional(v.string()),
+        addedBy: v.string(),
+        rating: v.optional(v.number()),
+        images: v.optional(v.array(v.object({ url: v.string(), storageId: v.string() }))),
+        placeId: v.string(),
+    },
+    handler: async (ctx, args) => {
+        const { images, placeId, ...rest } = args
+
+        if (images && images.length > MAX_IMAGES) {
+            throw new Error(`Maximum ${MAX_IMAGES} images allowed`)
+        }
+
+        let openingHours = null
+        if (placeId) {
+            openingHours = await fetchOpeningHoursFromGoogle(placeId)
+        }
+
+        const restaurantData = {
+            ...rest,
+            ...(images !== undefined ? { images } : {}),
+            placeId,
+            openingHours,
         }
 
         return ctx.db.insert("restaurants", restaurantData)
@@ -220,7 +264,7 @@ export const cleanupStorage = mutation({
     },
 })
 
-export const refreshOpeningHours = mutation({
+export const refreshOpeningHours = action({
     args: { restaurantId: v.id("restaurants") },
     handler: async (ctx, { restaurantId }) => {
         const restaurant = await ctx.db.get(restaurantId)
@@ -237,25 +281,37 @@ export const refreshOpeningHours = mutation({
     },
 })
 
-export const lookupPlaceIdAndHours = mutation({
+export const lookupPlaceIdAndHours = action({
     args: { restaurantId: v.id("restaurants") },
     handler: async (ctx, { restaurantId }) => {
+        console.log("lookupPlaceIdAndHours: Starting for restaurantId:", restaurantId)
         const restaurant = await ctx.db.get(restaurantId)
         if (!restaurant) {
+            console.log("lookupPlaceIdAndHours: Restaurant not found")
             throw new Error("Restaurant not found")
         }
 
+        console.log("lookupPlaceIdAndHours: Restaurant:", restaurant.name, restaurant.location)
+
         if (!restaurant.name || !restaurant.location) {
+            console.log("lookupPlaceIdAndHours: Missing name or location")
             throw new Error("Name and location required to lookup")
         }
 
         const newPlaceId = await lookupPlaceIdFromGoogle(restaurant.name, restaurant.location)
+        console.log("lookupPlaceIdAndHours: Found placeId:", newPlaceId)
+
         if (!newPlaceId) {
+            console.log("lookupPlaceIdAndHours: No placeId found, returning")
             return
         }
 
+        console.log("lookupPlaceIdAndHours: Fetching opening hours...")
         const openingHours = await fetchOpeningHoursFromGoogle(newPlaceId)
+        console.log("lookupPlaceIdAndHours: Got openingHours:", JSON.stringify(openingHours))
+
         await ctx.db.patch(restaurantId, { placeId: newPlaceId, openingHours })
+        console.log("lookupPlaceIdAndHours: Done!")
     },
 })
 
