@@ -1,12 +1,11 @@
-import { type Component } from "solid-js"
-import { Button } from "../button"
+import { Button } from "@ui/button"
 import ZoomIn from "lucide-solid/icons/zoom-in"
 import ZoomOut from "lucide-solid/icons/zoom-out"
 import Maximize from "lucide-solid/icons/maximize"
 import Minimize from "lucide-solid/icons/minimize"
 import RotateCcw from "lucide-solid/icons/rotate-ccw"
 
-type ZoomControlsProps = {
+export function ZoomControls(props: {
     zoom: number
     onZoomIn: () => void
     onZoomOut: () => void
@@ -15,9 +14,7 @@ type ZoomControlsProps = {
     onReset: () => void
     isFullscreen: boolean
     onBackToGrid: () => void
-}
-
-export const ZoomControls: Component<ZoomControlsProps> = (props) => {
+}) {
     return (
         <div class="flex flex-wrap items-center justify-center gap-2 p-4">
             <div class="flex items-center gap-1">
