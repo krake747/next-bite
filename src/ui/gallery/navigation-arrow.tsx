@@ -1,5 +1,5 @@
 import { type Component } from "solid-js"
-import { cx } from "../variants"
+import { cx } from ".@ui/variants"
 
 type NavigationArrowProps = {
     direction: "prev" | "next"

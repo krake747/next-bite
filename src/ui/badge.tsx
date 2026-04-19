@@ -1,4 +1,4 @@
-import { cva, cx, type VariantProps } from "./variants"
+import { cva, cx, type VariantProps } from "@ui/variants"
 import { splitProps, type ComponentProps } from "solid-js"
 import { Dynamic } from "solid-js/web"
 

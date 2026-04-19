@@ -1,7 +1,7 @@
 import { splitProps } from "solid-js"
 import Search from "lucide-solid/icons/search"
 import X from "lucide-solid/icons/x"
-import { cx } from "./variants"
+import { cx } from "@ui/variants"
 
 interface SearchInputProps {
     value: string

@@ -1,5 +1,5 @@
 import { Root } from "@kobalte/core/button"
-import { cva, type VariantProps } from "./variants"
+import { cva, type VariantProps } from "@ui/variants"
 import { splitProps, type ComponentProps } from "solid-js"
 
 const button = cva({

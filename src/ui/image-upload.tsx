@@ -1,5 +1,5 @@
 import { For, Show, createSignal } from "solid-js"
-import { cx } from "./variants"
+import { cx } from "@ui/variants"
 import { useUploadImage, useDeleteImage, type ImageRecord } from "@core/hooks"
 import { processImage, formatFileSize, MAX_IMAGES, MAX_FILE_SIZE } from "@core/image-utils"
 import { createFileUploader, createDropzone, type UploadFile } from "@solid-primitives/upload"
