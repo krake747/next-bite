@@ -101,7 +101,11 @@ export function RestaurantCard(props: { restaurant: Restaurant } & ComponentProp
                     handleRefreshHours={handleRefreshHours}
                     handleFindHours={handleFindHours}
                 />
-                <RestaurantCardContent restaurant={local.restaurant} hasLocation={hasLocation()} />
+                <RestaurantCardContent
+                    restaurant={local.restaurant}
+                    hasLocation={hasLocation()}
+                    onShowHours={() => setShowHours(true)}
+                />
                 <RestaurantCardNotes
                     notes={local.restaurant.notes}
                     notesExpanded={notesExpanded()}
@@ -241,7 +245,7 @@ function RestaurantCardImage(props: {
     )
 }
 
-function RestaurantCardContent(props: { restaurant: Restaurant; hasLocation: boolean }) {
+function RestaurantCardContent(props: { restaurant: Restaurant; hasLocation: boolean; onShowHours: () => void }) {
     return (
         <div class="flex flex-col gap-4 p-5 md:gap-3 md:p-4">
             <div class="flex flex-col gap-2.5 md:gap-2">
@@ -291,7 +295,7 @@ function RestaurantCardContent(props: { restaurant: Restaurant; hasLocation: boo
                     </div>
                 </Show>
                 <Show when={props.restaurant.openingHours}>
-                    <OpeningHours openingHours={props.restaurant.openingHours} onClick={() => setShowHours(true)} />
+                    <OpeningHours openingHours={props.restaurant.openingHours} onClick={props.onShowHours} />
                 </Show>
             </div>
         </div>
