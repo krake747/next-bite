@@ -65,7 +65,9 @@ function Home() {
                     when={restaurants()}
                     fallback={
                         <>
-                            <FriendsFilterSkeleton />
+                            <div class="pt-4">
+                                <FriendsFilterSkeleton />
+                            </div>
                             <div class="grid gap-8 md:grid-cols-2 md:gap-10">
                                 <RestaurantCardSkeleton />
                                 <RestaurantCardSkeleton />

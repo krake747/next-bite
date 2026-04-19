@@ -50,7 +50,17 @@ export function ImageUpload(props: ImageUploadProps) {
                 }
 
                 const processed = await processImage(file, { maxWidth: 1920, quality: 0.9 })
-                const processedFile = new File([processed.blob], file.name, { type: processed.blob.type })
+                const extension =
+                    processed.blob.type === "image/webp"
+                        ? ".webp"
+                        : processed.blob.type === "image/png"
+                          ? ".png"
+                          : processed.blob.type === "image/gif"
+                            ? ".gif"
+                            : ".jpg"
+                const baseName = file.name.replace(/\.[^.]+$/, "")
+                const processedFileName = baseName + extension
+                const processedFile = new File([processed.blob], processedFileName, { type: processed.blob.type })
                 const result = await uploadImage(processedFile)
                 newImages.push({ url: result.url, storageId: result.storageId })
             }

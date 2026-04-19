@@ -81,3 +81,12 @@ export const deleteImage = mutation({
         }
     },
 })
+
+export const cleanupStorage = mutation({
+    args: {
+        storageId: v.string(),
+    },
+    handler: async (ctx, args) => {
+        await ctx.storage.delete(args.storageId as Id<"_storage">)
+    },
+})

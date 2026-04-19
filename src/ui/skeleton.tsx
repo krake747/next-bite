@@ -37,7 +37,7 @@ export function RestaurantCardSkeleton() {
 
 export function FriendsFilterSkeleton() {
     return (
-        <div class="mb-6 flex flex-col gap-4 pt-4 sm:flex-row sm:items-start">
+        <div class="mb-6 flex flex-col gap-4 sm:flex-row sm:items-start">
             <div class="flex flex-1 flex-col gap-3">
                 <div class="flex flex-wrap items-center gap-2">
                     <div class="flex items-center gap-1.5">

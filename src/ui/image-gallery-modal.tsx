@@ -15,6 +15,7 @@ import RotateCcw from "lucide-solid/icons/rotate-ccw"
 
 const ZOOM_STEP = 0.5
 const MIN_ZOOM = 0.5
+const DEFAULT_ZOOM = 1
 const MAX_ZOOM = 4
 
 type ImageGalleryModalProps = {
@@ -40,6 +41,17 @@ export function ImageGalleryModal(props: ImageGalleryModalProps) {
         setCurrentIndex(props.initialIndex ?? 0)
     })
 
+    createEffect(() => {
+        if (imageContainerRef) {
+            createPerPointerListeners({
+                target: imageContainerRef,
+                onDown: eventHandler,
+            })
+        }
+    })
+
+    onCleanup(() => {})
+
     const resetZoom = () => {
         setZoom(1)
         setPan({ x: 0, y: 0 })
@@ -61,8 +73,10 @@ export function ImageGalleryModal(props: ImageGalleryModalProps) {
     }
 
     const handleClickZoom = () => {
-        if (zoom() > MIN_ZOOM) {
-            resetZoom()
+        if (zoom() > DEFAULT_ZOOM) {
+            setZoom(DEFAULT_ZOOM)
+            setPan({ x: 0, y: 0 })
+            setRotation(0)
         } else {
             setZoom(2)
         }
@@ -108,11 +122,11 @@ export function ImageGalleryModal(props: ImageGalleryModalProps) {
         onMove: (h: (e: PointerEvent) => void) => void,
         onUp: (h: () => void) => void,
     ) => {
-        if (zoom() > MIN_ZOOM) {
+        if (zoom() > DEFAULT_ZOOM) {
             setIsPanning(true)
             startPan = { x: x - pan().x, y: y - pan().y }
             onMove(({ x, y }) => {
-                if (isPanning() && zoom() > MIN_ZOOM) {
+                if (isPanning() && zoom() > DEFAULT_ZOOM) {
                     setPan({ x: x - startPan.x, y: y - startPan.y })
                 }
             })
@@ -122,11 +136,6 @@ export function ImageGalleryModal(props: ImageGalleryModalProps) {
         }
     }
 
-    createPerPointerListeners({
-        target: imageContainerRef!,
-        onDown: eventHandler,
-    })
-
     const handleRotate = () => {
         setRotation((r) => (r + 90) % 360)
     }
@@ -134,16 +143,28 @@ export function ImageGalleryModal(props: ImageGalleryModalProps) {
     const currentImage = () => props.images[currentIndex()]
 
     const handlePrevious = () => {
-        setCurrentIndex((prev) => (prev === 0 ? props.images.length - 1 : prev - 1))
+        const newIndex = currentIndex() === 0 ? props.images.length - 1 : currentIndex() - 1
+        setCurrentIndex(newIndex)
+        resetZoom()
     }
 
     const handleNext = () => {
-        setCurrentIndex((prev) => (prev === props.images.length - 1 ? 0 : prev + 1))
+        const newIndex = currentIndex() === props.images.length - 1 ? 0 : currentIndex() + 1
+        setCurrentIndex(newIndex)
+        resetZoom()
     }
 
     const handleKeyDown = (e: KeyboardEvent) => {
-        if (e.key === "ArrowLeft") handlePrevious()
-        if (e.key === "ArrowRight") handleNext()
+        if (e.key === "ArrowLeft") {
+            const newIndex = currentIndex() === 0 ? props.images.length - 1 : currentIndex() - 1
+            setCurrentIndex(newIndex)
+            resetZoom()
+        }
+        if (e.key === "ArrowRight") {
+            const newIndex = currentIndex() === props.images.length - 1 ? 0 : currentIndex() + 1
+            setCurrentIndex(newIndex)
+            resetZoom()
+        }
         if (e.key === "Escape") {
             if (lightboxOpen()) {
                 setLightboxOpen(false)
@@ -221,7 +242,7 @@ export function ImageGalleryModal(props: ImageGalleryModalProps) {
                                 <div
                                     ref={imageContainerRef}
                                     class="relative flex max-h-full max-w-full cursor-grab items-center justify-center overflow-hidden"
-                                    classList={{ "cursor-grabbing": isPanning() && zoom() > MIN_ZOOM }}
+                                    classList={{ "cursor-grabbing": isPanning() && zoom() > DEFAULT_ZOOM }}
                                     onClick={handleClickZoom}
                                     onWheel={handleWheel}
                                 >

@@ -43,14 +43,12 @@ function AuthButton() {
         <Show
             when={auth.isAuthenticated()}
             fallback={
-                <Link to="/login" viewTransition>
-                    <Link
-                        to="/login"
-                        viewTransition
-                        class="inline-flex cursor-pointer items-center justify-center rounded-md bg-flame-pea-700 px-3 py-1.5 text-sm font-semibold text-white shadow-xs hover:bg-flame-pea-600 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-flame-pea-700 active:scale-[0.97] dark:bg-flame-pea-800 dark:text-white dark:shadow-none dark:hover:bg-flame-pea-700 dark:focus-visible:outline-flame-pea-50"
-                    >
-                        Sign In
-                    </Link>
+                <Link
+                    to="/login"
+                    viewTransition
+                    class="inline-flex cursor-pointer items-center justify-center rounded-md bg-flame-pea-700 px-3 py-1.5 text-sm font-semibold text-white shadow-xs hover:bg-flame-pea-600 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-flame-pea-700 active:scale-[0.97] dark:bg-flame-pea-800 dark:text-white dark:shadow-none dark:hover:bg-flame-pea-700 dark:focus-visible:outline-flame-pea-50"
+                >
+                    Sign In
                 </Link>
             }
         >

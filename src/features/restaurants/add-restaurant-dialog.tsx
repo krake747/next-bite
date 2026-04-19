@@ -1,7 +1,7 @@
-import { For, Show, createSignal } from "solid-js"
+import { For, Show, createSignal, onCleanup } from "solid-js"
 import { Dialog } from "@kobalte/core/dialog"
 import { createForm, Field, Form, reset, setInput } from "@formisch/solid"
-import { useAddRestaurant, useFriends, useAuth, type ImageRecord } from "../../core/hooks"
+import { useAddRestaurant, useFriends, useAuth, useCleanupStorage, type ImageRecord } from "../../core/hooks"
 import { Button } from "../../ui/button"
 import { FieldWrapper, Input, Textarea, Select } from "../../ui/field"
 import { RestaurantSchema, type RestaurantOutput } from "../../core/schemas"
@@ -13,9 +13,35 @@ export function AddRestaurantDialog(props: { show: boolean; onOpenChange: (open:
     const addRestaurant = useAddRestaurant()
     const friends = useFriends()
     const auth = useAuth()
+    const cleanupStorage = useCleanupStorage()
     const [images, setImages] = createSignal<ImageRecord[]>([])
 
     const form = createForm({ schema: RestaurantSchema })
+
+    const cleanupImages = async () => {
+        const imagesToDelete = images()
+        if (imagesToDelete.length === 0) return
+
+        for (const img of imagesToDelete) {
+            try {
+                await cleanupStorage({ storageId: img.storageId })
+            } catch {
+                // Storage may already be deleted or not exist
+            }
+        }
+        setImages([])
+    }
+
+    const handleClose = () => {
+        cleanupImages().then(() => {
+            reset(form)
+            props.onOpenChange(false)
+        })
+    }
+
+    onCleanup(() => {
+        cleanupImages()
+    })
 
     const handleLocationChange = (address: string, lat?: number, lng?: number) => {
         setInput(form, { path: ["location"], input: address })
@@ -164,7 +190,7 @@ export function AddRestaurantDialog(props: { show: boolean; onOpenChange: (open:
                                 </div>
                                 <ImageUpload images={images()} onImagesChange={setImages} maxImages={5} />
                                 <div class="flex justify-end gap-2 pt-2">
-                                    <Button variant="secondary" onClick={() => props.onOpenChange(false)}>
+                                    <Button variant="secondary" onClick={handleClose}>
                                         Cancel
                                     </Button>
                                     <Button type="submit">Add Restaurant</Button>
