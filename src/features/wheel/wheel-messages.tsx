@@ -4,6 +4,7 @@ import Sparkles from "lucide-solid/icons/sparkles"
 import UtensilsCrossed from "lucide-solid/icons/utensils-crossed"
 import Star from "lucide-solid/icons/star"
 import Share from "lucide-solid/icons/share"
+import X from "lucide-solid/icons/x"
 
 type Particle = {
     id: number
@@ -75,26 +76,21 @@ function SpotlightRing() {
 
 export function Instructions() {
     return (
-        <div class="text-center">
-            <div class="mb-3 flex justify-center">
-                <div class="flex size-12 items-center justify-center rounded-full bg-flame-pea-100 dark:bg-flame-pea-900/30">
-                    <UtensilsCrossed class="size-6 text-flame-pea-600 dark:text-flame-pea-400" />
-                </div>
+        <div class="flex items-center justify-center gap-3 text-center">
+            <div class="flex size-9 shrink-0 items-center justify-center rounded-full bg-flame-pea-100 sm:size-10 dark:bg-flame-pea-900/30">
+                <UtensilsCrossed class="size-4 text-flame-pea-600 sm:size-5 dark:text-flame-pea-400" />
             </div>
             <p
-                class="text-lg leading-relaxed font-medium text-neutral-700 dark:text-neutral-300"
+                class="text-sm leading-relaxed font-medium text-neutral-700 sm:text-base dark:text-neutral-300"
                 style={{ "font-family": "var(--font-body)" }}
             >
                 Press the button to give the wheel a whirl.
-            </p>
-            <p class="mt-3 text-sm text-neutral-500 dark:text-neutral-500">
-                Let fate (or your stomach) decide where to dine.
             </p>
         </div>
     )
 }
 
-import { RestaurantCard } from "../../features/restaurants/restaurant-card"
+import { WinnerCard } from "./winner-card"
 import { Button } from "../../ui/button"
 import type { Restaurant } from "../../core/hooks"
 
@@ -109,69 +105,76 @@ export function WinnerModal(props: {
         <Dialog open={props.show} onOpenChange={props.onOpenChange}>
             <Dialog.Portal>
                 <Dialog.Overlay
-                    class="animate-in fade-in fixed inset-0 z-50 flex items-center justify-center bg-neutral-900/60 p-4 backdrop-blur-sm duration-300"
+                    class="animate-in fade-in fixed inset-0 z-50 flex items-center justify-center bg-neutral-900/80 backdrop-blur-sm duration-200"
                     onClick={() => props.onOpenChange(false)}
                 >
                     <Dialog.Content
-                        class="animate-winner-modal relative w-full max-w-md overflow-hidden rounded-3xl bg-white shadow-2xl outline-none dark:bg-neutral-900"
+                        class="animate-winner-modal relative w-[90%] max-w-sm overflow-hidden rounded-2xl bg-white shadow-2xl outline-none dark:bg-neutral-900"
                         onClick={(e) => e.stopPropagation()}
                     >
-                        <div class="pointer-events-none absolute inset-0 -mx-6 -mt-20 mb-12 flex items-center justify-center">
+                        <div class="pointer-events-none absolute inset-0 -mx-4 -mt-16 flex items-center justify-center">
                             <SpotlightRing />
                             <CelebrationParticles />
                         </div>
 
-                        <div class="relative p-6 pt-12">
-                            <div class="relative mb-6 flex justify-center">
+                        <div class="relative px-5 pt-8 pb-5">
+                            <button
+                                onClick={() => props.onOpenChange(false)}
+                                class="absolute top-2 right-2 flex size-8 items-center justify-center rounded-full bg-neutral-100 text-neutral-400 transition-colors hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700"
+                            >
+                                <X class="size-4" />
+                            </button>
+
+                            <div class="relative mb-4 flex justify-center">
                                 <div class="relative">
-                                    <div class="animate-winner-glow absolute inset-0 rounded-full bg-flame-pea-400/30 blur-2xl" />
-                                    <div class="relative flex size-20 items-center justify-center rounded-full bg-linear-to-br from-flame-pea-500 via-flame-pea-600 to-flame-pea-800 shadow-2xl ring-4 ring-flame-pea-400/30">
-                                        <Sparkles class="size-10 text-white" />
+                                    <div class="animate-winner-glow absolute inset-0 rounded-full bg-flame-pea-400/30 blur-xl" />
+                                    <div class="relative flex size-14 items-center justify-center rounded-full bg-linear-to-br from-flame-pea-500 via-flame-pea-600 to-flame-pea-800 shadow-lg ring-4 ring-flame-pea-400/20">
+                                        <Sparkles class="size-7 text-white" />
                                     </div>
                                 </div>
                             </div>
 
-                            <div class="relative mb-2 flex items-center justify-center gap-2">
-                                <div class="h-px w-8 bg-linear-to-r from-transparent to-flame-pea-400/50" />
+                            <div class="relative mb-3 flex items-center justify-center gap-2">
+                                <div class="h-px w-6 bg-linear-to-r from-transparent to-flame-pea-400/50" />
                                 <div class="flex items-center gap-1 text-xs font-medium tracking-widest text-flame-pea-600 uppercase dark:text-flame-pea-400">
-                                    <Star class="size-3 fill-current" />
+                                    <Star class="size-2.5 fill-current" />
                                     Winner
-                                    <Star class="size-3 fill-current" />
+                                    <Star class="size-2.5 fill-current" />
                                 </div>
-                                <div class="h-px w-8 bg-linear-to-l from-transparent to-flame-pea-400/50" />
+                                <div class="h-px w-6 bg-linear-to-l from-transparent to-flame-pea-400/50" />
                             </div>
 
                             <Dialog.Title class="sr-only">Winner</Dialog.Title>
 
                             <h2
-                                class="animate-title-reveal bg-linear-to-br from-neutral-900 via-neutral-800 to-neutral-900 bg-clip-text text-center text-4xl leading-tight font-bold tracking-tight text-transparent dark:from-neutral-100 dark:via-neutral-200 dark:to-neutral-400"
+                                class="animate-title-reveal bg-linear-to-br from-neutral-900 via-neutral-800 to-neutral-900 bg-clip-text text-center text-2xl font-bold tracking-tight text-transparent dark:from-neutral-100 dark:via-neutral-200 dark:to-neutral-400"
                                 style={{ "font-family": "var(--font-display)" }}
                             >
                                 {props.restaurant.name}
                             </h2>
 
-                            <p class="animate-fade-in-up mt-3 text-center text-base text-neutral-600 dark:text-neutral-400">
+                            <p class="animate-fade-in-up mt-1.5 text-center text-xs text-neutral-500 dark:text-neutral-400">
                                 Your next culinary adventure awaits
                             </p>
 
-                            <div class="animate-card-reveal mt-6">
-                                <RestaurantCard restaurant={props.restaurant} />
+                            <div class="animate-card-reveal mt-4">
+                                <WinnerCard restaurant={props.restaurant} />
                             </div>
 
-                            <div class="mt-6 flex gap-3">
+                            <div class="mt-4 flex gap-2">
                                 <Button
                                     variant="primary"
-                                    size="lg"
+                                    size="md"
                                     onClick={props.onSpinAgain}
                                     disabled={props.isSpinning}
                                     class="flex-1"
                                 >
-                                    <Sparkles class="size-5" />
+                                    <Sparkles class="size-4" />
                                     <span>Spin Again</span>
                                 </Button>
                                 <Button
                                     variant="secondary"
-                                    size="lg"
+                                    size="md"
                                     onClick={() => {
                                         const lat = props.restaurant.lat
                                         const lng = props.restaurant.lng
@@ -193,7 +196,7 @@ export function WinnerModal(props: {
                                     }}
                                     class="flex-1"
                                 >
-                                    <Share class="size-5" />
+                                    <Share class="size-4" />
                                     <span>Share</span>
                                 </Button>
                             </div>
