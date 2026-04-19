@@ -95,12 +95,14 @@ export function Instructions() {
     )
 }
 
-function ShareButton(props: { restaurantName: string }) {
+function ShareButton(props: { restaurantName: string; lat?: number | undefined; lng?: number | undefined }) {
     const [copied, setCopied] = createSignal(false)
 
     const share = async () => {
         const inviteUrl = `${window.location.origin}/wheel`
-        const message = `I won ${props.restaurantName} on Next Bite! 🍽️\n\nSpin the wheel yourself: ${inviteUrl}`
+        const mapsUrl = props.lat && props.lng ? `https://maps.google.com/?q=${props.lat},${props.lng}` : undefined
+        const mapsLine = mapsUrl ? `\n\n📍 Google Maps: ${mapsUrl}` : ""
+        const message = `Just tried the dinner wheel... fate is UNHINGED! 😂 We're going to ${props.restaurantName}!${mapsLine}\n\nYou gotta try this -> ${inviteUrl}`
 
         try {
             await makeWebShare()({
@@ -135,7 +137,7 @@ function ShareButton(props: { restaurantName: string }) {
     )
 }
 
-export function WinnerMessage(props: { restaurantName: string }) {
+export function WinnerMessage(props: { restaurantName: string; lat?: number | undefined; lng?: number | undefined }) {
     return (
         <div class="animate-winner-reveal relative text-center">
             <div class="absolute inset-0 -mx-6 -mt-20 mb-12 flex items-center justify-center">
@@ -173,7 +175,7 @@ export function WinnerMessage(props: { restaurantName: string }) {
                 Your next culinary adventure awaits
             </p>
 
-            <ShareButton restaurantName={props.restaurantName} />
+            <ShareButton restaurantName={props.restaurantName} lat={props.lat} lng={props.lng} />
         </div>
     )
 }
