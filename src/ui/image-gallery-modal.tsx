@@ -32,6 +32,44 @@ export function ImageGalleryModal(props: ImageGalleryModalProps) {
     const [suppressClickAfterPan, setSuppressClickAfterPan] = createSignal(false)
     let imageContainerRef: HTMLDivElement | undefined // eslint-disable-line no-unassigned-vars
     let dialogContentRef: HTMLDivElement | undefined // eslint-disable-line no-unassigned-vars
+    let initialPinchDistance: number | undefined
+    let initialPinchZoom: number | undefined
+
+    const getTouchDistance = (touches: TouchList) => {
+        if (touches.length < 2) return 0
+        const touch0 = touches[0]
+        const touch1 = touches[1]
+        if (!touch0 || !touch1) return 0
+        const dx = touch0.clientX - touch1.clientX
+        const dy = touch0.clientY - touch1.clientY
+        return Math.sqrt(dx * dx + dy * dy)
+    }
+
+    const handleTouchStart = (e: TouchEvent) => {
+        if (e.touches.length === 2) {
+            e.preventDefault()
+            initialPinchDistance = getTouchDistance(e.touches)
+            initialPinchZoom = zoom()
+        }
+    }
+
+    const handleTouchMove = (e: TouchEvent) => {
+        if (e.touches.length === 2 && initialPinchDistance && initialPinchZoom) {
+            e.preventDefault()
+            const currentDistance = getTouchDistance(e.touches)
+            const scale = currentDistance / initialPinchDistance
+            const newZoom = Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, initialPinchZoom * scale))
+            setZoom(newZoom)
+            if (newZoom <= DEFAULT_ZOOM) {
+                setPan({ x: 0, y: 0 })
+            }
+        }
+    }
+
+    const handleTouchEnd = () => {
+        initialPinchDistance = undefined
+        initialPinchZoom = undefined
+    }
 
     createEffect(() => {
         setCurrentIndex(props.initialIndex ?? 0)
@@ -230,6 +268,9 @@ export function ImageGalleryModal(props: ImageGalleryModalProps) {
                                     classList={{ "cursor-grabbing": isPanning() && zoom() > DEFAULT_ZOOM }}
                                     onClick={handleClickZoom}
                                     onWheel={handleWheel}
+                                    onTouchStart={handleTouchStart}
+                                    onTouchMove={handleTouchMove}
+                                    onTouchEnd={handleTouchEnd}
                                 >
                                     <Show when={currentImage()}>
                                         {(imageSrc) => (
