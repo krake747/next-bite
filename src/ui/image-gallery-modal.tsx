@@ -3,6 +3,7 @@ import { Dialog } from "@kobalte/core/dialog"
 import { cx } from "./variants"
 import { Button } from "./button"
 import { LazyImage } from "./lazy-image"
+import { createPointerPosition } from "@solid-primitives/pointer"
 import X from "lucide-solid/icons/x"
 import ChevronLeft from "lucide-solid/icons/chevron-left"
 import ChevronRight from "lucide-solid/icons/chevron-right"
@@ -33,8 +34,10 @@ export function ImageGalleryModal(props: ImageGalleryModalProps) {
     const [isPanning, setIsPanning] = createSignal(false)
     const [isFullscreen, setIsFullscreen] = createSignal(false)
     const [rotation, setRotation] = createSignal(0)
-    let imageContainerRef: HTMLDivElement | undefined // eslint-disable-line no-unassigned-vars
-    let currentPanStart: PanState = { x: 0, y: 0 }
+    const [pointerStarted, setPointerStarted] = createSignal<PanState>({ x: 0, y: 0 })
+    let imageContainerRef: HTMLDivElement | undefined
+    let containerRef: HTMLDivElement | undefined
+    let pointerPosition = createPointerPosition({ target: containerRef })
 
     createEffect(() => {
         setCurrentIndex(props.initialIndex ?? 0)
@@ -101,22 +104,18 @@ export function ImageGalleryModal(props: ImageGalleryModalProps) {
         }
     }
 
-    const handlePanStart = (e: MouseEvent | TouchEvent) => {
+    const handlePanStart = () => {
         if (zoom() > MIN_ZOOM) {
             setIsPanning(true)
-            const clientX = "touches" in e ? e.touches[0].clientX : e.clientX
-            const clientY = "touches" in e ? e.touches[0].clientY : e.clientY
-            currentPanStart = { x: clientX - pan().x, y: clientY - pan().y }
+            setPointerStarted({ x: pointerPosition().x - pan().x, y: pointerPosition().y - pan().y })
         }
     }
 
-    const handlePanMove = (e: MouseEvent | TouchEvent) => {
+    createEffect(() => {
         if (isPanning() && zoom() > MIN_ZOOM) {
-            const clientX = "touches" in e ? e.touches[0].clientX : e.clientX
-            const clientY = "touches" in e ? e.touches[0].clientY : e.clientY
-            setPan({ x: clientX - currentPanStart.x, y: clientY - currentPanStart.y })
+            setPan({ x: pointerPosition().x - pointerStarted().x, y: pointerPosition().y - pointerStarted().y })
         }
-    }
+    })
 
     const handlePanEnd = () => {
         setIsPanning(false)
@@ -214,18 +213,17 @@ export function ImageGalleryModal(props: ImageGalleryModalProps) {
                                 </button>
 
                                 <div
-                                    ref={imageContainerRef}
+                                    ref={(el) => {
+                                        imageContainerRef = el
+                                        containerRef = el
+                                    }}
                                     class="relative flex max-h-full max-w-full cursor-grab items-center justify-center overflow-hidden"
                                     classList={{ "cursor-grabbing": isPanning() && zoom() > MIN_ZOOM }}
                                     onClick={handleClickZoom}
                                     onWheel={handleWheel}
-                                    onMouseDown={handlePanStart}
-                                    onMouseMove={handlePanMove}
-                                    onMouseUp={handlePanEnd}
-                                    onMouseLeave={handlePanEnd}
-                                    onTouchStart={handlePanStart}
-                                    onTouchMove={handlePanMove}
-                                    onTouchEnd={handlePanEnd}
+                                    onPointerDown={handlePanStart}
+                                    onPointerUp={handlePanEnd}
+                                    onPointerLeave={handlePanEnd}
                                 >
                                     <Show when={currentImage()}>
                                         {(imageSrc) => (
@@ -266,7 +264,7 @@ export function ImageGalleryModal(props: ImageGalleryModalProps) {
                                     >
                                         <ZoomOut class="size-5" />
                                     </button>
-                                    <span class="min-w-[3rem] text-center text-sm text-white">
+                                    <span class="min-w-12 text-center text-sm text-white">
                                         {Math.round(zoom() * 100)}%
                                     </span>
                                     <button
