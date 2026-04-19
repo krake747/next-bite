@@ -1,68 +1,19 @@
-import { For, Show, createSignal, onCleanup } from "solid-js"
+import { Show } from "solid-js"
 import { Dialog } from "@kobalte/core/dialog"
-import { createForm, Field, Form, reset, setInput } from "@formisch/solid"
-import { useAddRestaurant, useFriends, useAuth, useCleanupStorage, type ImageRecord } from "../../core/hooks"
+import { useAuth } from "../../core/hooks"
 import { Button } from "../../ui/button"
-import { FieldWrapper, Input, Textarea, Select } from "../../ui/field"
-import { RestaurantSchema, type RestaurantOutput } from "../../core/schemas"
-import { PlacesAutocomplete } from "../../ui/places-autocomplete"
-import { ImageUpload } from "../../ui/image-upload"
+import { RestaurantForm } from "./restaurant-form"
 import UtensilsCrossed from "lucide-solid/icons/utensils-crossed"
 
 export function AddRestaurantDialog(props: { show: boolean; onOpenChange: (open: boolean) => void }) {
-    const addRestaurant = useAddRestaurant()
-    const friends = useFriends()
     const auth = useAuth()
-    const cleanupStorage = useCleanupStorage()
-    const [images, setImages] = createSignal<ImageRecord[]>([])
 
-    const form = createForm({ schema: RestaurantSchema })
-
-    const cleanupImages = async () => {
-        const imagesToDelete = images()
-        if (imagesToDelete.length === 0) return
-
-        for (const img of imagesToDelete) {
-            try {
-                await cleanupStorage({ storageId: img.storageId })
-            } catch {
-                // Storage may already be deleted or not exist
-            }
-        }
-        setImages([])
+    const handleSuccess = () => {
+        props.onOpenChange(false)
     }
 
-    const handleClose = () => {
-        cleanupImages().then(() => {
-            reset(form)
-            props.onOpenChange(false)
-        })
-    }
-
-    onCleanup(() => {
-        cleanupImages()
-    })
-
-    const handleLocationChange = (address: string, lat?: number, lng?: number) => {
-        setInput(form, { path: ["location"], input: address })
-        if (lat != null && lng != null) {
-            setInput(form, { path: ["lat"], input: lat })
-            setInput(form, { path: ["lng"], input: lng })
-        } else {
-            setInput(form, { path: ["lat"], input: undefined })
-            setInput(form, { path: ["lng"], input: undefined })
-        }
-    }
-
-    const handleSubmit = async (output: RestaurantOutput) => {
-        try {
-            await addRestaurant({ ...output, images: images() })
-            reset(form)
-            setImages([])
-            props.onOpenChange(false)
-        } catch (error) {
-            console.error("Error adding restaurant:", error)
-        }
+    const handleCancel = () => {
+        props.onOpenChange(false)
     }
 
     return (
@@ -96,106 +47,7 @@ export function AddRestaurantDialog(props: { show: boolean; onOpenChange: (open:
                                 </div>
                             }
                         >
-                            <Form of={form} onSubmit={handleSubmit} class="space-y-4">
-                                <div class="grid grid-cols-2 gap-4">
-                                    <Field of={form} path={["name"]}>
-                                        {(field) => (
-                                            <FieldWrapper errors={field.errors}>
-                                                <Input
-                                                    {...field.props}
-                                                    input={field.input}
-                                                    errors={field.errors}
-                                                    label="Restaurant name"
-                                                    placeholder="The fancy burger place"
-                                                />
-                                            </FieldWrapper>
-                                        )}
-                                    </Field>
-                                    <Field of={form} path={["cuisine"]}>
-                                        {(field) => (
-                                            <FieldWrapper errors={field.errors}>
-                                                <Input
-                                                    {...field.props}
-                                                    input={field.input}
-                                                    errors={field.errors}
-                                                    label="Cuisine"
-                                                    placeholder="Burgers, Italian, etc."
-                                                />
-                                            </FieldWrapper>
-                                        )}
-                                    </Field>
-                                </div>
-                                <Field of={form} path={["location"]}>
-                                    {(field) => (
-                                        <FieldWrapper errors={field.errors}>
-                                            <PlacesAutocomplete
-                                                value={field.input ?? ""}
-                                                onChange={handleLocationChange}
-                                                label="Location"
-                                                placeholder="Search for a restaurant..."
-                                            />
-                                        </FieldWrapper>
-                                    )}
-                                </Field>
-                                <Field of={form} path={["notes"]}>
-                                    {(field) => (
-                                        <FieldWrapper errors={field.errors}>
-                                            <Textarea
-                                                {...field.props}
-                                                input={field.input}
-                                                errors={field.errors}
-                                                label="Notes"
-                                                placeholder="What to order..."
-                                                rows={3}
-                                            />
-                                        </FieldWrapper>
-                                    )}
-                                </Field>
-                                <div class="grid grid-cols-2 gap-4">
-                                    <Field of={form} path={["link"]}>
-                                        {(field) => (
-                                            <FieldWrapper errors={field.errors}>
-                                                <Input
-                                                    {...field.props}
-                                                    input={field.input}
-                                                    errors={field.errors}
-                                                    type="url"
-                                                    label="Menu link"
-                                                    placeholder="https://menu.com/..."
-                                                />
-                                            </FieldWrapper>
-                                        )}
-                                    </Field>
-                                    <Field of={form} path={["addedBy"]}>
-                                        {(field) => (
-                                            <FieldWrapper errors={field.errors}>
-                                                <Select
-                                                    {...field.props}
-                                                    input={field.input}
-                                                    errors={field.errors}
-                                                    label="Added by"
-                                                >
-                                                    <option value="">Select friend</option>
-                                                    <Show when={friends()}>
-                                                        {(friends) => (
-                                                            <For each={friends()}>
-                                                                {(f) => <option value={f.name}>{f.name}</option>}
-                                                            </For>
-                                                        )}
-                                                    </Show>
-                                                </Select>
-                                            </FieldWrapper>
-                                        )}
-                                    </Field>
-                                </div>
-                                <ImageUpload images={images()} onImagesChange={setImages} maxImages={5} />
-                                <div class="flex justify-end gap-2 pt-2">
-                                    <Button variant="secondary" onClick={handleClose}>
-                                        Cancel
-                                    </Button>
-                                    <Button type="submit">Add Restaurant</Button>
-                                </div>
-                            </Form>
+                            <RestaurantForm mode="add" onSuccess={handleSuccess} onCancel={handleCancel} />
                         </Show>
                     </Dialog.Content>
                 </div>

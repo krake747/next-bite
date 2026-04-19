@@ -1,4 +1,4 @@
-import { For, Show, createSignal, createMemo, createEffect, onMount } from "solid-js"
+import { For, Show, createSignal, createMemo, createEffect } from "solid-js"
 import { Dialog } from "@kobalte/core/dialog"
 import { useWheel } from "./wheel-context"
 import { type Restaurant } from "../../core/hooks"
@@ -19,12 +19,6 @@ export function WheelConfigModal(props: {
 }) {
     const wheel = useWheel()
     const [searchQuery, setSearchQuery] = createSignal("")
-
-    onMount(() => {
-        if (props.defaultToManual && props.show) {
-            wheel.setSelectionMode("manual")
-        }
-    })
 
     createEffect(() => {
         if (props.show && props.defaultToManual) {
