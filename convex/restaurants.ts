@@ -36,15 +36,48 @@ async function fetchOpeningHoursFromGoogle(placeId: string): Promise<OpeningHour
             return { openNow: true, periods: [], weekdayText: [] }
         }
 
-        const data = (await response.json()) as { currentOpeningHours?: OpeningHoursData }
-        console.log("fetchOpeningHoursFromGoogle: Result:", JSON.stringify(data.currentOpeningHours))
-        return (
-            data.currentOpeningHours || {
-                openNow: true,
-                periods: [],
-                weekdayText: [],
+        const data = (await response.json()) as {
+            currentOpeningHours?: {
+                openNow?: boolean
+                periods?: Array<{
+                    open?: { day?: number; hour?: number; minute?: number }
+                    close?: { day?: number; hour?: number; minute?: number }
+                }>
+                weekdayDescriptions?: string[]
             }
-        )
+        }
+        console.log("fetchOpeningHoursFromGoogle: Result:", JSON.stringify(data.currentOpeningHours))
+
+        const google = data.currentOpeningHours
+        if (!google) {
+            return { openNow: true, periods: [], weekdayText: [] }
+        }
+
+        const periods: OpeningHoursData["periods"] = []
+        const seenDays = new Set<number>()
+
+        for (const period of google.periods || []) {
+            const day = period.open?.day
+            if (day === undefined || seenDays.has(day)) continue
+
+            const openH = period.open?.hour ?? 0
+            const openM = period.open?.minute ?? 0
+            const closeH = period.close?.hour ?? 0
+            const closeM = period.close?.minute ?? 0
+
+            periods.push({
+                day,
+                openTime: `${openH.toString().padStart(2, "0")}:${openM.toString().padStart(2, "0")}`,
+                closeTime: `${closeH.toString().padStart(2, "0")}:${closeM.toString().padStart(2, "0")}`,
+            })
+            seenDays.add(day)
+        }
+
+        return {
+            openNow: google.openNow ?? true,
+            periods,
+            weekdayText: google.weekdayDescriptions || [],
+        }
     } catch (err) {
         console.log("fetchOpeningHoursFromGoogle: Catch error:", err)
         return { openNow: true, periods: [], weekdayText: [] }
@@ -94,18 +127,17 @@ async function lookupPlaceIdFromGoogle(name: string, location: string): Promise<
 
     try {
         const query = `${name}, ${location}`
-        const encodedQuery = encodeURIComponent(query)
         console.log("lookupPlaceIdFromGoogle: Searching for:", query)
 
-        const response = await fetch(
-            `https://places.googleapis.com/v1/places:searchText?textQuery=${encodedQuery}&fields=places/id,places.location`,
-            {
-                headers: {
-                    "X-Goog-Api-Key": apiKey,
-                    "X-Goog-FieldMask": "places.id,places.location",
-                },
+        const response = await fetch(`https://places.googleapis.com/v1/places:searchText`, {
+            method: "POST",
+            headers: {
+                "X-Goog-Api-Key": apiKey,
+                "X-Goog-FieldMask": "places.id,places.location",
+                "Content-Type": "application/json",
             },
-        )
+            body: JSON.stringify({ textQuery: query }),
+        })
 
         if (!response.ok) {
             const errorText = await response.text()
