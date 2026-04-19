@@ -3,7 +3,7 @@ import { Dialog } from "@kobalte/core/dialog"
 import { cx } from "./variants"
 import { Button } from "./button"
 import { LazyImage } from "./lazy-image"
-import { createPointerPosition } from "@solid-primitives/pointer"
+import { createPerPointerListeners } from "@solid-primitives/pointer"
 import X from "lucide-solid/icons/x"
 import ChevronLeft from "lucide-solid/icons/chevron-left"
 import ChevronRight from "lucide-solid/icons/chevron-right"
@@ -14,7 +14,7 @@ import Minimize from "lucide-solid/icons/minimize"
 import RotateCcw from "lucide-solid/icons/rotate-ccw"
 
 const ZOOM_STEP = 0.5
-const MIN_ZOOM = 1
+const MIN_ZOOM = 0.5
 const MAX_ZOOM = 4
 
 type ImageGalleryModalProps = {
@@ -34,10 +34,7 @@ export function ImageGalleryModal(props: ImageGalleryModalProps) {
     const [isPanning, setIsPanning] = createSignal(false)
     const [isFullscreen, setIsFullscreen] = createSignal(false)
     const [rotation, setRotation] = createSignal(0)
-    const [pointerStarted, setPointerStarted] = createSignal<PanState>({ x: 0, y: 0 })
-    let imageContainerRef: HTMLDivElement | undefined
-    let containerRef: HTMLDivElement | undefined
-    let pointerPosition = createPointerPosition({ target: containerRef })
+    let imageContainerRef: HTMLDivElement | undefined // eslint-disable-line no-unassigned-vars
 
     createEffect(() => {
         setCurrentIndex(props.initialIndex ?? 0)
@@ -104,22 +101,31 @@ export function ImageGalleryModal(props: ImageGalleryModalProps) {
         }
     }
 
-    const handlePanStart = () => {
+    let startPan = { x: 0, y: 0 }
+
+    const eventHandler = (
+        { x, y }: { x: number; y: number },
+        onMove: (h: (e: PointerEvent) => void) => void,
+        onUp: (h: () => void) => void,
+    ) => {
         if (zoom() > MIN_ZOOM) {
             setIsPanning(true)
-            setPointerStarted({ x: pointerPosition().x - pan().x, y: pointerPosition().y - pan().y })
+            startPan = { x: x - pan().x, y: y - pan().y }
+            onMove(({ x, y }) => {
+                if (isPanning() && zoom() > MIN_ZOOM) {
+                    setPan({ x: x - startPan.x, y: y - startPan.y })
+                }
+            })
+            onUp(() => {
+                setIsPanning(false)
+            })
         }
     }
 
-    createEffect(() => {
-        if (isPanning() && zoom() > MIN_ZOOM) {
-            setPan({ x: pointerPosition().x - pointerStarted().x, y: pointerPosition().y - pointerStarted().y })
-        }
+    createPerPointerListeners({
+        target: imageContainerRef!,
+        onDown: eventHandler,
     })
-
-    const handlePanEnd = () => {
-        setIsPanning(false)
-    }
 
     const handleRotate = () => {
         setRotation((r) => (r + 90) % 360)
@@ -213,17 +219,11 @@ export function ImageGalleryModal(props: ImageGalleryModalProps) {
                                 </button>
 
                                 <div
-                                    ref={(el) => {
-                                        imageContainerRef = el
-                                        containerRef = el
-                                    }}
+                                    ref={imageContainerRef}
                                     class="relative flex max-h-full max-w-full cursor-grab items-center justify-center overflow-hidden"
                                     classList={{ "cursor-grabbing": isPanning() && zoom() > MIN_ZOOM }}
                                     onClick={handleClickZoom}
                                     onWheel={handleWheel}
-                                    onPointerDown={handlePanStart}
-                                    onPointerUp={handlePanEnd}
-                                    onPointerLeave={handlePanEnd}
                                 >
                                     <Show when={currentImage()}>
                                         {(imageSrc) => (
