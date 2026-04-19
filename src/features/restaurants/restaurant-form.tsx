@@ -7,13 +7,13 @@ import {
     useCleanupStorage,
     type ImageRecord,
     type Restaurant,
-} from "../../core/hooks"
-import { Button } from "../../ui/button"
-import { FieldWrapper, Input, Textarea, Select } from "../../ui/field"
-import { RestaurantSchema, type RestaurantOutput } from "../../core/schemas"
-import { PlacesAutocomplete } from "../../ui/places-autocomplete"
-import { ImageUpload } from "../../ui/image-upload"
-import { EmojiRating } from "../../ui/emoji-rating"
+} from "@core/hooks"
+import { Button } from "@ui/button"
+import { FieldWrapper, Input, Textarea, Select } from "@ui/field"
+import { RestaurantSchema, type RestaurantOutput } from "@core/schemas"
+import { PlacesAutocomplete } from "@ui/places-autocomplete"
+import { ImageUpload } from "@ui/image-upload"
+import { EmojiRating } from "@ui/emoji-rating"
 
 export function RestaurantForm(props: {
     mode: "add" | "edit"
@@ -216,7 +216,7 @@ export function RestaurantForm(props: {
                 images={images()}
                 onImagesChange={setImages}
                 maxImages={5}
-                restaurantId={props.mode === "edit" ? props.restaurant?._id : undefined}
+                {...(props.mode === "edit" ? { restaurantId: props.restaurant!._id } : {})}
             />
             <div class="flex justify-end gap-2 pt-2">
                 <Button variant="secondary" onClick={handleClose}>

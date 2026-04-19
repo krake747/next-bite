@@ -1,7 +1,7 @@
 import { Show } from "solid-js"
 import { Dialog } from "@kobalte/core/dialog"
-import { useAuth } from "../../core/hooks"
-import { Button } from "../../ui/button"
+import { useAuth } from "@core/hooks"
+import { Button } from "@ui/button"
 import { RestaurantForm } from "./restaurant-form"
 import UtensilsCrossed from "lucide-solid/icons/utensils-crossed"
 

@@ -1,14 +1,14 @@
 import { For, Show, createSignal, createMemo, createEffect } from "solid-js"
 import { Dialog } from "@kobalte/core/dialog"
 import { useWheel } from "./wheel-context"
-import { type Restaurant } from "../../core/hooks"
-import { cx } from "../../ui/variants"
+import { type Restaurant } from "@core/hooks"
+import { cx } from "@ui/variants"
 import Sliders from "lucide-solid/icons/sliders"
 import Check from "lucide-solid/icons/check"
 import AlertCircle from "lucide-solid/icons/circle-alert"
 import X from "lucide-solid/icons/x"
 import Search from "lucide-solid/icons/search"
-import { Button } from "../../ui/button"
+import { Button } from "@ui/button"
 
 export function WheelConfigModal(props: {
     show: boolean

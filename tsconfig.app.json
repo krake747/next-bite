@@ -6,7 +6,8 @@
             "@ui/*": ["src/ui/*"],
             "@core/*": ["src/core/*"],
             "@features/*": ["src/features/*"],
-            "@routes/*": ["src/routes/*"]
+            "@routes/*": ["src/routes/*"],
+            "@convex/*": ["convex/*"]
         },
         "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.app.tsbuildinfo",
         "target": "ESNext",

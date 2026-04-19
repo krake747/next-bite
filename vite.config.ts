@@ -11,6 +11,7 @@ export default defineConfig({
             "@core": path.resolve(__dirname, "./src/core"),
             "@features": path.resolve(__dirname, "./src/features"),
             "@routes": path.resolve(__dirname, "./src/routes"),
+            "@convex": path.resolve(__dirname, "./convex"),
         },
     },
     build: {

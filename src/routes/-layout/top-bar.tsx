@@ -5,7 +5,7 @@ import UtensilsCrossed from "lucide-solid/icons/utensils-crossed"
 import User from "lucide-solid/icons/user"
 import LogOut from "lucide-solid/icons/log-out"
 import { ThemeToggle } from "./theme-toggle"
-import { useAuth } from "../../core/hooks"
+import { useAuth } from "@core/hooks"
 
 export function TopBar() {
     return (
