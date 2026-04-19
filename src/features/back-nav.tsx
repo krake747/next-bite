@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/solid-router"
-import { Button } from "../ui/button"
+import { Button } from "@ui/button"
 import ArrowLeft from "lucide-solid/icons/arrow-left"
 import Shuffle from "lucide-solid/icons/shuffle"
 import Sliders from "lucide-solid/icons/sliders"
