@@ -32,8 +32,8 @@ export function RestaurantCard(props: { restaurant: Restaurant } & ComponentProp
     const [showEdit, setShowEdit] = createSignal(false)
     const [showGallery, setShowGallery] = createSignal(false)
     const [showMap, setShowMap] = createSignal(false)
-    const [showHours, setShowHours] = createSignal(false)
     const [notesExpanded, setNotesExpanded] = createSignal(false)
+    const [showHours, setShowHours] = createSignal(false)
     const [isRefreshing, setIsRefreshing] = createSignal(false)
     const updateRestaurant = useUpdateRestaurant()
     const auth = useAuth()
@@ -101,11 +101,7 @@ export function RestaurantCard(props: { restaurant: Restaurant } & ComponentProp
                     handleRefreshHours={handleRefreshHours}
                     handleFindHours={handleFindHours}
                 />
-                <RestaurantCardContent
-                    restaurant={local.restaurant}
-                    hasLocation={hasLocation()}
-                    onShowHours={() => setShowHours(true)}
-                />
+                <RestaurantCardContent restaurant={local.restaurant} hasLocation={hasLocation()} />
                 <RestaurantCardNotes
                     notes={local.restaurant.notes}
                     notesExpanded={notesExpanded()}
@@ -245,7 +241,7 @@ function RestaurantCardImage(props: {
     )
 }
 
-function RestaurantCardContent(props: { restaurant: Restaurant; hasLocation: boolean; onShowHours?: () => void }) {
+function RestaurantCardContent(props: { restaurant: Restaurant; hasLocation: boolean }) {
     return (
         <div class="flex flex-col gap-4 p-5 md:gap-3 md:p-4">
             <div class="flex flex-col gap-2.5 md:gap-2">
@@ -295,7 +291,7 @@ function RestaurantCardContent(props: { restaurant: Restaurant; hasLocation: boo
                     </div>
                 </Show>
                 <Show when={props.restaurant.openingHours}>
-                    <OpeningHours openingHours={props.restaurant.openingHours} onClick={props.onShowHours} />
+                    <OpeningHours openingHours={props.restaurant.openingHours} onClick={() => setShowHours(true)} />
                 </Show>
             </div>
         </div>

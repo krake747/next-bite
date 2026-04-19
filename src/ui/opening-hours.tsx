@@ -2,19 +2,6 @@ import { createMemo, Show } from "solid-js"
 import Clock from "lucide-solid/icons/clock"
 import type { OpeningHours } from "@core/hooks"
 
-function formatTime24h(time: string): string {
-    const parts = time.split(":")
-    return `${parts[0] ?? ""}:${parts[1] ?? ""}`
-}
-
-function getTodayHours(openingHours: OpeningHours): string {
-    const today = new Date().getDay()
-    const periods = openingHours.periods ?? []
-    const period = periods.find((p) => p.day === today)
-    if (!period) return "Closed"
-    return `${formatTime24h(period.openTime)} - ${formatTime24h(period.closeTime)}`
-}
-
 function isOpenNow(openingHours: OpeningHours): boolean {
     if (openingHours.openNow !== undefined) return openingHours.openNow
     const now = new Date()
@@ -30,30 +17,57 @@ function isOpenNow(openingHours: OpeningHours): boolean {
     return currentTime >= open && currentTime <= close
 }
 
-export function OpeningHours(props: { openingHours: OpeningHours | undefined; onClick?: (() => void) | undefined }) {
-    const todayHours = createMemo(() => {
-        if (!props.openingHours) return ""
-        return getTodayHours(props.openingHours)
-    })
-
+export function OpeningHours(props: { openingHours: OpeningHours | undefined; onClick?: () => void }) {
     const openNow = createMemo(() => {
         if (!props.openingHours) return false
         return isOpenNow(props.openingHours)
     })
 
+    const todayIndex = createMemo(() => {
+        const day = new Date().getDay()
+        return day === 0 ? 6 : day - 1
+    })
+
+    const todayText = createMemo(() => {
+        const texts = props.openingHours?.weekdayText
+        if (!texts || texts.length === 0) return ""
+        const index = todayIndex()
+        return texts[index] ?? ""
+    })
+
+    const todayDayName = createMemo(() => {
+        const text = todayText()
+        if (!text) return ""
+        return text.split(":")[0] ?? ""
+    })
+
+    const todayHours = createMemo(() => {
+        const text = todayText()
+        if (!text) return ""
+        return text.split(": ")[1] ?? ""
+    })
+
     return (
-        <Show when={props.openingHours && todayHours()}>
+        <Show when={props.openingHours?.weekdayText && props.openingHours.weekdayText.length > 0}>
             <button
                 type="button"
                 onClick={props.onClick}
-                class="flex items-center gap-2 text-sm text-neutral-500 transition-colors duration-200 hover:text-flame-pea-600 dark:text-neutral-400 dark:hover:text-flame-pea-400"
-                classList={{ "cursor-pointer": !!props.onClick, "cursor-default": !props.onClick }}
-                disabled={!props.onClick}
+                class="flex w-full items-center gap-2 text-left transition-opacity hover:opacity-80"
             >
                 <div class="flex size-6 items-center justify-center rounded-full bg-neutral-100 dark:bg-neutral-800">
                     <Clock class="size-3.5 text-neutral-400 dark:text-neutral-500" aria-hidden="true" />
                 </div>
-                <span class={openNow() ? "text-flame-pea-600 dark:text-flame-pea-400" : ""}>{todayHours()}</span>
+                <div class="flex items-center gap-2 text-sm">
+                    <span
+                        class={`font-medium ${openNow() ? "text-flame-pea-600 dark:text-flame-pea-400" : "text-neutral-500 dark:text-neutral-400"}`}
+                    >
+                        {openNow() ? "Open now" : "Closed"}
+                    </span>
+                    <span class="text-neutral-300 dark:text-neutral-600">·</span>
+                    <span class="text-neutral-600 dark:text-neutral-300">
+                        {todayDayName()} {todayHours()}
+                    </span>
+                </div>
             </button>
         </Show>
     )
