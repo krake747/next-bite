@@ -18,7 +18,7 @@ export const convertImagesToObjects = internalMutation(async (ctx) => {
 
         const newImages = images.map((url) => {
             const matches = url.match(/\/storage\/([a-f0-9-]+)$/)
-            const storageId = matches ? matches[1] : url
+            const storageId = matches?.[1] ?? url
             return { url, storageId }
         })
 
