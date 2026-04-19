@@ -14,6 +14,20 @@ export default defineSchema({
         rating: v.optional(v.number()),
         userId: v.optional(v.id("users")),
         images: v.optional(v.array(v.object({ url: v.string(), storageId: v.string() }))),
+        placeId: v.optional(v.string()),
+        openingHours: v.optional(
+            v.object({
+                openNow: v.boolean(),
+                periods: v.array(
+                    v.object({
+                        day: v.number(),
+                        openTime: v.string(),
+                        closeTime: v.string(),
+                    }),
+                ),
+                weekdayText: v.array(v.string()),
+            }),
+        ),
     }),
     friends: defineTable({
         name: v.string(),

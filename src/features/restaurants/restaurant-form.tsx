@@ -43,6 +43,7 @@ export function RestaurantForm(props: RestaurantFormProps) {
                       link: props.restaurant.link ?? "",
                       addedBy: props.restaurant.addedBy,
                       rating: props.restaurant.rating,
+                      placeId: props.restaurant.placeId,
                   },
               }
             : {}),
@@ -81,7 +82,7 @@ export function RestaurantForm(props: RestaurantFormProps) {
         }
     })
 
-    const handleLocationChange = (address: string, lat?: number, lng?: number) => {
+    const handleLocationChange = (address: string, lat?: number, lng?: number, placeId?: string) => {
         setInput(form, { path: ["location"], input: address })
         if (lat != null && lng != null) {
             setInput(form, { path: ["lat"], input: lat })
@@ -89,6 +90,9 @@ export function RestaurantForm(props: RestaurantFormProps) {
         } else {
             setInput(form, { path: ["lat"], input: undefined })
             setInput(form, { path: ["lng"], input: undefined })
+        }
+        if (placeId) {
+            setInput(form, { path: ["placeId"], input: placeId })
         }
     }
 

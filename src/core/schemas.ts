@@ -13,6 +13,7 @@ export const RestaurantSchema = v.object({
         v.pipe(v.number(), v.minValue(1, "Rating must be at least 1"), v.maxValue(6, "Rating must be at most 6")),
     ),
     images: v.optional(v.array(v.string())),
+    placeId: v.optional(v.string()),
 })
 
 export type RestaurantOutput = v.InferOutput<typeof RestaurantSchema>

@@ -11,7 +11,7 @@ type PlaceAutocompleteElement = new (options?: {
 
 type PlacesAutocompleteProps = {
     value: string
-    onChange: (value: string, lat?: number, lng?: number) => void
+    onChange: (value: string, lat?: number, lng?: number, placeId?: string) => void
     placeholder?: string
     label?: string
     class?: string
@@ -65,14 +65,15 @@ export function PlacesAutocomplete(props: PlacesAutocompleteProps) {
 
             const place = placePrediction.toPlace()
             await place.fetchFields({
-                fields: ["displayName", "formattedAddress", "location"],
+                fields: ["displayName", "formattedAddress", "location", "id"],
             })
 
             const lat = place.location?.lat()
             const lng = place.location?.lng()
             const address = place.formattedAddress || place.displayName || ""
+            const placeId = (place as unknown as { id?: string }).id
 
-            props.onChange(address, lat ?? undefined, lng ?? undefined)
+            props.onChange(address, lat ?? undefined, lng ?? undefined, placeId)
         })
 
         container.appendChild(autocompleteElement)

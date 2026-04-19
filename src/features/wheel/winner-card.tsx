@@ -2,6 +2,7 @@ import { Show, createMemo } from "solid-js"
 import MapPin from "lucide-solid/icons/map-pin"
 import Utensils from "lucide-solid/icons/utensils"
 import { LazyImage } from "@ui/lazy-image"
+import { OpeningHoursDayRow } from "@ui/opening-hours-day-row"
 import type { Restaurant } from "@core/hooks"
 
 export function WinnerCard(props: { restaurant: Restaurant }) {
@@ -65,6 +66,9 @@ export function WinnerCard(props: { restaurant: Restaurant }) {
                             </a>
                         </Show>
                     </div>
+                </Show>
+                <Show when={props.restaurant.openingHours}>
+                    <OpeningHoursDayRow openingHours={props.restaurant.openingHours} size="lg" />
                 </Show>
             </div>
         </div>

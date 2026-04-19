@@ -1,4 +1,4 @@
-import { query, mutation } from "./_generated/server"
+import { query, mutation, internalAction } from "./_generated/server"
 import { v } from "convex/values"
 import type { Id } from "./_generated/dataModel"
 import { MAX_IMAGES } from "../src/core/constants"
@@ -17,6 +17,20 @@ export const add = mutation({
         addedBy: v.string(),
         rating: v.optional(v.number()),
         images: v.optional(v.array(v.object({ url: v.string(), storageId: v.string() }))),
+        placeId: v.optional(v.string()),
+        openingHours: v.optional(
+            v.object({
+                openNow: v.boolean(),
+                periods: v.array(
+                    v.object({
+                        day: v.number(),
+                        openTime: v.string(),
+                        closeTime: v.string(),
+                    }),
+                ),
+                weekdayText: v.array(v.string()),
+            }),
+        ),
     },
     handler: async (ctx, args) => {
         const { images, ...rest } = args
@@ -42,6 +56,20 @@ export const update = mutation({
         addedBy: v.optional(v.string()),
         rating: v.optional(v.number()),
         images: v.optional(v.array(v.object({ url: v.string(), storageId: v.string() }))),
+        placeId: v.optional(v.string()),
+        openingHours: v.optional(
+            v.object({
+                openNow: v.boolean(),
+                periods: v.array(
+                    v.object({
+                        day: v.number(),
+                        openTime: v.string(),
+                        closeTime: v.string(),
+                    }),
+                ),
+                weekdayText: v.array(v.string()),
+            }),
+        ),
     },
     handler: async (ctx, args) => {
         const { id, images, ...updates } = args
@@ -106,5 +134,47 @@ export const cleanupStorage = mutation({
         if (updatedImages.length !== currentImages.length) {
             await ctx.db.patch(args.restaurantId, { images: updatedImages })
         }
+    },
+})
+
+export const getPlaceOpeningHours = internalAction({
+    args: { placeId: v.string() },
+    returns: v.object({
+        openNow: v.boolean(),
+        periods: v.array(
+            v.object({
+                day: v.number(),
+                openTime: v.string(),
+                closeTime: v.string(),
+            }),
+        ),
+        weekdayText: v.array(v.string()),
+    }),
+    handler: async (_ctx, { placeId }) => {
+        const apiKey = process.env.GOOGLE_MAPS_API_KEY
+        if (!apiKey) {
+            throw new Error("GOOGLE_MAPS_API_KEY not configured")
+        }
+
+        const response = await fetch(`https://places.googleapis.com/v1/places/${placeId}?fields=currentOpeningHours`, {
+            headers: {
+                "X-Goog-Api-Key": apiKey,
+                "X-Goog-FieldMask": "currentOpeningHours",
+            },
+        })
+
+        if (!response.ok) {
+            const errorText = await response.text()
+            throw new Error(`Google Places API error: ${response.status} ${errorText}`)
+        }
+
+        const data = await response.json()
+        return (
+            data.currentOpeningHours || {
+                openNow: true,
+                periods: [],
+                weekdayText: [],
+            }
+        )
     },
 })

@@ -17,6 +17,16 @@ export type ImageRecord = {
     storageId: string
 }
 
+export type OpeningHours = {
+    openNow: boolean
+    periods: Array<{
+        day: number
+        openTime: string
+        closeTime: string
+    }>
+    weekdayText: string[]
+}
+
 export function useUploadImage() {
     return async (file: File): Promise<ImageRecord> => {
         const siteUrl = import.meta.env.VITE_CONVEX_SITE_URL
