@@ -96,17 +96,20 @@ export function Instructions() {
 }
 
 function ShareButton(props: { restaurantName: string }) {
-    const siteUrl = import.meta.env.VITE_CONVEX_SITE_URL
     const [copied, setCopied] = createSignal(false)
 
     const share = async () => {
-        const message = `I won ${props.restaurantName} on Next Bite! 🍽️\n\nSpin the wheel yourself: ${siteUrl}/wheel`
+        const inviteUrl = `${window.location.origin}/wheel`
+        const message = `I won ${props.restaurantName} on Next Bite! 🍽️\n\nSpin the wheel yourself: ${inviteUrl}`
 
         try {
             await makeWebShare()({
                 text: message,
             })
-        } catch {
+        } catch (e) {
+            if (e instanceof DOMException && e.name === "AbortError") {
+                return
+            }
             try {
                 await navigator.clipboard.writeText(message)
                 setCopied(true)
@@ -118,19 +121,17 @@ function ShareButton(props: { restaurantName: string }) {
     }
 
     return (
-        <Show when={siteUrl}>
-            <button
-                onClick={share}
-                class="animate-fade-in-up mt-4 inline-flex items-center gap-2 rounded-full bg-flame-pea-500 px-5 py-2.5 text-sm font-medium text-white transition-all hover:bg-flame-pea-600 active:scale-95"
-            >
-                <Show when={copied()} fallback={<Share class="size-4" />}>
-                    <Check class="size-4" />
-                </Show>
-                <Show when={copied()} fallback={"Share & Invite"}>
-                    Copied!
-                </Show>
-            </button>
-        </Show>
+        <button
+            onClick={share}
+            class="animate-fade-in-up mt-4 inline-flex items-center gap-2 rounded-full bg-flame-pea-500 px-5 py-2.5 text-sm font-medium text-white transition-all hover:bg-flame-pea-600 active:scale-95"
+        >
+            <Show when={copied()} fallback={<Share class="size-4" />}>
+                <Check class="size-4" />
+            </Show>
+            <Show when={copied()} fallback={"Share & Invite"}>
+                Copied!
+            </Show>
+        </button>
     )
 }
 
