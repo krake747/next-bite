@@ -1,5 +1,5 @@
 import { For, type JSX } from "solid-js"
-import { Loading } from "../ui/loading"
+
 import { SearchInput } from "../ui/search-input"
 import Funnel from "lucide-solid/icons/funnel"
 import ArrowUpDown from "lucide-solid/icons/arrow-up-down"
@@ -34,7 +34,7 @@ export function FriendsFilter(props: {
                         <span class="text-xs font-medium tracking-wide uppercase">Filter</span>
                     </div>
                     <div class="h-4 w-px bg-neutral-200 dark:bg-neutral-700" />
-                    <For each={friends()} fallback={<Loading message="friends" />}>
+                    <For each={friends()}>
                         {(friend) => (
                             <button
                                 type="button"

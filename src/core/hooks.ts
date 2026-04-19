@@ -11,6 +11,11 @@ export const useUpdateRestaurant = () => createMutation(api.restaurants.update)
 
 export const useDeleteImage = () => createMutation(api.restaurants.deleteImage)
 
+export type ImageRecord = {
+    url: string
+    storageId: string
+}
+
 type UploadResult = {
     storageId: string
     url: string

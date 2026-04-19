@@ -13,7 +13,7 @@ export default defineSchema({
         addedBy: v.string(),
         rating: v.optional(v.number()),
         userId: v.optional(v.id("users")),
-        images: v.optional(v.array(v.string())),
+        images: v.optional(v.array(v.object({ url: v.string(), storageId: v.string() }))),
     }),
     friends: defineTable({
         name: v.string(),

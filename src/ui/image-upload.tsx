@@ -1,6 +1,6 @@
 import { For, Show, createSignal } from "solid-js"
 import { cx } from "./variants"
-import { useUploadImage, useDeleteImage } from "../core/hooks"
+import { useUploadImage, useDeleteImage, type ImageRecord } from "../core/hooks"
 import { processImage, formatFileSize, MAX_IMAGES, MAX_FILE_SIZE } from "../core/image-utils"
 import { createFileUploader, createDropzone, type UploadFile } from "@solid-primitives/upload"
 import type { Id } from "../../convex/_generated/dataModel"
@@ -9,8 +9,8 @@ import ImagePlus from "lucide-solid/icons/image-plus"
 import Upload from "lucide-solid/icons/upload"
 
 type ImageUploadProps = {
-    images: string[]
-    onImagesChange: (images: string[]) => void
+    images: ImageRecord[]
+    onImagesChange: (images: ImageRecord[]) => void
     maxImages?: number
     disabled?: boolean
     restaurantId?: Id<"restaurants">
@@ -41,7 +41,7 @@ export function ImageUpload(props: ImageUploadProps) {
         setIsUploading(true)
         setUploadError(null)
 
-        const newImages: string[] = []
+        const newImages: ImageRecord[] = []
 
         try {
             for (const file of filesToProcess) {
@@ -52,7 +52,7 @@ export function ImageUpload(props: ImageUploadProps) {
                 const processed = await processImage(file, { maxWidth: 1920, quality: 0.9 })
                 const processedFile = new File([processed.blob], file.name, { type: processed.blob.type })
                 const result = await uploadImage(processedFile)
-                newImages.push(result.url)
+                newImages.push({ url: result.url, storageId: result.storageId })
             }
 
             props.onImagesChange([...props.images, ...newImages])
@@ -83,16 +83,14 @@ export function ImageUpload(props: ImageUploadProps) {
         })
     }
 
-    const handleRemove = async (index: number, imageUrl: string) => {
+    const handleRemove = async (index: number, image: ImageRecord) => {
         const originalImages = [...props.images]
-        // Optimistically update UI
         props.onImagesChange(props.images.filter((_, i) => i !== index))
 
         if (props.restaurantId) {
             try {
-                await deleteImage({ restaurantId: props.restaurantId, imageUrl })
+                await deleteImage({ restaurantId: props.restaurantId, imageUrl: image.url, storageId: image.storageId })
             } catch (error) {
-                // Rollback on failure
                 props.onImagesChange(originalImages)
                 console.error("Failed to delete image:", error)
             }
@@ -113,11 +111,11 @@ export function ImageUpload(props: ImageUploadProps) {
             <Show when={props.images.length > 0}>
                 <div class="grid grid-cols-3 gap-2 sm:grid-cols-4">
                     <For each={props.images}>
-                        {(imageUrl, index) => (
+                        {(image, index) => (
                             <ImagePreview
-                                imageUrl={imageUrl}
+                                imageUrl={image.url}
                                 index={index()}
-                                onRemove={() => handleRemove(index(), imageUrl)}
+                                onRemove={() => handleRemove(index(), image)}
                                 disabled={props.disabled ?? false}
                             />
                         )}
