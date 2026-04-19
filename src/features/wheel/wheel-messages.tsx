@@ -175,7 +175,7 @@ export function WinnerModal(props: {
                                 <Button
                                     variant="secondary"
                                     size="md"
-                                    onClick={() => {
+                                    onClick={async () => {
                                         const lat = props.restaurant.lat
                                         const lng = props.restaurant.lng
                                         const inviteUrl = `${window.location.origin}/wheel`
@@ -184,15 +184,30 @@ export function WinnerModal(props: {
                                                 ? `https://maps.google.com/?q=${lat},${lng}`
                                                 : undefined
                                         const mapsLine = mapsUrl ? `\n\n📍 Google Maps: ${mapsUrl}` : ""
-                                        const message = `Just tried the dinner wheel... fate is UNHINGED! 😂 We're going to ${props.restaurant.name}!${mapsLine}\n\nYou gotta try this -> ${inviteUrl}`
-                                        navigator.clipboard
-                                            .writeText(message)
-                                            .then(() => {
+                                        const text = `Just tried the dinner wheel... fate is UNHINGED! 😂 We're going to ${props.restaurant.name}!${mapsLine}\n\nYou gotta try this -> ${inviteUrl}`
+                                        const shareData = {
+                                            title: "Next Bite",
+                                            text: text,
+                                        }
+                                        if (navigator.share && navigator.canShare?.(shareData)) {
+                                            try {
+                                                await navigator.share(shareData)
+                                            } catch {
+                                                try {
+                                                    await navigator.clipboard.writeText(text)
+                                                    alert("Copied to clipboard!")
+                                                } catch {
+                                                    alert("Failed to share. Please try again.")
+                                                }
+                                            }
+                                        } else {
+                                            try {
+                                                await navigator.clipboard.writeText(text)
                                                 alert("Copied to clipboard!")
-                                            })
-                                            .catch(() => {
+                                            } catch {
                                                 alert("Failed to copy. Please try again.")
-                                            })
+                                            }
+                                        }
                                     }}
                                     class="flex-1"
                                 >
