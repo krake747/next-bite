@@ -15,60 +15,64 @@ import { PlacesAutocomplete } from "@ui/places-autocomplete"
 import { ImageUpload } from "@ui/image-upload"
 import { EmojiRating } from "@ui/emoji-rating"
 
-export function RestaurantForm(props: {
-    mode: "add" | "edit"
-    restaurant?: Restaurant
-    onSuccess: () => void
-    onCancel: () => void
-}) {
+export type RestaurantFormProps =
+    | { mode: "add"; onSuccess: () => void; onCancel: () => void }
+    | { mode: "edit"; restaurant: Restaurant; onSuccess: () => void; onCancel: () => void }
+
+export function RestaurantForm(props: RestaurantFormProps) {
     const addRestaurant = useAddRestaurant()
     const updateRestaurant = useUpdateRestaurant()
     const friends = useFriends()
     const cleanupStorage = useCleanupStorage()
 
-    const initialImages = props.mode === "edit" ? (props.restaurant?.images ?? []) : []
+    const initialImages = props.mode === "edit" ? props.restaurant.images : []
     const [images, setImages] = createSignal<ImageRecord[]>(initialImages)
+    const [pendingRemovedStorageIds, setPendingRemovedStorageIds] = createSignal<string[]>([])
 
     const form = createForm({
         schema: RestaurantSchema,
         ...(props.mode === "edit"
             ? {
                   initialInput: {
-                      name: props.restaurant?.name,
-                      cuisine: props.restaurant?.cuisine,
-                      location: props.restaurant?.location ?? "",
-                      lat: props.restaurant?.lat,
-                      lng: props.restaurant?.lng,
-                      notes: props.restaurant?.notes ?? "",
-                      link: props.restaurant?.link ?? "",
-                      addedBy: props.restaurant?.addedBy,
-                      rating: props.restaurant?.rating,
+                      name: props.restaurant.name,
+                      cuisine: props.restaurant.cuisine,
+                      location: props.restaurant.location ?? "",
+                      lat: props.restaurant.lat,
+                      lng: props.restaurant.lng,
+                      notes: props.restaurant.notes ?? "",
+                      link: props.restaurant.link ?? "",
+                      addedBy: props.restaurant.addedBy,
+                      rating: props.restaurant.rating,
                   },
               }
             : {}),
     })
 
     const cleanupImages = async () => {
-        const imagesToDelete = images()
-        if (imagesToDelete.length === 0) return
-
         if (props.mode === "add") {
-            for (const img of imagesToDelete) {
+            for (const img of images()) {
                 try {
                     await cleanupStorage({ storageId: img.storageId })
                 } catch {
                     // Storage may already be deleted or not exist
                 }
             }
+            for (const storageId of pendingRemovedStorageIds()) {
+                try {
+                    await cleanupStorage({ storageId })
+                } catch {
+                    // Storage may already be deleted or not exist
+                }
+            }
+            setPendingRemovedStorageIds([])
         }
         setImages([])
     }
 
-    const handleClose = () => {
-        cleanupImages().then(() => {
-            reset(form)
-            props.onCancel()
-        })
+    const handleClose = async () => {
+        await cleanupImages()
+        reset(form)
+        props.onCancel()
     }
 
     onCleanup(() => {
@@ -92,8 +96,16 @@ export function RestaurantForm(props: {
         try {
             if (props.mode === "add") {
                 await addRestaurant({ ...output, images: images() })
+                for (const storageId of pendingRemovedStorageIds()) {
+                    try {
+                        await cleanupStorage({ storageId })
+                    } catch {
+                        // Storage may already be deleted or not exist
+                    }
+                }
+                setPendingRemovedStorageIds([])
             } else {
-                await updateRestaurant({ id: props.restaurant!._id, ...output, images: images() })
+                await updateRestaurant({ id: props.restaurant._id, ...output, images: images() })
             }
             reset(form)
             setImages([])
@@ -216,10 +228,12 @@ export function RestaurantForm(props: {
                 images={images()}
                 onImagesChange={setImages}
                 maxImages={5}
-                {...(props.mode === "edit" ? { restaurantId: props.restaurant!._id } : {})}
+                {...(props.mode === "edit"
+                    ? { restaurantId: props.restaurant._id }
+                    : { onRemove: (storageId) => setPendingRemovedStorageIds((prev) => [...prev, storageId]) })}
             />
             <div class="flex justify-end gap-2 pt-2">
-                <Button variant="secondary" onClick={handleClose}>
+                <Button type="button" variant="secondary" onClick={handleClose}>
                     {props.mode === "add" ? "Cancel" : "Cancel"}
                 </Button>
                 <Button type="submit">{props.mode === "add" ? "Add Restaurant" : "Save Changes"}</Button>

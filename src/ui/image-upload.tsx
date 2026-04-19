@@ -14,6 +14,7 @@ type ImageUploadProps = {
     maxImages?: number
     disabled?: boolean
     restaurantId?: Id<"restaurants">
+    onRemove?: (storageId: string) => void
 }
 
 function toFiles(uploadFiles: UploadFile[]): File[] {
@@ -100,10 +101,12 @@ export function ImageUpload(props: ImageUploadProps) {
         if (props.restaurantId) {
             try {
                 await deleteImage({ restaurantId: props.restaurantId, imageUrl: image.url, storageId: image.storageId })
-            } catch (error) {
+            } catch {
                 props.onImagesChange(originalImages)
                 console.error("Failed to delete image:", error)
             }
+        } else {
+            props.onRemove?.(image.storageId)
         }
     }
 

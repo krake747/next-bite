@@ -32,13 +32,18 @@ export function RestaurantCard(props: { restaurant: Restaurant } & ComponentProp
     const imageSrc = createMemo(() => (hasImages() ? local.restaurant.images?.[0]?.url : undefined))
     const imageUrls = createMemo(() => local.restaurant.images?.map((img) => img.url) ?? [])
 
+    const location = createMemo(() =>
+        hasLocation() ? ({ lat: local.restaurant.lat, lng: local.restaurant.lng } as const) : undefined,
+    )
+
     const handleRate = async (rating: number) => {
         await updateRestaurant({ id: local.restaurant._id, rating })
     }
 
     const directionsUrl = () => {
-        if (!hasLocation()) return undefined
-        return `https://www.google.com/maps/dir/?api=1&destination=${local.restaurant.lat},${local.restaurant.lng}`
+        const loc = location()
+        if (!loc) return undefined
+        return `https://www.google.com/maps/dir/?api=1&destination=${loc.lat},${loc.lng}`
     }
 
     return (
@@ -60,13 +65,15 @@ export function RestaurantCard(props: { restaurant: Restaurant } & ComponentProp
                     notesExpanded={notesExpanded()}
                     setNotesExpanded={setNotesExpanded}
                 />
-                <RestaurantCardMap
-                    showMap={showMap()}
-                    setShowMap={setShowMap}
-                    hasLocation={hasLocation()}
-                    directionsUrl={directionsUrl()}
-                    restaurant={local.restaurant}
-                />
+                <Show when={hasLocation()}>
+                    <RestaurantCardMap
+                        showMap={showMap()}
+                        setShowMap={setShowMap}
+                        location={(location() as { lat: number; lng: number })!}
+                        directionsUrl={directionsUrl()!}
+                        restaurant={local.restaurant}
+                    />
+                </Show>
                 <RestaurantCardRating rating={local.restaurant.rating ?? null} onRate={handleRate} />
             </Card>
 
@@ -256,59 +263,54 @@ function RestaurantCardNotes(props: {
 function RestaurantCardMap(props: {
     showMap: boolean
     setShowMap: (show: boolean) => void
-    hasLocation: boolean
-    directionsUrl: string | undefined
+    location: { lat: number; lng: number }
+    directionsUrl: string
     restaurant: Restaurant
 }) {
     return (
-        <Show when={props.hasLocation}>
-            <div class="px-5 md:px-4">
-                <Collapsible open={props.showMap} onOpenChange={props.setShowMap}>
-                    <Collapsible.Trigger class="group/trigger flex w-full items-center justify-between rounded-xl border border-transparent px-3 py-2.5 text-sm text-neutral-600 transition-all duration-200 hover:border-neutral-200 hover:bg-neutral-50 dark:text-neutral-400 dark:hover:border-white/8 dark:hover:bg-white/3">
-                        <div class="flex items-center gap-3">
-                            <div class="flex size-7 items-center justify-center rounded-full bg-neutral-100 transition-colors duration-200 group-hover/trigger:bg-flame-pea-100 dark:bg-neutral-800 dark:group-hover/trigger:bg-flame-pea-950/40">
-                                <Navigation class="size-3.5 text-neutral-500 transition-colors duration-200 group-hover/trigger:text-flame-pea-600 dark:text-neutral-500 dark:group-hover/trigger:text-flame-pea-400" />
-                            </div>
-                            <span class="font-medium">View on Map</span>
+        <div class="px-5 md:px-4">
+            <Collapsible open={props.showMap} onOpenChange={props.setShowMap}>
+                <Collapsible.Trigger class="group/trigger flex w-full items-center justify-between rounded-xl border border-transparent px-3 py-2.5 text-sm text-neutral-600 transition-all duration-200 hover:border-neutral-200 hover:bg-neutral-50 dark:text-neutral-400 dark:hover:border-white/8 dark:hover:bg-white/3">
+                    <div class="flex items-center gap-3">
+                        <div class="flex size-7 items-center justify-center rounded-full bg-neutral-100 transition-colors duration-200 group-hover/trigger:bg-flame-pea-100 dark:bg-neutral-800 dark:group-hover/trigger:bg-flame-pea-950/40">
+                            <Navigation class="size-3.5 text-neutral-500 transition-colors duration-200 group-hover/trigger:text-flame-pea-600 dark:text-neutral-500 dark:group-hover/trigger:text-flame-pea-400" />
                         </div>
-                        <ChevronDown
-                            class="size-4 text-neutral-400 transition-transform duration-300 ease-out dark:text-neutral-500"
-                            classList={{ "rotate-180": props.showMap }}
-                        />
-                    </Collapsible.Trigger>
-                    <Collapsible.Content>
-                        <a
-                            href={props.directionsUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            class="mt-2 block aspect-video w-full cursor-pointer overflow-hidden rounded-xl border border-neutral-200 shadow-inner transition-shadow duration-200 hover:shadow-md dark:border-white/8"
-                            title="Get directions"
+                        <span class="font-medium">View on Map</span>
+                    </div>
+                    <ChevronDown
+                        class="size-4 text-neutral-400 transition-transform duration-300 ease-out dark:text-neutral-500"
+                        classList={{ "rotate-180": props.showMap }}
+                    />
+                </Collapsible.Trigger>
+                <Collapsible.Content>
+                    <a
+                        href={props.directionsUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        class="mt-2 block aspect-video w-full cursor-pointer overflow-hidden rounded-xl border border-neutral-200 shadow-inner transition-shadow duration-200 hover:shadow-md dark:border-white/8"
+                        title="Get directions"
+                    >
+                        <Map
+                            center={props.location}
+                            zoom={15}
+                            mapId="DEMO_MAP_ID"
+                            disableDefaultUI
+                            zoomControl={false}
+                            mapTypeControl={false}
+                            streetViewControl={false}
+                            fullscreenControl={false}
+                            scrollwheel={false}
+                            style={{ width: "100%", height: "100%" }}
                         >
-                            <Map
-                                center={{ lat: props.restaurant.lat!, lng: props.restaurant.lng! }}
-                                zoom={15}
-                                mapId="DEMO_MAP_ID"
-                                disableDefaultUI
-                                zoomControl={false}
-                                mapTypeControl={false}
-                                streetViewControl={false}
-                                fullscreenControl={false}
-                                scrollwheel={false}
-                                style={{ width: "100%", height: "100%" }}
-                            >
-                                <AdvancedMarker
-                                    position={{ lat: props.restaurant.lat!, lng: props.restaurant.lng! }}
-                                    title={props.restaurant.name ?? null}
-                                />
-                            </Map>
-                        </a>
-                        <p class="mt-2 text-center text-xs text-neutral-500 dark:text-neutral-500">
-                            Click map to get directions
-                        </p>
-                    </Collapsible.Content>
-                </Collapsible>
-            </div>
-        </Show>
+                            <AdvancedMarker position={props.location} title={props.restaurant.name ?? null} />
+                        </Map>
+                    </a>
+                    <p class="mt-2 text-center text-xs text-neutral-500 dark:text-neutral-500">
+                        Click map to get directions
+                    </p>
+                </Collapsible.Content>
+            </Collapsible>
+        </div>
     )
 }
 
