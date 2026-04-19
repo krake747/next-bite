@@ -1,17 +1,11 @@
-import { createSignal, Show, For, createEffect, onCleanup } from "solid-js"
+import { createSignal, Show, createEffect, onCleanup } from "solid-js"
 import { Dialog } from "@kobalte/core/dialog"
-import { cx } from "./variants"
-import { Button } from "./button"
 import { LazyImage } from "./lazy-image"
 import { createPerPointerListeners } from "@solid-primitives/pointer"
+import { NavigationArrow } from "./gallery/navigation-arrow"
+import { ZoomControls } from "./gallery/zoom-controls"
+import { GalleryGrid } from "./gallery/gallery-grid"
 import X from "lucide-solid/icons/x"
-import ChevronLeft from "lucide-solid/icons/chevron-left"
-import ChevronRight from "lucide-solid/icons/chevron-right"
-import ZoomIn from "lucide-solid/icons/zoom-in"
-import ZoomOut from "lucide-solid/icons/zoom-out"
-import Maximize from "lucide-solid/icons/maximize"
-import Minimize from "lucide-solid/icons/minimize"
-import RotateCcw from "lucide-solid/icons/rotate-ccw"
 
 const ZOOM_STEP = 0.5
 const MIN_ZOOM = 0.5
@@ -49,8 +43,6 @@ export function ImageGalleryModal(props: ImageGalleryModalProps) {
             })
         }
     })
-
-    onCleanup(() => {})
 
     const resetZoom = () => {
         setZoom(1)
@@ -200,44 +192,22 @@ export function ImageGalleryModal(props: ImageGalleryModalProps) {
                         <Show
                             when={lightboxOpen()}
                             fallback={
-                                <div class="flex-1 overflow-y-auto p-4">
-                                    <div class="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4">
-                                        <For each={props.images}>
-                                            {(imageUrl, index) => (
-                                                <button
-                                                    type="button"
-                                                    onClick={() => {
-                                                        setCurrentIndex(index())
-                                                        resetZoom()
-                                                        setLightboxOpen(true)
-                                                    }}
-                                                    class="group relative aspect-square overflow-hidden rounded-lg"
-                                                >
-                                                    <LazyImage
-                                                        src={imageUrl}
-                                                        alt={`Image ${index() + 1}`}
-                                                        aspectRatio="1"
-                                                        class="transition-transform duration-200 ease-out group-hover:scale-105"
-                                                    />
-                                                </button>
-                                            )}
-                                        </For>
-                                    </div>
-                                </div>
+                                <GalleryGrid
+                                    images={props.images}
+                                    onSelect={(index) => {
+                                        setCurrentIndex(index)
+                                        resetZoom()
+                                        setLightboxOpen(true)
+                                    }}
+                                />
                             }
                         >
                             <div class="flex flex-1 items-center justify-center overflow-hidden p-4">
-                                <button
-                                    type="button"
+                                <NavigationArrow
+                                    direction="prev"
                                     onClick={handlePrevious}
-                                    class={cx(
-                                        "absolute left-4 z-10 rounded-full bg-white/20 p-3 text-white backdrop-blur-sm transition-colors duration-150 ease hover:bg-white/30",
-                                        props.images.length <= 1 && "hidden",
-                                    )}
-                                    aria-label="Previous image"
-                                >
-                                    <ChevronLeft class="size-6" />
-                                </button>
+                                    hidden={props.images.length <= 1}
+                                />
 
                                 <div
                                     ref={imageContainerRef}
@@ -262,73 +232,23 @@ export function ImageGalleryModal(props: ImageGalleryModalProps) {
                                     </Show>
                                 </div>
 
-                                <button
-                                    type="button"
+                                <NavigationArrow
+                                    direction="next"
                                     onClick={handleNext}
-                                    class={cx(
-                                        "absolute right-4 z-10 rounded-full bg-white/20 p-3 text-white backdrop-blur-sm transition-colors duration-150 ease hover:bg-white/30",
-                                        props.images.length <= 1 && "hidden",
-                                    )}
-                                    aria-label="Next image"
-                                >
-                                    <ChevronRight class="size-6" />
-                                </button>
+                                    hidden={props.images.length <= 1}
+                                />
                             </div>
 
-                            <div class="flex flex-wrap items-center justify-center gap-2 p-4">
-                                <div class="flex items-center gap-1">
-                                    <button
-                                        type="button"
-                                        onClick={handleZoomOut}
-                                        class="rounded-full bg-white/20 p-2 text-white backdrop-blur-sm transition-colors hover:bg-white/30"
-                                        aria-label="Zoom out"
-                                    >
-                                        <ZoomOut class="size-5" />
-                                    </button>
-                                    <span class="min-w-12 text-center text-sm text-white">
-                                        {Math.round(zoom() * 100)}%
-                                    </span>
-                                    <button
-                                        type="button"
-                                        onClick={handleZoomIn}
-                                        class="rounded-full bg-white/20 p-2 text-white backdrop-blur-sm transition-colors hover:bg-white/30"
-                                        aria-label="Zoom in"
-                                    >
-                                        <ZoomIn class="size-5" />
-                                    </button>
-                                </div>
-
-                                <div class="flex items-center gap-1">
-                                    <button
-                                        type="button"
-                                        onClick={handleRotate}
-                                        class="rounded-full bg-white/20 p-2 text-white backdrop-blur-sm transition-colors hover:bg-white/30"
-                                        aria-label="Rotate"
-                                    >
-                                        <RotateCcw class="size-5" />
-                                    </button>
-                                    <button
-                                        type="button"
-                                        onClick={toggleFullscreen}
-                                        class="rounded-full bg-white/20 p-2 text-white backdrop-blur-sm transition-colors hover:bg-white/30"
-                                        aria-label={isFullscreen() ? "Exit fullscreen" : "Fullscreen"}
-                                    >
-                                        {isFullscreen() ? <Minimize class="size-5" /> : <Maximize class="size-5" />}
-                                    </button>
-                                    <button
-                                        type="button"
-                                        onClick={resetZoom}
-                                        class="rounded-full bg-white/20 px-3 py-2 text-sm text-white backdrop-blur-sm transition-colors hover:bg-white/30"
-                                        aria-label="Reset zoom"
-                                    >
-                                        Reset
-                                    </button>
-                                </div>
-
-                                <Button variant="secondary" size="md" onClick={() => setLightboxOpen(false)}>
-                                    Back to Grid
-                                </Button>
-                            </div>
+                            <ZoomControls
+                                zoom={zoom()}
+                                onZoomIn={handleZoomIn}
+                                onZoomOut={handleZoomOut}
+                                onRotate={handleRotate}
+                                onToggleFullscreen={toggleFullscreen}
+                                onReset={resetZoom}
+                                isFullscreen={isFullscreen()}
+                                onBackToGrid={() => setLightboxOpen(false)}
+                            />
                         </Show>
                     </Dialog.Content>
                 </Dialog.Overlay>
