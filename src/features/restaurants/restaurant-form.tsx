@@ -1,7 +1,6 @@
 import { For, Show, createSignal, onCleanup } from "solid-js"
 import { createForm, Field, Form, reset, setInput } from "@formisch/solid"
 import {
-    useAddRestaurant,
     useAddRestaurantWithHours,
     useUpdateRestaurant,
     useFriends,
@@ -21,7 +20,6 @@ export type RestaurantFormProps =
     | { mode: "edit"; restaurant: Restaurant; onSuccess: () => void; onCancel: () => void }
 
 export function RestaurantForm(props: RestaurantFormProps) {
-    const addRestaurant = useAddRestaurant()
     const addRestaurantWithHours = useAddRestaurantWithHours()
     const updateRestaurant = useUpdateRestaurant()
     const friends = useFriends()
@@ -45,7 +43,6 @@ export function RestaurantForm(props: RestaurantFormProps) {
                       link: props.restaurant.link ?? "",
                       addedBy: props.restaurant.addedBy,
                       rating: props.restaurant.rating,
-                      placeId: props.restaurant.placeId,
                   },
               }
             : {}),
@@ -84,7 +81,7 @@ export function RestaurantForm(props: RestaurantFormProps) {
         }
     })
 
-    const handleLocationChange = (address: string, lat?: number, lng?: number, placeId?: string) => {
+    const handleLocationChange = (address: string, lat?: number, lng?: number) => {
         setInput(form, { path: ["location"], input: address })
         if (lat != null && lng != null) {
             setInput(form, { path: ["lat"], input: lat })
@@ -93,20 +90,12 @@ export function RestaurantForm(props: RestaurantFormProps) {
             setInput(form, { path: ["lat"], input: undefined })
             setInput(form, { path: ["lng"], input: undefined })
         }
-        if (placeId) {
-            setInput(form, { path: ["placeId"], input: placeId })
-        }
     }
 
     const handleSubmit = async (output: RestaurantOutput) => {
         try {
             if (props.mode === "add") {
-                const placeId = output.placeId
-                if (placeId) {
-                    await addRestaurantWithHours({ ...output, images: images() })
-                } else {
-                    await addRestaurant({ ...output, images: images() })
-                }
+                await addRestaurantWithHours({ ...output, images: images() })
                 for (const storageId of pendingRemovedStorageIds()) {
                     try {
                         await cleanupStorage({ storageId })

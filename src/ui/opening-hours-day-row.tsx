@@ -13,7 +13,7 @@ export function OpeningHoursDayRow(props: { openingHours: OpeningHours | undefin
         return dayIndex === new Date().getDay()
     }
 
-    const sizeClasses = () => (props.size === "lg" ? "w-8 h-8 text-lg" : "w-5 h-5 text-xs")
+    const sizeClasses = () => (props.size === "lg" ? "size-8 text-lg" : "size-5 text-xs")
 
     return (
         <div class="flex gap-1">

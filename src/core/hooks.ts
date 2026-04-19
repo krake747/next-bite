@@ -1,4 +1,4 @@
-import { createQuery, createMutation } from "./convex-solid"
+import { createQuery, createMutation, createAction } from "./convex-solid"
 import { api } from "../../convex/_generated/api"
 import type { Doc, Id } from "../../convex/_generated/dataModel"
 import { authStore } from "./auth-store"
@@ -7,13 +7,13 @@ export const useRestaurants = () => createQuery<Restaurant[]>(api.restaurants.ge
 export const useFriends = () => createQuery<Friend[]>(api.friends.get)
 
 export const useAddRestaurant = () => createMutation(api.restaurants.add)
-export const useAddRestaurantWithHours = () => createMutation(api.restaurants.add)
+export const useAddRestaurantWithHours = () => createAction(api.restaurants.addWithOpeningHours)
 export const useUpdateRestaurant = () => createMutation(api.restaurants.update)
 
 export const useDeleteImage = () => createMutation(api.restaurants.deleteImage)
 export const useCleanupStorage = () => createMutation(api.restaurants.cleanupStorage)
-export const useRefreshOpeningHours = () => createMutation(api.restaurants.refreshOpeningHours)
-export const useLookupPlaceIdAndHours = () => createMutation(api.restaurants.lookupPlaceIdAndHours)
+export const useRefreshOpeningHours = () => createAction(api.restaurants.refreshOpeningHours)
+export const useLookupPlaceIdAndHours = () => createAction(api.restaurants.lookupPlaceIdAndHours)
 
 export type ImageRecord = {
     url: string

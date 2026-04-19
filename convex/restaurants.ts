@@ -1,4 +1,5 @@
-import { query, mutation, internalAction } from "./_generated/server"
+import { query, mutation, action, internalQuery, internalMutation, internalAction } from "./_generated/server"
+import { internal } from "./_generated/api"
 import { v } from "convex/values"
 import type { Id } from "./_generated/dataModel"
 import { MAX_IMAGES } from "../src/core/constants"
@@ -50,11 +51,45 @@ async function fetchOpeningHoursFromGoogle(placeId: string): Promise<OpeningHour
     }
 }
 
-async function lookupPlaceIdFromGoogle(name: string, location: string): Promise<string | null> {
+export const _getRestaurantById = internalQuery({
+    args: { id: v.id("restaurants") },
+    handler: async (ctx, { id }) => ctx.db.get(id),
+})
+
+export const _patchRestaurant = internalMutation({
+    args: {
+        id: v.id("restaurants"),
+        placeId: v.optional(v.string()),
+        openingHours: v.optional(v.any()),
+        lat: v.optional(v.number()),
+        lng: v.optional(v.number()),
+    },
+    handler: async (ctx, { id, placeId, openingHours, lat, lng }) => {
+        ctx.db.patch(id, {
+            ...(placeId !== undefined ? { placeId } : {}),
+            ...(openingHours !== undefined ? { openingHours } : {}),
+            ...(lat !== undefined ? { lat } : {}),
+            ...(lng !== undefined ? { lng } : {}),
+        })
+    },
+})
+
+export const _insertRestaurant = internalMutation({
+    args: v.any(),
+    handler: async (ctx, args) => ctx.db.insert("restaurants", args),
+})
+
+type GooglePlaceResult = {
+    placeId: string | null
+    lat: number | null
+    lng: number | null
+}
+
+async function lookupPlaceIdFromGoogle(name: string, location: string): Promise<GooglePlaceResult> {
     const apiKey = process.env.GOOGLE_MAPS_API_KEY
     if (!apiKey) {
         console.log("lookupPlaceIdFromGoogle: No API key")
-        return null
+        return { placeId: null, lat: null, lng: null }
     }
 
     try {
@@ -63,11 +98,11 @@ async function lookupPlaceIdFromGoogle(name: string, location: string): Promise<
         console.log("lookupPlaceIdFromGoogle: Searching for:", query)
 
         const response = await fetch(
-            `https://places.googleapis.com/v1/places:searchText?textQuery=${encodedQuery}&fields=places/id`,
+            `https://places.googleapis.com/v1/places:searchText?textQuery=${encodedQuery}&fields=places/id,places.location`,
             {
                 headers: {
                     "X-Goog-Api-Key": apiKey,
-                    "X-Goog-FieldMask": "places.id",
+                    "X-Goog-FieldMask": "places.id,places.location",
                 },
             },
         )
@@ -75,15 +110,26 @@ async function lookupPlaceIdFromGoogle(name: string, location: string): Promise<
         if (!response.ok) {
             const errorText = await response.text()
             console.log("lookupPlaceIdFromGoogle: API error:", response.status, errorText)
-            return null
+            return { placeId: null, lat: null, lng: null }
         }
 
-        const data = (await response.json()) as { places?: Array<{ id?: string }> }
+        const data = (await response.json()) as {
+            places?: Array<{
+                id?: string
+                location?: { latitude?: number; longitude?: number }
+            }>
+        }
         console.log("lookupPlaceIdFromGoogle: Result:", JSON.stringify(data))
-        return data.places?.[0]?.id ?? null
+
+        const place = data.places?.[0]
+        return {
+            placeId: place?.id ?? null,
+            lat: place?.location?.latitude ?? null,
+            lng: place?.location?.longitude ?? null,
+        }
     } catch (err) {
         console.log("lookupPlaceIdFromGoogle: Catch error:", err)
-        return null
+        return { placeId: null, lat: null, lng: null }
     }
 }
 
@@ -148,7 +194,7 @@ export const add = mutation({
     },
 })
 
-export const addWithOpeningHours = mutation({
+export const addWithOpeningHours = action({
     args: {
         name: v.string(),
         cuisine: v.string(),
@@ -160,28 +206,32 @@ export const addWithOpeningHours = mutation({
         addedBy: v.string(),
         rating: v.optional(v.number()),
         images: v.optional(v.array(v.object({ url: v.string(), storageId: v.string() }))),
-        placeId: v.string(),
     },
-    handler: async (ctx, args) => {
-        const { images, placeId, ...rest } = args
+    handler: async (ctx, args): Promise<Id<"restaurants">> => {
+        const { images, lat, lng, ...rest } = args
 
         if (images && images.length > MAX_IMAGES) {
             throw new Error(`Maximum ${MAX_IMAGES} images allowed`)
         }
 
+        const google = await lookupPlaceIdFromGoogle(rest.name, rest.location)
+        console.log("addWithOpeningHours: Google result:", JSON.stringify(google))
+
         let openingHours: OpeningHoursData | undefined
-        if (placeId) {
-            openingHours = await fetchOpeningHoursFromGoogle(placeId)
+        if (google.placeId) {
+            openingHours = await fetchOpeningHoursFromGoogle(google.placeId)
         }
 
         const restaurantData = {
             ...rest,
             ...(images !== undefined ? { images } : {}),
-            placeId,
+            placeId: google.placeId ?? undefined,
+            lat: google.lat ?? lat ?? undefined,
+            lng: google.lng ?? lng ?? undefined,
             ...(openingHours !== undefined ? { openingHours } : {}),
         }
 
-        return ctx.db.insert("restaurants", restaurantData)
+        return ctx.runMutation(internal.restaurants._insertRestaurant, restaurantData)
     },
 })
 
@@ -279,10 +329,10 @@ export const cleanupStorage = mutation({
     },
 })
 
-export const refreshOpeningHours = mutation({
+export const refreshOpeningHours = action({
     args: { restaurantId: v.id("restaurants") },
     handler: async (ctx, { restaurantId }) => {
-        const restaurant = await ctx.db.get(restaurantId)
+        const restaurant = await ctx.runQuery(internal.restaurants._getRestaurantById, { id: restaurantId })
         if (!restaurant) {
             throw new Error("Restaurant not found")
         }
@@ -292,15 +342,15 @@ export const refreshOpeningHours = mutation({
         }
 
         const openingHours = await fetchOpeningHoursFromGoogle(restaurant.placeId)
-        await ctx.db.patch(restaurantId, { openingHours })
+        await ctx.runMutation(internal.restaurants._patchRestaurant, { id: restaurantId, openingHours })
     },
 })
 
-export const lookupPlaceIdAndHours = mutation({
+export const lookupPlaceIdAndHours = action({
     args: { restaurantId: v.id("restaurants") },
     handler: async (ctx, { restaurantId }) => {
         console.log("lookupPlaceIdAndHours: Starting for restaurantId:", restaurantId)
-        const restaurant = await ctx.db.get(restaurantId)
+        const restaurant = await ctx.runQuery(internal.restaurants._getRestaurantById, { id: restaurantId })
         if (!restaurant) {
             console.log("lookupPlaceIdAndHours: Restaurant not found")
             throw new Error("Restaurant not found")
@@ -313,19 +363,29 @@ export const lookupPlaceIdAndHours = mutation({
             throw new Error("Name and location required to lookup")
         }
 
-        const newPlaceId = await lookupPlaceIdFromGoogle(restaurant.name, restaurant.location)
-        console.log("lookupPlaceIdAndHours: Found placeId:", newPlaceId)
+        const google = await lookupPlaceIdFromGoogle(restaurant.name, restaurant.location)
+        console.log("lookupPlaceIdAndHours: Google result:", JSON.stringify(google))
 
-        if (!newPlaceId) {
+        if (!google.placeId) {
             console.log("lookupPlaceIdAndHours: No placeId found, returning")
             return
         }
 
         console.log("lookupPlaceIdAndHours: Fetching opening hours...")
-        const openingHours = await fetchOpeningHoursFromGoogle(newPlaceId)
+        const openingHours = await fetchOpeningHoursFromGoogle(google.placeId)
         console.log("lookupPlaceIdAndHours: Got openingHours:", JSON.stringify(openingHours))
 
-        await ctx.db.patch(restaurantId, { placeId: newPlaceId, openingHours })
+        const patchArgs: { id: Id<"restaurants">; placeId: string; openingHours: OpeningHoursData } & {
+            lat?: number
+            lng?: number
+        } = {
+            id: restaurantId,
+            placeId: google.placeId,
+            openingHours,
+        }
+        if (google.lat !== null) patchArgs.lat = google.lat as number
+        if (google.lng !== null) patchArgs.lng = google.lng as number
+        await ctx.runMutation(internal.restaurants._patchRestaurant, patchArgs)
         console.log("lookupPlaceIdAndHours: Done!")
     },
 })
