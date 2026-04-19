@@ -11,6 +11,8 @@ export const useUpdateRestaurant = () => createMutation(api.restaurants.update)
 
 export const useDeleteImage = () => createMutation(api.restaurants.deleteImage)
 export const useCleanupStorage = () => createMutation(api.restaurants.cleanupStorage)
+export const useRefreshOpeningHours = () => createMutation(api.restaurants.refreshOpeningHours)
+export const useLookupPlaceIdAndHours = () => createMutation(api.restaurants.lookupPlaceIdAndHours)
 
 export type ImageRecord = {
     url: string

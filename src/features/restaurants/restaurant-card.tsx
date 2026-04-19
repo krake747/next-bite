@@ -8,9 +8,17 @@ import SquarePen from "lucide-solid/icons/square-pen"
 import Images from "lucide-solid/icons/images"
 import ChevronDown from "lucide-solid/icons/chevron-down"
 import Navigation from "lucide-solid/icons/navigation"
+import RotateCcw from "lucide-solid/icons/rotate-ccw"
+import Search from "lucide-solid/icons/search"
 import { Collapsible } from "@kobalte/core/collapsible"
 import { Map, AdvancedMarker } from "solid-google-maps"
-import { useUpdateRestaurant, useAuth, type Restaurant } from "@core/hooks"
+import {
+    useUpdateRestaurant,
+    useAuth,
+    useRefreshOpeningHours,
+    useLookupPlaceIdAndHours,
+    type Restaurant,
+} from "@core/hooks"
 import { EditRestaurantDialog } from "./edit-restaurant-dialog"
 import { EmojiRating } from "@ui/emoji-rating"
 import { LazyImage } from "@ui/lazy-image"
@@ -24,8 +32,35 @@ export function RestaurantCard(props: { restaurant: Restaurant } & ComponentProp
     const [showGallery, setShowGallery] = createSignal(false)
     const [showMap, setShowMap] = createSignal(false)
     const [notesExpanded, setNotesExpanded] = createSignal(false)
+    const [isRefreshing, setIsRefreshing] = createSignal(false)
     const updateRestaurant = useUpdateRestaurant()
     const auth = useAuth()
+    const refreshOpeningHours = useRefreshOpeningHours()
+    const lookupPlaceIdAndHours = useLookupPlaceIdAndHours()
+
+    const hasPlaceId = () => !!local.restaurant.placeId
+
+    const handleRefreshHours = async () => {
+        setIsRefreshing(true)
+        try {
+            await refreshOpeningHours({ restaurantId: local.restaurant._id })
+        } catch {
+            // Silent fail
+        } finally {
+            setIsRefreshing(false)
+        }
+    }
+
+    const handleFindHours = async () => {
+        setIsRefreshing(true)
+        try {
+            await lookupPlaceIdAndHours({ restaurantId: local.restaurant._id })
+        } catch {
+            // Silent fail
+        } finally {
+            setIsRefreshing(false)
+        }
+    }
 
     const hasLocation = () => local.restaurant.lat != null && local.restaurant.lng != null
     const hasImages = () => (local.restaurant.images?.length ?? 0) > 0
@@ -59,6 +94,10 @@ export function RestaurantCard(props: { restaurant: Restaurant } & ComponentProp
                     setShowEdit={setShowEdit}
                     setShowGallery={setShowGallery}
                     isAuthenticated={auth.isAuthenticated()}
+                    isRefreshing={isRefreshing()}
+                    hasPlaceId={hasPlaceId()}
+                    handleRefreshHours={handleRefreshHours}
+                    handleFindHours={handleFindHours}
                 />
                 <RestaurantCardContent restaurant={local.restaurant} hasLocation={hasLocation()} />
                 <RestaurantCardNotes
@@ -93,6 +132,10 @@ function RestaurantCardImage(props: {
     setShowEdit: (show: boolean) => void
     setShowGallery: (show: boolean) => void
     isAuthenticated: boolean
+    isRefreshing: boolean
+    hasPlaceId: boolean
+    handleRefreshHours: () => void
+    handleFindHours: () => void
 }) {
     return (
         <div class="relative aspect-2/1 w-full overflow-hidden">
@@ -129,7 +172,31 @@ function RestaurantCardImage(props: {
             </div>
 
             <Show when={props.isAuthenticated}>
-                <div class="absolute top-3 right-3">
+                <div class="absolute top-3 right-3 flex gap-1.5">
+                    <Show when={props.hasPlaceId}>
+                        <button
+                            type="button"
+                            onClick={props.handleRefreshHours}
+                            disabled={props.isRefreshing}
+                            aria-label="Refresh hours"
+                            class="flex h-7 w-7 items-center justify-center rounded-full bg-white/90 text-neutral-600 shadow-md backdrop-blur-sm transition-all duration-200 hover:bg-white hover:text-neutral-900 hover:shadow-lg disabled:opacity-50"
+                            title="Refresh hours"
+                        >
+                            <RotateCcw class="size-3.5" aria-hidden="true" />
+                        </button>
+                    </Show>
+                    <Show when={!props.hasPlaceId}>
+                        <button
+                            type="button"
+                            onClick={props.handleFindHours}
+                            disabled={props.isRefreshing}
+                            aria-label="Find hours"
+                            class="flex h-7 w-7 items-center justify-center rounded-full bg-white/90 text-neutral-600 shadow-md backdrop-blur-sm transition-all duration-200 hover:bg-white hover:text-neutral-900 hover:shadow-lg disabled:opacity-50"
+                            title="Find hours"
+                        >
+                            <Search class="size-3.5" aria-hidden="true" />
+                        </button>
+                    </Show>
                     <button
                         type="button"
                         onClick={() => props.setShowEdit(true)}
