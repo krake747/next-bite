@@ -12,6 +12,15 @@ export function Loading(props: { message?: string; class?: string }) {
     )
 }
 
+export function LoadingInline(props: { message?: string; class?: string }) {
+    return (
+        <span data-component="loading-inline" class={props.class}>
+            <LoaderPinwheel class="size-4 animate-spin text-neutral-400" />
+            {props.message && <span class="ml-2 text-neutral-500">{props.message}...</span>}
+        </span>
+    )
+}
+
 export function LoadingPlaceholder() {
     const [verb] = createSignal(LoadingVerbs[Math.floor(Math.random() * LoadingVerbs.length)])
 

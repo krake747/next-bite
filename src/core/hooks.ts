@@ -10,14 +10,15 @@ export const useAddRestaurant = () => createMutation(api.restaurants.add)
 export const useUpdateRestaurant = () => createMutation(api.restaurants.update)
 
 export const useDeleteImage = () => createMutation(api.restaurants.deleteImage)
+export const useCleanupStorage = () => createMutation(api.restaurants.cleanupStorage)
 
-type UploadResult = {
-    storageId: string
+export type ImageRecord = {
     url: string
+    storageId: string
 }
 
 export function useUploadImage() {
-    return async (file: File): Promise<UploadResult> => {
+    return async (file: File): Promise<ImageRecord> => {
         const siteUrl = import.meta.env.VITE_CONVEX_SITE_URL
         if (!siteUrl) {
             throw new Error("VITE_CONVEX_SITE_URL is not defined")
@@ -36,8 +37,8 @@ export function useUploadImage() {
             throw new Error(`Upload failed: ${response.status} ${errorText}`)
         }
 
-        const result = (await response.json()) as { storageId: string; url: string }
-        return { storageId: result.storageId, url: result.url }
+        const result = (await response.json()) as ImageRecord
+        return { url: result.url, storageId: result.storageId }
     }
 }
 

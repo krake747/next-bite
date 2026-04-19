@@ -1,5 +1,6 @@
 import { query, mutation } from "./_generated/server"
 import { v } from "convex/values"
+import type { Id } from "./_generated/dataModel"
 import { MAX_IMAGES } from "../src/core/constants"
 
 export const get = query(async (ctx) => ctx.db.query("restaurants").collect())
@@ -15,7 +16,7 @@ export const add = mutation({
         link: v.optional(v.string()),
         addedBy: v.string(),
         rating: v.optional(v.number()),
-        images: v.optional(v.array(v.string())),
+        images: v.optional(v.array(v.object({ url: v.string(), storageId: v.string() }))),
     },
     handler: async (ctx, args) => {
         const { images, ...rest } = args
@@ -40,7 +41,7 @@ export const update = mutation({
         link: v.optional(v.string()),
         addedBy: v.optional(v.string()),
         rating: v.optional(v.number()),
-        images: v.optional(v.array(v.string())),
+        images: v.optional(v.array(v.object({ url: v.string(), storageId: v.string() }))),
     },
     handler: async (ctx, args) => {
         const { id, images, ...updates } = args
@@ -62,6 +63,7 @@ export const deleteImage = mutation({
     args: {
         restaurantId: v.id("restaurants"),
         imageUrl: v.string(),
+        storageId: v.string(),
     },
     handler: async (ctx, args) => {
         const restaurant = await ctx.db.get(args.restaurantId)
@@ -69,8 +71,37 @@ export const deleteImage = mutation({
             throw new Error("Restaurant not found")
         }
 
+        await ctx.storage.delete(args.storageId as Id<"_storage">)
+
         const currentImages = restaurant.images ?? []
-        const updatedImages = currentImages.filter((url) => url !== args.imageUrl)
+        const updatedImages = currentImages.filter((img) => img.url !== args.imageUrl)
+
+        if (updatedImages.length !== currentImages.length) {
+            await ctx.db.patch(args.restaurantId, { images: updatedImages })
+        }
+    },
+})
+
+export const cleanupStorage = mutation({
+    args: {
+        restaurantId: v.id("restaurants"),
+        storageId: v.string(),
+    },
+    handler: async (ctx, args) => {
+        const identity = await ctx.auth.getUserIdentity()
+        if (!identity) {
+            throw new Error("Unauthorized: authentication required")
+        }
+
+        const restaurant = await ctx.db.get(args.restaurantId)
+        if (!restaurant) {
+            throw new Error("Restaurant not found")
+        }
+
+        await ctx.storage.delete(args.storageId as Id<"_storage">)
+
+        const currentImages = restaurant.images ?? []
+        const updatedImages = currentImages.filter((img) => img.storageId !== args.storageId)
 
         if (updatedImages.length !== currentImages.length) {
             await ctx.db.patch(args.restaurantId, { images: updatedImages })

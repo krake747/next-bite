@@ -1,11 +1,16 @@
-import { createSignal, Show, For, createEffect } from "solid-js"
+import { createSignal, Show, createEffect, onCleanup } from "solid-js"
 import { Dialog } from "@kobalte/core/dialog"
-import { cx } from "./variants"
-import { Button } from "./button"
 import { LazyImage } from "./lazy-image"
+import { createPerPointerListeners } from "@solid-primitives/pointer"
+import { NavigationArrow } from "./gallery/navigation-arrow"
+import { ZoomControls } from "./gallery/zoom-controls"
+import { GalleryGrid } from "./gallery/gallery-grid"
 import X from "lucide-solid/icons/x"
-import ChevronLeft from "lucide-solid/icons/chevron-left"
-import ChevronRight from "lucide-solid/icons/chevron-right"
+
+const ZOOM_STEP = 0.5
+const MIN_ZOOM = 0.5
+const DEFAULT_ZOOM = 1
+const MAX_ZOOM = 4
 
 type ImageGalleryModalProps = {
     images: string[]
@@ -14,28 +19,158 @@ type ImageGalleryModalProps = {
     initialIndex?: number
 }
 
+type PanState = { x: number; y: number }
+
 export function ImageGalleryModal(props: ImageGalleryModalProps) {
     const [currentIndex, setCurrentIndex] = createSignal(props.initialIndex ?? 0)
     const [lightboxOpen, setLightboxOpen] = createSignal(false)
+    const [zoom, setZoom] = createSignal(1)
+    const [pan, setPan] = createSignal<PanState>({ x: 0, y: 0 })
+    const [isPanning, setIsPanning] = createSignal(false)
+    const [isFullscreen, setIsFullscreen] = createSignal(false)
+    const [rotation, setRotation] = createSignal(0)
+    const [suppressClickAfterPan, setSuppressClickAfterPan] = createSignal(false)
+    let imageContainerRef: HTMLDivElement | undefined // eslint-disable-line no-unassigned-vars
+    let dialogContentRef: HTMLDivElement | undefined // eslint-disable-line no-unassigned-vars
 
-    // Update currentIndex when initialIndex prop changes
     createEffect(() => {
         setCurrentIndex(props.initialIndex ?? 0)
     })
 
+    createEffect(() => {
+        if (imageContainerRef) {
+            createPerPointerListeners({
+                target: imageContainerRef,
+                onDown: eventHandler,
+            })
+        }
+    })
+
+    const resetZoom = () => {
+        setZoom(1)
+        setPan({ x: 0, y: 0 })
+        setRotation(0)
+    }
+
+    const handleZoomIn = () => {
+        setZoom((z) => Math.min(z + ZOOM_STEP, MAX_ZOOM))
+    }
+
+    const handleZoomOut = () => {
+        setZoom((z) => {
+            const newZoom = Math.max(z - ZOOM_STEP, MIN_ZOOM)
+            if (newZoom === MIN_ZOOM) {
+                setPan({ x: 0, y: 0 })
+            }
+            return newZoom
+        })
+    }
+
+    const handleClickZoom = () => {
+        if (suppressClickAfterPan()) {
+            setSuppressClickAfterPan(false)
+            return
+        }
+        if (zoom() > DEFAULT_ZOOM) {
+            setZoom(DEFAULT_ZOOM)
+            setPan({ x: 0, y: 0 })
+            setRotation(0)
+        } else {
+            setZoom(2)
+        }
+    }
+
+    const toggleFullscreen = async () => {
+        const elem = dialogContentRef
+        if (!elem) return
+
+        try {
+            if (!document.fullscreenElement) {
+                await elem.requestFullscreen()
+                setIsFullscreen(true)
+            } else {
+                await document.exitFullscreen()
+                setIsFullscreen(false)
+            }
+        } catch {}
+    }
+
+    const handleFullscreenChange = () => {
+        setIsFullscreen(!!document.fullscreenElement)
+    }
+
+    if (typeof document !== "undefined") {
+        document.addEventListener("fullscreenchange", handleFullscreenChange)
+        onCleanup(() => document.removeEventListener("fullscreenchange", handleFullscreenChange))
+    }
+
+    const handleWheel = (e: WheelEvent) => {
+        e.preventDefault()
+        if (e.deltaY < 0) {
+            handleZoomIn()
+        } else {
+            handleZoomOut()
+        }
+    }
+
+    let startPan = { x: 0, y: 0 }
+
+    const PAN_THRESHOLD = 5
+
+    const eventHandler = (
+        { x, y }: { x: number; y: number },
+        onMove: (h: (e: PointerEvent) => void) => void,
+        onUp: (h: () => void) => void,
+    ) => {
+        if (zoom() > DEFAULT_ZOOM) {
+            setIsPanning(true)
+            startPan = { x: x - pan().x, y: y - pan().y }
+            onMove(({ x, y }) => {
+                if (isPanning() && zoom() > DEFAULT_ZOOM) {
+                    const newPan = { x: x - startPan.x, y: y - startPan.y }
+                    setPan(newPan)
+                    if (Math.abs(newPan.x - pan().x) > PAN_THRESHOLD || Math.abs(newPan.y - pan().y) > PAN_THRESHOLD) {
+                        setSuppressClickAfterPan(true)
+                    }
+                }
+            })
+            onUp(() => {
+                setIsPanning(false)
+                setSuppressClickAfterPan(true)
+                queueMicrotask(() => setSuppressClickAfterPan(false))
+            })
+        }
+    }
+
+    const handleRotate = () => {
+        setRotation((r) => (r + 90) % 360)
+    }
+
     const currentImage = () => props.images[currentIndex()]
 
     const handlePrevious = () => {
-        setCurrentIndex((prev) => (prev === 0 ? props.images.length - 1 : prev - 1))
+        const newIndex = currentIndex() === 0 ? props.images.length - 1 : currentIndex() - 1
+        setCurrentIndex(newIndex)
+        resetZoom()
     }
 
     const handleNext = () => {
-        setCurrentIndex((prev) => (prev === props.images.length - 1 ? 0 : prev + 1))
+        const newIndex = currentIndex() === props.images.length - 1 ? 0 : currentIndex() + 1
+        setCurrentIndex(newIndex)
+        resetZoom()
     }
 
     const handleKeyDown = (e: KeyboardEvent) => {
-        if (e.key === "ArrowLeft") handlePrevious()
-        if (e.key === "ArrowRight") handleNext()
+        if (e.key === "ArrowLeft") {
+            const newIndex = currentIndex() === 0 ? props.images.length - 1 : currentIndex() - 1
+            setCurrentIndex(newIndex)
+            resetZoom()
+        }
+        if (e.key === "ArrowRight") {
+            const newIndex = currentIndex() === props.images.length - 1 ? 0 : currentIndex() + 1
+            setCurrentIndex(newIndex)
+            resetZoom()
+        }
         if (e.key === "Escape") {
             if (lightboxOpen()) {
                 setLightboxOpen(false)
@@ -50,6 +185,7 @@ export function ImageGalleryModal(props: ImageGalleryModalProps) {
             <Dialog.Portal>
                 <Dialog.Overlay class="fixed inset-0 z-50 bg-black/90">
                     <Dialog.Content
+                        ref={dialogContentRef}
                         class="fixed inset-0 flex flex-col outline-none"
                         onKeyDown={handleKeyDown}
                         tabIndex={0}
@@ -71,75 +207,63 @@ export function ImageGalleryModal(props: ImageGalleryModalProps) {
                         <Show
                             when={lightboxOpen()}
                             fallback={
-                                <div class="flex-1 overflow-y-auto p-4">
-                                    <div class="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4">
-                                        <For each={props.images}>
-                                            {(imageUrl, index) => (
-                                                <button
-                                                    type="button"
-                                                    onClick={() => {
-                                                        setCurrentIndex(index())
-                                                        setLightboxOpen(true)
-                                                    }}
-                                                    class="group relative aspect-square overflow-hidden rounded-lg"
-                                                >
-                                                    <LazyImage
-                                                        src={imageUrl}
-                                                        alt={`Image ${index() + 1}`}
-                                                        aspectRatio="1"
-                                                        class="transition-transform duration-200 ease-out group-hover:scale-105"
-                                                    />
-                                                </button>
-                                            )}
-                                        </For>
-                                    </div>
-                                </div>
+                                <GalleryGrid
+                                    images={props.images}
+                                    onSelect={(index) => {
+                                        setCurrentIndex(index)
+                                        resetZoom()
+                                        setLightboxOpen(true)
+                                    }}
+                                />
                             }
                         >
-                            <div class="flex flex-1 items-center justify-center p-4">
-                                <button
-                                    type="button"
+                            <div class="flex flex-1 items-center justify-center overflow-hidden p-4">
+                                <NavigationArrow
+                                    direction="prev"
                                     onClick={handlePrevious}
-                                    class={cx(
-                                        "absolute left-4 rounded-full bg-white/20 p-3 text-white backdrop-blur-sm transition-colors duration-150 ease hover:bg-white/30",
-                                        props.images.length <= 1 && "hidden",
-                                    )}
-                                    aria-label="Previous image"
-                                >
-                                    <ChevronLeft class="size-6" />
-                                </button>
+                                    hidden={props.images.length <= 1}
+                                />
 
-                                <div class="relative max-h-full max-w-full">
+                                <div
+                                    ref={imageContainerRef}
+                                    class="relative flex max-h-full max-w-full cursor-grab items-center justify-center overflow-hidden"
+                                    classList={{ "cursor-grabbing": isPanning() && zoom() > DEFAULT_ZOOM }}
+                                    onClick={handleClickZoom}
+                                    onWheel={handleWheel}
+                                >
                                     <Show when={currentImage()}>
                                         {(imageSrc) => (
                                             <LazyImage
                                                 src={imageSrc()}
                                                 alt={`Image ${currentIndex() + 1}`}
-                                                class="max-h-[80vh] max-w-full object-contain"
+                                                class="max-h-[80vh] max-w-full object-contain transition-transform duration-150 select-none"
+                                                style={{
+                                                    transform: `translate(${pan().x}px, ${pan().y}px) scale(${zoom()}) rotate(${rotation()}deg)`,
+                                                }}
                                                 loading="eager"
+                                                draggable="false"
                                             />
                                         )}
                                     </Show>
                                 </div>
 
-                                <button
-                                    type="button"
+                                <NavigationArrow
+                                    direction="next"
                                     onClick={handleNext}
-                                    class={cx(
-                                        "absolute right-4 rounded-full bg-white/20 p-3 text-white backdrop-blur-sm transition-colors duration-150 ease hover:bg-white/30",
-                                        props.images.length <= 1 && "hidden",
-                                    )}
-                                    aria-label="Next image"
-                                >
-                                    <ChevronRight class="size-6" />
-                                </button>
+                                    hidden={props.images.length <= 1}
+                                />
                             </div>
 
-                            <div class="p-4 text-center">
-                                <Button variant="secondary" size="md" onClick={() => setLightboxOpen(false)}>
-                                    Back to Grid
-                                </Button>
-                            </div>
+                            <ZoomControls
+                                zoom={zoom()}
+                                onZoomIn={handleZoomIn}
+                                onZoomOut={handleZoomOut}
+                                onRotate={handleRotate}
+                                onToggleFullscreen={toggleFullscreen}
+                                onReset={resetZoom}
+                                isFullscreen={isFullscreen()}
+                                onBackToGrid={() => setLightboxOpen(false)}
+                            />
                         </Show>
                     </Dialog.Content>
                 </Dialog.Overlay>

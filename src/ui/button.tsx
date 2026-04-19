@@ -7,7 +7,7 @@ const button = cva({
     variants: {
         variant: {
             primary:
-                "bg-flame-pea-700 text-white hover:bg-flame-pea-600 focus-visible:outline-flame-pea-700 dark:bg-flame-pea-600 dark:text-neutral-900 dark:hover:bg-flame-pea-500 dark:focus-visible:outline-flame-pea-50",
+                "bg-flame-pea-700 text-white hover:bg-flame-pea-600 focus-visible:outline-flame-pea-700 dark:bg-flame-pea-800 dark:text-white dark:hover:bg-flame-pea-700 dark:focus-visible:outline-flame-pea-50",
             secondary:
                 "bg-white text-neutral-900 inset-ring-neutral-300 hover:bg-neutral-50 dark:bg-white/10 dark:text-white dark:shadow-none dark:inset-ring-white/5 dark:hover:bg-white/20",
         },

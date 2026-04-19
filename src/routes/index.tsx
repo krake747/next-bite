@@ -9,7 +9,7 @@ import { FriendsFilter } from "../features/friends-filter"
 import { RestaurantList } from "../features/restaurants/restaurant-list"
 import { AddRestaurantDialog } from "../features/restaurants/add-restaurant-dialog"
 import { Button } from "../ui/button"
-import { Loading } from "../ui/loading"
+import { RestaurantCardSkeleton, FriendsFilterSkeleton } from "../ui/skeleton"
 import LoaderPinwheel from "lucide-solid/icons/loader-pinwheel"
 import Plus from "lucide-solid/icons/plus"
 
@@ -61,7 +61,22 @@ function Home() {
                     <HeaderSubtitle>Places we're dreaming of trying together</HeaderSubtitle>
                     <HeaderBadge count={count()} />
                 </Header>
-                <Show when={restaurants()} fallback={<Loading message="restaurants" />}>
+                <Show
+                    when={restaurants()}
+                    fallback={
+                        <>
+                            <div class="pt-4">
+                                <FriendsFilterSkeleton />
+                            </div>
+                            <div class="grid gap-8 md:grid-cols-2 md:gap-10">
+                                <RestaurantCardSkeleton />
+                                <RestaurantCardSkeleton />
+                                <RestaurantCardSkeleton />
+                                <RestaurantCardSkeleton />
+                            </div>
+                        </>
+                    }
+                >
                     <div class="pt-4">
                         <FriendsFilter
                             filter={filterState.filter()}

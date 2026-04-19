@@ -86,7 +86,7 @@ export async function processImage(
                         height,
                     })
                 },
-                "image/jpeg",
+                "image/webp",
                 quality,
             )
         }

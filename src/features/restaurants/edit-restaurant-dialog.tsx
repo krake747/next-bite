@@ -1,7 +1,7 @@
 import { createEffect, For, Show, createSignal } from "solid-js"
 import { Dialog } from "@kobalte/core/dialog"
 import { createForm, Field, Form, reset, setInput } from "@formisch/solid"
-import { useUpdateRestaurant, useFriends, useAuth, type Restaurant } from "../../core/hooks"
+import { useUpdateRestaurant, useFriends, useAuth, type Restaurant, type ImageRecord } from "../../core/hooks"
 import { Button } from "../../ui/button"
 import { Loading } from "../../ui/loading"
 import { FieldWrapper, Input, Textarea, Select } from "../../ui/field"
@@ -19,7 +19,7 @@ export function EditRestaurantDialog(props: {
     const updateRestaurant = useUpdateRestaurant()
     const friends = useFriends()
     const auth = useAuth()
-    const [images, setImages] = createSignal<string[]>(props.restaurant.images ?? [])
+    const [images, setImages] = createSignal<ImageRecord[]>(props.restaurant.images ?? [])
 
     const form = createForm({
         schema: RestaurantSchema,

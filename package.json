@@ -21,10 +21,11 @@
         "@fontsource-variable/manrope": "^5.2.8",
         "@formisch/solid": "^0.9.5",
         "@kobalte/core": "^0.13.11",
+        "@solid-primitives/pointer": "^0.3.5",
         "@solid-primitives/upload": "^0.1.4",
         "@tailwindcss/vite": "^4.2.2",
         "@tanstack/solid-router": "^1.168.20",
-        "better-auth": "~1.6.5",
+        "better-auth": "~1.5.6",
         "convex": "^1.35.1",
         "cva": "1.0.0-beta.4",
         "lucide-solid": "^1.8.0",
@@ -74,5 +75,5 @@
             "last 1 iOS version"
         ]
     },
-    "packageManager": "pnpm@11.0.0-rc.2"
+    "packageManager": "pnpm@10.33.0"
 }

@@ -29,8 +29,8 @@ export function RestaurantCard(props: { restaurant: Restaurant } & ComponentProp
     const hasLocation = () => local.restaurant.lat != null && local.restaurant.lng != null
     const hasImages = () => (local.restaurant.images?.length ?? 0) > 0
     const imageCount = () => local.restaurant.images?.length ?? 0
-    // Memoize image URL to prevent flicker when rating updates
-    const imageSrc = createMemo(() => (hasImages() ? local.restaurant.images?.[0] : undefined))
+    const imageSrc = createMemo(() => (hasImages() ? local.restaurant.images?.[0]?.url : undefined))
+    const imageUrls = createMemo(() => local.restaurant.images?.map((img) => img.url) ?? [])
 
     const handleRate = async (rating: number) => {
         await updateRestaurant({ id: local.restaurant._id, rating })
@@ -260,11 +260,7 @@ export function RestaurantCard(props: { restaurant: Restaurant } & ComponentProp
             </Card>
 
             <EditRestaurantDialog show={showEdit()} onOpenChange={setShowEdit} restaurant={local.restaurant} />
-            <ImageGalleryModal
-                images={local.restaurant.images ?? []}
-                show={showGallery()}
-                onOpenChange={setShowGallery}
-            />
+            <ImageGalleryModal images={imageUrls()} show={showGallery()} onOpenChange={setShowGallery} />
         </>
     )
 }
