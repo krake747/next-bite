@@ -22,6 +22,7 @@
         "@formisch/solid": "^0.9.5",
         "@kobalte/core": "^0.13.11",
         "@solid-primitives/pointer": "^0.3.5",
+        "@solid-primitives/share": "^2.2.4",
         "@solid-primitives/upload": "^0.1.4",
         "@tailwindcss/vite": "^4.2.2",
         "@tanstack/solid-router": "^1.168.20",

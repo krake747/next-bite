@@ -26,6 +26,9 @@ importers:
       '@solid-primitives/pointer':
         specifier: ^0.3.5
         version: 0.3.5(solid-js@1.9.12)
+      '@solid-primitives/share':
+        specifier: ^2.2.4
+        version: 2.2.4(solid-js@1.9.12)
       '@solid-primitives/upload':
         specifier: ^0.1.4
         version: 0.1.4(solid-js@1.9.12)
@@ -1090,6 +1093,11 @@ packages:
 
   '@solid-primitives/scheduled@1.5.3':
     resolution: {integrity: sha512-oNwLE6E6lxJAWrc8QXuwM0k2oU1BnANnkChwMw82aK1j3+mWGJkG1IFe5gCwbV+afYmjI76t9JJV3md/8tLw+g==}
+    peerDependencies:
+      solid-js: ^1.6.12
+
+  '@solid-primitives/share@2.2.4':
+    resolution: {integrity: sha512-+Qw5j5+ork9telNewAXNT9QDodq3E5BFd64TPd3EuEyqjzeFXmNO15XDA+BJXbdO7WHl1uuR7KX3TmsYAkhmhg==}
     peerDependencies:
       solid-js: ^1.6.12
 
@@ -2818,6 +2826,10 @@ snapshots:
       solid-js: 1.9.12
 
   '@solid-primitives/scheduled@1.5.3(solid-js@1.9.12)':
+    dependencies:
+      solid-js: 1.9.12
+
+  '@solid-primitives/share@2.2.4(solid-js@1.9.12)':
     dependencies:
       solid-js: 1.9.12
 

@@ -1,7 +1,10 @@
-import { createSignal, createEffect, For } from "solid-js"
+import { createSignal, createEffect, For, Show } from "solid-js"
 import Sparkles from "lucide-solid/icons/sparkles"
 import UtensilsCrossed from "lucide-solid/icons/utensils-crossed"
 import Star from "lucide-solid/icons/star"
+import Share from "lucide-solid/icons/share"
+import Check from "lucide-solid/icons/check"
+import { makeWebShare } from "@solid-primitives/share"
 
 type Particle = {
     id: number
@@ -92,6 +95,45 @@ export function Instructions() {
     )
 }
 
+function ShareButton(props: { restaurantName: string }) {
+    const siteUrl = import.meta.env.VITE_CONVEX_SITE_URL
+    const [copied, setCopied] = createSignal(false)
+
+    const share = async () => {
+        const message = `I won ${props.restaurantName} on Next Bite! 🍽️\n\nSpin the wheel yourself: ${siteUrl}/wheel`
+
+        try {
+            await makeWebShare()({
+                text: message,
+            })
+        } catch {
+            try {
+                await navigator.clipboard.writeText(message)
+                setCopied(true)
+                setTimeout(() => setCopied(false), 2000)
+            } catch (e) {
+                console.error("Share failed:", e)
+            }
+        }
+    }
+
+    return (
+        <Show when={siteUrl}>
+            <button
+                onClick={share}
+                class="animate-fade-in-up mt-4 inline-flex items-center gap-2 rounded-full bg-flame-pea-500 px-5 py-2.5 text-sm font-medium text-white transition-all hover:bg-flame-pea-600 active:scale-95"
+            >
+                <Show when={copied()} fallback={<Share class="size-4" />}>
+                    <Check class="size-4" />
+                </Show>
+                <Show when={copied()} fallback={"Share & Invite"}>
+                    Copied!
+                </Show>
+            </button>
+        </Show>
+    )
+}
+
 export function WinnerMessage(props: { restaurantName: string }) {
     return (
         <div class="animate-winner-reveal relative text-center">
@@ -129,6 +171,8 @@ export function WinnerMessage(props: { restaurantName: string }) {
             <p class="animate-fade-in-up mt-3 text-base text-neutral-600 dark:text-neutral-400">
                 Your next culinary adventure awaits
             </p>
+
+            <ShareButton restaurantName={props.restaurantName} />
         </div>
     )
 }
