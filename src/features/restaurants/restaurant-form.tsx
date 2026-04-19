@@ -25,7 +25,7 @@ export function RestaurantForm(props: RestaurantFormProps) {
     const friends = useFriends()
     const cleanupStorage = useCleanupStorage()
 
-    const initialImages = props.mode === "edit" ? props.restaurant.images : []
+    const initialImages = props.mode === "edit" ? (props.restaurant.images ?? []) : []
     const [images, setImages] = createSignal<ImageRecord[]>(initialImages)
     const [pendingRemovedStorageIds, setPendingRemovedStorageIds] = createSignal<string[]>([])
 

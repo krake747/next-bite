@@ -101,9 +101,9 @@ export function ImageUpload(props: ImageUploadProps) {
         if (props.restaurantId) {
             try {
                 await deleteImage({ restaurantId: props.restaurantId, imageUrl: image.url, storageId: image.storageId })
-            } catch {
+            } catch (err) {
                 props.onImagesChange(originalImages)
-                console.error("Failed to delete image:", error)
+                console.error("Failed to delete image:", err)
             }
         } else {
             props.onRemove?.(image.storageId)
