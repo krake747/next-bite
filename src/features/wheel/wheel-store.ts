@@ -22,6 +22,7 @@ type WheelState = {
     selectionMode: SelectionMode
     targetCount: number
     selectedIds: string[]
+    filterClosedToday: boolean
 }
 
 function useElapsed(active: Accessor<boolean>, start: Accessor<number | null>) {
@@ -54,6 +55,7 @@ export function useWheelStore(restaurants: Accessor<Restaurant[]>) {
         selectionMode: "random",
         targetCount: 4,
         selectedIds: [],
+        filterClosedToday: false,
     })
 
     const totalCount = createMemo(() => restaurants().length)
@@ -75,17 +77,6 @@ export function useWheelStore(restaurants: Accessor<Restaurant[]>) {
 
     const hasEnoughRestaurants = createMemo(() => totalCount() >= 1)
 
-    const canSpin = createMemo(() => {
-        if (!hasEnoughRestaurants()) return false
-        if (state.selectionMode === "manual") {
-            // In manual mode, allow spin if at least 1 restaurant is selected (up to target)
-            const selectedCount = state.selectedIds.length
-            return selectedCount >= 1 && selectedCount <= validTargetCount()
-        }
-        // Random mode: always can spin if there are restaurants
-        return validTargetCount() >= 1
-    })
-
     const lockedSegments = createMemo((): Restaurant[] => {
         const all = restaurants()
 
@@ -105,7 +96,30 @@ export function useWheelStore(restaurants: Accessor<Restaurant[]>) {
         return shuffled.slice(0, count)
     })
 
-    const segmentCount = createMemo(() => lockedSegments().length)
+    const isOpenToday = (restaurant: Restaurant) => {
+        if (!restaurant.openingHours?.periods) return true
+        const today = new Date().getDay()
+        return restaurant.openingHours.periods.some((p) => p.day === today)
+    }
+
+    const filteredSegments = createMemo((): Restaurant[] => {
+        const segments = lockedSegments()
+        if (!state.filterClosedToday) return segments
+        return segments.filter(isOpenToday)
+    })
+
+    const canSpin = createMemo(() => {
+        if (!hasEnoughRestaurants()) return false
+        if (state.selectionMode === "manual") {
+            // In manual mode, allow spin if at least 1 restaurant is selected (up to target)
+            const selectedCount = state.selectedIds.length
+            return selectedCount >= 1 && selectedCount <= validTargetCount()
+        }
+        // Random mode: always can spin if there are restaurants
+        return validTargetCount() >= 1
+    })
+
+    const segmentCount = createMemo(() => filteredSegments().length)
     const hasSegments = createMemo(() => segmentCount() > 0)
 
     const isSpinning = createMemo(() => state.spinStart !== null)
@@ -119,7 +133,7 @@ export function useWheelStore(restaurants: Accessor<Restaurant[]>) {
 
         const normalize = (deg: number) => ((deg % 360) + 360) % 360
         const idx = Math.floor(normalize(270 - state.rotation) / segmentAngle())
-        return lockedSegments()[idx] ?? null
+        return filteredSegments()[idx] ?? null
     })
 
     createEffect(() => {
@@ -200,14 +214,24 @@ export function useWheelStore(restaurants: Accessor<Restaurant[]>) {
         )
     }
 
+    const toggleFilterClosedToday = () => {
+        setState(
+            produce((s) => {
+                s.filterClosedToday = !s.filterClosedToday
+            }),
+        )
+    }
+
     return {
         rotation: createMemo(() => state.rotation),
         selected: createMemo(() => state.selected),
-        segments: lockedSegments,
+        segments: filteredSegments,
+        allSegments: lockedSegments,
         isSpinning,
         selectionMode: createMemo(() => state.selectionMode),
         targetCount: validTargetCount,
         selectedIds: createMemo(() => state.selectedIds),
+        filterClosedToday: createMemo(() => state.filterClosedToday),
         totalCount,
         availableCountOptions,
         hasEnoughRestaurants,
@@ -217,6 +241,7 @@ export function useWheelStore(restaurants: Accessor<Restaurant[]>) {
         setTargetCount,
         toggleRestaurantSelection,
         clearSelected,
+        toggleFilterClosedToday,
     }
 }
 

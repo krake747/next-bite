@@ -106,6 +106,20 @@ export function WheelConfigModal(props: {
                                 </div>
 
                                 <div class="space-y-3">
+                                    <label class="flex cursor-pointer items-center gap-3">
+                                        <input
+                                            type="checkbox"
+                                            checked={wheel.filterClosedToday()}
+                                            onChange={() => wheel.toggleFilterClosedToday()}
+                                            class="size-4 rounded border-neutral-300 text-flame-pea-700 focus:ring-flame-pea-700 dark:border-neutral-600"
+                                        />
+                                        <span class="text-sm text-neutral-700 dark:text-neutral-300">
+                                            Exclude closed restaurants today
+                                        </span>
+                                    </label>
+                                </div>
+
+                                <div class="space-y-3">
                                     <div class="flex items-center justify-between">
                                         <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300">
                                             Select Restaurants

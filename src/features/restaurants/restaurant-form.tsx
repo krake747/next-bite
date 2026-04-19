@@ -1,7 +1,7 @@
 import { For, Show, createSignal, onCleanup } from "solid-js"
 import { createForm, Field, Form, reset, setInput } from "@formisch/solid"
 import {
-    useAddRestaurant,
+    useAddRestaurantWithHours,
     useUpdateRestaurant,
     useFriends,
     useCleanupStorage,
@@ -20,7 +20,7 @@ export type RestaurantFormProps =
     | { mode: "edit"; restaurant: Restaurant; onSuccess: () => void; onCancel: () => void }
 
 export function RestaurantForm(props: RestaurantFormProps) {
-    const addRestaurant = useAddRestaurant()
+    const addRestaurantWithHours = useAddRestaurantWithHours()
     const updateRestaurant = useUpdateRestaurant()
     const friends = useFriends()
     const cleanupStorage = useCleanupStorage()
@@ -95,7 +95,7 @@ export function RestaurantForm(props: RestaurantFormProps) {
     const handleSubmit = async (output: RestaurantOutput) => {
         try {
             if (props.mode === "add") {
-                await addRestaurant({ ...output, images: images() })
+                await addRestaurantWithHours({ ...output, images: images() })
                 for (const storageId of pendingRemovedStorageIds()) {
                     try {
                         await cleanupStorage({ storageId })
