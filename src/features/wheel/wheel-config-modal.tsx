@@ -157,20 +157,20 @@ export function WheelConfigModal(props: {
                                     <div class="max-h-52 overflow-y-auto rounded-lg border border-neutral-200 bg-white dark:border-neutral-700 dark:bg-neutral-700/50">
                                         <For each={filteredRestaurants()}>
                                             {(restaurant) => {
-                                                const isSelected = wheel.selectedIds().includes(restaurant._id)
+                                                const isSelected = () => wheel.selectedIds().includes(restaurant._id)
 
                                                 return (
                                                     <label
                                                         class={cx(
                                                             "flex cursor-pointer items-center gap-3 border-b border-neutral-100 px-4 py-3 transition-colors last:border-b-0 dark:border-neutral-700",
-                                                            isSelected
+                                                            isSelected()
                                                                 ? "bg-flame-pea-50 dark:bg-flame-pea-900/20"
                                                                 : "hover:bg-neutral-50 dark:hover:bg-neutral-700/50",
                                                         )}
                                                     >
                                                         <input
                                                             type="checkbox"
-                                                            checked={isSelected}
+                                                            checked={isSelected()}
                                                             onChange={() =>
                                                                 wheel.toggleRestaurantSelection(restaurant._id)
                                                             }
@@ -179,7 +179,7 @@ export function WheelConfigModal(props: {
                                                         <span
                                                             class={cx(
                                                                 "text-sm",
-                                                                isSelected
+                                                                isSelected()
                                                                     ? "font-medium text-flame-pea-700 dark:text-flame-pea-400"
                                                                     : "text-neutral-700 dark:text-neutral-300",
                                                             )}
@@ -209,7 +209,7 @@ export function WheelConfigModal(props: {
                                         <p class="text-xs text-amber-600 dark:text-amber-400">
                                             {wheel.selectedIds().length === 0
                                                 ? "Please select at least 1 restaurant to spin"
-                                                : `Select ${Number(wheel.targetCount()) - wheel.selectedIds().length} more to continue`}
+                                                : `You can add ${Number(wheel.targetCount()) - wheel.selectedIds().length} more optional selections`}
                                         </p>
                                     </Show>
                                 </div>

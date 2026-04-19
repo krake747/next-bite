@@ -78,9 +78,9 @@ export function WheelSegment(props: { restaurant: Restaurant; idx: number }) {
         }
     })
 
-    const colorIndex = getRestaurantColorId(props.restaurant._id, props.idx, wheel.segments().length)
-    const bgColor = WHEEL_COLORS[colorIndex] ?? WHEEL_COLORS[0]
-    const contrastColor = getContrastColor(bgColor)
+    const colorIndex = createMemo(() => getRestaurantColorId(props.restaurant._id, props.idx, wheel.segments().length))
+    const bgColor = createMemo(() => WHEEL_COLORS[colorIndex()] ?? WHEEL_COLORS[0])
+    const contrastColor = createMemo(() => getContrastColor(bgColor()))
     const displayName =
         props.restaurant.name.length > MAX_LABEL_LENGTH
             ? props.restaurant.name.slice(0, MAX_LABEL_LENGTH - 3) + "..."
@@ -88,11 +88,11 @@ export function WheelSegment(props: { restaurant: Restaurant; idx: number }) {
 
     return (
         <g>
-            <path d={segment().path} fill={bgColor} />
+            <path d={segment().path} fill={bgColor()} />
             <text
                 x={segment().x}
                 y={segment().y}
-                fill={contrastColor}
+                fill={contrastColor()}
                 text-anchor="middle"
                 dominant-baseline="middle"
                 transform={`rotate(${segment().rotation}, ${segment().x}, ${segment().y})`}

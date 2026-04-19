@@ -177,12 +177,19 @@ export function WinnerModal(props: {
                                         const lng = props.restaurant.lng
                                         const inviteUrl = `${window.location.origin}/wheel`
                                         const mapsUrl =
-                                            lat && lng ? `https://maps.google.com/?q=${lat},${lng}` : undefined
+                                            lat != null && lng != null
+                                                ? `https://maps.google.com/?q=${lat},${lng}`
+                                                : undefined
                                         const mapsLine = mapsUrl ? `\n\n📍 Google Maps: ${mapsUrl}` : ""
                                         const message = `Just tried the dinner wheel... fate is UNHINGED! 😂 We're going to ${props.restaurant.name}!${mapsLine}\n\nYou gotta try this -> ${inviteUrl}`
-                                        navigator.clipboard.writeText(message).then(() => {
-                                            alert("Copied to clipboard!")
-                                        })
+                                        navigator.clipboard
+                                            .writeText(message)
+                                            .then(() => {
+                                                alert("Copied to clipboard!")
+                                            })
+                                            .catch(() => {
+                                                alert("Failed to copy. Please try again.")
+                                            })
                                     }}
                                     class="flex-1"
                                 >

@@ -12,7 +12,6 @@ export default defineConfig({
             "@features": path.resolve(__dirname, "./src/features"),
             "@routes": path.resolve(__dirname, "./src/routes"),
         },
-        // tsconfigPaths: true,
     },
     build: {
         license: { fileName: "license.md" },
