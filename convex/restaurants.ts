@@ -1,4 +1,4 @@
-import { query, mutation, action, internalAction } from "./_generated/server"
+import { query, mutation, internalAction } from "./_generated/server"
 import { v } from "convex/values"
 import type { Id } from "./_generated/dataModel"
 import { MAX_IMAGES } from "../src/core/constants"
@@ -35,7 +35,7 @@ async function fetchOpeningHoursFromGoogle(placeId: string): Promise<OpeningHour
             return { openNow: true, periods: [], weekdayText: [] }
         }
 
-        const data = await response.json()
+        const data = (await response.json()) as { currentOpeningHours?: OpeningHoursData }
         console.log("fetchOpeningHoursFromGoogle: Result:", JSON.stringify(data.currentOpeningHours))
         return (
             data.currentOpeningHours || {
@@ -78,7 +78,7 @@ async function lookupPlaceIdFromGoogle(name: string, location: string): Promise<
             return null
         }
 
-        const data = await response.json()
+        const data = (await response.json()) as { places?: Array<{ id?: string }> }
         console.log("lookupPlaceIdFromGoogle: Result:", JSON.stringify(data))
         return data.places?.[0]?.id ?? null
     } catch (err) {
@@ -123,17 +123,32 @@ export const add = mutation({
             throw new Error(`Maximum ${MAX_IMAGES} images allowed`)
         }
 
-        const restaurantData = {
-            ...rest,
+        const restaurantData: {
+            name: string
+            cuisine: string
+            location: string
+            addedBy: string
+            lat?: number
+            lng?: number
+            notes?: string
+            link?: string
+            rating?: number
+            images?: typeof images
+            placeId?: string
+        } = {
+            name: rest.name,
+            cuisine: rest.cuisine,
+            location: rest.location,
+            addedBy: rest.addedBy,
             ...(images !== undefined ? { images } : {}),
-            placeId,
+            ...(placeId !== undefined ? { placeId } : {}),
         }
 
         return ctx.db.insert("restaurants", restaurantData)
     },
 })
 
-export const addWithOpeningHours = action({
+export const addWithOpeningHours = mutation({
     args: {
         name: v.string(),
         cuisine: v.string(),
@@ -154,7 +169,7 @@ export const addWithOpeningHours = action({
             throw new Error(`Maximum ${MAX_IMAGES} images allowed`)
         }
 
-        let openingHours = null
+        let openingHours: OpeningHoursData | undefined
         if (placeId) {
             openingHours = await fetchOpeningHoursFromGoogle(placeId)
         }
@@ -163,7 +178,7 @@ export const addWithOpeningHours = action({
             ...rest,
             ...(images !== undefined ? { images } : {}),
             placeId,
-            openingHours,
+            ...(openingHours !== undefined ? { openingHours } : {}),
         }
 
         return ctx.db.insert("restaurants", restaurantData)
@@ -264,7 +279,7 @@ export const cleanupStorage = mutation({
     },
 })
 
-export const refreshOpeningHours = action({
+export const refreshOpeningHours = mutation({
     args: { restaurantId: v.id("restaurants") },
     handler: async (ctx, { restaurantId }) => {
         const restaurant = await ctx.db.get(restaurantId)
@@ -281,7 +296,7 @@ export const refreshOpeningHours = action({
     },
 })
 
-export const lookupPlaceIdAndHours = action({
+export const lookupPlaceIdAndHours = mutation({
     args: { restaurantId: v.id("restaurants") },
     handler: async (ctx, { restaurantId }) => {
         console.log("lookupPlaceIdAndHours: Starting for restaurantId:", restaurantId)
@@ -346,7 +361,7 @@ export const getPlaceOpeningHours = internalAction({
             throw new Error(`Google Places API error: ${response.status} ${errorText}`)
         }
 
-        const data = await response.json()
+        const data = (await response.json()) as { currentOpeningHours?: OpeningHoursData }
         return (
             data.currentOpeningHours || {
                 openNow: true,

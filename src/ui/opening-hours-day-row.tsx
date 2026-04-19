@@ -3,7 +3,7 @@ import type { OpeningHours } from "@core/hooks"
 
 const DAYS = ["S", "M", "T", "W", "T", "F", "S"]
 
-export function OpeningHoursDayRow(props: { openingHours?: OpeningHours; size?: "sm" | "lg" }) {
+export function OpeningHoursDayRow(props: { openingHours: OpeningHours | undefined; size?: "sm" | "lg" }) {
     const isClosed = (dayIndex: number) => {
         if (!props.openingHours?.periods) return false
         return !props.openingHours.periods.some((p) => p.day === dayIndex)
