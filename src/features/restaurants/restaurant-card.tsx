@@ -32,7 +32,6 @@ export function RestaurantCard(props: { restaurant: Restaurant } & ComponentProp
     const [showEdit, setShowEdit] = createSignal(false)
     const [showGallery, setShowGallery] = createSignal(false)
     const [showMap, setShowMap] = createSignal(false)
-    const [notesExpanded, setNotesExpanded] = createSignal(false)
     const [showHours, setShowHours] = createSignal(false)
     const [isRefreshing, setIsRefreshing] = createSignal(false)
     const updateRestaurant = useUpdateRestaurant()
@@ -106,11 +105,7 @@ export function RestaurantCard(props: { restaurant: Restaurant } & ComponentProp
                     hasLocation={hasLocation()}
                     onShowHours={() => setShowHours(true)}
                 />
-                <RestaurantCardNotes
-                    notes={local.restaurant.notes}
-                    notesExpanded={notesExpanded()}
-                    setNotesExpanded={setNotesExpanded}
-                />
+                <RestaurantCardNotes notes={local.restaurant.notes} />
                 <Show when={hasLocation()}>
                     <RestaurantCardMap
                         showMap={showMap()}
@@ -235,12 +230,6 @@ function RestaurantCardImage(props: {
                     </button>
                 </div>
             </Show>
-
-            <div class="absolute bottom-3 left-3">
-                <span class="text-xs text-white/80 drop-shadow-md">
-                    by <span class="font-medium text-white">{props.restaurant.addedBy}</span>
-                </span>
-            </div>
         </div>
     )
 }
@@ -248,13 +237,13 @@ function RestaurantCardImage(props: {
 function RestaurantCardContent(props: { restaurant: Restaurant; hasLocation: boolean; onShowHours: () => void }) {
     return (
         <div class="flex flex-col gap-4 p-5 md:gap-3 md:p-4">
-            <div class="flex flex-col gap-2.5 md:gap-2">
-                <div class="flex items-start justify-between gap-3">
+            <div class="flex flex-col gap-1">
+                <div class="flex flex-col gap-3 md:flex-row md:items-start md:justify-between md:gap-3">
                     <h3
-                        class="flex-1 leading-[1.15] font-semibold tracking-tight text-neutral-900 dark:text-neutral-100"
+                        class="flex-1 leading-[1.1] font-semibold tracking-tight text-neutral-900 dark:text-neutral-100"
                         style={{
                             "font-family": "var(--font-display)",
-                            "font-size": "20px",
+                            "font-size": "22px",
                             "font-weight": "600",
                         }}
                     >
@@ -265,77 +254,68 @@ function RestaurantCardContent(props: { restaurant: Restaurant; hasLocation: boo
                             href={props.restaurant.link}
                             target="_blank"
                             rel="noopener noreferrer"
-                            class="flex shrink-0 items-center gap-1.5 rounded-full border border-neutral-200/80 bg-white/80 px-3 py-1.5 text-xs font-medium text-neutral-600 backdrop-blur-sm transition-all duration-200 hover:border-flame-pea-300 hover:bg-flame-pea-50/80 hover:text-flame-pea-700 dark:border-neutral-700/80 dark:bg-neutral-800/80 dark:text-neutral-400 dark:hover:border-flame-pea-700 dark:hover:bg-flame-pea-950/30 dark:hover:text-flame-pea-400"
+                            class="flex shrink-0 items-center gap-1.5 rounded-full bg-flame-pea-50 px-3 py-1.5 text-xs font-medium text-flame-pea-700 transition-all duration-200 hover:bg-flame-pea-100 dark:bg-flame-pea-950/30 dark:text-flame-pea-400 dark:hover:bg-flame-pea-900/40"
                             title="View menu"
                         >
+                            <Utensils class="size-3.5" />
                             <span>Menu</span>
-                            <ExternalLink class="size-3" />
+                            <ExternalLink class="size-3 opacity-70" />
                         </a>
                     </Show>
                 </div>
-
-                <Show when={props.restaurant.location}>
-                    <div class="flex items-center gap-2 text-sm text-neutral-500 dark:text-neutral-400">
-                        <div class="flex size-6 items-center justify-center rounded-full bg-neutral-100 dark:bg-neutral-800">
-                            <MapPin class="size-3.5 text-neutral-400 dark:text-neutral-500" />
-                        </div>
-                        <Show
-                            when={props.hasLocation}
-                            fallback={<span class="truncate">{props.restaurant.location}</span>}
-                        >
-                            <a
-                                href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(props.restaurant.location)}`}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                class="truncate transition-colors duration-200 hover:text-flame-pea-600 dark:hover:text-flame-pea-400"
-                            >
-                                {props.restaurant.location}
-                            </a>
-                        </Show>
-                    </div>
-                </Show>
-                <Show when={props.restaurant.openingHours}>
-                    <OpeningHours openingHours={props.restaurant.openingHours} onClick={props.onShowHours} />
-                </Show>
+                <span class="text-xs text-neutral-400 dark:text-neutral-500">by {props.restaurant.addedBy}</span>
             </div>
+
+            <Show when={props.restaurant.location || props.restaurant.openingHours}>
+                <div class="flex flex-col gap-2.5 rounded-xl bg-neutral-50/60 p-3 dark:bg-neutral-800/40">
+                    <Show when={props.restaurant.location}>
+                        <div class="flex items-center gap-2.5 text-sm text-neutral-600 dark:text-neutral-300">
+                            <div class="flex size-6 items-center justify-center rounded-full bg-neutral-100 dark:bg-neutral-700">
+                                <MapPin class="size-3.5 text-neutral-400 dark:text-neutral-500" />
+                            </div>
+                            <Show
+                                when={props.hasLocation}
+                                fallback={<span class="truncate">{props.restaurant.location}</span>}
+                            >
+                                <a
+                                    href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(props.restaurant.location)}`}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    class="truncate transition-colors duration-200 hover:text-flame-pea-600 dark:hover:text-flame-pea-400"
+                                >
+                                    {props.restaurant.location}
+                                </a>
+                            </Show>
+                        </div>
+                    </Show>
+                    <Show when={props.restaurant.openingHours}>
+                        <OpeningHours openingHours={props.restaurant.openingHours} onClick={props.onShowHours} />
+                    </Show>
+                </div>
+            </Show>
         </div>
     )
 }
 
-function RestaurantCardNotes(props: {
-    notes: string | null | undefined
-    notesExpanded: boolean
-    setNotesExpanded: (expanded: boolean) => void
-}) {
+function RestaurantCardNotes(props: { notes: string | null | undefined }) {
     return (
         <Show when={props.notes}>
-            <div class="px-5 md:px-4">
+            <div class="px-5 pb-2 md:px-4">
                 <div class="relative">
                     <div
-                        class="absolute -top-1 left-2 font-serif text-4xl leading-none text-flame-pea-300/40 select-none dark:text-flame-pea-700/30"
-                        style={{ "font-family": "Georgia, serif" }}
+                        class="absolute -top-1 left-2 font-serif text-5xl leading-none text-flame-pea-400/30 select-none dark:text-flame-pea-600/20"
+                        style={{ "font-family": "var(--font-display)" }}
                         aria-hidden="true"
                     >
                         "
                     </div>
-                    <div class="border-l-2 border-flame-pea-300/60 bg-linear-to-r from-flame-pea-50/50 to-transparent py-2 pr-3 pl-6 dark:border-flame-pea-700/40 dark:from-flame-pea-950/20">
+                    <div class="border-l-2 border-flame-pea-400/50 bg-flame-pea-50/30 py-3 pr-3 pl-5 dark:border-flame-pea-600/40 dark:bg-flame-pea-950/15">
                         <p
-                            class={`text-sm leading-relaxed text-neutral-700 dark:text-neutral-300 ${
-                                props.notesExpanded ? "" : "line-clamp-2"
-                            }`}
+                            class="text-sm leading-relaxed text-neutral-700 italic dark:text-neutral-300"
                             style={{ "font-family": "var(--font-body)" }}
                         >
                             {props.notes}
                         </p>
-                        <Show when={(props.notes?.length ?? 0) > 100}>
-                            <button
-                                type="button"
-                                onClick={() => props.setNotesExpanded(!props.notesExpanded)}
-                                class="mt-1.5 text-xs font-medium text-flame-pea-700 transition-colors duration-200 hover:text-flame-pea-600 dark:text-flame-pea-400 dark:hover:text-flame-pea-300"
-                            >
-                                {props.notesExpanded ? "Show less" : "Read more"}
-                            </button>
-                        </Show>
                     </div>
                 </div>
             </div>
