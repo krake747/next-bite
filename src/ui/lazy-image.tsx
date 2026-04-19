@@ -1,6 +1,6 @@
 import { createSignal, Show, type ComponentProps } from "solid-js"
 import { splitProps } from "solid-js"
-import { cx } from "./variants"
+import { cx } from "@ui/variants"
 
 const MAX_LOADED_IMAGES = 100
 

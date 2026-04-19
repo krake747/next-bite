@@ -1,5 +1,5 @@
 import type { JSX } from "solid-js"
-import { cx } from "../../ui/variants"
+import { cx } from "@ui/variants"
 
 export function PageContainer(props: { children: JSX.Element; class?: string }) {
     return (

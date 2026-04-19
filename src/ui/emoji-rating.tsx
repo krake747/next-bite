@@ -1,5 +1,5 @@
 import { createSignal, For } from "solid-js"
-import { cx } from "./variants"
+import { cx } from "@ui/variants"
 
 const RATING_EMOJIS = ["🚑", "💩", "🤡", "😐", "😏", "😍", "🍆"] as const
 

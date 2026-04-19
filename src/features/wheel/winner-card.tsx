@@ -1,8 +1,8 @@
 import { Show, createMemo } from "solid-js"
 import MapPin from "lucide-solid/icons/map-pin"
 import Utensils from "lucide-solid/icons/utensils"
-import { LazyImage } from "../../ui/lazy-image"
-import type { Restaurant } from "../../core/hooks"
+import { LazyImage } from "@ui/lazy-image"
+import type { Restaurant } from "@core/hooks"
 
 export function WinnerCard(props: { restaurant: Restaurant }) {
     const hasLocation = () => props.restaurant.lat != null && props.restaurant.lng != null

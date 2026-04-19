@@ -1,6 +1,6 @@
 import { Show, type ComponentProps } from "solid-js"
 import { useWheel } from "./wheel-context"
-import { cx } from "../../ui/variants"
+import { cx } from "@ui/variants"
 import Play from "lucide-solid/icons/play"
 
 export function SpinWheelButton(props: ComponentProps<"button">) {

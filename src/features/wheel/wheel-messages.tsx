@@ -91,8 +91,8 @@ export function Instructions() {
 }
 
 import { WinnerCard } from "./winner-card"
-import { Button } from "../../ui/button"
-import type { Restaurant } from "../../core/hooks"
+import { Button } from "@ui/button"
+import type { Restaurant } from "@core/hooks"
 
 export function WinnerModal(props: {
     show: boolean

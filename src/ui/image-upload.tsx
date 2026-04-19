@@ -1,9 +1,9 @@
 import { For, Show, createSignal } from "solid-js"
-import { cx } from "./variants"
+import { cx } from "@ui/variants"
 import { useUploadImage, useDeleteImage, type ImageRecord } from "@core/hooks"
 import { processImage, formatFileSize, MAX_IMAGES, MAX_FILE_SIZE } from "@core/image-utils"
 import { createFileUploader, createDropzone, type UploadFile } from "@solid-primitives/upload"
-import type { Id } from "../../convex/_generated/dataModel"
+import type { Id } from "@convex/_generated/dataModel"
 import X from "lucide-solid/icons/x"
 import ImagePlus from "lucide-solid/icons/image-plus"
 import Upload from "lucide-solid/icons/upload"
@@ -14,6 +14,7 @@ type ImageUploadProps = {
     maxImages?: number
     disabled?: boolean
     restaurantId?: Id<"restaurants">
+    onRemove?: (storageId: string) => void
 }
 
 function toFiles(uploadFiles: UploadFile[]): File[] {
@@ -100,10 +101,12 @@ export function ImageUpload(props: ImageUploadProps) {
         if (props.restaurantId) {
             try {
                 await deleteImage({ restaurantId: props.restaurantId, imageUrl: image.url, storageId: image.storageId })
-            } catch (error) {
+            } catch (err) {
                 props.onImagesChange(originalImages)
-                console.error("Failed to delete image:", error)
+                console.error("Failed to delete image:", err)
             }
+        } else {
+            props.onRemove?.(image.storageId)
         }
     }
 

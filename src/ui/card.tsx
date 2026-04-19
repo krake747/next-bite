@@ -1,5 +1,5 @@
 import { type ComponentProps } from "solid-js"
-import { cx } from "./variants"
+import { cx } from "@ui/variants"
 
 export function Card(props: ComponentProps<"div">) {
     return (

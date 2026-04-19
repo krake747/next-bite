@@ -1,12 +1,7 @@
-import { type Component, For } from "solid-js"
-import { LazyImage } from "../lazy-image"
+import { For } from "solid-js"
+import { LazyImage } from "@ui/lazy-image"
 
-type GalleryGridProps = {
-    images: string[]
-    onSelect: (index: number) => void
-}
-
-export const GalleryGrid: Component<GalleryGridProps> = (props) => {
+export function GalleryGrid(props: { images: string[]; onSelect: (index: number) => void }) {
     return (
         <div class="flex-1 overflow-y-auto p-4">
             <div class="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4">

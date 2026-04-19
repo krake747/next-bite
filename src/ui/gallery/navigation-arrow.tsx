@@ -1,14 +1,11 @@
-import { type Component } from "solid-js"
-import { cx } from "../variants"
+import { cx } from "@ui/variants"
 
-type NavigationArrowProps = {
+export function NavigationArrow(props: {
     direction: "prev" | "next"
     onClick: () => void
     hidden?: boolean
     disabled?: boolean
-}
-
-export const NavigationArrow: Component<NavigationArrowProps> = (props) => {
+}) {
     const isPrev = () => props.direction === "prev"
 
     return (
