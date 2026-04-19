@@ -23,7 +23,7 @@ import { EditRestaurantDialog } from "./edit-restaurant-dialog"
 import { EmojiRating } from "@ui/emoji-rating"
 import { LazyImage } from "@ui/lazy-image"
 import { ImageGalleryModal } from "@ui/image-gallery-modal"
-import { OpeningHoursDayRow } from "@ui/opening-hours-day-row"
+import { OpeningHours } from "@ui/opening-hours"
 import type { ComponentProps } from "solid-js"
 
 export function RestaurantCard(props: { restaurant: Restaurant } & ComponentProps<typeof Card>) {
@@ -283,7 +283,7 @@ function RestaurantCardContent(props: { restaurant: Restaurant; hasLocation: boo
                     </div>
                 </Show>
                 <Show when={props.restaurant.openingHours}>
-                    <OpeningHoursDayRow openingHours={props.restaurant.openingHours} size="sm" />
+                    <OpeningHours openingHours={props.restaurant.openingHours} />
                 </Show>
             </div>
         </div>
