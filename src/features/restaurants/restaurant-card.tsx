@@ -24,6 +24,7 @@ import { EmojiRating } from "@ui/emoji-rating"
 import { LazyImage } from "@ui/lazy-image"
 import { ImageGalleryModal } from "@ui/image-gallery-modal"
 import { OpeningHours } from "@ui/opening-hours"
+import { OpeningHoursDialog } from "@ui/opening-hours-dialog"
 import type { ComponentProps } from "solid-js"
 
 export function RestaurantCard(props: { restaurant: Restaurant } & ComponentProps<typeof Card>) {
@@ -31,6 +32,7 @@ export function RestaurantCard(props: { restaurant: Restaurant } & ComponentProp
     const [showEdit, setShowEdit] = createSignal(false)
     const [showGallery, setShowGallery] = createSignal(false)
     const [showMap, setShowMap] = createSignal(false)
+    const [showHours, setShowHours] = createSignal(false)
     const [notesExpanded, setNotesExpanded] = createSignal(false)
     const [isRefreshing, setIsRefreshing] = createSignal(false)
     const updateRestaurant = useUpdateRestaurant()
@@ -99,7 +101,11 @@ export function RestaurantCard(props: { restaurant: Restaurant } & ComponentProp
                     handleRefreshHours={handleRefreshHours}
                     handleFindHours={handleFindHours}
                 />
-                <RestaurantCardContent restaurant={local.restaurant} hasLocation={hasLocation()} />
+                <RestaurantCardContent
+                    restaurant={local.restaurant}
+                    hasLocation={hasLocation()}
+                    onShowHours={() => setShowHours(true)}
+                />
                 <RestaurantCardNotes
                     notes={local.restaurant.notes}
                     notesExpanded={notesExpanded()}
@@ -119,6 +125,12 @@ export function RestaurantCard(props: { restaurant: Restaurant } & ComponentProp
 
             <EditRestaurantDialog show={showEdit()} onOpenChange={setShowEdit} restaurant={local.restaurant} />
             <ImageGalleryModal images={imageUrls()} show={showGallery()} onOpenChange={setShowGallery} />
+            <OpeningHoursDialog
+                show={showHours()}
+                onOpenChange={setShowHours}
+                openingHours={local.restaurant.openingHours}
+                restaurantName={local.restaurant.name}
+            />
         </>
     )
 }
@@ -233,7 +245,7 @@ function RestaurantCardImage(props: {
     )
 }
 
-function RestaurantCardContent(props: { restaurant: Restaurant; hasLocation: boolean }) {
+function RestaurantCardContent(props: { restaurant: Restaurant; hasLocation: boolean; onShowHours?: () => void }) {
     return (
         <div class="flex flex-col gap-4 p-5 md:gap-3 md:p-4">
             <div class="flex flex-col gap-2.5 md:gap-2">
@@ -283,7 +295,7 @@ function RestaurantCardContent(props: { restaurant: Restaurant; hasLocation: boo
                     </div>
                 </Show>
                 <Show when={props.restaurant.openingHours}>
-                    <OpeningHours openingHours={props.restaurant.openingHours} />
+                    <OpeningHours openingHours={props.restaurant.openingHours} onClick={props.onShowHours} />
                 </Show>
             </div>
         </div>
