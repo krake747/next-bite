@@ -65,7 +65,11 @@ function WheelPage() {
                                         <Show when={wheel.selected()}>
                                             {(selected) => (
                                                 <div class="mt-8 space-y-6">
-                                                    <WinnerMessage restaurantName={selected.name} />
+                                                    <WinnerMessage
+                                                        restaurantName={selected().name}
+                                                        lat={selected().lat}
+                                                        lng={selected().lng}
+                                                    />
                                                     <div class="animate-card-reveal relative mx-auto w-full max-w-md">
                                                         <div class="absolute -inset-4 rounded-3xl bg-flame-pea-500/10 blur-2xl" />
                                                         <div class="relative">

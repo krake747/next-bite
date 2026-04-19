@@ -1,7 +1,10 @@
-import { createSignal, createEffect, For } from "solid-js"
+import { createSignal, createEffect, For, Show } from "solid-js"
 import Sparkles from "lucide-solid/icons/sparkles"
 import UtensilsCrossed from "lucide-solid/icons/utensils-crossed"
 import Star from "lucide-solid/icons/star"
+import Share from "lucide-solid/icons/share"
+import Check from "lucide-solid/icons/check"
+import { makeWebShare } from "@solid-primitives/share"
 
 type Particle = {
     id: number
@@ -92,7 +95,49 @@ export function Instructions() {
     )
 }
 
-export function WinnerMessage(props: { restaurantName: string }) {
+function ShareButton(props: { restaurantName: string; lat?: number | undefined; lng?: number | undefined }) {
+    const [copied, setCopied] = createSignal(false)
+
+    const share = async () => {
+        const inviteUrl = `${window.location.origin}/wheel`
+        const mapsUrl = props.lat && props.lng ? `https://maps.google.com/?q=${props.lat},${props.lng}` : undefined
+        const mapsLine = mapsUrl ? `\n\n📍 Google Maps: ${mapsUrl}` : ""
+        const message = `Just tried the dinner wheel... fate is UNHINGED! 😂 We're going to ${props.restaurantName}!${mapsLine}\n\nYou gotta try this -> ${inviteUrl}`
+
+        try {
+            await makeWebShare()({
+                text: message,
+            })
+        } catch (e) {
+            if (e instanceof DOMException && e.name === "AbortError") {
+                return
+            }
+            try {
+                await navigator.clipboard.writeText(message)
+                setCopied(true)
+                setTimeout(() => setCopied(false), 2000)
+            } catch (e) {
+                console.error("Share failed:", e)
+            }
+        }
+    }
+
+    return (
+        <button
+            onClick={share}
+            class="animate-fade-in-up mt-4 inline-flex items-center gap-2 rounded-full bg-flame-pea-500 px-5 py-2.5 text-sm font-medium text-white transition-all hover:bg-flame-pea-600 active:scale-95"
+        >
+            <Show when={copied()} fallback={<Share class="size-4" />}>
+                <Check class="size-4" />
+            </Show>
+            <Show when={copied()} fallback={"Share & Invite"}>
+                Copied!
+            </Show>
+        </button>
+    )
+}
+
+export function WinnerMessage(props: { restaurantName: string; lat?: number | undefined; lng?: number | undefined }) {
     return (
         <div class="animate-winner-reveal relative text-center">
             <div class="absolute inset-0 -mx-6 -mt-20 mb-12 flex items-center justify-center">
@@ -129,6 +174,8 @@ export function WinnerMessage(props: { restaurantName: string }) {
             <p class="animate-fade-in-up mt-3 text-base text-neutral-600 dark:text-neutral-400">
                 Your next culinary adventure awaits
             </p>
+
+            <ShareButton restaurantName={props.restaurantName} lat={props.lat} lng={props.lng} />
         </div>
     )
 }
