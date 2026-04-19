@@ -8,7 +8,7 @@
         "convex:deploy": "convex deploy",
         "convex:dev": "convex dev",
         "dev": "vite",
-        "fmt": "oxfmt",
+        "fmt": "oxfmt  --no-error-on-unmatched-pattern",
         "fmt:check": "oxfmt --check",
         "lint": "oxlint",
         "lint:fix": "oxlint --fix",
@@ -19,12 +19,12 @@
         "@convex-dev/better-auth": "^0.11.4",
         "@fontsource-variable/fraunces": "^5.2.9",
         "@fontsource-variable/manrope": "^5.2.8",
-        "@formisch/solid": "^0.9.4",
+        "@formisch/solid": "^0.9.5",
         "@kobalte/core": "^0.13.11",
         "@solid-primitives/upload": "^0.1.4",
         "@tailwindcss/vite": "^4.2.2",
-        "@tanstack/solid-router": "^1.168.19",
-        "better-auth": "~1.6.4",
+        "@tanstack/solid-router": "^1.168.20",
+        "better-auth": "~1.6.5",
         "convex": "^1.35.1",
         "cva": "1.0.0-beta.4",
         "lucide-solid": "^1.8.0",
@@ -42,7 +42,7 @@
         "oxfmt": "^0.45.0",
         "oxlint": "^1.60.0",
         "simple-git-hooks": "^2.13.1",
-        "typescript": "~6.0.2",
+        "typescript": "~6.0.3",
         "vite": "8.0.8",
         "vite-plugin-solid": "^2.11.12"
     },
@@ -74,5 +74,5 @@
             "last 1 iOS version"
         ]
     },
-    "packageManager": "pnpm@10.33.0"
+    "packageManager": "pnpm@11.0.0-rc.2"
 }
