@@ -76,26 +76,21 @@ function SpotlightRing() {
 
 export function Instructions() {
     return (
-        <div class="text-center">
-            <div class="mb-3 flex justify-center">
-                <div class="flex size-12 items-center justify-center rounded-full bg-flame-pea-100 dark:bg-flame-pea-900/30">
-                    <UtensilsCrossed class="size-6 text-flame-pea-600 dark:text-flame-pea-400" />
-                </div>
+        <div class="flex items-center justify-center gap-3 text-center">
+            <div class="flex size-9 shrink-0 items-center justify-center rounded-full bg-flame-pea-100 sm:size-10 dark:bg-flame-pea-900/30">
+                <UtensilsCrossed class="size-4 text-flame-pea-600 sm:size-5 dark:text-flame-pea-400" />
             </div>
             <p
-                class="text-lg leading-relaxed font-medium text-neutral-700 dark:text-neutral-300"
+                class="text-sm leading-relaxed font-medium text-neutral-700 sm:text-base dark:text-neutral-300"
                 style={{ "font-family": "var(--font-body)" }}
             >
                 Press the button to give the wheel a whirl.
-            </p>
-            <p class="mt-3 text-sm text-neutral-500 dark:text-neutral-500">
-                Let fate (or your stomach) decide where to dine.
             </p>
         </div>
     )
 }
 
-import { RestaurantCard } from "../../features/restaurants/restaurant-card"
+import { WinnerCard } from "./winner-card"
 import { Button } from "../../ui/button"
 import type { Restaurant } from "../../core/hooks"
 
@@ -163,7 +158,7 @@ export function WinnerModal(props: {
                             </p>
 
                             <div class="animate-card-reveal mt-4">
-                                <RestaurantCard restaurant={props.restaurant} />
+                                <WinnerCard restaurant={props.restaurant} />
                             </div>
 
                             <div class="mt-4 flex gap-2">
