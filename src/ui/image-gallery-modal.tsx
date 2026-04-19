@@ -29,7 +29,9 @@ export function ImageGalleryModal(props: ImageGalleryModalProps) {
     const [isPanning, setIsPanning] = createSignal(false)
     const [isFullscreen, setIsFullscreen] = createSignal(false)
     const [rotation, setRotation] = createSignal(0)
+    const [suppressClickAfterPan, setSuppressClickAfterPan] = createSignal(false)
     let imageContainerRef: HTMLDivElement | undefined // eslint-disable-line no-unassigned-vars
+    let dialogContentRef: HTMLDivElement | undefined // eslint-disable-line no-unassigned-vars
 
     createEffect(() => {
         setCurrentIndex(props.initialIndex ?? 0)
@@ -65,6 +67,10 @@ export function ImageGalleryModal(props: ImageGalleryModalProps) {
     }
 
     const handleClickZoom = () => {
+        if (suppressClickAfterPan()) {
+            setSuppressClickAfterPan(false)
+            return
+        }
         if (zoom() > DEFAULT_ZOOM) {
             setZoom(DEFAULT_ZOOM)
             setPan({ x: 0, y: 0 })
@@ -75,7 +81,7 @@ export function ImageGalleryModal(props: ImageGalleryModalProps) {
     }
 
     const toggleFullscreen = async () => {
-        const elem = imageContainerRef?.parentElement
+        const elem = dialogContentRef
         if (!elem) return
 
         try {
@@ -109,6 +115,8 @@ export function ImageGalleryModal(props: ImageGalleryModalProps) {
 
     let startPan = { x: 0, y: 0 }
 
+    const PAN_THRESHOLD = 5
+
     const eventHandler = (
         { x, y }: { x: number; y: number },
         onMove: (h: (e: PointerEvent) => void) => void,
@@ -119,11 +127,17 @@ export function ImageGalleryModal(props: ImageGalleryModalProps) {
             startPan = { x: x - pan().x, y: y - pan().y }
             onMove(({ x, y }) => {
                 if (isPanning() && zoom() > DEFAULT_ZOOM) {
-                    setPan({ x: x - startPan.x, y: y - startPan.y })
+                    const newPan = { x: x - startPan.x, y: y - startPan.y }
+                    setPan(newPan)
+                    if (Math.abs(newPan.x - pan().x) > PAN_THRESHOLD || Math.abs(newPan.y - pan().y) > PAN_THRESHOLD) {
+                        setSuppressClickAfterPan(true)
+                    }
                 }
             })
             onUp(() => {
                 setIsPanning(false)
+                setSuppressClickAfterPan(true)
+                queueMicrotask(() => setSuppressClickAfterPan(false))
             })
         }
     }
@@ -171,6 +185,7 @@ export function ImageGalleryModal(props: ImageGalleryModalProps) {
             <Dialog.Portal>
                 <Dialog.Overlay class="fixed inset-0 z-50 bg-black/90">
                     <Dialog.Content
+                        ref={dialogContentRef}
                         class="fixed inset-0 flex flex-col outline-none"
                         onKeyDown={handleKeyDown}
                         tabIndex={0}

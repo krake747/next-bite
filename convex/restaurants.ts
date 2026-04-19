@@ -84,9 +84,27 @@ export const deleteImage = mutation({
 
 export const cleanupStorage = mutation({
     args: {
+        restaurantId: v.id("restaurants"),
         storageId: v.string(),
     },
     handler: async (ctx, args) => {
+        const identity = await ctx.auth.getUserIdentity()
+        if (!identity) {
+            throw new Error("Unauthorized: authentication required")
+        }
+
+        const restaurant = await ctx.db.get(args.restaurantId)
+        if (!restaurant) {
+            throw new Error("Restaurant not found")
+        }
+
         await ctx.storage.delete(args.storageId as Id<"_storage">)
+
+        const currentImages = restaurant.images ?? []
+        const updatedImages = currentImages.filter((img) => img.storageId !== args.storageId)
+
+        if (updatedImages.length !== currentImages.length) {
+            await ctx.db.patch(args.restaurantId, { images: updatedImages })
+        }
     },
 })
