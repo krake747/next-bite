@@ -1,42 +1,46 @@
 import { Link } from "@tanstack/solid-router"
 import { Button } from "../ui/button"
 import ArrowLeft from "lucide-solid/icons/arrow-left"
-import Settings from "lucide-solid/icons/settings"
+import Shuffle from "lucide-solid/icons/shuffle"
+import Sliders from "lucide-solid/icons/sliders"
 
 type BackNavProps = {
     backTo?: string
     onBack?: () => void
-    showConfigure?: boolean
-    onConfigure?: () => void
+    showWheelOptions?: boolean
+    onRandom?: () => void
+    onBuildYourOwn?: () => void
     isSpinning?: boolean
+    disabled?: boolean
 }
 
 export function BackNav(props: BackNavProps) {
-    return (
-        <div class="relative">
-            <Link
-                to={props.backTo ?? "/"}
-                viewTransition
-                class="group absolute top-1/2 left-0 z-10 -mt-6 flex items-center gap-1.5 rounded-full bg-white/80 px-3 py-2 text-sm font-medium text-neutral-600 shadow-lg ring-1 ring-black/5 backdrop-blur-sm transition-colors duration-150 ease hover:text-flame-pea-700 dark:bg-neutral-800/80 dark:text-neutral-400 dark:ring-white/10 dark:hover:text-flame-pea-400"
-            >
-                <ArrowLeft class="size-4 transition-transform duration-150 ease-out group-hover:-translate-x-px" />
-                Back
-            </Link>
+    const disabled = () => props.disabled || props.isSpinning
 
-            {props.showConfigure && (
-                <div class="flex justify-center">
-                    <Button
-                        variant="secondary"
-                        size="md"
-                        onClick={props.onConfigure}
-                        disabled={props.isSpinning}
-                        class="shadow-lg ring-1 ring-black/5 dark:ring-white/10"
-                    >
-                        <Settings class="size-4 transition-transform duration-300 group-hover:rotate-45" />
-                        Configure
-                    </Button>
-                </div>
-            )}
+    return (
+        <div data-component="back-nav" class="border-b border-neutral-200/60 py-4 dark:border-white/10">
+            <div class="flex items-center justify-between gap-4">
+                <Link
+                    to={props.backTo ?? "/"}
+                    viewTransition
+                    class="group inline-flex items-center gap-1.5 text-sm font-medium text-neutral-600 transition-colors duration-150 ease hover:text-flame-pea-700 dark:text-neutral-400 dark:hover:text-flame-pea-400"
+                >
+                    <ArrowLeft class="size-4 transition-transform duration-150 ease-out group-hover:-translate-x-px" />
+                    Back to restaurants
+                </Link>
+                {props.showWheelOptions && (
+                    <div class="flex items-center gap-2">
+                        <Button variant="primary" size="md" onClick={props.onRandom} disabled={disabled()}>
+                            <Shuffle class="size-4" />
+                            Random
+                        </Button>
+                        <Button variant="secondary" size="md" onClick={props.onBuildYourOwn} disabled={disabled()}>
+                            <Sliders class="size-4" />
+                            Build Your Own
+                        </Button>
+                    </div>
+                )}
+            </div>
         </div>
     )
 }

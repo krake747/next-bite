@@ -192,6 +192,14 @@ export function useWheelStore(restaurants: Accessor<Restaurant[]>) {
         )
     }
 
+    const clearSelected = () => {
+        setState(
+            produce((s) => {
+                s.selected = null
+            }),
+        )
+    }
+
     return {
         rotation: createMemo(() => state.rotation),
         selected: createMemo(() => state.selected),
@@ -208,6 +216,7 @@ export function useWheelStore(restaurants: Accessor<Restaurant[]>) {
         setSelectionMode,
         setTargetCount,
         toggleRestaurantSelection,
+        clearSelected,
     }
 }
 

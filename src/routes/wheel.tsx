@@ -34,9 +34,14 @@ function WheelPage() {
 
                     <BackNav
                         backTo="/"
-                        showConfigure
-                        onConfigure={() => setShowSettings(true)}
+                        showWheelOptions
+                        onRandom={() => {
+                            wheel.setSelectionMode("random")
+                            wheel.spin()
+                        }}
+                        onBuildYourOwn={() => setShowSettings(true)}
                         isSpinning={wheel.isSpinning()}
+                        disabled={!wheel.hasEnoughRestaurants()}
                     />
 
                     <div class="pt-8">
@@ -46,6 +51,8 @@ function WheelPage() {
                                     show={showSettings()}
                                     onOpenChange={setShowSettings}
                                     restaurants={safeRestaurants}
+                                    defaultToManual={true}
+                                    onSpin={() => wheel.spin()}
                                 />
                                 {!showSettings() && (
                                     <>
@@ -61,6 +68,12 @@ function WheelPage() {
                                         <Show when={wheel.selected()}>
                                             {(selected) => (
                                                 <WinnerModal
+                                                    show={!!selected()}
+                                                    onOpenChange={(open) => {
+                                                        if (!open) {
+                                                            wheel.clearSelected()
+                                                        }
+                                                    }}
                                                     restaurant={selected()}
                                                     onSpinAgain={() => wheel.spin()}
                                                     isSpinning={wheel.isSpinning()}

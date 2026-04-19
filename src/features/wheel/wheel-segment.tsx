@@ -6,22 +6,35 @@ import { type Restaurant } from "../../core/hooks"
 const MAX_LABEL_LENGTH = 18
 
 const WHEEL_COLORS = [
-    { bg: "#b53920", name: "flame-red" },
-    { bg: "#8b4513", name: "saddle-brown" },
-    { bg: "#c45a3d", name: "terra-cotta" },
-    { bg: "#a0522d", name: "sienna" },
-    { bg: "#d47a5e", name: "coral" },
-    { bg: "#cd853f", name: "peru" },
+    "#b53920",
+    "#c45a3d",
+    "#d47a5e",
+    "#8b4513",
+    "#a0522d",
+    "#cd853f",
+    "#e07850",
+    "#943d2a",
+    "#bf5b40",
+    "#d46a4a",
+    "#a65030",
+    "#c85a38",
 ] as const
 
-function getRestaurantColorId(id: string): number {
+function getRestaurantColorId(id: string, idx: number, total: number): number {
     let hash = 0
     for (let i = 0; i < id.length; i++) {
         const char = id.charCodeAt(i)
         hash = (hash << 5) - hash + char
         hash = hash & hash
     }
-    return Math.abs(hash) % WHEEL_COLORS.length
+    let colorIdx = Math.abs(hash) % WHEEL_COLORS.length
+
+    if (total <= 1) return colorIdx
+
+    const step = Math.floor(WHEEL_COLORS.length / total) || 1
+    colorIdx = (idx * step + colorIdx) % WHEEL_COLORS.length
+
+    return colorIdx
 }
 
 function getContrastColor(bgColor: string): string {
@@ -65,9 +78,9 @@ export function WheelSegment(props: { restaurant: Restaurant; idx: number }) {
         }
     })
 
-    const colorIndex = getRestaurantColorId(props.restaurant._id)
-    const color = WHEEL_COLORS[colorIndex] ?? WHEEL_COLORS[0]
-    const contrastColor = getContrastColor(color.bg)
+    const colorIndex = getRestaurantColorId(props.restaurant._id, props.idx, wheel.segments().length)
+    const bgColor = WHEEL_COLORS[colorIndex] ?? WHEEL_COLORS[0]
+    const contrastColor = getContrastColor(bgColor)
     const displayName =
         props.restaurant.name.length > MAX_LABEL_LENGTH
             ? props.restaurant.name.slice(0, MAX_LABEL_LENGTH - 3) + "..."
@@ -75,7 +88,7 @@ export function WheelSegment(props: { restaurant: Restaurant; idx: number }) {
 
     return (
         <g>
-            <path d={segment().path} fill={color.bg} />
+            <path d={segment().path} fill={bgColor} />
             <text
                 x={segment().x}
                 y={segment().y}
