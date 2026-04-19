@@ -1,5 +1,13 @@
 {
     "compilerOptions": {
+        "ignoreDeprecations": "6.0",
+        "baseUrl": ".",
+        "paths": {
+            "@ui/*": ["src/ui/*"],
+            "@core/*": ["src/core/*"],
+            "@features/*": ["src/features/*"],
+            "@routes/*": ["src/routes/*"]
+        },
         "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.app.tsbuildinfo",
         "target": "ESNext",
         "useDefineForClassFields": true,

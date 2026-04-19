@@ -1,10 +1,10 @@
 import { For, type JSX } from "solid-js"
 
-import { SearchInput } from "../ui/search-input"
+import { SearchInput } from "@ui/search-input"
 import Funnel from "lucide-solid/icons/funnel"
 import ArrowUpDown from "lucide-solid/icons/arrow-up-down"
-import { cx } from "../ui/variants"
-import { useFriends } from "../core/hooks"
+import { cx } from "@ui/variants"
+import { useFriends } from "@core/hooks"
 
 export function FriendsFilter(props: {
     filter: string | null

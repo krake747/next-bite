@@ -1,10 +1,9 @@
-import { createSignal, createEffect, For, Show } from "solid-js"
+import { createSignal, createEffect, For } from "solid-js"
+import { Dialog } from "@kobalte/core/dialog"
 import Sparkles from "lucide-solid/icons/sparkles"
 import UtensilsCrossed from "lucide-solid/icons/utensils-crossed"
 import Star from "lucide-solid/icons/star"
 import Share from "lucide-solid/icons/share"
-import Check from "lucide-solid/icons/check"
-import { makeWebShare } from "@solid-primitives/share"
 
 type Particle = {
     id: number
@@ -95,87 +94,113 @@ export function Instructions() {
     )
 }
 
-function ShareButton(props: { restaurantName: string; lat?: number | undefined; lng?: number | undefined }) {
-    const [copied, setCopied] = createSignal(false)
+import { RestaurantCard } from "../../features/restaurants/restaurant-card"
+import { Button } from "../../ui/button"
+import type { Restaurant } from "../../core/hooks"
 
-    const share = async () => {
-        const inviteUrl = `${window.location.origin}/wheel`
-        const mapsUrl = props.lat && props.lng ? `https://maps.google.com/?q=${props.lat},${props.lng}` : undefined
-        const mapsLine = mapsUrl ? `\n\n📍 Google Maps: ${mapsUrl}` : ""
-        const message = `Just tried the dinner wheel... fate is UNHINGED! 😂 We're going to ${props.restaurantName}!${mapsLine}\n\nYou gotta try this -> ${inviteUrl}`
-
-        try {
-            await makeWebShare()({
-                text: message,
-            })
-        } catch (e) {
-            if (e instanceof DOMException && e.name === "AbortError") {
-                return
-            }
-            try {
-                await navigator.clipboard.writeText(message)
-                setCopied(true)
-                setTimeout(() => setCopied(false), 2000)
-            } catch (e) {
-                console.error("Share failed:", e)
-            }
-        }
-    }
-
+export function WinnerModal(props: {
+    show: boolean
+    onOpenChange: (open: boolean) => void
+    restaurant: Restaurant
+    onSpinAgain: () => void
+    isSpinning: boolean
+}) {
     return (
-        <button
-            onClick={share}
-            class="animate-fade-in-up mt-4 inline-flex items-center gap-2 rounded-full bg-flame-pea-500 px-5 py-2.5 text-sm font-medium text-white transition-all hover:bg-flame-pea-600 active:scale-95"
-        >
-            <Show when={copied()} fallback={<Share class="size-4" />}>
-                <Check class="size-4" />
-            </Show>
-            <Show when={copied()} fallback={"Share & Invite"}>
-                Copied!
-            </Show>
-        </button>
-    )
-}
+        <Dialog open={props.show} onOpenChange={props.onOpenChange}>
+            <Dialog.Portal>
+                <Dialog.Overlay
+                    class="animate-in fade-in fixed inset-0 z-50 flex items-center justify-center bg-neutral-900/60 p-4 backdrop-blur-sm duration-300"
+                    onClick={() => props.onOpenChange(false)}
+                >
+                    <Dialog.Content
+                        class="animate-winner-modal relative w-full max-w-md overflow-hidden rounded-3xl bg-white shadow-2xl outline-none dark:bg-neutral-900"
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        <div class="pointer-events-none absolute inset-0 -mx-6 -mt-20 mb-12 flex items-center justify-center">
+                            <SpotlightRing />
+                            <CelebrationParticles />
+                        </div>
 
-export function WinnerMessage(props: { restaurantName: string; lat?: number | undefined; lng?: number | undefined }) {
-    return (
-        <div class="animate-winner-reveal relative text-center">
-            <div class="absolute inset-0 -mx-6 -mt-20 mb-12 flex items-center justify-center">
-                <SpotlightRing />
-                <CelebrationParticles />
-            </div>
+                        <div class="relative p-6 pt-12">
+                            <div class="relative mb-6 flex justify-center">
+                                <div class="relative">
+                                    <div class="animate-winner-glow absolute inset-0 rounded-full bg-flame-pea-400/30 blur-2xl" />
+                                    <div class="relative flex size-20 items-center justify-center rounded-full bg-linear-to-br from-flame-pea-500 via-flame-pea-600 to-flame-pea-800 shadow-2xl ring-4 ring-flame-pea-400/30">
+                                        <Sparkles class="size-10 text-white" />
+                                    </div>
+                                </div>
+                            </div>
 
-            <div class="relative mb-6 flex justify-center">
-                <div class="relative">
-                    <div class="animate-winner-glow absolute inset-0 rounded-full bg-flame-pea-400/30 blur-2xl" />
-                    <div class="relative flex size-20 items-center justify-center rounded-full bg-linear-to-br from-flame-pea-500 via-flame-pea-600 to-flame-pea-800 shadow-2xl ring-4 ring-flame-pea-400/30">
-                        <Sparkles class="size-10 text-white" />
-                    </div>
-                </div>
-            </div>
+                            <div class="relative mb-2 flex items-center justify-center gap-2">
+                                <div class="h-px w-8 bg-linear-to-r from-transparent to-flame-pea-400/50" />
+                                <div class="flex items-center gap-1 text-xs font-medium tracking-widest text-flame-pea-600 uppercase dark:text-flame-pea-400">
+                                    <Star class="size-3 fill-current" />
+                                    Winner
+                                    <Star class="size-3 fill-current" />
+                                </div>
+                                <div class="h-px w-8 bg-linear-to-l from-transparent to-flame-pea-400/50" />
+                            </div>
 
-            <div class="relative mb-2 flex items-center justify-center gap-2">
-                <div class="h-px w-8 bg-linear-to-r from-transparent to-flame-pea-400/50" />
-                <div class="flex items-center gap-1 text-xs font-medium tracking-widest text-flame-pea-600 uppercase dark:text-flame-pea-400">
-                    <Star class="size-3 fill-current" />
-                    Winner
-                    <Star class="size-3 fill-current" />
-                </div>
-                <div class="h-px w-8 bg-linear-to-l from-transparent to-flame-pea-400/50" />
-            </div>
+                            <Dialog.Title class="sr-only">Winner</Dialog.Title>
 
-            <h2
-                class="animate-title-reveal bg-linear-to-br from-neutral-900 via-neutral-800 to-neutral-900 bg-clip-text text-4xl leading-tight font-bold tracking-tight text-transparent dark:from-neutral-100 dark:via-neutral-200 dark:to-neutral-400"
-                style={{ "font-family": "var(--font-display)" }}
-            >
-                {props.restaurantName}
-            </h2>
+                            <h2
+                                class="animate-title-reveal bg-linear-to-br from-neutral-900 via-neutral-800 to-neutral-900 bg-clip-text text-center text-4xl leading-tight font-bold tracking-tight text-transparent dark:from-neutral-100 dark:via-neutral-200 dark:to-neutral-400"
+                                style={{ "font-family": "var(--font-display)" }}
+                            >
+                                {props.restaurant.name}
+                            </h2>
 
-            <p class="animate-fade-in-up mt-3 text-base text-neutral-600 dark:text-neutral-400">
-                Your next culinary adventure awaits
-            </p>
+                            <p class="animate-fade-in-up mt-3 text-center text-base text-neutral-600 dark:text-neutral-400">
+                                Your next culinary adventure awaits
+                            </p>
 
-            <ShareButton restaurantName={props.restaurantName} lat={props.lat} lng={props.lng} />
-        </div>
+                            <div class="animate-card-reveal mt-6">
+                                <RestaurantCard restaurant={props.restaurant} />
+                            </div>
+
+                            <div class="mt-6 flex gap-3">
+                                <Button
+                                    variant="primary"
+                                    size="lg"
+                                    onClick={props.onSpinAgain}
+                                    disabled={props.isSpinning}
+                                    class="flex-1"
+                                >
+                                    <Sparkles class="size-5" />
+                                    <span>Spin Again</span>
+                                </Button>
+                                <Button
+                                    variant="secondary"
+                                    size="lg"
+                                    onClick={() => {
+                                        const lat = props.restaurant.lat
+                                        const lng = props.restaurant.lng
+                                        const inviteUrl = `${window.location.origin}/wheel`
+                                        const mapsUrl =
+                                            lat != null && lng != null
+                                                ? `https://maps.google.com/?q=${lat},${lng}`
+                                                : undefined
+                                        const mapsLine = mapsUrl ? `\n\n📍 Google Maps: ${mapsUrl}` : ""
+                                        const message = `Just tried the dinner wheel... fate is UNHINGED! 😂 We're going to ${props.restaurant.name}!${mapsLine}\n\nYou gotta try this -> ${inviteUrl}`
+                                        navigator.clipboard
+                                            .writeText(message)
+                                            .then(() => {
+                                                alert("Copied to clipboard!")
+                                            })
+                                            .catch(() => {
+                                                alert("Failed to copy. Please try again.")
+                                            })
+                                    }}
+                                    class="flex-1"
+                                >
+                                    <Share class="size-5" />
+                                    <span>Share</span>
+                                </Button>
+                            </div>
+                        </div>
+                    </Dialog.Content>
+                </Dialog.Overlay>
+            </Dialog.Portal>
+        </Dialog>
     )
 }
