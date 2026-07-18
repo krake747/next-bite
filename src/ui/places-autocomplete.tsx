@@ -1,4 +1,4 @@
-import { onMount } from "solid-js"
+import { onMount, createSignal, Show } from "solid-js"
 import { useMapsLibrary } from "solid-google-maps"
 
 type PlaceAutocompleteElement = new (options?: {
@@ -32,6 +32,7 @@ export function PlacesAutocomplete(props: PlacesAutocompleteProps) {
     const placesLib = useMapsLibrary("places")
     let containerRef: HTMLDivElement | undefined // eslint-disable-line no-unassigned-vars
     let initialized = false
+    const [useFallback, setUseFallback] = createSignal(true)
 
     const initAutocomplete = async (container: HTMLDivElement) => {
         const places = placesLib()
@@ -77,6 +78,12 @@ export function PlacesAutocomplete(props: PlacesAutocompleteProps) {
         })
 
         container.appendChild(autocompleteElement)
+
+        setTimeout(() => {
+            if (container.children.length > 0) {
+                setUseFallback(false)
+            }
+        }, 500)
     }
 
     onMount(() => {
@@ -90,7 +97,19 @@ export function PlacesAutocomplete(props: PlacesAutocompleteProps) {
             {props.label && (
                 <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300">{props.label}</label>
             )}
-            <div ref={containerRef} class={props.class} />
+            <div class="relative">
+                <div ref={containerRef} class={props.class} />
+                <Show when={useFallback()}>
+                    <input
+                        type="text"
+                        value={props.value}
+                        placeholder={props.placeholder}
+                        onInput={(e) => props.onChange(e.currentTarget.value)}
+                        class="absolute inset-0 z-10 w-full rounded-lg border border-neutral-200 bg-white px-3 py-2.5 text-sm text-neutral-900 placeholder:text-neutral-400 focus:border-flame-pea-500 focus:ring-1 focus:ring-flame-pea-500 focus:outline-none dark:border-white/10 dark:bg-white/5 dark:text-white dark:placeholder:text-neutral-500 dark:focus:border-flame-pea-400 dark:focus:ring-flame-pea-400"
+                        data-fallback-location
+                    />
+                </Show>
+            </div>
         </div>
     )
 }

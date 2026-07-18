@@ -16,7 +16,8 @@
         "postinstall": "lefthook install",
         "preview": "vite preview --port=5173",
         "sandcastle:build": "sandcastle docker build-image",
-        "sandcastle:run": "tsx .sandcastle/main.ts"
+        "sandcastle:run": "tsx .sandcastle/main.ts",
+        "test:e2e": "playwright test"
     },
     "dependencies": {
         "@convex-dev/better-auth": "^0.12.5",
@@ -41,6 +42,7 @@
     },
     "devDependencies": {
         "@ai-hero/sandcastle": "^0.12.0",
+        "@playwright/test": "^1.61.1",
         "@tanstack/router-plugin": "^1.168.20",
         "@types/google.maps": "^3.65.2",
         "@types/node": "^26.1.1",
