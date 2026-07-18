@@ -28,4 +28,6 @@ USER ${AGENT_UID}:${AGENT_GID}
 
 WORKDIR /home/agent
 
+RUN git config --global user.name "RALPH (Sandcastle)" && git config --global user.email "ralph@sandcastle.local"
+
 ENTRYPOINT ["sleep", "infinity"]
