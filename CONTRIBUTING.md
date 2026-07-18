@@ -1,7 +1,7 @@
 # Contributing
 
 Contributions are welcome! By submitting a pull request, you agree that your contribution will be
-licensed under the Apache License 2.0.
+licensed under the GNU Affero General Public License v3.0.
 
 ## Guidelines
 
@@ -11,6 +11,6 @@ licensed under the Apache License 2.0.
 
 ## License
 
-This project is licensed under the Apache License 2.0. See [LICENSE](./LICENSE) for details.
+This project is licensed under the GNU Affero General Public License v3.0. See [LICENSE](./LICENSE) for details.
 
 Thank you for contributing!
