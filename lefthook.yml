@@ -1,0 +1,14 @@
+pre-commit:
+  parallel: true
+  commands:
+    fmt:
+      glob: "*.{ts,tsx,js,jsx,json,css,md}"
+      run: pnpm exec oxfmt --no-error-on-unmatched-pattern {staged_files}
+      stage_fixed: true
+    types:
+      glob: "*.{ts,tsx}"
+      run: pnpm exec tsc -b --noEmit
+    lint:
+      glob: "*.{ts,tsx}"
+      run: pnpm exec oxlint --fix {staged_files}
+      stage_fixed: true

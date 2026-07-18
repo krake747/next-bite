@@ -13,6 +13,7 @@
         "lint": "oxlint",
         "lint:fix": "oxlint --fix",
         "netlify": "pnpx netlify",
+        "postinstall": "lefthook install",
         "preview": "vite preview --port=5173",
         "sandcastle:build": "sandcastle docker build-image",
         "sandcastle:run": "tsx .sandcastle/main.ts"
@@ -43,20 +44,13 @@
         "@tanstack/router-plugin": "^1.168.20",
         "@types/google.maps": "^3.65.2",
         "@types/node": "^26.1.1",
-        "lint-staged": "^17.0.8",
+        "lefthook": "^2.1.10",
         "oxfmt": "^0.59.0",
         "oxlint": "^1.74.0",
-        "simple-git-hooks": "^2.13.1",
         "tsx": "^4.23.1",
         "typescript": "~7.0.2",
         "vite": "8.1.5",
         "vite-plugin-solid": "^2.11.12"
-    },
-    "simple-git-hooks": {
-        "pre-commit": "pnpm lint-staged"
-    },
-    "lint-staged": {
-        "*.{ts,tsx,js,jsx,mjs,cjs,json,css,md}": "pnpm fmt"
     },
     "browserslist": {
         "production": [
