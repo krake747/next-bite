@@ -28,3 +28,7 @@ dist-ssr
 
 # Agent plan outputs
 .agents/plans
+
+# Sandcastle
+.sandcastle/logs/
+.sandcastle/.env

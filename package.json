@@ -13,7 +13,9 @@
         "lint": "oxlint",
         "lint:fix": "oxlint --fix",
         "netlify": "pnpx netlify",
-        "preview": "vite preview --port=5173"
+        "preview": "vite preview --port=5173",
+        "sandcastle:build": "sandcastle docker build-image",
+        "sandcastle:run": "tsx .sandcastle/main.ts"
     },
     "dependencies": {
         "@convex-dev/better-auth": "^0.12.5",
@@ -37,6 +39,7 @@
         "valibot": "^1.4.2"
     },
     "devDependencies": {
+        "@ai-hero/sandcastle": "^0.12.0",
         "@tanstack/router-plugin": "^1.168.20",
         "@types/google.maps": "^3.65.2",
         "@types/node": "^26.1.1",
@@ -44,6 +47,7 @@
         "oxfmt": "^0.59.0",
         "oxlint": "^1.74.0",
         "simple-git-hooks": "^2.13.1",
+        "tsx": "^4.23.1",
         "typescript": "~7.0.2",
         "vite": "8.1.5",
         "vite-plugin-solid": "^2.11.12"
