@@ -36,11 +36,14 @@ Use these commands to interact with issues:
 # WORKFLOW
 
 1. Read the task description above.
-2. Use `linear view` to pull in the full issue details if applicable.
-3. Explore the repo and fill your context window with relevant information.
-4. Implement the task.
-5. Run `pnpm lint` and `pnpm build` to verify correctness.
-6. Commit your changes with a meaningful message.
-7. (Optional) Use `linear comment` to summarize what was done.
-8. (Optional) Use `linear move` to update the issue status.
-9. Output <promise>COMPLETE</promise> when done.
+2. Check if there's an issue number (e.g. KRA-51). If so, use `linear view` to pull in full details.
+3. Create a branch for this work (e.g. `sandcastle/kra-51` or `sandcastle/fix-description`).
+4. Explore the repo and fill your context window with relevant information.
+5. Implement the task.
+6. Run `pnpm lint` and `pnpm build` to verify correctness.
+7. Commit your changes with a meaningful message.
+8. Push the branch and create a PR with
+   `gh pr create --title "..." --body "Closes <ISSUE>" --base main`.
+9. (Optional) Use `linear comment` to summarize what was done.
+10. (Optional) Use `linear move` to update the issue status.
+11. Output <promise>COMPLETE</promise> when done.
