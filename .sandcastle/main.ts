@@ -23,6 +23,7 @@ await run({
         ],
         env: {
             LINEAR_API_KEY: process.env.LINEAR_API_KEY ?? "",
+            GH_TOKEN: process.env.GH_TOKEN ?? process.env.GITHUB_TOKEN ?? "",
         },
     }),
     promptFile: ".sandcastle/prompt.md",
