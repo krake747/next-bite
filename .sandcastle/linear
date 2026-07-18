@@ -1,0 +1,161 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+API_URL="https://api.linear.app/graphql"
+API_KEY="${LINEAR_API_KEY:-}"
+
+if [ -z "$API_KEY" ]; then
+  echo '{"error":"LINEAR_API_KEY is not set"}' >&2
+  exit 1
+fi
+
+graphql() {
+  local query="$1"
+  local variables="${2:-{}}"
+  local escaped
+  escaped=$(echo "$query" | jq -Rs .)
+  curl -sS -X POST "$API_URL" \
+    -H "Content-Type: application/json" \
+    -H "Authorization: $API_KEY" \
+    -d "{\"query\": $escaped, \"variables\": $variables}"
+}
+
+cmd="${1:-}"
+shift 2>/dev/null || true
+
+case "$cmd" in
+issues)
+  label=""
+  limit="50"
+  assignee=""
+  while [ $# -gt 0 ]; do
+    case "$1" in
+      --label) label="$2"; shift 2 ;;
+      --limit) limit="$2"; shift 2 ;;
+      --assignee) assignee="$2"; shift 2 ;;
+      *) shift ;;
+    esac
+  done
+
+  filter_parts=""
+  [ -n "$label" ] && filter_parts="$filter_parts, \"label\": { \"name\": { \"eq\": \"$label\" } }"
+  [ -n "$assignee" ] && filter_parts="$filter_parts, \"assignee\": { \"name\": { \"eq\": \"$assignee\" } }"
+
+  if [ -n "$filter_parts" ]; then
+    # strip leading comma and space
+    filter_parts="${filter_parts#, }"
+    variables="{\"filter\": { ${filter_parts} }, \"first\": $limit}"
+  else
+    variables="{\"first\": $limit}"
+  fi
+
+  graphql '
+    query Issues($filter: IssueFilter, $first: Int) {
+      issues(filter: $filter, first: $first) {
+        nodes {
+          id
+          identifier
+          title
+          description
+          url
+          state { id name position }
+          assignee { name }
+          labels { nodes { name } }
+          parent { id identifier title }
+          branchName
+        }
+      }
+    }
+  ' "$variables"
+  ;;
+
+view)
+  id="${1:?Usage: linear view <LIN-number>}"
+  graphql '
+    query Issue($id: String!) {
+      issue(id: $id) {
+        id
+        identifier
+        title
+        description
+        url
+        state { id name position }
+        assignee { name }
+        labels { nodes { name } }
+        comments { nodes { id body user { name } createdAt } }
+        parent { id identifier title }
+        branchName
+        createdAt
+        updatedAt
+      }
+    }
+  ' "{\"id\": \"$id\"}"
+  ;;
+
+comment)
+  issue_id="${1:?Usage: linear comment <LIN-number> <body>}"
+  body="${2:?Usage: linear comment <LIN-number> <body>}"
+  graphql '
+    mutation CommentCreate($issueId: String!, $body: String!) {
+      commentCreate(input: { issueId: $issueId, body: $body }) {
+        success
+        comment { id url }
+      }
+    }
+  ' "{\"issueId\": \"$issue_id\", \"body\": $(echo "$body" | jq -Rs .)}"
+  ;;
+
+move)
+  id="${1:?Usage: linear move <LIN-number> <status-name>}"
+  status_name="${2:?Usage: linear move <LIN-number> <status-name>}"
+
+  issue_json=$(graphql '
+    query Issue($id: String!) {
+      issue(id: $id) {
+        id
+        identifier
+        team { id states { nodes { id name position } } }
+      }
+    }
+  ' "{\"id\": \"$id\"}")
+
+  team_id=$(echo "$issue_json" | jq -r '.data.issue.team.id // empty')
+  if [ -z "$team_id" ]; then
+    echo "{\"error\": \"Could not find team for issue $id\"}" >&2
+    exit 1
+  fi
+
+  state_id=$(echo "$issue_json" | jq -r ".data.issue.team.states.nodes[] | select(.name == \"$status_name\") | .id // empty")
+  if [ -z "$state_id" ]; then
+    echo "{\"error\": \"Could not find state '$status_name' in team $team_id\"}" >&2
+    exit 1
+  fi
+
+  graphql '
+    mutation IssueUpdate($id: String!, $stateId: String!) {
+      issueUpdate(id: $id, input: { stateId: $stateId }) {
+        success
+        issue { id identifier state { name } }
+      }
+    }
+  ' "{\"id\": \"$id\", \"stateId\": \"$state_id\"}"
+  ;;
+
+states)
+  team_id="${1:?Usage: linear states <team-id>}"
+  graphql '
+    query Team($id: String!) {
+      team(id: $id) {
+        id
+        name
+        states { nodes { id name position } }
+      }
+    }
+  ' "{\"id\": \"$team_id\"}"
+  ;;
+
+*)
+  echo "Usage: linear {issues|view|comment|move|states} ..." >&2
+  exit 1
+  ;;
+esac
