@@ -21,6 +21,9 @@ RUN groupmod -o -g $AGENT_GID node && usermod -o -u $AGENT_UID -g $AGENT_GID -d 
 RUN npm install -g pnpm@latest
 RUN npm install -g opencode-ai@latest
 
+COPY linear /usr/local/bin/linear
+RUN chmod +x /usr/local/bin/linear
+
 USER ${AGENT_UID}:${AGENT_GID}
 
 WORKDIR /home/agent
