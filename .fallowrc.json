@@ -23,7 +23,7 @@
             { "name": "convex", "patterns": ["convex/**"] }
         ],
         "rules": [
-            { "from": "core", "allow": ["core", "convex"] },
+            { "from": "core", "allow": ["core", "convex", "ui"] },
             { "from": "ui", "allow": ["core", "ui"] },
             { "from": "pattern", "allow": ["core", "ui", "pattern", "convex"] },
             { "from": "features", "allow": ["core", "ui", "pattern", "features", "convex"] },

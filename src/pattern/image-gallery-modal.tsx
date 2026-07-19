@@ -38,6 +38,11 @@ export function ImageGalleryModal(props: ImageGalleryModalProps) {
 
     const PAN_THRESHOLD = 5
 
+    useEffect(() => {
+        // eslint-disable-next-line react-compiler/react-compiler
+        setCurrentIndex(props.initialIndex ?? 0)
+    }, [props.initialIndex])
+
     const getTouchDistance = (touches: React.TouchList) => {
         if (touches.length < 2) return 0
         const touch0 = touches[0]
@@ -73,10 +78,6 @@ export function ImageGalleryModal(props: ImageGalleryModalProps) {
         initialPinchDistance.current = undefined
         initialPinchZoom.current = undefined
     }
-
-    useEffect(() => {
-        setCurrentIndex(props.initialIndex ?? 0)
-    }, [props.initialIndex])
 
     useEffect(() => {
         const container = imageContainerRef.current

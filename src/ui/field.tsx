@@ -20,7 +20,8 @@ type InputProps = FieldElementProps & {
 }
 
 export function Input({ input, errors: _errors, type, placeholder, label, id, ...inputProps }: InputProps) {
-    const inputId = id || useId()
+    const fallbackId = useId()
+    const inputId = id ?? fallbackId
     return (
         <div className="space-y-1.5">
             {label && (
@@ -50,7 +51,8 @@ type TextareaProps = FieldElementProps & {
 }
 
 export function Textarea({ input, errors: _errors, placeholder, rows, label, id, ...textareaProps }: TextareaProps) {
-    const textareaId = id || useId()
+    const fallbackId = useId()
+    const textareaId = id ?? fallbackId
     return (
         <div className="space-y-1.5">
             {label && (
@@ -82,7 +84,8 @@ type SelectProps = FieldElementProps & {
 }
 
 export function Select({ input: _input, errors: _errors, children, label, id, ...selectProps }: SelectProps) {
-    const selectId = id || useId()
+    const fallbackId = useId()
+    const selectId = id ?? fallbackId
     return (
         <div className="space-y-1.5">
             {label && (

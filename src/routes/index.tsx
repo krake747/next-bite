@@ -4,6 +4,7 @@ import Plus from "lucide-react/icons/plus"
 import { useState } from "react"
 
 import { useRestaurants, useAuth } from "@core/hooks"
+import { useFilterState } from "@core/use-filter"
 import { FriendsFilter } from "@features/friends-filter"
 import { FriendsFilterSkeleton } from "@features/friends-filter"
 import { AddRestaurantDialog } from "@features/restaurants/add-restaurant-dialog"
@@ -13,7 +14,6 @@ import { PageContainer } from "@routes/-layouts/page-container"
 import { PageLayout } from "@routes/-layouts/page-layout"
 import { Button } from "@ui/button"
 import { Header, HeaderSubtitle, HeaderTitle, HeaderBadge } from "@ui/header"
-import { useFilterState } from "@ui/hooks/use-filter"
 
 export const Route = createFileRoute("/")({
     head: () => ({ meta: [{ title: "Our next bite" }] }),
@@ -44,7 +44,7 @@ function Home() {
     }
 
     if (sortOrder === "name") {
-        filteredResult = [...filteredResult].sort((a, b) => a.name.localeCompare(b.name))
+        filteredResult = [...filteredResult].toSorted((a, b) => a.name.localeCompare(b.name))
     }
 
     const filteredRestaurants = filteredResult

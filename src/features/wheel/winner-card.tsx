@@ -6,7 +6,7 @@ import { LazyImage } from "@pattern/lazy-image"
 import { OpeningHours } from "@ui/opening-hours"
 
 export function WinnerCard({ restaurant }: { restaurant: Restaurant }) {
-    const hasLocation = restaurant.lat != null && restaurant.lng != null
+    const hasLocation = restaurant.lat !== null && restaurant.lng !== null
     const hasImages = (restaurant.images?.length ?? 0) > 0
     const imageSrc = hasImages ? restaurant.images?.[0]?.url : undefined
 

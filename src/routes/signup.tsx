@@ -1,5 +1,5 @@
 import { useForm, Field, Form } from "@formisch/react"
-import { createFileRoute, useNavigate, Link } from "@tanstack/react-router"
+import { createFileRoute, useNavigate } from "@tanstack/react-router"
 import UserIcon from "lucide-react/icons/user"
 import { useState } from "react"
 import * as v from "valibot"
@@ -7,8 +7,10 @@ import * as v from "valibot"
 import { useAuth } from "@core/hooks"
 import { AuthLayout } from "@routes/-layouts/auth-layout"
 import { Button } from "@ui/button"
+import { ErrorBanner } from "@ui/error-banner"
 import { FieldWrapper, Input } from "@ui/field"
 import { LoadingPlaceholder } from "@ui/loading"
+import { TextLink } from "@ui/text-link"
 
 const SignupSchema = v.object({
     name: v.pipe(v.string(), v.minLength(1)),
@@ -78,21 +80,13 @@ function SignupPage() {
             footerLink={
                 <p className="text-sm text-neutral-600 dark:text-neutral-400">
                     Already have an account?{" "}
-                    <Link
-                        to="/login"
-                        viewTransition
-                        className="font-semibold text-flame-pea-600 transition-colors hover:text-flame-pea-500 dark:text-flame-pea-400 dark:hover:text-flame-pea-300"
-                    >
+                    <TextLink to="/login" viewTransition>
                         Sign in
-                    </Link>
+                    </TextLink>
                 </p>
             }
         >
-            {(auth.error || passwordError) && (
-                <div className="mb-4 rounded-lg bg-red-50/80 p-3 text-sm text-red-600 backdrop-blur-sm dark:bg-red-900/20 dark:text-red-400">
-                    {passwordError || auth.error}
-                </div>
-            )}
+            {(auth.error || passwordError) && <ErrorBanner>{passwordError || auth.error}</ErrorBanner>}
 
             <Form of={form} onSubmit={handleSubmit} className="space-y-4">
                 <Field of={form} path={["name"]}>

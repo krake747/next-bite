@@ -73,7 +73,7 @@ export function RestaurantCard({ restaurant, ...cardProps }: { restaurant: Resta
         } catch {}
     }
 
-    const hasLocation = restaurant.lat != null && restaurant.lng != null
+    const hasLocation = restaurant.lat !== null && restaurant.lng !== null
     const location: { lat: number; lng: number } | null = hasLocation
         ? { lat: restaurant.lat!, lng: restaurant.lng! }
         : null

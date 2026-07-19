@@ -74,7 +74,7 @@ export function RestaurantForm(props: RestaurantFormProps) {
 
     const handleLocationChange = (address: string, lat?: number, lng?: number) => {
         setInput(form, { path: ["location"], input: address })
-        if (lat != null && lng != null) {
+        if (lat !== null && lng !== null) {
             setInput(form, { path: ["lat"], input: lat })
             setInput(form, { path: ["lng"], input: lng })
         } else {

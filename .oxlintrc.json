@@ -36,9 +36,9 @@
         "radix": "allow",
         "no-bitwise": "allow",
         "no-alert": "allow",
-        "no-array-sort": "allow",
+        "no-array-sort": "error",
         "no-array-callback-reference": "allow",
-        "eqeqeq": "allow"
+        "eqeqeq": "error"
     },
     "overrides": [
         {
@@ -90,7 +90,7 @@
                 "react-perf/jsx-no-new-array-as-prop": "allow",
                 "react-perf/jsx-no-new-object-as-prop": "allow",
                 "react-perf/jsx-no-jsx-as-prop": "allow",
-                "react/react-compiler": "allow",
+                "react/react-compiler": "error",
                 "react-hooks/exhaustive-deps": "allow",
                 "react-hooks/rules-of-hooks": "allow"
             }
