@@ -26,6 +26,9 @@ tools directly.
 - **Sub-issues**: Set `parentId` on `linear_save_issue` to create a child relationship.
 - **Blocking**: Use `blockedBy` (array of issue IDs) and `blocks` on `linear_save_issue` for native
   dependency edges rendered in Linear's UI.
+- **Recommended hierarchy**: `Project > Milestone > [Spec A, Spec B, ...] > Task (sub-issue)`. A
+  milestone can contain multiple parent issues (specs, wayfinding maps, etc.), each with their own
+  sub-issues.
 - **Milestones**: Set `milestone` by name on `linear_save_issue`. Create/update milestones via
   `linear_save_milestone`. Milestones live under a project.
 
