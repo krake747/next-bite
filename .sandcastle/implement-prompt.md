@@ -65,6 +65,8 @@ Make a git commit. The commit message must:
 
 Keep it concise.
 
+Push your branch to origin: `git push origin {{BRANCH}}`.
+
 # THE ISSUE
 
 If the task is not complete, use `linear comment {{TASK_ID}} "..."` to note what was done.
