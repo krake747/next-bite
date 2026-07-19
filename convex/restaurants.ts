@@ -311,6 +311,27 @@ export const update = mutation({
     },
 })
 
+export const remove = mutation({
+    args: {
+        id: v.id("restaurants"),
+    },
+    handler: async (ctx, args) => {
+        const restaurant = await ctx.db.get(args.id)
+        if (!restaurant) {
+            throw new Error("Restaurant not found")
+        }
+
+        const images = restaurant.images ?? []
+        for (const img of images) {
+            try {
+                await ctx.storage.delete(img.storageId as Id<"_storage">)
+            } catch {}
+        }
+
+        await ctx.db.delete(args.id)
+    },
+})
+
 export const deleteImage = mutation({
     args: {
         restaurantId: v.id("restaurants"),

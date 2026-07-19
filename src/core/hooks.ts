@@ -9,6 +9,7 @@ export const useFriends = () => useConvexQuery<Friend[]>(api.friends.get)
 export const useAddRestaurant = () => useConvexMutation(api.restaurants.add)
 export const useAddRestaurantWithHours = () => useConvexAction(api.restaurants.addWithOpeningHours)
 export const useUpdateRestaurant = () => useConvexMutation(api.restaurants.update)
+export const useDeleteRestaurant = () => useConvexMutation(api.restaurants.remove)
 
 export const useDeleteImage = () => useConvexMutation(api.restaurants.deleteImage)
 export const useCleanupStorage = () => useConvexMutation(api.restaurants.cleanupStorage)

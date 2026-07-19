@@ -5,6 +5,7 @@ import MapPin from "lucide-react/icons/map-pin"
 import Utensils from "lucide-react/icons/utensils"
 import ExternalLink from "lucide-react/icons/external-link"
 import SquarePen from "lucide-react/icons/square-pen"
+import Trash2 from "lucide-react/icons/trash-2"
 import Images from "lucide-react/icons/images"
 import ChevronDown from "lucide-react/icons/chevron-down"
 import Navigation from "lucide-react/icons/navigation"
@@ -13,6 +14,7 @@ import Search from "lucide-react/icons/search"
 import { Map, AdvancedMarker } from "@vis.gl/react-google-maps"
 import {
     useUpdateRestaurant,
+    useDeleteRestaurant,
     useAuth,
     useRefreshOpeningHours,
     useLookupPlaceIdAndHours,
@@ -24,6 +26,8 @@ import { LazyImage } from "@ui/lazy-image"
 import { ImageGalleryModal } from "@ui/image-gallery-modal"
 import { OpeningHours } from "@ui/opening-hours"
 import { OpeningHoursDialog } from "@ui/opening-hours-dialog"
+import { Button } from "@ui/button"
+import { Dialog } from "@base-ui-components/react/dialog"
 import type { ComponentProps } from "react"
 
 export function RestaurantCard({ restaurant, ...cardProps }: { restaurant: Restaurant } & ComponentProps<typeof Card>) {
@@ -32,7 +36,9 @@ export function RestaurantCard({ restaurant, ...cardProps }: { restaurant: Resta
     const [showMap, setShowMap] = useState(false)
     const [showHours, setShowHours] = useState(false)
     const [isRefreshing, setIsRefreshing] = useState(false)
+    const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
     const updateRestaurant = useUpdateRestaurant()
+    const deleteRestaurant = useDeleteRestaurant()
     const auth = useAuth()
     const refreshOpeningHours = useRefreshOpeningHours()
     const lookupPlaceIdAndHours = useLookupPlaceIdAndHours()
@@ -57,6 +63,12 @@ export function RestaurantCard({ restaurant, ...cardProps }: { restaurant: Resta
         } finally {
             setIsRefreshing(false)
         }
+    }
+
+    const handleDelete = async () => {
+        try {
+            await deleteRestaurant.mutateAsync({ id: restaurant._id })
+        } catch {}
     }
 
     const hasLocation = restaurant.lat != null && restaurant.lng != null
@@ -87,6 +99,7 @@ export function RestaurantCard({ restaurant, ...cardProps }: { restaurant: Resta
                     imageCount={imageCount}
                     setShowEdit={setShowEdit}
                     setShowGallery={setShowGallery}
+                    setShowDeleteConfirm={setShowDeleteConfirm}
                     isAuthenticated={auth.isAuthenticated}
                     isRefreshing={isRefreshing}
                     hasPlaceId={hasPlaceId}
@@ -119,6 +132,12 @@ export function RestaurantCard({ restaurant, ...cardProps }: { restaurant: Resta
                 openingHours={restaurant.openingHours}
                 restaurantName={restaurant.name}
             />
+            <DeleteConfirmDialog
+                show={showDeleteConfirm}
+                onOpenChange={setShowDeleteConfirm}
+                onConfirm={handleDelete}
+                restaurantName={restaurant.name}
+            />
         </>
     )
 }
@@ -130,6 +149,7 @@ function RestaurantCardImage({
     imageCount,
     setShowEdit,
     setShowGallery,
+    setShowDeleteConfirm,
     isAuthenticated,
     isRefreshing,
     hasPlaceId,
@@ -142,6 +162,7 @@ function RestaurantCardImage({
     imageCount: number
     setShowEdit: (show: boolean) => void
     setShowGallery: (show: boolean) => void
+    setShowDeleteConfirm: (show: boolean) => void
     isAuthenticated: boolean
     isRefreshing: boolean
     hasPlaceId: boolean
@@ -214,6 +235,15 @@ function RestaurantCardImage({
                         title="Edit restaurant"
                     >
                         <SquarePen className="size-3.5" aria-hidden="true" />
+                    </button>
+                    <button
+                        type="button"
+                        onClick={() => setShowDeleteConfirm(true)}
+                        aria-label="Delete restaurant"
+                        className="flex h-7 w-7 items-center justify-center rounded-full bg-white/90 text-red-600 shadow-md backdrop-blur-sm transition-all duration-200 hover:bg-red-50 hover:text-red-700 hover:shadow-lg"
+                        title="Delete restaurant"
+                    >
+                        <Trash2 className="size-3.5" aria-hidden="true" />
                     </button>
                 </div>
             )}
@@ -399,5 +429,60 @@ function RestaurantCardRating({
         <div className="px-5 py-2 md:px-4 md:py-2">
             <EmojiRating rating={rating} onRate={onRate} />
         </div>
+    )
+}
+
+function DeleteConfirmDialog({
+    show,
+    onOpenChange,
+    onConfirm,
+    restaurantName,
+}: {
+    show: boolean
+    onOpenChange: (open: boolean) => void
+    onConfirm: () => void
+    restaurantName: string
+}) {
+    return (
+        <Dialog.Root open={show} onOpenChange={onOpenChange}>
+            <Dialog.Portal>
+                <Dialog.Backdrop className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm" />
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+                    <Dialog.Popup className="relative w-full max-w-sm rounded-2xl border border-neutral-200/60 bg-white p-6 shadow-[0_8px_30px_rgb(0,0,0,0.12)] dark:border-white/10 dark:bg-neutral-900">
+                        <Dialog.Title
+                            className="text-lg font-semibold text-neutral-900 dark:text-white"
+                            style={{ fontFamily: "var(--font-display)" }}
+                        >
+                            Delete restaurant
+                        </Dialog.Title>
+                        <Dialog.Description className="mt-2 text-sm text-neutral-600 dark:text-neutral-400">
+                            Are you sure you want to delete{" "}
+                            <strong className="text-neutral-900 dark:text-neutral-100">{restaurantName}</strong>? This
+                            action cannot be undone.
+                        </Dialog.Description>
+                        <div className="mt-6 flex justify-end gap-2">
+                            <Dialog.Close
+                                render={
+                                    <Button variant="secondary" size="md">
+                                        Cancel
+                                    </Button>
+                                }
+                            />
+                            <Button
+                                variant="primary"
+                                size="md"
+                                className="bg-red-600 hover:bg-red-700 dark:bg-red-700 dark:hover:bg-red-600"
+                                onClick={() => {
+                                    onConfirm()
+                                    onOpenChange(false)
+                                }}
+                            >
+                                Delete
+                            </Button>
+                        </div>
+                    </Dialog.Popup>
+                </div>
+            </Dialog.Portal>
+        </Dialog.Root>
     )
 }
