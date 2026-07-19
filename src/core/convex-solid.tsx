@@ -1,9 +1,11 @@
 import { ConvexClient } from "convex/browser"
 import { type FunctionReference } from "convex/server"
 import { createContext, useContext, useState, useEffect, type ReactNode } from "react"
-import { useMutation, useQueryClient } from "@tanstack/react-query"
+import { QueryClient, QueryClientProvider, useMutation, useQueryClient } from "@tanstack/react-query"
 
 const ConvexContext = createContext<ConvexClient | null>(null)
+
+const queryClient = new QueryClient()
 
 function useConvexClient() {
     const client = useContext(ConvexContext)
@@ -14,7 +16,11 @@ function useConvexClient() {
 }
 
 function ConvexProvider({ client, children }: { client: ConvexClient; children: ReactNode }) {
-    return <ConvexContext.Provider value={client}>{children}</ConvexContext.Provider>
+    return (
+        <QueryClientProvider client={queryClient}>
+            <ConvexContext.Provider value={client}>{children}</ConvexContext.Provider>
+        </QueryClientProvider>
+    )
 }
 
 function useConvexQuery<T>(query: FunctionReference<"query">, args?: {}): T | undefined {
@@ -58,11 +64,4 @@ function useConvexAction<T>(action: FunctionReference<"action">) {
     })
 }
 
-export {
-    ConvexContext,
-    ConvexProvider,
-    useConvexClient,
-    useConvexQuery,
-    useConvexMutation,
-    useConvexAction,
-}
+export { ConvexContext, ConvexProvider, useConvexClient, useConvexQuery, useConvexMutation, useConvexAction }

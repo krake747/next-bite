@@ -30,9 +30,10 @@ type WheelActions = {
     clearSelected: () => void
     toggleFilterClosedToday: () => void
     setSelected: (id: string | null) => void
+    setRestaurants: (restaurants: Restaurant[]) => void
 }
 
-type WheelStore = WheelState & WheelActions
+type WheelStore = WheelState & WheelActions & { restaurants: Restaurant[] }
 
 function createWheelStore(restaurants: Restaurant[]) {
     return create<WheelStore>()(
@@ -44,21 +45,23 @@ function createWheelStore(restaurants: Restaurant[]) {
             targetCount: 4,
             selectedIds: [],
             filterClosedToday: false,
+            restaurants,
 
             spin: () => {
                 const state = get()
                 if (state.spinStart !== null) return
 
-                const totalCount = restaurants.length
+                const r = state.restaurants
+                const totalCount = r.length
                 const validTarget = Math.min(state.targetCount, totalCount)
 
                 const getSegments = () => {
                     if (state.selectionMode === "manual") {
-                        const selected = restaurants.filter((r) => state.selectedIds.includes(r._id))
+                        const selected = r.filter((r) => state.selectedIds.includes(r._id))
                         return selected.length >= 1 ? selected : []
                     }
                     if (validTarget < 1) return []
-                    const shuffled = [...restaurants].sort(() => Math.random() - 0.5)
+                    const shuffled = [...r].sort(() => Math.random() - 0.5)
                     return shuffled.slice(0, validTarget)
                 }
 
@@ -74,7 +77,9 @@ function createWheelStore(restaurants: Restaurant[]) {
                 const filtered = getFilteredSegments()
                 if (filtered.length === 0) return
 
-                const spins = WHEEL_CONFIG.spinCount.min + Math.random() * (WHEEL_CONFIG.spinCount.max - WHEEL_CONFIG.spinCount.min)
+                const spins =
+                    WHEEL_CONFIG.spinCount.min +
+                    Math.random() * (WHEEL_CONFIG.spinCount.max - WHEEL_CONFIG.spinCount.min)
                 const randomAngle = Math.random() * 360
                 const totalRotation = Math.round(spins) * 360 + randomAngle
 
@@ -125,7 +130,12 @@ function createWheelStore(restaurants: Restaurant[]) {
 
             setSelected: (id: string | null) =>
                 set((s) => {
-                    s.selected = id ? restaurants.find((r) => r._id === id) ?? null : null
+                    s.selected = id ? (s.restaurants.find((r) => r._id === id) ?? null) : null
+                }),
+
+            setRestaurants: (restaurants: Restaurant[]) =>
+                set((s) => {
+                    s.restaurants = restaurants
                 }),
         })),
     )
@@ -155,6 +165,10 @@ export function useWheelStore(restaurants: Restaurant[]) {
     const storeRef = useRef(createWheelStore(restaurants))
     const store = storeRef.current
 
+    useEffect(() => {
+        store.getState().setRestaurants(restaurants)
+    }, [restaurants, store])
+
     const rotation = store((s) => s.rotation)
     const spinStart = store((s) => s.spinStart)
     const selected = store((s) => s.selected)
@@ -177,7 +191,7 @@ export function useWheelStore(restaurants: Restaurant[]) {
         if (validTargetCount < 1) return []
         const shuffled = [...restaurants].sort(() => Math.random() - 0.5)
         return shuffled.slice(0, validTargetCount)
-    }, [restaurants, selectionMode, selectedIds, validTargetCount]) ()
+    }, [restaurants, selectionMode, selectedIds, validTargetCount])()
 
     const isOpenToday = (r: Restaurant) => {
         if (!r.openingHours?.periods) return true
@@ -191,7 +205,7 @@ export function useWheelStore(restaurants: Restaurant[]) {
         if (!hasEnoughRestaurants) return false
         if (selectionMode === "manual") return selectedIds.length >= 1 && selectedIds.length <= validTargetCount
         return validTargetCount >= 1
-    }, [hasEnoughRestaurants, selectionMode, selectedIds.length, validTargetCount]) ()
+    }, [hasEnoughRestaurants, selectionMode, selectedIds.length, validTargetCount])()
 
     const segmentCount = segments.length
     const hasSegments = segmentCount > 0
@@ -205,7 +219,7 @@ export function useWheelStore(restaurants: Restaurant[]) {
         const normalize = (deg: number) => ((deg % 360) + 360) % 360
         const idx = Math.floor(normalize(270 - rotation) / segmentAngle)
         return segments[idx] ?? null
-    }, [spinProgress, rotation, segmentAngle, segments]) ()
+    }, [spinProgress, rotation, segmentAngle, segments])()
 
     useEffect(() => {
         if (!isSpinning || spinProgress < 1) return

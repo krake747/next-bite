@@ -1,5 +1,5 @@
 import { useState, useCallback } from "react"
-import { createForm, Field, Form, reset, setInput } from "@formisch/react"
+import { useForm, Field, Form, reset, setInput } from "@formisch/react"
 import {
     useAddRestaurantWithHours,
     useUpdateRestaurant,
@@ -29,7 +29,7 @@ export function RestaurantForm(props: RestaurantFormProps) {
     const [images, setImages] = useState<ImageRecord[]>(initialImages)
     const [pendingRemovedStorageIds, setPendingRemovedStorageIds] = useState<string[]>([])
 
-    const form = createForm({
+    const form = useForm({
         schema: RestaurantSchema,
         ...(props.mode === "edit"
             ? {

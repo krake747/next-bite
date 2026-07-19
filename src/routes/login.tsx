@@ -1,5 +1,5 @@
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router"
-import { createForm, Field, Form } from "@formisch/react"
+import { useForm, Field, Form } from "@formisch/react"
 import { useAuth } from "@core/hooks"
 import { Button } from "@ui/button"
 import { FieldWrapper, Input } from "@ui/field"
@@ -23,7 +23,7 @@ function LoginPage() {
     const navigate = useNavigate()
     const auth = useAuth()
 
-    const form = createForm({ schema: LoginSchema })
+    const form = useForm({ schema: LoginSchema })
 
     const handleEmailSubmit = async (output: LoginInput) => {
         try {
@@ -162,7 +162,10 @@ function LoginPage() {
                             viewTransition
                             className="group inline-flex items-center gap-2 text-sm text-neutral-500 transition-colors hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-white"
                         >
-                            <UtensilsCrossed className="size-4 transition-transform group-hover:-rotate-12" aria-hidden="true" />
+                            <UtensilsCrossed
+                                className="size-4 transition-transform group-hover:-rotate-12"
+                                aria-hidden="true"
+                            />
                             Back to home
                         </Link>
                     </div>
