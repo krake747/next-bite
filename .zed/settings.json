@@ -1,136 +1,4 @@
 {
-    "languages": {
-        "CSS": {
-            "tab_size": 4,
-            "format_on_save": "on",
-            "prettier": {
-                "allowed": false
-            },
-            "language_servers": ["tailwindcss-language-server"],
-            "formatter": [
-                {
-                    "language_server": {
-                        "name": "oxfmt"
-                    }
-                }
-            ]
-        },
-        "HTML": {
-            "tab_size": 4,
-            "format_on_save": "on",
-            "prettier": {
-                "allowed": false
-            },
-            "formatter": [
-                {
-                    "language_server": {
-                        "name": "oxfmt"
-                    }
-                }
-            ]
-        },
-        "JavaScript": {
-            "tab_size": 4,
-            "format_on_save": "on",
-            "prettier": {
-                "allowed": false
-            },
-            "formatter": [
-                {
-                    "language_server": {
-                        "name": "oxfmt"
-                    }
-                },
-                {
-                    "code_action": "source.fixAll.oxc"
-                }
-            ]
-        },
-        "JSON": {
-            "tab_size": 4,
-            "format_on_save": "on",
-            "prettier": {
-                "allowed": false
-            },
-            "formatter": [
-                {
-                    "language_server": {
-                        "name": "oxfmt"
-                    }
-                }
-            ]
-        },
-        "JSONC": {
-            "tab_size": 4,
-            "format_on_save": "on",
-            "prettier": {
-                "allowed": false
-            },
-            "formatter": [
-                {
-                    "language_server": {
-                        "name": "oxfmt"
-                    }
-                }
-            ]
-        },
-        "Markdown": {
-            "tab_size": 2,
-            "format_on_save": "on",
-            "prettier": {
-                "allowed": false
-            },
-            "formatter": [
-                {
-                    "language_server": {
-                        "name": "oxfmt"
-                    }
-                }
-            ]
-        },
-        "TypeScript": {
-            "tab_size": 4,
-            "format_on_save": "on",
-            "prettier": {
-                "allowed": false
-            },
-            "formatter": [
-                {
-                    "language_server": {
-                        "name": "oxfmt"
-                    }
-                }
-            ]
-        },
-        "TSX": {
-            "tab_size": 4,
-            "format_on_save": "on",
-            "prettier": {
-                "allowed": false
-            },
-            "formatter": [
-                {
-                    "language_server": {
-                        "name": "oxfmt"
-                    }
-                }
-            ]
-        },
-        "YAML": {
-            "tab_size": 2,
-            "format_on_save": "on",
-            "prettier": {
-                "allowed": false
-            },
-            "formatter": [
-                {
-                    "language_server": {
-                        "name": "oxfmt"
-                    }
-                }
-            ]
-        }
-    },
     "lsp": {
         "oxlint": {
             "initialization_options": {
@@ -159,6 +27,112 @@
                     "classRegex": ["[cls|className]\\s\\:\\=\\s\"([^\"]*)"]
                 }
             }
+        },
+        "vtsls": {
+            "initialization_options": {
+                "typescript": {
+                    "preferences": {
+                        "includeCompletionsForModuleExports": true,
+                        "includeCompletionsForImportStatements": true,
+                        "importModuleSpecifier": "non-relative"
+                    }
+                }
+            }
+        }
+    },
+    "languages": {
+        "CSS": {
+            "language_servers": ["tailwindcss-intellisense-css", "!vscode-css-language-server", "..."],
+            "format_on_save": "on",
+            "formatter": [
+                {
+                    "language_server": {
+                        "name": "oxfmt"
+                    }
+                }
+            ]
+        },
+        "HTML": {
+            "format_on_save": "on",
+            "formatter": [
+                {
+                    "language_server": {
+                        "name": "oxfmt"
+                    }
+                }
+            ]
+        },
+        "JavaScript": {
+            "format_on_save": "on",
+            "formatter": [
+                {
+                    "language_server": {
+                        "name": "oxfmt"
+                    }
+                }
+            ]
+        },
+        "JSON": {
+            "format_on_save": "on",
+            "formatter": [
+                {
+                    "language_server": {
+                        "name": "oxfmt"
+                    }
+                }
+            ]
+        },
+        "JSONC": {
+            "format_on_save": "on",
+            "formatter": [
+                {
+                    "language_server": {
+                        "name": "oxfmt"
+                    }
+                }
+            ]
+        },
+        "Markdown": {
+            "format_on_save": "on",
+            "formatter": [
+                {
+                    "language_server": {
+                        "name": "oxfmt"
+                    }
+                }
+            ]
+        },
+        "TypeScript": {
+            "language_servers": ["tsgo", "!vtsls", "!typescript-language-server", "..."],
+            "format_on_save": "on",
+            "formatter": [
+                {
+                    "language_server": {
+                        "name": "oxfmt"
+                    }
+                }
+            ]
+        },
+        "TSX": {
+            "language_servers": ["tsgo", "!vtsls", "!typescript-language-server", "..."],
+            "format_on_save": "on",
+            "formatter": [
+                {
+                    "language_server": {
+                        "name": "oxfmt"
+                    }
+                }
+            ]
+        },
+        "YAML": {
+            "format_on_save": "on",
+            "formatter": [
+                {
+                    "language_server": {
+                        "name": "oxfmt"
+                    }
+                }
+            ]
         }
     }
 }
