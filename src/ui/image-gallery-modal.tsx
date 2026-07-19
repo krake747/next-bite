@@ -1,11 +1,10 @@
-import { createSignal, Show, createEffect, onCleanup } from "solid-js"
-import { Dialog } from "@kobalte/core/dialog"
+import { useState, useEffect, useRef, useCallback } from "react"
+import { Dialog } from "@base-ui-components/react/dialog"
 import { LazyImage } from "./lazy-image"
-import { createPerPointerListeners } from "@solid-primitives/pointer"
 import { NavigationArrow } from "./gallery/navigation-arrow"
 import { ZoomControls } from "./gallery/zoom-controls"
 import { GalleryGrid } from "./gallery/gallery-grid"
-import X from "lucide-solid/icons/x"
+import X from "lucide-react/icons/x"
 
 const ZOOM_STEP = 0.5
 const MIN_ZOOM = 0.5
@@ -22,18 +21,22 @@ type ImageGalleryModalProps = {
 type PanState = { x: number; y: number }
 
 export function ImageGalleryModal(props: ImageGalleryModalProps) {
-    const [currentIndex, setCurrentIndex] = createSignal(props.initialIndex ?? 0)
-    const [lightboxOpen, setLightboxOpen] = createSignal(false)
-    const [zoom, setZoom] = createSignal(1)
-    const [pan, setPan] = createSignal<PanState>({ x: 0, y: 0 })
-    const [isPanning, setIsPanning] = createSignal(false)
-    const [isFullscreen, setIsFullscreen] = createSignal(false)
-    const [rotation, setRotation] = createSignal(0)
-    const [suppressClickAfterPan, setSuppressClickAfterPan] = createSignal(false)
-    let imageContainerRef: HTMLDivElement | undefined // eslint-disable-line no-unassigned-vars
-    let dialogContentRef: HTMLDivElement | undefined // eslint-disable-line no-unassigned-vars
-    let initialPinchDistance: number | undefined
-    let initialPinchZoom: number | undefined
+    const [currentIndex, setCurrentIndex] = useState(props.initialIndex ?? 0)
+    const [lightboxOpen, setLightboxOpen] = useState(false)
+    const [zoom, setZoom] = useState(1)
+    const [pan, setPan] = useState<PanState>({ x: 0, y: 0 })
+    const [isPanning, setIsPanning] = useState(false)
+    const [isFullscreen, setIsFullscreen] = useState(false)
+    const [rotation, setRotation] = useState(0)
+    const [suppressClickAfterPan, setSuppressClickAfterPan] = useState(false)
+    const imageContainerRef = useRef<HTMLDivElement>(null)
+    const dialogContentRef = useRef<HTMLDivElement>(null)
+    const initialPinchDistance = useRef<number | undefined>(undefined)
+    const initialPinchZoom = useRef<number | undefined>(undefined)
+    const startPan = useRef({ x: 0, y: 0 })
+    const suppressClickAfterPanRef = useRef(false)
+
+    const PAN_THRESHOLD = 5
 
     const getTouchDistance = (touches: TouchList) => {
         if (touches.length < 2) return 0
@@ -45,20 +48,20 @@ export function ImageGalleryModal(props: ImageGalleryModalProps) {
         return Math.sqrt(dx * dx + dy * dy)
     }
 
-    const handleTouchStart = (e: TouchEvent) => {
+    const handleTouchStart = (e: React.TouchEvent) => {
         if (e.touches.length === 2) {
             e.preventDefault()
-            initialPinchDistance = getTouchDistance(e.touches)
-            initialPinchZoom = zoom()
+            initialPinchDistance.current = getTouchDistance(e.touches)
+            initialPinchZoom.current = zoom
         }
     }
 
-    const handleTouchMove = (e: TouchEvent) => {
-        if (e.touches.length === 2 && initialPinchDistance && initialPinchZoom) {
+    const handleTouchMove = (e: React.TouchEvent) => {
+        if (e.touches.length === 2 && initialPinchDistance.current && initialPinchZoom.current) {
             e.preventDefault()
             const currentDistance = getTouchDistance(e.touches)
-            const scale = currentDistance / initialPinchDistance
-            const newZoom = Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, initialPinchZoom * scale))
+            const scale = currentDistance / initialPinchDistance.current
+            const newZoom = Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, initialPinchZoom.current * scale))
             setZoom(newZoom)
             if (newZoom <= DEFAULT_ZOOM) {
                 setPan({ x: 0, y: 0 })
@@ -67,28 +70,65 @@ export function ImageGalleryModal(props: ImageGalleryModalProps) {
     }
 
     const handleTouchEnd = () => {
-        initialPinchDistance = undefined
-        initialPinchZoom = undefined
+        initialPinchDistance.current = undefined
+        initialPinchZoom.current = undefined
     }
 
-    createEffect(() => {
+    useEffect(() => {
         setCurrentIndex(props.initialIndex ?? 0)
-    })
+    }, [props.initialIndex])
 
-    createEffect(() => {
-        if (imageContainerRef) {
-            createPerPointerListeners({
-                target: imageContainerRef,
-                onDown: eventHandler,
+    useEffect(() => {
+        const container = imageContainerRef.current
+        if (!container) return
+
+        let ptrRef: { x: number; y: number } | null = null
+
+        const onPointerDown = (e: PointerEvent) => {
+            if (zoom <= DEFAULT_ZOOM) return
+            e.preventDefault()
+            container.setPointerCapture(e.pointerId)
+            ptrRef = { x: e.clientX, y: e.clientY }
+            startPan.current = { x: e.clientX - pan.x, y: e.clientY - pan.y }
+            setIsPanning(true)
+        }
+
+        const onPointerMove = (e: PointerEvent) => {
+            if (!ptrRef) return
+            const dx = Math.abs(e.clientX - ptrRef.x)
+            const dy = Math.abs(e.clientY - ptrRef.y)
+            if (dx > PAN_THRESHOLD || dy > PAN_THRESHOLD) {
+                suppressClickAfterPanRef.current = true
+                setSuppressClickAfterPan(true)
+            }
+            setPan({ x: e.clientX - startPan.current.x, y: e.clientY - startPan.current.y })
+        }
+
+        const onPointerUp = () => {
+            ptrRef = null
+            setIsPanning(false)
+            queueMicrotask(() => {
+                suppressClickAfterPanRef.current = false
+                setSuppressClickAfterPan(false)
             })
         }
-    })
 
-    const resetZoom = () => {
+        container.addEventListener("pointerdown", onPointerDown)
+        container.addEventListener("pointermove", onPointerMove)
+        container.addEventListener("pointerup", onPointerUp)
+
+        return () => {
+            container.removeEventListener("pointerdown", onPointerDown)
+            container.removeEventListener("pointermove", onPointerMove)
+            container.removeEventListener("pointerup", onPointerUp)
+        }
+    }, [zoom, pan.x, pan.y])
+
+    const resetZoom = useCallback(() => {
         setZoom(1)
         setPan({ x: 0, y: 0 })
         setRotation(0)
-    }
+    }, [])
 
     const handleZoomIn = () => {
         setZoom((z) => Math.min(z + ZOOM_STEP, MAX_ZOOM))
@@ -105,11 +145,12 @@ export function ImageGalleryModal(props: ImageGalleryModalProps) {
     }
 
     const handleClickZoom = () => {
-        if (suppressClickAfterPan()) {
+        if (suppressClickAfterPanRef.current) {
+            suppressClickAfterPanRef.current = false
             setSuppressClickAfterPan(false)
             return
         }
-        if (zoom() > DEFAULT_ZOOM) {
+        if (zoom > DEFAULT_ZOOM) {
             setZoom(DEFAULT_ZOOM)
             setPan({ x: 0, y: 0 })
             setRotation(0)
@@ -119,7 +160,7 @@ export function ImageGalleryModal(props: ImageGalleryModalProps) {
     }
 
     const toggleFullscreen = async () => {
-        const elem = dialogContentRef
+        const elem = dialogContentRef.current
         if (!elem) return
 
         try {
@@ -133,16 +174,15 @@ export function ImageGalleryModal(props: ImageGalleryModalProps) {
         } catch {}
     }
 
-    const handleFullscreenChange = () => {
-        setIsFullscreen(!!document.fullscreenElement)
-    }
-
-    if (typeof document !== "undefined") {
+    useEffect(() => {
+        const handleFullscreenChange = () => {
+            setIsFullscreen(!!document.fullscreenElement)
+        }
         document.addEventListener("fullscreenchange", handleFullscreenChange)
-        onCleanup(() => document.removeEventListener("fullscreenchange", handleFullscreenChange))
-    }
+        return () => document.removeEventListener("fullscreenchange", handleFullscreenChange)
+    }, [])
 
-    const handleWheel = (e: WheelEvent) => {
+    const handleWheel = (e: React.WheelEvent) => {
         e.preventDefault()
         if (e.deltaY < 0) {
             handleZoomIn()
@@ -151,66 +191,38 @@ export function ImageGalleryModal(props: ImageGalleryModalProps) {
         }
     }
 
-    let startPan = { x: 0, y: 0 }
-
-    const PAN_THRESHOLD = 5
-
-    const eventHandler = (
-        { x, y }: { x: number; y: number },
-        onMove: (h: (e: PointerEvent) => void) => void,
-        onUp: (h: () => void) => void,
-    ) => {
-        if (zoom() > DEFAULT_ZOOM) {
-            setIsPanning(true)
-            startPan = { x: x - pan().x, y: y - pan().y }
-            onMove(({ x, y }) => {
-                if (isPanning() && zoom() > DEFAULT_ZOOM) {
-                    const newPan = { x: x - startPan.x, y: y - startPan.y }
-                    setPan(newPan)
-                    if (Math.abs(newPan.x - pan().x) > PAN_THRESHOLD || Math.abs(newPan.y - pan().y) > PAN_THRESHOLD) {
-                        setSuppressClickAfterPan(true)
-                    }
-                }
-            })
-            onUp(() => {
-                setIsPanning(false)
-                setSuppressClickAfterPan(true)
-                queueMicrotask(() => setSuppressClickAfterPan(false))
-            })
-        }
-    }
-
     const handleRotate = () => {
         setRotation((r) => (r + 90) % 360)
     }
 
-    const currentImage = () => props.images[currentIndex()]
+    const currentImage = props.images[currentIndex]
+    if (currentImage === undefined) return null
 
     const handlePrevious = () => {
-        const newIndex = currentIndex() === 0 ? props.images.length - 1 : currentIndex() - 1
+        const newIndex = currentIndex === 0 ? props.images.length - 1 : currentIndex - 1
         setCurrentIndex(newIndex)
         resetZoom()
     }
 
     const handleNext = () => {
-        const newIndex = currentIndex() === props.images.length - 1 ? 0 : currentIndex() + 1
+        const newIndex = currentIndex === props.images.length - 1 ? 0 : currentIndex + 1
         setCurrentIndex(newIndex)
         resetZoom()
     }
 
-    const handleKeyDown = (e: KeyboardEvent) => {
+    const handleKeyDown = (e: React.KeyboardEvent) => {
         if (e.key === "ArrowLeft") {
-            const newIndex = currentIndex() === 0 ? props.images.length - 1 : currentIndex() - 1
+            const newIndex = currentIndex === 0 ? props.images.length - 1 : currentIndex - 1
             setCurrentIndex(newIndex)
             resetZoom()
         }
         if (e.key === "ArrowRight") {
-            const newIndex = currentIndex() === props.images.length - 1 ? 0 : currentIndex() + 1
+            const newIndex = currentIndex === props.images.length - 1 ? 0 : currentIndex + 1
             setCurrentIndex(newIndex)
             resetZoom()
         }
         if (e.key === "Escape") {
-            if (lightboxOpen()) {
+            if (lightboxOpen) {
                 setLightboxOpen(false)
             } else {
                 props.onOpenChange(false)
@@ -219,96 +231,90 @@ export function ImageGalleryModal(props: ImageGalleryModalProps) {
     }
 
     return (
-        <Dialog open={props.show} onOpenChange={props.onOpenChange}>
+        <Dialog.Root open={props.show} onOpenChange={props.onOpenChange}>
             <Dialog.Portal>
-                <Dialog.Overlay class="fixed inset-0 z-50 bg-black/90">
-                    <Dialog.Content
+                <Dialog.Backdrop className="fixed inset-0 z-50 bg-black/90">
+                    <Dialog.Popup
                         ref={dialogContentRef}
-                        class="fixed inset-0 flex flex-col outline-none"
+                        className="fixed inset-0 flex flex-col outline-none"
                         onKeyDown={handleKeyDown}
                         tabIndex={0}
                     >
-                        <div class="flex items-center justify-between p-4">
-                            <Dialog.Title class="text-lg font-semibold text-white">
-                                Image Gallery ({currentIndex() + 1}/{props.images.length})
+                        <div className="flex items-center justify-between p-4">
+                            <Dialog.Title className="text-lg font-semibold text-white">
+                                Image Gallery ({currentIndex + 1}/{props.images.length})
                             </Dialog.Title>
                             <button
                                 type="button"
                                 onClick={() => props.onOpenChange(false)}
-                                class="rounded-full p-2 text-white hover:bg-white/20"
+                                className="rounded-full p-2 text-white hover:bg-white/20"
                                 aria-label="Close gallery"
                             >
-                                <X class="size-6" />
+                                <X className="size-6" />
                             </button>
                         </div>
 
-                        <Show
-                            when={lightboxOpen()}
-                            fallback={
-                                <GalleryGrid
-                                    images={props.images}
-                                    onSelect={(index) => {
-                                        setCurrentIndex(index)
-                                        resetZoom()
-                                        setLightboxOpen(true)
-                                    }}
-                                />
-                            }
-                        >
-                            <div class="flex flex-1 items-center justify-center overflow-hidden p-4">
-                                <NavigationArrow
-                                    direction="prev"
-                                    onClick={handlePrevious}
-                                    hidden={props.images.length <= 1}
-                                />
+                        {!lightboxOpen ? (
+                            <GalleryGrid
+                                images={props.images}
+                                onSelect={(index) => {
+                                    setCurrentIndex(index)
+                                    resetZoom()
+                                    setLightboxOpen(true)
+                                }}
+                            />
+                        ) : (
+                            <>
+                                <div className="flex flex-1 items-center justify-center overflow-hidden p-4">
+                                    <NavigationArrow
+                                        direction="prev"
+                                        onClick={handlePrevious}
+                                        hidden={props.images.length <= 1}
+                                    />
 
-                                <div
-                                    ref={imageContainerRef}
-                                    class="relative flex max-h-full max-w-full cursor-grab items-center justify-center overflow-hidden"
-                                    classList={{ "cursor-grabbing": isPanning() && zoom() > DEFAULT_ZOOM }}
-                                    onClick={handleClickZoom}
-                                    onWheel={handleWheel}
-                                    onTouchStart={handleTouchStart}
-                                    onTouchMove={handleTouchMove}
-                                    onTouchEnd={handleTouchEnd}
-                                >
-                                    <Show when={currentImage()}>
-                                        {(imageSrc) => (
-                                            <LazyImage
-                                                src={imageSrc()}
-                                                alt={`Image ${currentIndex() + 1}`}
-                                                class="max-h-[80vh] max-w-full object-contain transition-transform duration-150 select-none"
-                                                style={{
-                                                    transform: `translate(${pan().x}px, ${pan().y}px) scale(${zoom()}) rotate(${rotation()}deg)`,
-                                                }}
-                                                loading="eager"
-                                                draggable="false"
-                                            />
-                                        )}
-                                    </Show>
+                                    <div
+                                        ref={imageContainerRef}
+                                        className={`relative flex max-h-full max-w-full cursor-grab items-center justify-center overflow-hidden ${isPanning && zoom > DEFAULT_ZOOM ? "cursor-grabbing" : ""}`}
+                                        onClick={handleClickZoom}
+                                        onWheel={handleWheel}
+                                        onTouchStart={handleTouchStart}
+                                        onTouchMove={handleTouchMove}
+                                        onTouchEnd={handleTouchEnd}
+                                    >
+                                        <LazyImage
+                                            src={currentImage}
+                                            alt={`Image ${currentIndex + 1}`}
+                                            className="max-h-[80vh] max-w-full object-contain transition-transform duration-150 select-none"
+                                            style={{
+                                                transform: `translate(${pan.x}px, ${pan.y}px) scale(${zoom}) rotate(${rotation}deg)`,
+                                            }}
+                                            loading="eager"
+                                            draggable={false}
+                                        />
+                                    </div>
+
+                                    <NavigationArrow
+                                        direction="next"
+                                        onClick={handleNext}
+                                        hidden={props.images.length <= 1}
+                                    />
                                 </div>
 
-                                <NavigationArrow
-                                    direction="next"
-                                    onClick={handleNext}
-                                    hidden={props.images.length <= 1}
+                                <ZoomControls
+                                    zoom={zoom}
+                                    onZoomIn={handleZoomIn}
+                                    onZoomOut={handleZoomOut}
+                                    onRotate={handleRotate}
+                                    onToggleFullscreen={toggleFullscreen}
+                                    onReset={resetZoom}
+                                    isFullscreen={isFullscreen}
+                                    onBackToGrid={() => setLightboxOpen(false)}
                                 />
-                            </div>
-
-                            <ZoomControls
-                                zoom={zoom()}
-                                onZoomIn={handleZoomIn}
-                                onZoomOut={handleZoomOut}
-                                onRotate={handleRotate}
-                                onToggleFullscreen={toggleFullscreen}
-                                onReset={resetZoom}
-                                isFullscreen={isFullscreen()}
-                                onBackToGrid={() => setLightboxOpen(false)}
-                            />
-                        </Show>
-                    </Dialog.Content>
-                </Dialog.Overlay>
+                            </>
+                        )}
+                    </Dialog.Popup>
+                </Dialog.Backdrop>
             </Dialog.Portal>
-        </Dialog>
+        </Dialog.Root>
     )
 }
