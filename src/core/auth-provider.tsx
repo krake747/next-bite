@@ -1,6 +1,6 @@
 import { useState, useEffect, createContext, useContext, type ReactNode } from "react"
 import { ConvexClient } from "convex/browser"
-import { ConvexProvider } from "./convex-solid"
+import { ConvexProvider } from "./convex-solid.tsx"
 import { useAuthStore } from "./auth-store"
 import { LoadingPlaceholder } from "@ui/loading"
 

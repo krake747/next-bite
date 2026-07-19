@@ -1,4 +1,4 @@
-import { useConvexQuery, useConvexMutation, useConvexAction } from "./convex-solid"
+import { useConvexQuery, useConvexMutation, useConvexAction } from "./convex-solid.tsx"
 import { api } from "../../convex/_generated/api"
 import type { Doc, Id } from "../../convex/_generated/dataModel"
 import { useAuth } from "./auth-provider"
