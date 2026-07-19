@@ -32,3 +32,6 @@ dist-ssr
 # Sandcastle
 .sandcastle/logs/
 .sandcastle/.env
+
+# Playwright
+test-results/
