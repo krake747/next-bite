@@ -1,11 +1,11 @@
-import { createSignal } from "solid-js"
+import { useState, useCallback } from "react"
 
 export function useDialogState(initial = false) {
-    const [show, setShow] = createSignal(initial)
+    const [show, setShow] = useState(initial)
 
-    const open = () => setShow(true)
-    const close = () => setShow(false)
-    const toggle = () => setShow((prev) => !prev)
+    const open = useCallback(() => setShow(true), [])
+    const close = useCallback(() => setShow(false), [])
+    const toggle = useCallback(() => setShow((prev) => !prev), [])
 
     return {
         show,

@@ -12,6 +12,7 @@
         "fmt:check": "oxfmt --check",
         "lint": "oxlint",
         "lint:fix": "oxlint --fix",
+        "lint:ts": "tsc -b --noEmit",
         "netlify": "pnpx netlify",
         "postinstall": "lefthook install",
         "preview": "vite preview --port=5173",
@@ -20,39 +21,42 @@
         "test:e2e": "playwright test"
     },
     "dependencies": {
+        "@base-ui/react": "1.6.0",
         "@convex-dev/better-auth": "^0.12.5",
         "@fontsource-variable/fraunces": "^5.2.9",
         "@fontsource-variable/manrope": "^5.2.8",
-        "@formisch/solid": "1.0.0-rc.0",
-        "@kobalte/core": "^0.13.12",
-        "@solid-primitives/pointer": "^0.3.6",
-        "@solid-primitives/share": "^2.2.5",
-        "@solid-primitives/upload": "^0.1.5",
+        "@formisch/react": "1.0.0-rc.0",
         "@tailwindcss/vite": "^4.3.3",
-        "@tanstack/solid-router": "^1.170.18",
+        "@tanstack/react-query": "^5.101.2",
+        "@tanstack/react-router": "^1.170.18",
+        "@vis.gl/react-google-maps": "^1.9.0",
         "better-auth": "~1.6.23",
         "convex": "^1.42.3",
         "cva": "1.0.0-beta.4",
-        "lucide-solid": "^1.25.0",
-        "solid-google-maps": "^0.0.2",
-        "solid-js": "^1.9.14",
+        "immer": "^11.1.15",
+        "lucide-react": "^1.25.0",
+        "react": "^19.2.7",
+        "react-dom": "^19.2.7",
         "tailwind-merge": "^3.6.0",
         "tailwindcss": "^4.3.3",
-        "valibot": "^1.4.2"
+        "valibot": "^1.4.2",
+        "zustand": "^5.0.14"
     },
     "devDependencies": {
         "@ai-hero/sandcastle": "^0.12.0",
         "@playwright/test": "^1.61.1",
-        "@tanstack/router-plugin": "^1.168.20",
+        "@tanstack/router-plugin": "^1.168.22",
         "@types/google.maps": "^3.65.2",
         "@types/node": "^26.1.1",
+        "@types/react": "^19.2.17",
+        "@types/react-dom": "^19.2.3",
+        "@vitejs/plugin-react": "^6.0.3",
         "lefthook": "^2.1.10",
         "oxfmt": "^0.59.0",
         "oxlint": "^1.74.0",
         "tsx": "^4.23.1",
         "typescript": "~7.0.2",
-        "vite": "8.1.5",
-        "vite-plugin-solid": "^2.11.12"
+        "vite": "8.1.5"
     },
     "browserslist": {
         "production": [
@@ -76,5 +80,5 @@
             "last 1 iOS version"
         ]
     },
-    "packageManager": "pnpm@11.13.1"
+    "packageManager": "pnpm@11.14.0"
 }

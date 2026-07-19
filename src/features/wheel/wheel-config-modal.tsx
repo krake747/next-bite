@@ -1,193 +1,200 @@
-import { For, Show, createSignal, createMemo, createEffect } from "solid-js"
-import { Dialog } from "@kobalte/core/dialog"
+import { useState, useMemo, useEffect } from "react"
+import { Dialog } from "@base-ui/react/dialog"
 import { useWheel } from "./wheel-context"
 import { type Restaurant } from "@core/hooks"
 import { cx } from "@ui/variants"
-import Sliders from "lucide-solid/icons/sliders"
-import Check from "lucide-solid/icons/check"
-import AlertCircle from "lucide-solid/icons/circle-alert"
-import X from "lucide-solid/icons/x"
-import Search from "lucide-solid/icons/search"
+import Sliders from "lucide-react/icons/sliders"
+import Check from "lucide-react/icons/check"
+import AlertCircle from "lucide-react/icons/circle-alert"
+import X from "lucide-react/icons/x"
+import Search from "lucide-react/icons/search"
 import { Button } from "@ui/button"
 
-export function WheelConfigModal(props: {
+export function WheelConfigModal({
+    show,
+    onOpenChange,
+    restaurants,
+    defaultToManual,
+    onSpin,
+}: {
     show: boolean
     onOpenChange: (open: boolean) => void
-    restaurants: () => Restaurant[]
+    restaurants: Restaurant[]
     defaultToManual?: boolean
     onSpin?: () => void
 }) {
     const wheel = useWheel()
-    const [searchQuery, setSearchQuery] = createSignal("")
+    const [searchQuery, setSearchQuery] = useState("")
 
-    createEffect(() => {
-        if (props.show && props.defaultToManual) {
+    useEffect(() => {
+        if (show && defaultToManual) {
             wheel.setSelectionMode("manual")
         }
-    })
+    }, [show])
 
-    createEffect(() => {
-        if (!props.show) {
+    useEffect(() => {
+        if (!show) {
             setSearchQuery("")
         }
-    })
+    }, [show])
 
-    const filteredRestaurants = createMemo(() => {
-        const query = searchQuery().toLowerCase().trim()
-        if (!query) return props.restaurants()
-        return props.restaurants().filter((r) => r.name.toLowerCase().includes(query))
-    })
+    const filteredRestaurants = useMemo(() => {
+        const query = searchQuery.toLowerCase().trim()
+        if (!query) return restaurants
+        return restaurants.filter((r) => r.name.toLowerCase().includes(query))
+    }, [searchQuery, restaurants])
 
-    const canSpin = () => wheel.hasEnoughRestaurants() && wheel.selectedIds().length > 0
+    const canSpin = wheel.hasEnoughRestaurants && wheel.selectedIds.length > 0
 
     return (
-        <Dialog open={props.show} onOpenChange={props.onOpenChange}>
+        <Dialog.Root open={show} onOpenChange={onOpenChange}>
             <Dialog.Portal>
-                <Dialog.Overlay class="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm" />
-                <div class="fixed inset-0 z-50 flex items-center justify-center p-4">
-                    <Dialog.Content class="relative max-h-[85vh] w-full max-w-lg overflow-y-auto rounded-2xl border border-neutral-200/60 bg-[#faf9f7]/95 p-6 shadow-[0_8px_30px_rgb(0,0,0,0.12)] backdrop-blur-md dark:border-white/10 dark:bg-[#1a1918]/95 dark:shadow-[0_8px_30px_rgb(0,0,0,0.4)]">
-                        <div class="mb-6 flex items-center gap-3">
-                            <div class="flex size-10 items-center justify-center rounded-xl bg-linear-to-br from-flame-pea-500 to-flame-pea-600 text-white dark:from-flame-pea-600 dark:to-flame-pea-700">
-                                <Sliders class="size-5" />
+                <Dialog.Backdrop className="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm" />
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+                    <Dialog.Popup className="relative max-h-[85vh] w-full max-w-lg overflow-y-auto rounded-2xl border border-neutral-200/60 bg-[#faf9f7]/95 p-6 shadow-[0_8px_30px_rgb(0,0,0,0.12)] backdrop-blur-md dark:border-white/10 dark:bg-[#1a1918]/95 dark:shadow-[0_8px_30px_rgb(0,0,0,0.4)]">
+                        <div className="mb-6 flex items-center gap-3">
+                            <div className="flex size-10 items-center justify-center rounded-xl bg-linear-to-br from-flame-pea-500 to-flame-pea-600 text-white dark:from-flame-pea-600 dark:to-flame-pea-700">
+                                <Sliders className="size-5" />
                             </div>
                             <Dialog.Title
-                                class="text-xl font-semibold text-neutral-900 dark:text-white"
-                                style={{ "font-family": "var(--font-display)" }}
+                                className="text-xl font-semibold text-neutral-900 dark:text-white"
+                                style={{ fontFamily: "var(--font-display)" }}
                             >
                                 Build Your Own
                             </Dialog.Title>
                         </div>
 
-                        <div class="space-y-5">
-                            <Show when={!wheel.hasEnoughRestaurants()}>
-                                <div class="flex items-start gap-3 rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700 dark:bg-red-900/20 dark:text-red-400">
-                                    <AlertCircle class="mt-0.5 size-4 shrink-0" />
+                        <div className="space-y-5">
+                            {!wheel.hasEnoughRestaurants && (
+                                <div className="flex items-start gap-3 rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700 dark:bg-red-900/20 dark:text-red-400">
+                                    <AlertCircle className="mt-0.5 size-4 shrink-0" />
                                     <span>Need at least 1 restaurant to spin. Add a restaurant first.</span>
                                 </div>
-                            </Show>
+                            )}
 
-                            <Show when={wheel.hasEnoughRestaurants()}>
-                                <div class="space-y-3">
-                                    <div class="flex items-center justify-between">
-                                        <label
-                                            for="target-count-select"
-                                            class="block text-sm font-medium text-neutral-700 dark:text-neutral-300"
-                                        >
-                                            Max Number of Restaurants
-                                        </label>
-                                    </div>
-                                    <div class="relative">
-                                        <select
-                                            id="target-count-select"
-                                            value={wheel.targetCount()}
-                                            onChange={(e) => wheel.setTargetCount(parseInt(e.currentTarget.value))}
-                                            class="w-full appearance-none rounded-lg border border-neutral-200 bg-white px-4 py-2.5 pr-10 text-sm text-neutral-900 focus:border-flame-pea-500 focus:outline-none dark:border-neutral-600 dark:bg-neutral-700 dark:text-white"
-                                        >
-                                            <For each={wheel.availableCountOptions()}>
-                                                {(count) => <option value={count}>{count}</option>}
-                                            </For>
-                                        </select>
-                                        <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3">
-                                            <svg
-                                                class="size-4 text-neutral-400"
-                                                fill="none"
-                                                viewBox="0 0 24 24"
-                                                stroke="currentColor"
+                            {wheel.hasEnoughRestaurants && (
+                                <>
+                                    <div className="space-y-3">
+                                        <div className="flex items-center justify-between">
+                                            <label
+                                                htmlFor="target-count-select"
+                                                className="block text-sm font-medium text-neutral-700 dark:text-neutral-300"
                                             >
-                                                <path
-                                                    stroke-linecap="round"
-                                                    stroke-linejoin="round"
-                                                    stroke-width={2}
-                                                    d="M19 9l-7 7-7-7"
-                                                />
-                                            </svg>
+                                                Max Number of Restaurants
+                                            </label>
+                                        </div>
+                                        <div className="relative">
+                                            <select
+                                                id="target-count-select"
+                                                value={wheel.targetCount}
+                                                onChange={(e) => wheel.setTargetCount(parseInt(e.currentTarget.value))}
+                                                className="w-full appearance-none rounded-lg border border-neutral-200 bg-white px-4 py-2.5 pr-10 text-sm text-neutral-900 focus:border-flame-pea-500 focus:outline-none dark:border-neutral-600 dark:bg-neutral-700 dark:text-white"
+                                            >
+                                                {wheel.availableCountOptions.map((count) => (
+                                                    <option key={count} value={count}>
+                                                        {count}
+                                                    </option>
+                                                ))}
+                                            </select>
+                                            <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3">
+                                                <svg
+                                                    className="size-4 text-neutral-400"
+                                                    fill="none"
+                                                    viewBox="0 0 24 24"
+                                                    stroke="currentColor"
+                                                >
+                                                    <path
+                                                        strokeLinecap="round"
+                                                        strokeLinejoin="round"
+                                                        strokeWidth={2}
+                                                        d="M19 9l-7 7-7-7"
+                                                    />
+                                                </svg>
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
 
-                                <div class="space-y-3">
-                                    <label class="flex cursor-pointer items-center gap-3">
-                                        <input
-                                            type="checkbox"
-                                            checked={wheel.filterClosedToday()}
-                                            onChange={() => wheel.toggleFilterClosedToday()}
-                                            class="size-4 rounded border-neutral-300 text-flame-pea-700 focus:ring-flame-pea-700 dark:border-neutral-600"
-                                        />
-                                        <span class="text-sm text-neutral-700 dark:text-neutral-300">
-                                            Exclude closed restaurants today
-                                        </span>
-                                    </label>
-                                </div>
-
-                                <div class="space-y-3">
-                                    <div class="flex items-center justify-between">
-                                        <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300">
-                                            Select Restaurants
+                                    <div className="space-y-3">
+                                        <label className="flex cursor-pointer items-center gap-3">
+                                            <input
+                                                type="checkbox"
+                                                checked={wheel.filterClosedToday}
+                                                onChange={() => wheel.toggleFilterClosedToday()}
+                                                className="size-4 rounded border-neutral-300 text-flame-pea-700 focus:ring-flame-pea-700 dark:border-neutral-600"
+                                            />
+                                            <span className="text-sm text-neutral-700 dark:text-neutral-300">
+                                                Exclude closed restaurants today
+                                            </span>
                                         </label>
-                                        <span
-                                            class={cx(
-                                                "text-xs font-medium",
-                                                wheel.selectedIds().length === wheel.targetCount()
-                                                    ? "text-flame-pea-600 dark:text-flame-pea-400"
-                                                    : wheel.selectedIds().length > 0
-                                                      ? "text-flame-pea-500/70 dark:text-flame-pea-400/70"
-                                                      : "text-neutral-400 dark:text-neutral-500",
-                                            )}
-                                        >
-                                            {wheel.selectedIds().length === wheel.targetCount()
-                                                ? "Ready to spin"
-                                                : `${wheel.selectedIds().length}/${wheel.targetCount()} selected`}
-                                        </span>
                                     </div>
 
-                                    <div class="relative">
-                                        <Search class="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-neutral-400" />
-                                        <input
-                                            id="restaurant-search"
-                                            type="text"
-                                            value={searchQuery()}
-                                            onInput={(e) => setSearchQuery(e.currentTarget.value)}
-                                            placeholder="Search restaurants..."
-                                            aria-label="Search restaurants"
-                                            class="w-full rounded-lg border border-neutral-200 bg-white py-2 pr-3 pl-9 text-sm text-neutral-900 placeholder:text-neutral-400 focus:border-flame-pea-500 focus:outline-none dark:border-neutral-600 dark:bg-neutral-700 dark:text-white dark:placeholder:text-neutral-500"
-                                        />
-                                        <Show when={searchQuery()}>
-                                            <button
-                                                onClick={() => setSearchQuery("")}
-                                                class="absolute top-1/2 right-2 -translate-y-1/2 rounded-full p-1 text-neutral-400 hover:bg-neutral-100 hover:text-neutral-600 dark:text-neutral-500 dark:hover:bg-neutral-600"
-                                                aria-label="Clear search"
+                                    <div className="space-y-3">
+                                        <div className="flex items-center justify-between">
+                                            <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300">
+                                                Select Restaurants
+                                            </label>
+                                            <span
+                                                className={cx(
+                                                    "text-xs font-medium",
+                                                    wheel.selectedIds.length === wheel.targetCount
+                                                        ? "text-flame-pea-600 dark:text-flame-pea-400"
+                                                        : wheel.selectedIds.length > 0
+                                                          ? "text-flame-pea-500/70 dark:text-flame-pea-400/70"
+                                                          : "text-neutral-400 dark:text-neutral-500",
+                                                )}
                                             >
-                                                <X class="size-3" />
-                                            </button>
-                                        </Show>
-                                    </div>
+                                                {wheel.selectedIds.length === wheel.targetCount
+                                                    ? "Ready to spin"
+                                                    : `${wheel.selectedIds.length}/${wheel.targetCount} selected`}
+                                            </span>
+                                        </div>
 
-                                    <div class="max-h-52 overflow-y-auto rounded-lg border border-neutral-200 bg-white dark:border-neutral-700 dark:bg-neutral-700/50">
-                                        <For each={filteredRestaurants()}>
-                                            {(restaurant) => {
-                                                const isSelected = () => wheel.selectedIds().includes(restaurant._id)
+                                        <div className="relative">
+                                            <Search className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-neutral-400" />
+                                            <input
+                                                type="text"
+                                                value={searchQuery}
+                                                onChange={(e) => setSearchQuery(e.currentTarget.value)}
+                                                placeholder="Search restaurants..."
+                                                aria-label="Search restaurants"
+                                                className="w-full rounded-lg border border-neutral-200 bg-white py-2 pr-3 pl-9 text-sm text-neutral-900 placeholder:text-neutral-400 focus:border-flame-pea-500 focus:outline-none dark:border-neutral-600 dark:bg-neutral-700 dark:text-white dark:placeholder:text-neutral-500"
+                                            />
+                                            {searchQuery && (
+                                                <button
+                                                    onClick={() => setSearchQuery("")}
+                                                    className="absolute top-1/2 right-2 -translate-y-1/2 rounded-full p-1 text-neutral-400 hover:bg-neutral-100 hover:text-neutral-600 dark:text-neutral-500 dark:hover:bg-neutral-600"
+                                                    aria-label="Clear search"
+                                                >
+                                                    <X className="size-3" />
+                                                </button>
+                                            )}
+                                        </div>
 
+                                        <div className="max-h-52 overflow-y-auto rounded-lg border border-neutral-200 bg-white dark:border-neutral-700 dark:bg-neutral-700/50">
+                                            {filteredRestaurants.map((restaurant) => {
+                                                const isSelected = wheel.selectedIds.includes(restaurant._id)
                                                 return (
                                                     <label
-                                                        class={cx(
+                                                        key={restaurant._id}
+                                                        className={cx(
                                                             "flex cursor-pointer items-center gap-3 border-b border-neutral-100 px-4 py-3 transition-colors last:border-b-0 dark:border-neutral-700",
-                                                            isSelected()
+                                                            isSelected
                                                                 ? "bg-flame-pea-50 dark:bg-flame-pea-900/20"
                                                                 : "hover:bg-neutral-50 dark:hover:bg-neutral-700/50",
                                                         )}
                                                     >
                                                         <input
                                                             type="checkbox"
-                                                            checked={isSelected()}
+                                                            checked={isSelected}
                                                             onChange={() =>
                                                                 wheel.toggleRestaurantSelection(restaurant._id)
                                                             }
-                                                            class="size-4 rounded border-neutral-300 text-flame-pea-700 focus:ring-flame-pea-700 dark:border-neutral-600"
+                                                            className="size-4 rounded border-neutral-300 text-flame-pea-700 focus:ring-flame-pea-700 dark:border-neutral-600"
                                                         />
                                                         <span
-                                                            class={cx(
+                                                            className={cx(
                                                                 "text-sm",
-                                                                isSelected()
+                                                                isSelected
                                                                     ? "font-medium text-flame-pea-700 dark:text-flame-pea-400"
                                                                     : "text-neutral-700 dark:text-neutral-300",
                                                             )}
@@ -196,53 +203,49 @@ export function WheelConfigModal(props: {
                                                         </span>
                                                     </label>
                                                 )
-                                            }}
-                                        </For>
+                                            })}
+                                        </div>
+
+                                        {filteredRestaurants.length === 0 && (
+                                            <p className="py-4 text-center text-sm text-neutral-500 dark:text-neutral-400">
+                                                No restaurants match your search
+                                            </p>
+                                        )}
+
+                                        {(wheel.selectedIds.length === 0 ||
+                                            (wheel.selectedIds.length > 0 &&
+                                                wheel.selectedIds.length < wheel.targetCount)) &&
+                                            filteredRestaurants.length > 0 && (
+                                                <p className="text-xs text-amber-600 dark:text-amber-400">
+                                                    {wheel.selectedIds.length === 0
+                                                        ? "Please select at least 1 restaurant to spin"
+                                                        : `You can add ${Number(wheel.targetCount) - wheel.selectedIds.length} more optional selections`}
+                                                </p>
+                                            )}
                                     </div>
-
-                                    <Show when={filteredRestaurants().length === 0}>
-                                        <p class="py-4 text-center text-sm text-neutral-500 dark:text-neutral-400">
-                                            No restaurants match your search
-                                        </p>
-                                    </Show>
-
-                                    <Show
-                                        when={
-                                            (wheel.selectedIds().length === 0 ||
-                                                (wheel.selectedIds().length > 0 &&
-                                                    wheel.selectedIds().length < wheel.targetCount())) &&
-                                            filteredRestaurants().length > 0
-                                        }
-                                    >
-                                        <p class="text-xs text-amber-600 dark:text-amber-400">
-                                            {wheel.selectedIds().length === 0
-                                                ? "Please select at least 1 restaurant to spin"
-                                                : `You can add ${Number(wheel.targetCount()) - wheel.selectedIds().length} more optional selections`}
-                                        </p>
-                                    </Show>
-                                </div>
-                            </Show>
+                                </>
+                            )}
                         </div>
 
-                        <div class="mt-6 flex gap-3">
-                            <Button variant="secondary" class="flex-1" onClick={() => props.onOpenChange(false)}>
+                        <div className="mt-6 flex gap-3">
+                            <Button variant="secondary" className="flex-1" onClick={() => onOpenChange(false)}>
                                 Cancel
                             </Button>
                             <Button
-                                class="flex-1"
+                                className="flex-1"
                                 onClick={() => {
-                                    props.onOpenChange(false)
-                                    props.onSpin?.()
+                                    onOpenChange(false)
+                                    onSpin?.()
                                 }}
-                                disabled={!canSpin()}
+                                disabled={!canSpin}
                             >
-                                <Check class="size-4" />
+                                <Check className="size-4" />
                                 Spin
                             </Button>
                         </div>
-                    </Dialog.Content>
+                    </Dialog.Popup>
                 </div>
             </Dialog.Portal>
-        </Dialog>
+        </Dialog.Root>
     )
 }

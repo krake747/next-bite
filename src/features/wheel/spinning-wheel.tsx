@@ -1,4 +1,3 @@
-import { For, createMemo } from "solid-js"
 import { useWheel } from "./wheel-context"
 import { WHEEL_CONFIG_CONSTANTS } from "./wheel-store"
 import { WheelSegment } from "./wheel-segment"
@@ -10,15 +9,12 @@ export function SpinningWheel() {
     const { radius, spinDuration } = WHEEL_CONFIG_CONSTANTS
     const size = radius * 2
 
-    const duration = createMemo(() => {
-        return wheel.isSpinning() ? spinDuration : 500
-    })
+    const duration = wheel.isSpinning ? spinDuration : 500
 
     return (
-        <div class="relative z-0">
-            {/* Metallic chrome ring with conic gradient for realistic metal effect */}
+        <div className="relative z-0">
             <div
-                class="absolute inset-0 rounded-full p-3"
+                className="absolute inset-0 rounded-full p-3"
                 style={{
                     width: `${size + 28}px`,
                     height: `${size + 28}px`,
@@ -52,7 +48,7 @@ export function SpinningWheel() {
                         #b8860b 345deg,
                         #c9a961 360deg
                     )`,
-                    "box-shadow": `
+                    boxShadow: `
                         0 0 0 1px rgba(0,0,0,0.1),
                         0 4px 20px rgba(0,0,0,0.15),
                         inset 0 2px 4px rgba(255,255,255,0.3),
@@ -60,12 +56,11 @@ export function SpinningWheel() {
                     `,
                 }}
             >
-                {/* Inner groove effect */}
                 <div
-                    class="size-full rounded-full"
+                    className="size-full rounded-full"
                     style={{
                         background: `linear-gradient(145deg, #1a1918 0%, #2d2b29 50%, #1a1918 100%)`,
-                        "box-shadow": `
+                        boxShadow: `
                             inset 0 3px 8px rgba(0,0,0,0.4),
                             inset 0 -2px 4px rgba(255,255,255,0.05),
                             0 1px 2px rgba(255,255,255,0.1)
@@ -74,28 +69,28 @@ export function SpinningWheel() {
                 />
             </div>
 
-            <div class="relative flex items-center justify-center overflow-clip rounded-full bg-white shadow-xl dark:bg-[#1a1918]">
+            <div className="relative flex items-center justify-center overflow-clip rounded-full bg-white shadow-xl dark:bg-[#1a1918]">
                 <svg
                     width={size}
                     height={size}
                     viewBox={`0 0 ${size} ${size}`}
-                    class="rounded-full"
+                    className="rounded-full"
                     style={{
-                        transform: `rotate(${wheel.rotation()}deg)`,
-                        transition: wheel.isSpinning()
-                            ? `transform ${duration()}ms cubic-bezier(0.17, 0.67, 0.12, 0.99)`
+                        transform: `rotate(${wheel.rotation}deg)`,
+                        transition: wheel.isSpinning
+                            ? `transform ${duration}ms cubic-bezier(0.17, 0.67, 0.12, 0.99)`
                             : "transform 500ms",
                     }}
                 >
-                    <For each={wheel.segments()}>
-                        {(restaurant, idx) => <WheelSegment restaurant={restaurant} idx={idx()} />}
-                    </For>
+                    {wheel.segments.map((restaurant, idx) => (
+                        <WheelSegment key={restaurant._id} restaurant={restaurant} idx={idx} />
+                    ))}
                 </svg>
             </div>
 
             <WheelNeedle />
 
-            <SpinWheelButton class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" />
+            <SpinWheelButton className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" />
         </div>
     )
 }

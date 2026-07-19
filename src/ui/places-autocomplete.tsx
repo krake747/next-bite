@@ -1,5 +1,5 @@
-import { onMount, createSignal, Show } from "solid-js"
-import { useMapsLibrary } from "solid-google-maps"
+import { useRef, useState, useEffect } from "react"
+import { useMapsLibrary } from "@vis.gl/react-google-maps"
 
 type PlaceAutocompleteElement = new (options?: {
     types?: string[]
@@ -14,7 +14,7 @@ type PlacesAutocompleteProps = {
     onChange: (value: string, lat?: number, lng?: number, placeId?: string) => void
     placeholder?: string
     label?: string
-    class?: string
+    className?: string
 }
 
 type PlaceSelectEvent = {
@@ -28,16 +28,17 @@ type PlaceSelectEvent = {
     }
 }
 
-export function PlacesAutocomplete(props: PlacesAutocompleteProps) {
+export function PlacesAutocomplete({ value, onChange, placeholder, label, className }: PlacesAutocompleteProps) {
     const placesLib = useMapsLibrary("places")
-    let containerRef: HTMLDivElement | undefined // eslint-disable-line no-unassigned-vars
-    let initialized = false
-    const [useFallback, setUseFallback] = createSignal(true)
+    const containerRef = useRef<HTMLDivElement>(null)
+    const initializedRef = useRef(false)
+    const [useFallback, setUseFallback] = useState(true)
 
-    const initAutocomplete = async (container: HTMLDivElement) => {
-        const places = placesLib()
-        if (!places || initialized) return
-        initialized = true
+    useEffect(() => {
+        const container = containerRef.current
+        const places = placesLib
+        if (!places || !container || initializedRef.current) return
+        initializedRef.current = true
 
         const PlaceAutocompleteElement = (places as unknown as { PlaceAutocompleteElement: PlaceAutocompleteElement })
             .PlaceAutocompleteElement
@@ -74,7 +75,7 @@ export function PlacesAutocomplete(props: PlacesAutocompleteProps) {
             const address = place.formattedAddress || place.displayName || ""
             const placeId = (place as unknown as { id?: string }).id
 
-            props.onChange(address, lat ?? undefined, lng ?? undefined, placeId)
+            onChange(address, lat ?? undefined, lng ?? undefined, placeId)
         })
 
         container.appendChild(autocompleteElement)
@@ -84,31 +85,25 @@ export function PlacesAutocomplete(props: PlacesAutocompleteProps) {
                 setUseFallback(false)
             }
         }, 500)
-    }
-
-    onMount(() => {
-        if (containerRef) {
-            initAutocomplete(containerRef)
-        }
-    })
+    }, [placesLib, onChange])
 
     return (
-        <div class="space-y-1.5">
-            {props.label && (
-                <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300">{props.label}</label>
+        <div className="space-y-1.5">
+            {label && (
+                <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300">{label}</label>
             )}
-            <div class="relative">
-                <div ref={containerRef} class={props.class} />
-                <Show when={useFallback()}>
+            <div className="relative">
+                <div ref={containerRef} className={className} />
+                {useFallback && (
                     <input
                         type="text"
-                        value={props.value}
-                        placeholder={props.placeholder}
-                        onInput={(e) => props.onChange(e.currentTarget.value)}
-                        class="absolute inset-0 z-10 w-full rounded-lg border border-neutral-200 bg-white px-3 py-2.5 text-sm text-neutral-900 placeholder:text-neutral-400 focus:border-flame-pea-500 focus:ring-1 focus:ring-flame-pea-500 focus:outline-none dark:border-white/10 dark:bg-white/5 dark:text-white dark:placeholder:text-neutral-500 dark:focus:border-flame-pea-400 dark:focus:ring-flame-pea-400"
+                        value={value}
+                        placeholder={placeholder}
+                        onChange={(e) => onChange(e.currentTarget.value)}
+                        className="absolute inset-0 z-10 w-full rounded-lg border border-neutral-200 bg-white px-3 py-2.5 text-sm text-neutral-900 placeholder:text-neutral-400 focus:border-flame-pea-500 focus:ring-1 focus:ring-flame-pea-500 focus:outline-none dark:border-white/10 dark:bg-white/5 dark:text-white dark:placeholder:text-neutral-500 dark:focus:border-flame-pea-400 dark:focus:ring-flame-pea-400"
                         data-fallback-location
                     />
-                </Show>
+                )}
             </div>
         </div>
     )

@@ -1,5 +1,5 @@
-import { Show, Suspense, createSignal } from "solid-js"
-import { createFileRoute } from "@tanstack/solid-router"
+import { Suspense, useState } from "react"
+import { createFileRoute } from "@tanstack/react-router"
 import { Header, HeaderSubtitle, HeaderTitle } from "./-layout/header"
 import { PageLayout } from "./-layout/page-layout"
 import { PageContainer } from "./-layout/page-container"
@@ -19,9 +19,9 @@ export const Route = createFileRoute("/wheel")({
 
 function WheelPage() {
     const restaurants = useRestaurants()
-    const safeRestaurants = () => restaurants() ?? []
+    const safeRestaurants = restaurants ?? []
     const wheel = useWheelStore(safeRestaurants)
-    const [showSettings, setShowSettings] = createSignal(false)
+    const [showSettings, setShowSettings] = useState(false)
 
     return (
         <WheelProvider store={wheel}>
@@ -40,46 +40,43 @@ function WheelPage() {
                             wheel.spin()
                         }}
                         onBuildYourOwn={() => setShowSettings(true)}
-                        isSpinning={wheel.isSpinning()}
-                        disabled={!wheel.hasEnoughRestaurants()}
+                        isSpinning={wheel.isSpinning}
+                        disabled={!wheel.hasEnoughRestaurants}
                     />
 
-                    <div class="pt-8">
-                        <div class="mx-auto max-w-2xl">
+                    <div className="pt-8">
+                        <div className="mx-auto max-w-2xl">
                             <Suspense fallback={<EmptyWheelState />}>
                                 <WheelConfigModal
-                                    show={showSettings()}
+                                    show={showSettings}
                                     onOpenChange={setShowSettings}
                                     restaurants={safeRestaurants}
                                     defaultToManual={true}
                                     onSpin={() => wheel.spin()}
                                 />
-                                {!showSettings() && (
+                                {!showSettings && (
                                     <>
-                                        {/* Instructions always visible above wheel */}
-                                        <div class="mb-8">
+                                        <div className="mb-8">
                                             <Instructions />
                                         </div>
 
-                                        <div class="relative flex flex-col items-center">
+                                        <div className="relative flex flex-col items-center">
                                             <SpinningWheel />
                                         </div>
 
-                                        <Show when={wheel.selected()}>
-                                            {(selected) => (
-                                                <WinnerModal
-                                                    show={!!selected()}
-                                                    onOpenChange={(open) => {
-                                                        if (!open) {
-                                                            wheel.clearSelected()
-                                                        }
-                                                    }}
-                                                    restaurant={selected()}
-                                                    onSpinAgain={() => wheel.spin()}
-                                                    isSpinning={wheel.isSpinning()}
-                                                />
-                                            )}
-                                        </Show>
+                                        {wheel.selected && (
+                                            <WinnerModal
+                                                show={!!wheel.selected}
+                                                onOpenChange={(open) => {
+                                                    if (!open) {
+                                                        wheel.clearSelected()
+                                                    }
+                                                }}
+                                                restaurant={wheel.selected}
+                                                onSpinAgain={() => wheel.spin()}
+                                                isSpinning={wheel.isSpinning}
+                                            />
+                                        )}
                                     </>
                                 )}
                             </Suspense>

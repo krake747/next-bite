@@ -1,5 +1,4 @@
-import { createSignal, Show, type ComponentProps } from "solid-js"
-import { splitProps } from "solid-js"
+import { useState, type ComponentProps } from "react"
 import { cx } from "@ui/variants"
 
 const MAX_LOADED_IMAGES = 100
@@ -46,14 +45,13 @@ type LazyImageProps = Omit<ComponentProps<"img">, "src"> & {
     aspectRatio?: string
 }
 
-export function LazyImage(props: LazyImageProps) {
-    const [local, imgProps] = splitProps(props, ["src", "alt", "aspectRatio"])
-    const [isLoaded, setIsLoaded] = createSignal(local.src ? loadedImages.has(local.src) : false)
-    const [hasError, setHasError] = createSignal(false)
+export function LazyImage({ src, alt, aspectRatio, className, loading, decoding, ...imgProps }: LazyImageProps) {
+    const [isLoaded, setIsLoaded] = useState(src ? loadedImages.has(src) : false)
+    const [hasError, setHasError] = useState(false)
 
     const handleLoad = () => {
-        if (local.src) {
-            loadedImages.add(local.src)
+        if (src) {
+            loadedImages.add(src)
         }
         setIsLoaded(true)
     }
@@ -64,37 +62,35 @@ export function LazyImage(props: LazyImageProps) {
 
     return (
         <div
-            class={cx("relative overflow-hidden", local.aspectRatio && "w-full")}
-            style={local.aspectRatio ? { "aspect-ratio": local.aspectRatio } : undefined}
+            className={cx("relative overflow-hidden", aspectRatio && "w-full")}
+            style={aspectRatio ? { aspectRatio } : undefined}
         >
-            <Show when={!isLoaded() && !hasError()}>
-                <div class="absolute inset-0 animate-pulse bg-[#e8e6e3] dark:bg-[#2d2b29]" />
-            </Show>
+            {!isLoaded && !hasError && (
+                <div className="absolute inset-0 animate-pulse bg-[#e8e6e3] dark:bg-[#2d2b29]" />
+            )}
 
-            <Show when={hasError()}>
-                <div class="absolute inset-0 flex items-center justify-center bg-[#f5f4f2] dark:bg-[#2d2b29]">
-                    <span class="text-sm text-neutral-500">Failed to load image</span>
+            {hasError && (
+                <div className="absolute inset-0 flex items-center justify-center bg-[#f5f4f2] dark:bg-[#2d2b29]">
+                    <span className="text-sm text-neutral-500">Failed to load image</span>
                 </div>
-            </Show>
+            )}
 
-            <Show when={local.src}>
-                {(src) => (
-                    <img
-                        {...imgProps}
-                        src={src()}
-                        alt={local.alt}
-                        loading={props.loading ?? "lazy"}
-                        decoding={props.decoding ?? "async"}
-                        class={cx(
-                            "h-full w-full object-cover transition-opacity duration-200 ease-out",
-                            isLoaded() ? "opacity-100" : "opacity-0",
-                            imgProps.class,
-                        )}
-                        onLoad={handleLoad}
-                        onError={handleError}
-                    />
-                )}
-            </Show>
+            {src && (
+                <img
+                    {...imgProps}
+                    src={src}
+                    alt={alt}
+                    loading={loading ?? "lazy"}
+                    decoding={decoding ?? "async"}
+                    className={cx(
+                        "h-full w-full object-cover transition-opacity duration-200 ease-out",
+                        isLoaded ? "opacity-100" : "opacity-0",
+                        className,
+                    )}
+                    onLoad={handleLoad}
+                    onError={handleError}
+                />
+            )}
         </div>
     )
 }

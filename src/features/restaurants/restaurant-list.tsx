@@ -1,74 +1,59 @@
-import { For, Show, type Accessor, createEffect } from "solid-js"
+import { useEffect, useRef } from "react"
 import { RestaurantCard } from "./restaurant-card"
 import { EmptyRestaurantsState } from "./empty-restaurants-state"
 import type { Restaurant } from "@core/hooks"
 
-// Track which restaurant IDs have already been animated (persists across re-renders)
 const animatedRestaurantIds = new Set<string>()
 
 type RestaurantListProps = {
-    restaurants: Accessor<Restaurant[]>
+    restaurants: Restaurant[]
     hasFilter?: boolean
     hasSearch?: boolean
     onAddClick: () => void
     sortOrder?: "added" | "name"
 }
 
-export function RestaurantList(props: RestaurantListProps) {
-    // Track previous sort order to detect changes
-    let previousSortOrder = props.sortOrder
+export function RestaurantList({ restaurants, hasFilter, hasSearch, onAddClick, sortOrder }: RestaurantListProps) {
+    const previousSortOrder = useRef(sortOrder)
 
-    createEffect(() => {
-        const currentSort = props.sortOrder
-        // If sort order changed, clear animations so cards don't re-animate
-        if (currentSort !== previousSortOrder) {
+    useEffect(() => {
+        if (sortOrder !== previousSortOrder.current) {
             animatedRestaurantIds.clear()
-            previousSortOrder = currentSort
+            previousSortOrder.current = sortOrder
         }
-    })
+    }, [sortOrder])
 
     const getAnimationProps = (restaurant: Restaurant, index: number) => {
-        // Skip animations entirely when sorting by name
-        if (props.sortOrder === "name") {
-            return {}
-        }
-        // If this ID was already animated, don't animate again
-        if (animatedRestaurantIds.has(restaurant._id)) {
-            return {}
-        }
-        // Mark ID as animated and apply animation
+        if (sortOrder === "name") return {}
+        if (animatedRestaurantIds.has(restaurant._id)) return {}
         animatedRestaurantIds.add(restaurant._id)
         return {
-            class: "animate-card-enter",
-            style: { "animation-delay": `${index * 100}ms` },
+            className: "animate-card-enter",
+            style: { animationDelay: `${index * 100}ms` },
         }
     }
 
     return (
-        <div data-component="restaurant-list" class="grid gap-8 md:grid-cols-2 md:gap-10">
-            <Show
-                when={props.restaurants().length > 0}
-                fallback={
-                    <EmptyRestaurantsState
-                        hasFilter={props.hasFilter ?? false}
-                        hasSearch={props.hasSearch ?? false}
-                        onAddClick={props.onAddClick}
-                    />
-                }
-            >
-                <For each={props.restaurants()}>
-                    {(restaurant, index) => {
-                        const animationProps = getAnimationProps(restaurant, index())
-                        return (
-                            <RestaurantCard
-                                restaurant={restaurant}
-                                style={animationProps.style}
-                                class={animationProps.class}
-                            />
-                        )
-                    }}
-                </For>
-            </Show>
+        <div data-component="restaurant-list" className="grid gap-8 md:grid-cols-2 md:gap-10">
+            {restaurants.length > 0 ? (
+                restaurants.map((restaurant, index) => {
+                    const animationProps = getAnimationProps(restaurant, index)
+                    return (
+                        <RestaurantCard
+                            key={restaurant._id}
+                            restaurant={restaurant}
+                            style={animationProps.style}
+                            className={animationProps.className}
+                        />
+                    )
+                })
+            ) : (
+                <EmptyRestaurantsState
+                    hasFilter={hasFilter ?? false}
+                    hasSearch={hasSearch ?? false}
+                    onAddClick={onAddClick}
+                />
+            )}
         </div>
     )
 }

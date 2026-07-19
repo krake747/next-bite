@@ -1,10 +1,13 @@
-import { createSignal, createEffect, For } from "solid-js"
-import { Dialog } from "@kobalte/core/dialog"
-import Sparkles from "lucide-solid/icons/sparkles"
-import UtensilsCrossed from "lucide-solid/icons/utensils-crossed"
-import Star from "lucide-solid/icons/star"
-import Share from "lucide-solid/icons/share"
-import X from "lucide-solid/icons/x"
+import { useState, useEffect } from "react"
+import { Dialog } from "@base-ui/react/dialog"
+import Sparkles from "lucide-react/icons/sparkles"
+import UtensilsCrossed from "lucide-react/icons/utensils-crossed"
+import Star from "lucide-react/icons/star"
+import Share from "lucide-react/icons/share"
+import X from "lucide-react/icons/x"
+import { WinnerCard } from "./winner-card"
+import { Button } from "@ui/button"
+import type { Restaurant } from "@core/hooks"
 
 type Particle = {
     id: number
@@ -21,9 +24,9 @@ type Particle = {
 const PARTICLE_COLORS = ["#f97316", "#fbbf24", "#f59e0b", "#ef4444", "#ec4899"]
 
 function CelebrationParticles() {
-    const [particles, setParticles] = createSignal<Particle[]>([])
+    const [particles, setParticles] = useState<Particle[]>([])
 
-    createEffect(() => {
+    useEffect(() => {
         const newParticles: Particle[] = Array.from({ length: 24 }, (_, i) => {
             const color = PARTICLE_COLORS[Math.floor(Math.random() * PARTICLE_COLORS.length)]!
             return {
@@ -39,50 +42,49 @@ function CelebrationParticles() {
             }
         })
         setParticles(newParticles)
-    })
+    }, [])
 
     return (
-        <div class="pointer-events-none absolute inset-0 overflow-hidden">
-            <For each={particles()}>
-                {(particle) => (
-                    <div
-                        class="animate-celebrate-particle absolute rounded-full"
-                        style={{
-                            left: `${particle.x}%`,
-                            top: `${particle.y}%`,
-                            width: `${particle.size}px`,
-                            height: `${particle.size}px`,
-                            background: particle.color,
-                            "animation-duration": `${particle.duration}ms`,
-                            "animation-delay": `${particle.delay}ms`,
-                            "--rand-sign": particle.randSign,
-                            "--rand-y": `${particle.randY}px`,
-                        }}
-                    />
-                )}
-            </For>
+        <div className="pointer-events-none absolute inset-0 overflow-hidden">
+            {particles.map((particle) => (
+                <div
+                    key={particle.id}
+                    className="animate-celebrate-particle absolute rounded-full"
+                    style={{
+                        left: `${particle.x}%`,
+                        top: `${particle.y}%`,
+                        width: `${particle.size}px`,
+                        height: `${particle.size}px`,
+                        background: particle.color,
+                        animationDuration: `${particle.duration}ms`,
+                        animationDelay: `${particle.delay}ms`,
+                        ["--rand-sign" as string]: particle.randSign,
+                        ["--rand-y" as string]: `${particle.randY}px`,
+                    }}
+                />
+            ))}
         </div>
     )
 }
 
 function SpotlightRing() {
     return (
-        <div class="pointer-events-none absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
-            <div class="animate-ping-slow absolute -inset-8 rounded-full bg-flame-pea-500/20 blur-2xl" />
-            <div class="animate-pulse-slow absolute -inset-12 rounded-full bg-flame-pea-400/10 blur-3xl" />
+        <div className="pointer-events-none absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
+            <div className="animate-ping-slow absolute -inset-8 rounded-full bg-flame-pea-500/20 blur-2xl" />
+            <div className="animate-pulse-slow absolute -inset-12 rounded-full bg-flame-pea-400/10 blur-3xl" />
         </div>
     )
 }
 
 export function Instructions() {
     return (
-        <div class="flex items-center justify-center gap-3 text-center">
-            <div class="flex size-9 shrink-0 items-center justify-center rounded-full bg-flame-pea-100 sm:size-10 dark:bg-flame-pea-900/30">
-                <UtensilsCrossed class="size-4 text-flame-pea-600 sm:size-5 dark:text-flame-pea-400" />
+        <div className="flex items-center justify-center gap-3 text-center">
+            <div className="flex size-9 shrink-0 items-center justify-center rounded-full bg-flame-pea-100 sm:size-10 dark:bg-flame-pea-900/30">
+                <UtensilsCrossed className="size-4 text-flame-pea-600 sm:size-5 dark:text-flame-pea-400" />
             </div>
             <p
-                class="text-sm leading-relaxed font-medium text-neutral-700 sm:text-base dark:text-neutral-300"
-                style={{ "font-family": "var(--font-body)" }}
+                className="text-sm leading-relaxed font-medium text-neutral-700 sm:text-base dark:text-neutral-300"
+                style={{ fontFamily: "var(--font-body)" }}
             >
                 Press the button to give the wheel a whirl.
             </p>
@@ -90,11 +92,13 @@ export function Instructions() {
     )
 }
 
-import { WinnerCard } from "./winner-card"
-import { Button } from "@ui/button"
-import type { Restaurant } from "@core/hooks"
-
-export function WinnerModal(props: {
+export function WinnerModal({
+    show,
+    onOpenChange,
+    restaurant,
+    onSpinAgain,
+    isSpinning,
+}: {
     show: boolean
     onOpenChange: (open: boolean) => void
     restaurant: Restaurant
@@ -102,93 +106,90 @@ export function WinnerModal(props: {
     isSpinning: boolean
 }) {
     return (
-        <Dialog open={props.show} onOpenChange={props.onOpenChange}>
+        <Dialog.Root open={show} onOpenChange={onOpenChange}>
             <Dialog.Portal>
-                <Dialog.Overlay
-                    class="animate-in fade-in fixed inset-0 z-50 flex items-center justify-center bg-neutral-900/80 backdrop-blur-sm duration-200"
-                    onClick={() => props.onOpenChange(false)}
+                <Dialog.Backdrop
+                    className="animate-in fade-in fixed inset-0 z-50 flex items-center justify-center bg-neutral-900/80 backdrop-blur-sm duration-200"
+                    onClick={() => onOpenChange(false)}
                 >
-                    <Dialog.Content
-                        class="animate-winner-modal relative w-[90%] max-w-sm overflow-hidden rounded-2xl bg-white shadow-2xl outline-none dark:bg-neutral-900"
+                    <Dialog.Popup
+                        className="animate-winner-modal relative w-[90%] max-w-sm overflow-hidden rounded-2xl bg-white shadow-2xl outline-none dark:bg-neutral-900"
                         onClick={(e) => e.stopPropagation()}
                     >
-                        <div class="pointer-events-none absolute inset-0 -mx-4 -mt-16 flex items-center justify-center">
+                        <div className="pointer-events-none absolute inset-0 -mx-4 -mt-16 flex items-center justify-center">
                             <SpotlightRing />
                             <CelebrationParticles />
                         </div>
 
-                        <div class="relative px-5 pt-8 pb-5">
+                        <div className="relative px-5 pt-8 pb-5">
                             <button
-                                onClick={() => props.onOpenChange(false)}
-                                class="absolute top-2 right-2 flex size-8 items-center justify-center rounded-full bg-neutral-100 text-neutral-400 transition-colors hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700"
+                                onClick={() => onOpenChange(false)}
+                                className="absolute top-2 right-2 flex size-8 items-center justify-center rounded-full bg-neutral-100 text-neutral-400 transition-colors hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700"
                             >
-                                <X class="size-4" />
+                                <X className="size-4" />
                             </button>
 
-                            <div class="relative mb-4 flex justify-center">
-                                <div class="relative">
-                                    <div class="animate-winner-glow absolute inset-0 rounded-full bg-flame-pea-400/30 blur-xl" />
-                                    <div class="relative flex size-14 items-center justify-center rounded-full bg-linear-to-br from-flame-pea-500 via-flame-pea-600 to-flame-pea-800 shadow-lg ring-4 ring-flame-pea-400/20">
-                                        <Sparkles class="size-7 text-white" />
+                            <div className="relative mb-4 flex justify-center">
+                                <div className="relative">
+                                    <div className="animate-winner-glow absolute inset-0 rounded-full bg-flame-pea-400/30 blur-xl" />
+                                    <div className="relative flex size-14 items-center justify-center rounded-full bg-linear-to-br from-flame-pea-500 via-flame-pea-600 to-flame-pea-800 shadow-lg ring-4 ring-flame-pea-400/20">
+                                        <Sparkles className="size-7 text-white" />
                                     </div>
                                 </div>
                             </div>
 
-                            <div class="relative mb-3 flex items-center justify-center gap-2">
-                                <div class="h-px w-6 bg-linear-to-r from-transparent to-flame-pea-400/50" />
-                                <div class="flex items-center gap-1 text-xs font-medium tracking-widest text-flame-pea-600 uppercase dark:text-flame-pea-400">
-                                    <Star class="size-2.5 fill-current" />
+                            <div className="relative mb-3 flex items-center justify-center gap-2">
+                                <div className="h-px w-6 bg-linear-to-r from-transparent to-flame-pea-400/50" />
+                                <div className="flex items-center gap-1 text-xs font-medium tracking-widest text-flame-pea-600 uppercase dark:text-flame-pea-400">
+                                    <Star className="size-2.5 fill-current" />
                                     Winner
-                                    <Star class="size-2.5 fill-current" />
+                                    <Star className="size-2.5 fill-current" />
                                 </div>
-                                <div class="h-px w-6 bg-linear-to-l from-transparent to-flame-pea-400/50" />
+                                <div className="h-px w-6 bg-linear-to-l from-transparent to-flame-pea-400/50" />
                             </div>
 
-                            <Dialog.Title class="sr-only">Winner</Dialog.Title>
+                            <Dialog.Title className="sr-only">Winner</Dialog.Title>
 
                             <h2
-                                class="animate-title-reveal bg-linear-to-br from-neutral-900 via-neutral-800 to-neutral-900 bg-clip-text text-center text-2xl font-bold tracking-tight text-transparent dark:from-neutral-100 dark:via-neutral-200 dark:to-neutral-400"
-                                style={{ "font-family": "var(--font-display)" }}
+                                className="animate-title-reveal bg-linear-to-br from-neutral-900 via-neutral-800 to-neutral-900 bg-clip-text text-center text-2xl font-bold tracking-tight text-transparent dark:from-neutral-100 dark:via-neutral-200 dark:to-neutral-400"
+                                style={{ fontFamily: "var(--font-display)" }}
                             >
-                                {props.restaurant.name}
+                                {restaurant.name}
                             </h2>
 
-                            <p class="animate-fade-in-up mt-1.5 text-center text-xs text-neutral-500 dark:text-neutral-400">
+                            <p className="animate-fade-in-up mt-1.5 text-center text-xs text-neutral-500 dark:text-neutral-400">
                                 Your next culinary adventure awaits
                             </p>
 
-                            <div class="animate-card-reveal mt-4">
-                                <WinnerCard restaurant={props.restaurant} />
+                            <div className="animate-card-reveal mt-4">
+                                <WinnerCard restaurant={restaurant} />
                             </div>
 
-                            <div class="mt-4 flex gap-2">
+                            <div className="mt-4 flex gap-2">
                                 <Button
                                     variant="primary"
                                     size="md"
-                                    onClick={props.onSpinAgain}
-                                    disabled={props.isSpinning}
-                                    class="flex-1"
+                                    onClick={onSpinAgain}
+                                    disabled={isSpinning}
+                                    className="flex-1"
                                 >
-                                    <Sparkles class="size-4" />
+                                    <Sparkles className="size-4" />
                                     <span>Spin Again</span>
                                 </Button>
                                 <Button
                                     variant="secondary"
                                     size="md"
                                     onClick={async () => {
-                                        const lat = props.restaurant.lat
-                                        const lng = props.restaurant.lng
+                                        const lat = restaurant.lat
+                                        const lng = restaurant.lng
                                         const inviteUrl = `${window.location.origin}/wheel`
                                         const mapsUrl =
                                             lat != null && lng != null
                                                 ? `https://maps.google.com/?q=${lat},${lng}`
                                                 : undefined
                                         const mapsLine = mapsUrl ? `\n\n📍 Google Maps: ${mapsUrl}` : ""
-                                        const text = `Just tried the dinner wheel... fate is UNHINGED! 😂 We're going to ${props.restaurant.name}!${mapsLine}\n\nYou gotta try this -> ${inviteUrl}`
-                                        const shareData = {
-                                            title: "Next Bite",
-                                            text: text,
-                                        }
+                                        const text = `Just tried the dinner wheel... fate is UNHINGED! 😂 We're going to ${restaurant.name}!${mapsLine}\n\nYou gotta try this -> ${inviteUrl}`
+                                        const shareData = { title: "Next Bite", text }
                                         if (navigator.share && navigator.canShare?.(shareData)) {
                                             try {
                                                 await navigator.share(shareData)
@@ -209,16 +210,16 @@ export function WinnerModal(props: {
                                             }
                                         }
                                     }}
-                                    class="flex-1"
+                                    className="flex-1"
                                 >
-                                    <Share class="size-4" />
+                                    <Share className="size-4" />
                                     <span>Share</span>
                                 </Button>
                             </div>
                         </div>
-                    </Dialog.Content>
-                </Dialog.Overlay>
+                    </Dialog.Popup>
+                </Dialog.Backdrop>
             </Dialog.Portal>
-        </Dialog>
+        </Dialog.Root>
     )
 }

@@ -29,6 +29,10 @@
             }
         },
         "vtsls": {
+            "binary": {
+                "path": "node_modules/.bin/tsc",
+                "arguments": ["--lsp", "--stdio"]
+            },
             "initialization_options": {
                 "typescript": {
                     "preferences": {

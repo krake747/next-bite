@@ -1,5 +1,5 @@
 import { defineConfig } from "vite"
-import solid from "vite-plugin-solid"
+import react from "@vitejs/plugin-react"
 import tailwindcss from "@tailwindcss/vite"
 import { tanstackRouter } from "@tanstack/router-plugin/vite"
 import path from "path"
@@ -7,6 +7,7 @@ import path from "path"
 export default defineConfig({
     resolve: {
         alias: {
+            "lucide-react/icons": path.resolve(__dirname, "./node_modules/lucide-react/dist/esm/icons"),
             "@ui": path.resolve(__dirname, "./src/ui"),
             "@core": path.resolve(__dirname, "./src/core"),
             "@features": path.resolve(__dirname, "./src/features"),
@@ -19,10 +20,10 @@ export default defineConfig({
     },
     plugins: [
         tanstackRouter({
-            target: "solid",
+            target: "react",
             autoCodeSplitting: true,
         }),
         tailwindcss(),
-        solid(),
+        react(),
     ],
 })

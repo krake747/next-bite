@@ -1,19 +1,20 @@
-import { createQuery, createMutation, createAction } from "./convex-solid"
+import { useConvexQuery, useConvexMutation, useConvexAction } from "./convex-solid.tsx"
 import { api } from "../../convex/_generated/api"
 import type { Doc, Id } from "../../convex/_generated/dataModel"
-import { authStore } from "./auth-store"
+import { useAuth } from "./auth-provider"
 
-export const useRestaurants = () => createQuery<Restaurant[]>(api.restaurants.get)
-export const useFriends = () => createQuery<Friend[]>(api.friends.get)
+export const useRestaurants = () => useConvexQuery<Restaurant[]>(api.restaurants.get)
+export const useFriends = () => useConvexQuery<Friend[]>(api.friends.get)
 
-export const useAddRestaurant = () => createMutation(api.restaurants.add)
-export const useAddRestaurantWithHours = () => createAction(api.restaurants.addWithOpeningHours)
-export const useUpdateRestaurant = () => createMutation(api.restaurants.update)
+export const useAddRestaurant = () => useConvexMutation(api.restaurants.add)
+export const useAddRestaurantWithHours = () => useConvexAction(api.restaurants.addWithOpeningHours)
+export const useUpdateRestaurant = () => useConvexMutation(api.restaurants.update)
+export const useDeleteRestaurant = () => useConvexMutation(api.restaurants.remove)
 
-export const useDeleteImage = () => createMutation(api.restaurants.deleteImage)
-export const useCleanupStorage = () => createMutation(api.restaurants.cleanupStorage)
-export const useRefreshOpeningHours = () => createAction(api.restaurants.refreshOpeningHours)
-export const useLookupPlaceIdAndHours = () => createAction(api.restaurants.lookupPlaceIdAndHours)
+export const useDeleteImage = () => useConvexMutation(api.restaurants.deleteImage)
+export const useCleanupStorage = () => useConvexMutation(api.restaurants.cleanupStorage)
+export const useRefreshOpeningHours = () => useConvexAction(api.restaurants.refreshOpeningHours)
+export const useLookupPlaceIdAndHours = () => useConvexAction(api.restaurants.lookupPlaceIdAndHours)
 
 export type ImageRecord = {
     url: string
@@ -55,7 +56,7 @@ export function useUploadImage() {
     }
 }
 
-export const useAuth = () => authStore
+export { useAuth }
 
 export type Restaurant = Doc<"restaurants">
 export type Friend = Doc<"friends">

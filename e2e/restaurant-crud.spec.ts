@@ -51,3 +51,37 @@ test("restaurant CRUD: add, edit, view card", async ({ page }) => {
 
     await expect(page.getByText(RESTAURANT.cuisine).first()).toBeVisible()
 })
+
+test("restaurant delete: add then delete with confirmation", async ({ page }) => {
+    test.setTimeout(60000)
+
+    const deleteEmail = testEmail("delete")
+    await signUp(page, deleteEmail, testPassword(), "E2E Delete Test")
+
+    const friendName = await getFirstFriendName(page)
+
+    const deleteName = `Delete Me ${Date.now()}`
+
+    await page.goto("/")
+    await waitForAppLoad(page)
+    await page.getByRole("button", { name: "Add Restaurant" }).click()
+
+    await page.getByLabel("Restaurant name").fill(deleteName)
+    await page.getByLabel("Cuisine").fill("Test")
+    await fillLocationField(page, "Delete Street 1, Berlin")
+    await page.getByLabel("Added by").selectOption(friendName)
+
+    await page.getByRole("button", { name: "Add Restaurant" }).last().click()
+
+    await expect(page.getByRole("heading", { name: deleteName })).toBeVisible({ timeout: 10000 })
+
+    await page.getByLabel("Delete restaurant").first().click()
+
+    await page.getByRole("button", { name: "Delete" }).click()
+
+    await page.waitForTimeout(1000)
+    await page.reload()
+    await waitForAppLoad(page)
+
+    await expect(page.getByRole("heading", { name: deleteName })).toHaveCount(0, { timeout: 10000 })
+})
