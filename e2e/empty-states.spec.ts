@@ -1,4 +1,5 @@
 import { test, expect } from "@playwright/test"
+
 import { testEmail, testPassword, signUp, waitForAppLoad } from "./utils/test-helpers"
 
 test("empty restaurant list shows no-matches prompt when searching", async ({ page }) => {

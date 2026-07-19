@@ -1,13 +1,14 @@
-import { useState } from "react"
-import { createFileRoute, useNavigate, Link } from "@tanstack/react-router"
 import { useForm, Field, Form } from "@formisch/react"
+import { createFileRoute, useNavigate, Link } from "@tanstack/react-router"
+import UserIcon from "lucide-react/icons/user"
+import UtensilsCrossed from "lucide-react/icons/utensils-crossed"
+import { useState } from "react"
+import * as v from "valibot"
+
 import { useAuth } from "@core/hooks"
 import { Button } from "@ui/button"
 import { FieldWrapper, Input } from "@ui/field"
 import { LoadingPlaceholder } from "@ui/loading"
-import UtensilsCrossed from "lucide-react/icons/utensils-crossed"
-import UserIcon from "lucide-react/icons/user"
-import * as v from "valibot"
 
 const SignupSchema = v.object({
     name: v.pipe(v.string(), v.minLength(1)),

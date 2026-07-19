@@ -1,4 +1,5 @@
 import { test, expect } from "@playwright/test"
+
 import { waitForAppLoad } from "./utils/test-helpers"
 
 test.describe("Auth guards", () => {

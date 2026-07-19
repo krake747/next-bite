@@ -1,14 +1,18 @@
-import { defineConfig } from "vite"
-import react from "@vitejs/plugin-react"
-import tailwindcss from "@tailwindcss/vite"
-import { tanstackRouter } from "@tanstack/router-plugin/vite"
 import path from "path"
 
+import babel from "@rolldown/plugin-babel"
+import tailwindcss from "@tailwindcss/vite"
+import { tanstackRouter } from "@tanstack/router-plugin/vite"
+import react, { reactCompilerPreset } from "@vitejs/plugin-react"
+import { defineConfig } from "vite"
+
+// oxlint-disable-next-line import/no-default-export
 export default defineConfig({
     resolve: {
         alias: {
             "lucide-react/icons": path.resolve(__dirname, "./node_modules/lucide-react/dist/esm/icons"),
             "@ui": path.resolve(__dirname, "./src/ui"),
+            "@pattern": path.resolve(__dirname, "./src/pattern"),
             "@core": path.resolve(__dirname, "./src/core"),
             "@features": path.resolve(__dirname, "./src/features"),
             "@routes": path.resolve(__dirname, "./src/routes"),
@@ -23,7 +27,10 @@ export default defineConfig({
             target: "react",
             autoCodeSplitting: true,
         }),
-        tailwindcss(),
         react(),
+        babel({
+            presets: [reactCompilerPreset()],
+        }),
+        tailwindcss(),
     ],
 })

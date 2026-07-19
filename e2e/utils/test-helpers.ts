@@ -12,7 +12,7 @@ export function testPassword(): string {
 }
 
 export async function waitForAppLoad(page: Page): Promise<void> {
-    await page.waitForSelector('[data-component="top-bar"]', { timeout: 15000 })
+    await page.waitForSelector('[data-slot="top-bar"]', { timeout: 15000 })
 }
 
 export async function signUp(page: Page, email: string, password: string, name: string): Promise<void> {

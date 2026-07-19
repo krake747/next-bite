@@ -1,4 +1,5 @@
-import { useReducer, useCallback } from "react"
+import { useReducer } from "react"
+
 import { authClient } from "./auth-client"
 
 type User = {
@@ -98,17 +99,17 @@ function useAuthStore() {
         error: null,
     })
 
-    const saveUser = useCallback((userData: User) => {
+    const saveUser = (userData: User) => {
         dispatch({ type: "SET_USER", user: userData })
         saveSessionToStorage(userData)
-    }, [])
+    }
 
-    const clearUser = useCallback(() => {
+    const clearUser = () => {
         dispatch({ type: "CLEAR_USER" })
         clearSessionFromStorage()
-    }, [])
+    }
 
-    const initializeAuth = useCallback(async () => {
+    const initializeAuth = async () => {
         dispatch({ type: "SET_LOADING", isLoading: true })
         dispatch({ type: "SET_ERROR", error: null })
 
@@ -139,73 +140,67 @@ function useAuthStore() {
         } finally {
             dispatch({ type: "SET_LOADING", isLoading: false })
         }
-    }, [saveUser, clearUser])
+    }
 
-    const signInWithPassword = useCallback(
-        async (email: string, password: string) => {
-            dispatch({ type: "SET_LOADING", isLoading: true })
-            dispatch({ type: "SET_ERROR", error: null })
+    const signInWithPassword = async (email: string, password: string) => {
+        dispatch({ type: "SET_LOADING", isLoading: true })
+        dispatch({ type: "SET_ERROR", error: null })
 
-            try {
-                const result = await authClient.signIn.email({ email, password })
+        try {
+            const result = await authClient.signIn.email({ email, password })
 
-                if (result.error) {
-                    const message = result.error.message ?? "Sign in failed"
-                    dispatch({ type: "SET_ERROR", error: message })
-                    throw new Error(message)
-                }
-
-                if (result.data?.user) {
-                    saveUser(mapSessionUserToUserPayload(result.data.user))
-                } else {
-                    throw new Error("No user returned: email verification required")
-                }
-            } catch (err) {
-                if (!state.error) {
-                    const message = err instanceof Error ? err.message : "Sign in failed"
-                    dispatch({ type: "SET_ERROR", error: message })
-                }
-                throw err
-            } finally {
-                dispatch({ type: "SET_LOADING", isLoading: false })
+            if (result.error) {
+                const message = result.error.message ?? "Sign in failed"
+                dispatch({ type: "SET_ERROR", error: message })
+                throw new Error(message)
             }
-        },
-        [state.error, saveUser],
-    )
 
-    const signUpWithPassword = useCallback(
-        async (name: string, email: string, password: string) => {
-            dispatch({ type: "SET_LOADING", isLoading: true })
-            dispatch({ type: "SET_ERROR", error: null })
-
-            try {
-                const result = await authClient.signUp.email({ name, email, password })
-
-                if (result.error) {
-                    const message = result.error.message ?? "Sign up failed"
-                    dispatch({ type: "SET_ERROR", error: message })
-                    throw new Error(message)
-                }
-
-                if (result.data?.user) {
-                    saveUser(mapSessionUserToUserPayload(result.data.user))
-                } else {
-                    throw new Error("No user returned: email verification required")
-                }
-            } catch (err) {
-                if (!state.error) {
-                    const message = err instanceof Error ? err.message : "Sign up failed"
-                    dispatch({ type: "SET_ERROR", error: message })
-                }
-                throw err
-            } finally {
-                dispatch({ type: "SET_LOADING", isLoading: false })
+            if (result.data?.user) {
+                saveUser(mapSessionUserToUserPayload(result.data.user))
+            } else {
+                throw new Error("No user returned: email verification required")
             }
-        },
-        [state.error, saveUser],
-    )
+        } catch (err) {
+            if (!state.error) {
+                const message = err instanceof Error ? err.message : "Sign in failed"
+                dispatch({ type: "SET_ERROR", error: message })
+            }
+            throw err
+        } finally {
+            dispatch({ type: "SET_LOADING", isLoading: false })
+        }
+    }
 
-    const signOut = useCallback(async () => {
+    const signUpWithPassword = async (name: string, email: string, password: string) => {
+        dispatch({ type: "SET_LOADING", isLoading: true })
+        dispatch({ type: "SET_ERROR", error: null })
+
+        try {
+            const result = await authClient.signUp.email({ name, email, password })
+
+            if (result.error) {
+                const message = result.error.message ?? "Sign up failed"
+                dispatch({ type: "SET_ERROR", error: message })
+                throw new Error(message)
+            }
+
+            if (result.data?.user) {
+                saveUser(mapSessionUserToUserPayload(result.data.user))
+            } else {
+                throw new Error("No user returned: email verification required")
+            }
+        } catch (err) {
+            if (!state.error) {
+                const message = err instanceof Error ? err.message : "Sign up failed"
+                dispatch({ type: "SET_ERROR", error: message })
+            }
+            throw err
+        } finally {
+            dispatch({ type: "SET_LOADING", isLoading: false })
+        }
+    }
+
+    const signOut = async () => {
         dispatch({ type: "SET_LOADING", isLoading: true })
 
         try {
@@ -214,7 +209,7 @@ function useAuthStore() {
             clearUser()
             dispatch({ type: "SET_LOADING", isLoading: false })
         }
-    }, [clearUser])
+    }
 
     return {
         ...state,

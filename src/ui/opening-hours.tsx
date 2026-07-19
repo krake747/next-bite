@@ -1,5 +1,5 @@
-import { useMemo } from "react"
 import Clock from "lucide-react/icons/clock"
+
 import type { OpeningHours } from "@core/hooks"
 
 function isOpenNow(openingHours: OpeningHours): boolean {
@@ -24,34 +24,19 @@ export function OpeningHours({
     openingHours: OpeningHours | undefined
     onClick?: () => void
 }) {
-    const openNow = useMemo(() => {
-        if (!openingHours) return false
-        return isOpenNow(openingHours)
-    }, [openingHours])
+    const openNow = openingHours ? isOpenNow(openingHours) : false
 
-    const todayIndex = useMemo(() => {
+    const todayIndex = (() => {
         const day = new Date().getDay()
         return day === 0 ? 6 : day - 1
-    }, [])
+    })()
 
-    const todayText = useMemo(() => {
-        const texts = openingHours?.weekdayText
-        if (!texts || texts.length === 0) return ""
-        const index = todayIndex
-        return texts[index] ?? ""
-    }, [openingHours, todayIndex])
+    const texts = openingHours?.weekdayText
+    const todayText = texts && texts.length > 0 ? (texts[todayIndex] ?? "") : ""
 
-    const todayDayName = useMemo(() => {
-        const text = todayText
-        if (!text) return ""
-        return text.split(":")[0] ?? ""
-    }, [todayText])
+    const todayDayName = todayText ? (todayText.split(":")[0] ?? "") : ""
 
-    const todayHours = useMemo(() => {
-        const text = todayText
-        if (!text) return ""
-        return text.split(": ")[1] ?? ""
-    }, [todayText])
+    const todayHours = todayText ? (todayText.split(": ")[1] ?? "") : ""
 
     if (!openingHours?.weekdayText || openingHours.weekdayText.length === 0) return null
 

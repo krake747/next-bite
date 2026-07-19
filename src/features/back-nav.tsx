@@ -1,8 +1,9 @@
 import { Link } from "@tanstack/react-router"
-import { Button } from "@ui/button"
 import ArrowLeft from "lucide-react/icons/arrow-left"
 import Shuffle from "lucide-react/icons/shuffle"
 import Sliders from "lucide-react/icons/sliders"
+
+import { Button } from "@ui/button"
 
 type BackNavProps = {
     backTo?: string
@@ -18,7 +19,7 @@ export function BackNav({ backTo, showWheelOptions, onRandom, onBuildYourOwn, is
     const isDisabled = !!(disabled || isSpinning)
 
     return (
-        <div data-component="back-nav" className="border-b border-neutral-200/60 py-4 dark:border-white/10">
+        <div data-slot="back-nav" className="border-b border-neutral-200/60 py-4 dark:border-white/10">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <Link
                     to={backTo ?? "/"}

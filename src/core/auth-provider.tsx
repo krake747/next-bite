@@ -1,8 +1,9 @@
-import { useState, useEffect, createContext, useContext, type ReactNode } from "react"
 import { ConvexClient } from "convex/browser"
-import { ConvexProvider } from "./convex-solid.tsx"
+import { useState, useEffect, createContext, useContext, type ReactNode } from "react"
+
 import { useAuthStore } from "./auth-store"
-import { LoadingPlaceholder } from "@ui/loading"
+import { ConvexProvider } from "./convex-solid.tsx"
+import { LoadingPlaceholder } from "./loading-placeholder"
 
 const convex = new ConvexClient(import.meta.env.VITE_CONVEX_URL)
 

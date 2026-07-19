@@ -1,9 +1,10 @@
-import { Button } from "@ui/button"
-import ZoomIn from "lucide-react/icons/zoom-in"
-import ZoomOut from "lucide-react/icons/zoom-out"
 import Maximize from "lucide-react/icons/maximize"
 import Minimize from "lucide-react/icons/minimize"
 import RotateCcw from "lucide-react/icons/rotate-ccw"
+import ZoomIn from "lucide-react/icons/zoom-in"
+import ZoomOut from "lucide-react/icons/zoom-out"
+
+import { Button } from "@ui/button"
 
 export function ZoomControls({
     zoom,

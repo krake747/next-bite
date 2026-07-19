@@ -1,18 +1,19 @@
-import { useState, useMemo } from "react"
 import { createFileRoute, useNavigate } from "@tanstack/react-router"
-import { Header, HeaderSubtitle, HeaderTitle, HeaderBadge } from "./-layout/header"
-import { PageLayout } from "./-layout/page-layout"
-import { PageContainer } from "./-layout/page-container"
-import { useRestaurants, useAuth } from "@core/hooks"
-import { useFilterState } from "@ui/hooks/use-filter"
-import { FriendsFilter } from "@features/friends-filter"
-import { RestaurantList } from "@features/restaurants/restaurant-list"
-import { AddRestaurantDialog } from "@features/restaurants/add-restaurant-dialog"
-import { Button } from "@ui/button"
-import { RestaurantCardSkeleton } from "@features/restaurants/restaurant-card-skeleton"
-import { FriendsFilterSkeleton } from "@features/friends-filter"
 import LoaderPinwheel from "lucide-react/icons/loader-pinwheel"
 import Plus from "lucide-react/icons/plus"
+import { useState } from "react"
+
+import { useRestaurants, useAuth } from "@core/hooks"
+import { FriendsFilter } from "@features/friends-filter"
+import { FriendsFilterSkeleton } from "@features/friends-filter"
+import { AddRestaurantDialog } from "@features/restaurants/add-restaurant-dialog"
+import { RestaurantCardSkeleton } from "@features/restaurants/restaurant-card-skeleton"
+import { RestaurantList } from "@features/restaurants/restaurant-list"
+import { Button } from "@ui/button"
+import { Header, HeaderSubtitle, HeaderTitle, HeaderBadge } from "@ui/header"
+import { useFilterState } from "@ui/hooks/use-filter"
+import { PageContainer } from "@ui/page-container"
+import { PageLayout } from "@ui/page-layout"
 
 export const Route = createFileRoute("/")({
     head: () => ({ meta: [{ title: "Our next bite" }] }),
@@ -31,24 +32,22 @@ function Home() {
     const filterState = useFilterState()
     const [sortOrder, setSortOrder] = useState<"added" | "name">("added")
 
-    const filteredRestaurants = useMemo(() => {
-        let result = restaurantListState
+    let filteredResult = restaurantListState
 
-        if (filterState.filter) {
-            result = result.filter((r) => r.addedBy === filterState.filter)
-        }
+    if (filterState.filter) {
+        filteredResult = filteredResult.filter((r) => r.addedBy === filterState.filter)
+    }
 
-        const searchTerm = filterState.search.trim().toLowerCase()
-        if (searchTerm) {
-            result = result.filter((r) => r.name.toLowerCase().includes(searchTerm))
-        }
+    const searchTerm = filterState.search.trim().toLowerCase()
+    if (searchTerm) {
+        filteredResult = filteredResult.filter((r) => r.name.toLowerCase().includes(searchTerm))
+    }
 
-        if (sortOrder === "name") {
-            result = [...result].sort((a, b) => a.name.localeCompare(b.name))
-        }
+    if (sortOrder === "name") {
+        filteredResult = [...filteredResult].sort((a, b) => a.name.localeCompare(b.name))
+    }
 
-        return result
-    }, [restaurantListState, filterState.filter, filterState.search, sortOrder])
+    const filteredRestaurants = filteredResult
 
     return (
         <PageLayout>

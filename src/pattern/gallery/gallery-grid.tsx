@@ -1,4 +1,4 @@
-import { LazyImage } from "@ui/lazy-image"
+import { LazyImage } from "@pattern/lazy-image"
 
 export function GalleryGrid({ images, onSelect }: { images: string[]; onSelect: (index: number) => void }) {
     return (

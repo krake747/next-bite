@@ -1,5 +1,6 @@
-import { useState, useCallback } from "react"
 import { useForm, Field, Form, reset, setInput } from "@formisch/react"
+import { useState } from "react"
+
 import {
     useAddRestaurantWithHours,
     useUpdateRestaurant,
@@ -8,12 +9,12 @@ import {
     type ImageRecord,
     type Restaurant,
 } from "@core/hooks"
+import { RestaurantSchema, type RestaurantOutput } from "@core/schemas"
+import { EmojiRating } from "@pattern/emoji-rating"
+import { ImageUpload } from "@pattern/image-upload"
+import { PlacesAutocomplete } from "@pattern/places-autocomplete"
 import { Button } from "@ui/button"
 import { FieldWrapper, Input, Textarea, Select } from "@ui/field"
-import { RestaurantSchema, type RestaurantOutput } from "@core/schemas"
-import { PlacesAutocomplete } from "@ui/places-autocomplete"
-import { ImageUpload } from "@ui/image-upload"
-import { EmojiRating } from "@ui/emoji-rating"
 
 export type RestaurantFormProps =
     | { mode: "add"; onSuccess: () => void; onCancel: () => void }
@@ -48,7 +49,7 @@ export function RestaurantForm(props: RestaurantFormProps) {
             : {}),
     })
 
-    const cleanupImages = useCallback(async () => {
+    const cleanupImages = async () => {
         if (props.mode === "add") {
             for (const img of images) {
                 try {
@@ -63,7 +64,7 @@ export function RestaurantForm(props: RestaurantFormProps) {
             setPendingRemovedStorageIds([])
         }
         setImages([])
-    }, [images, pendingRemovedStorageIds, cleanupStorage, props.mode])
+    }
 
     const handleClose = async () => {
         await cleanupImages()

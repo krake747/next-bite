@@ -1,8 +1,9 @@
 import MapPin from "lucide-react/icons/map-pin"
 import Utensils from "lucide-react/icons/utensils"
-import { LazyImage } from "@ui/lazy-image"
-import { OpeningHours } from "@ui/opening-hours"
+
 import type { Restaurant } from "@core/hooks"
+import { LazyImage } from "@pattern/lazy-image"
+import { OpeningHours } from "@ui/opening-hours"
 
 export function WinnerCard({ restaurant }: { restaurant: Restaurant }) {
     const hasLocation = restaurant.lat != null && restaurant.lng != null

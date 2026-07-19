@@ -1,9 +1,10 @@
-import { Suspense } from "react"
 import { HeadContent, Outlet, createRootRoute } from "@tanstack/react-router"
 import { APIProvider } from "@vis.gl/react-google-maps"
+import { Suspense } from "react"
+
 import { AuthProvider } from "@core/auth-provider"
 import { LoadingPlaceholder } from "@ui/loading"
-import { ThemeProvider } from "./-layout/theme-context"
+import { ThemeProvider } from "@ui/theme-context"
 
 export const Route = createRootRoute({
     component: RootComponent,

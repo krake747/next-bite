@@ -1,5 +1,5 @@
-import { cx } from "@ui/variants"
 import type { OpeningHours } from "@core/hooks"
+import { cx } from "@ui/variants"
 
 const DAYS = ["S", "M", "T", "W", "T", "F", "S"]
 

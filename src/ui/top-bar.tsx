@@ -1,15 +1,17 @@
 import { Popover } from "@base-ui/react/popover"
 import { Link } from "@tanstack/react-router"
-import UtensilsCrossed from "lucide-react/icons/utensils-crossed"
-import User from "lucide-react/icons/user"
 import LogOut from "lucide-react/icons/log-out"
-import { ThemeToggle } from "./theme-toggle"
+import User from "lucide-react/icons/user"
+import UtensilsCrossed from "lucide-react/icons/utensils-crossed"
+
 import { useAuth } from "@core/hooks"
+
+import { ThemeToggle } from "./theme-toggle"
 
 export function TopBar() {
     return (
         <div
-            data-component="top-bar"
+            data-slot="top-bar"
             className="sticky top-0 z-40 w-full border-b border-neutral-200/60 bg-[#faf9f7]/80 backdrop-blur-md dark:border-white/10 dark:bg-[#1a1918]/80"
         >
             <div className="mx-auto flex h-14 w-full max-w-350 items-center justify-between px-4 sm:px-6 lg:px-12">

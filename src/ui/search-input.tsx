@@ -1,6 +1,7 @@
-import type { ChangeEvent } from "react"
 import Search from "lucide-react/icons/search"
 import X from "lucide-react/icons/x"
+import type { ChangeEvent } from "react"
+
 import { cx } from "@ui/variants"
 
 type SearchInputProps = {

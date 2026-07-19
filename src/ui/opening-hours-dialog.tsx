@@ -1,7 +1,7 @@
-import { useMemo } from "react"
 import { Dialog } from "@base-ui/react/dialog"
 import Clock from "lucide-react/icons/clock"
 import X from "lucide-react/icons/x"
+
 import type { OpeningHours } from "@core/hooks"
 
 function isOpenNow(openingHours: OpeningHours): boolean {
@@ -30,24 +30,21 @@ export function OpeningHoursDialog({
     openingHours: OpeningHours | undefined
     restaurantName: string
 }) {
-    const openNow = useMemo(() => {
-        if (!openingHours) return false
-        return isOpenNow(openingHours)
-    }, [openingHours])
+    const openNow = openingHours ? isOpenNow(openingHours) : false
 
-    const fullWeek = useMemo(() => {
+    const fullWeek = (() => {
         if (!openingHours?.weekdayText) return []
         const texts = [...openingHours.weekdayText]
         const mondayOnwards = texts.slice(1)
         const sundayText = texts[0]
         if (sundayText) mondayOnwards.push(sundayText)
         return mondayOnwards
-    }, [openingHours])
+    })()
 
-    const today = useMemo(() => {
+    const today = (() => {
         const day = new Date().getDay()
         return day === 0 ? 6 : day - 1
-    }, [])
+    })()
 
     return (
         <Dialog.Root open={show} onOpenChange={onOpenChange}>

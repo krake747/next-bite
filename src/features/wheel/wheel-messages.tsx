@@ -1,13 +1,15 @@
-import { useState, useEffect } from "react"
 import { Dialog } from "@base-ui/react/dialog"
-import Sparkles from "lucide-react/icons/sparkles"
-import UtensilsCrossed from "lucide-react/icons/utensils-crossed"
-import Star from "lucide-react/icons/star"
 import Share from "lucide-react/icons/share"
+import Sparkles from "lucide-react/icons/sparkles"
+import Star from "lucide-react/icons/star"
+import UtensilsCrossed from "lucide-react/icons/utensils-crossed"
 import X from "lucide-react/icons/x"
-import { WinnerCard } from "./winner-card"
-import { Button } from "@ui/button"
+import { useState, useEffect } from "react"
+
 import type { Restaurant } from "@core/hooks"
+import { Button } from "@ui/button"
+
+import { WinnerCard } from "./winner-card"
 
 type Particle = {
     id: number

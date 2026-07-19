@@ -1,7 +1,9 @@
 import { useEffect, useRef } from "react"
-import { RestaurantCard } from "./restaurant-card"
-import { EmptyRestaurantsState } from "./empty-restaurants-state"
+
 import type { Restaurant } from "@core/hooks"
+
+import { EmptyRestaurantsState } from "./empty-restaurants-state"
+import { RestaurantCard } from "./restaurant-card"
 
 const animatedRestaurantIds = new Set<string>()
 
@@ -34,7 +36,7 @@ export function RestaurantList({ restaurants, hasFilter, hasSearch, onAddClick, 
     }
 
     return (
-        <div data-component="restaurant-list" className="grid gap-8 md:grid-cols-2 md:gap-10">
+        <div data-slot="restaurant-list" className="grid gap-8 md:grid-cols-2 md:gap-10">
             {restaurants.length > 0 ? (
                 restaurants.map((restaurant, index) => {
                     const animationProps = getAnimationProps(restaurant, index)
