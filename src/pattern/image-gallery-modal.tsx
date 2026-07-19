@@ -1,10 +1,11 @@
-import { useState, useEffect, useRef } from "react"
 import { Dialog } from "@base-ui/react/dialog"
-import { LazyImage } from "./lazy-image"
+import X from "lucide-react/icons/x"
+import { useState, useEffect, useRef } from "react"
+
+import { GalleryGrid } from "./gallery/gallery-grid"
 import { NavigationArrow } from "./gallery/navigation-arrow"
 import { ZoomControls } from "./gallery/zoom-controls"
-import { GalleryGrid } from "./gallery/gallery-grid"
-import X from "lucide-react/icons/x"
+import { LazyImage } from "./lazy-image"
 
 const ZOOM_STEP = 0.5
 const MIN_ZOOM = 0.5

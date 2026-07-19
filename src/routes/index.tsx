@@ -1,18 +1,20 @@
-import { useState } from "react"
 import { createFileRoute, useNavigate } from "@tanstack/react-router"
-import { Header, HeaderSubtitle, HeaderTitle, HeaderBadge } from "./-layout/header"
-import { PageLayout } from "./-layout/page-layout"
-import { PageContainer } from "./-layout/page-container"
-import { useRestaurants, useAuth } from "@core/hooks"
-import { useFilterState } from "@ui/hooks/use-filter"
-import { FriendsFilter } from "@features/friends-filter"
-import { RestaurantList } from "@features/restaurants/restaurant-list"
-import { AddRestaurantDialog } from "@features/restaurants/add-restaurant-dialog"
-import { Button } from "@ui/button"
-import { RestaurantCardSkeleton } from "@features/restaurants/restaurant-card-skeleton"
-import { FriendsFilterSkeleton } from "@features/friends-filter"
 import LoaderPinwheel from "lucide-react/icons/loader-pinwheel"
 import Plus from "lucide-react/icons/plus"
+import { useState } from "react"
+
+import { useRestaurants, useAuth } from "@core/hooks"
+import { FriendsFilter } from "@features/friends-filter"
+import { FriendsFilterSkeleton } from "@features/friends-filter"
+import { AddRestaurantDialog } from "@features/restaurants/add-restaurant-dialog"
+import { RestaurantCardSkeleton } from "@features/restaurants/restaurant-card-skeleton"
+import { RestaurantList } from "@features/restaurants/restaurant-list"
+import { Button } from "@ui/button"
+import { useFilterState } from "@ui/hooks/use-filter"
+
+import { Header, HeaderSubtitle, HeaderTitle, HeaderBadge } from "./-layout/header"
+import { PageContainer } from "./-layout/page-container"
+import { PageLayout } from "./-layout/page-layout"
 
 export const Route = createFileRoute("/")({
     head: () => ({ meta: [{ title: "Our next bite" }] }),

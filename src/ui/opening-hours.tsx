@@ -1,4 +1,5 @@
 import Clock from "lucide-react/icons/clock"
+
 import type { OpeningHours } from "@core/hooks"
 
 function isOpenNow(openingHours: OpeningHours): boolean {

@@ -1,4 +1,5 @@
 import { useState } from "react"
+
 import { cx } from "@ui/variants"
 
 const RATING_EMOJIS = ["🚑", "💩", "🤡", "😐", "😏", "😍", "🍆"] as const

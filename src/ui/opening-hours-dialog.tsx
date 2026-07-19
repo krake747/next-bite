@@ -1,6 +1,7 @@
 import { Dialog } from "@base-ui/react/dialog"
 import Clock from "lucide-react/icons/clock"
 import X from "lucide-react/icons/x"
+
 import type { OpeningHours } from "@core/hooks"
 
 function isOpenNow(openingHours: OpeningHours): boolean {

@@ -1,6 +1,6 @@
-import UtensilsCrossed from "lucide-react/icons/utensils-crossed"
 import { Link } from "@tanstack/react-router"
 import Plus from "lucide-react/icons/plus"
+import UtensilsCrossed from "lucide-react/icons/utensils-crossed"
 
 export function EmptyWheelState() {
     return (

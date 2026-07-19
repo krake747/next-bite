@@ -1,6 +1,7 @@
+import { useEffect, useState, useRef } from "react"
 import { create } from "zustand"
 import { immer } from "zustand/middleware/immer"
-import { useEffect, useState, useRef } from "react"
+
 import { type Restaurant } from "../../core/hooks"
 
 const WHEEL_CONFIG = {

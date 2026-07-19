@@ -1,4 +1,5 @@
 import type { ComponentProps } from "react"
+
 import { cx } from "@ui/variants"
 
 export function Card({ className, ...props }: ComponentProps<"div">) {

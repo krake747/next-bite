@@ -1,9 +1,10 @@
-import { defineConfig } from "vite"
+import path from "path"
+
 import babel from "@rolldown/plugin-babel"
-import react, { reactCompilerPreset } from "@vitejs/plugin-react"
 import tailwindcss from "@tailwindcss/vite"
 import { tanstackRouter } from "@tanstack/router-plugin/vite"
-import path from "path"
+import react, { reactCompilerPreset } from "@vitejs/plugin-react"
+import { defineConfig } from "vite"
 
 // oxlint-disable-next-line import/no-default-export
 export default defineConfig({

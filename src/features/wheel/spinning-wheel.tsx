@@ -1,8 +1,8 @@
-import { useWheel } from "./wheel-context"
-import { WHEEL_CONFIG_CONSTANTS } from "./wheel-store"
-import { WheelSegment } from "./wheel-segment"
-import { WheelNeedle } from "./wheel-needle"
 import { SpinWheelButton } from "./spin-wheel-button"
+import { useWheel } from "./wheel-context"
+import { WheelNeedle } from "./wheel-needle"
+import { WheelSegment } from "./wheel-segment"
+import { WHEEL_CONFIG_CONSTANTS } from "./wheel-store"
 
 export function SpinningWheel() {
     const wheel = useWheel()

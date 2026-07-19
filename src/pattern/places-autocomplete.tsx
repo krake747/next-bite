@@ -1,5 +1,5 @@
-import { useRef, useState, useEffect } from "react"
 import { useMapsLibrary } from "@vis.gl/react-google-maps"
+import { useRef, useState, useEffect } from "react"
 
 type PlaceAutocompleteElement = new (options?: {
     types?: string[]

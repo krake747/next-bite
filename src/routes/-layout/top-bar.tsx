@@ -1,10 +1,12 @@
 import { Popover } from "@base-ui/react/popover"
 import { Link } from "@tanstack/react-router"
-import UtensilsCrossed from "lucide-react/icons/utensils-crossed"
-import User from "lucide-react/icons/user"
 import LogOut from "lucide-react/icons/log-out"
-import { ThemeToggle } from "./theme-toggle"
+import User from "lucide-react/icons/user"
+import UtensilsCrossed from "lucide-react/icons/utensils-crossed"
+
 import { useAuth } from "@core/hooks"
+
+import { ThemeToggle } from "./theme-toggle"
 
 export function TopBar() {
     return (

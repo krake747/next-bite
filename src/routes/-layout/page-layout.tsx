@@ -1,6 +1,7 @@
 import type { ReactNode } from "react"
-import { TopBar } from "./top-bar"
+
 import { Footer } from "./footer"
+import { TopBar } from "./top-bar"
 
 export function PageLayout({ children }: { children: ReactNode }) {
     return (

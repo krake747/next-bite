@@ -1,17 +1,18 @@
-import { useState } from "react"
-import { Card } from "@ui/card"
-import { Badge } from "@ui/badge"
-import MapPin from "lucide-react/icons/map-pin"
-import Utensils from "lucide-react/icons/utensils"
-import ExternalLink from "lucide-react/icons/external-link"
-import SquarePen from "lucide-react/icons/square-pen"
-import Trash2 from "lucide-react/icons/trash-2"
-import Images from "lucide-react/icons/images"
+import { Dialog } from "@base-ui/react/dialog"
+import { Map, AdvancedMarker } from "@vis.gl/react-google-maps"
 import ChevronDown from "lucide-react/icons/chevron-down"
+import ExternalLink from "lucide-react/icons/external-link"
+import Images from "lucide-react/icons/images"
+import MapPin from "lucide-react/icons/map-pin"
 import Navigation from "lucide-react/icons/navigation"
 import RotateCcw from "lucide-react/icons/rotate-ccw"
 import Search from "lucide-react/icons/search"
-import { Map, AdvancedMarker } from "@vis.gl/react-google-maps"
+import SquarePen from "lucide-react/icons/square-pen"
+import Trash2 from "lucide-react/icons/trash-2"
+import Utensils from "lucide-react/icons/utensils"
+import { useState } from "react"
+import type { ComponentProps } from "react"
+
 import {
     useUpdateRestaurant,
     useDeleteRestaurant,
@@ -20,15 +21,16 @@ import {
     useLookupPlaceIdAndHours,
     type Restaurant,
 } from "@core/hooks"
-import { EditRestaurantDialog } from "./edit-restaurant-dialog"
 import { EmojiRating } from "@pattern/emoji-rating"
-import { LazyImage } from "@pattern/lazy-image"
 import { ImageGalleryModal } from "@pattern/image-gallery-modal"
+import { LazyImage } from "@pattern/lazy-image"
+import { Badge } from "@ui/badge"
+import { Button } from "@ui/button"
+import { Card } from "@ui/card"
 import { OpeningHours } from "@ui/opening-hours"
 import { OpeningHoursDialog } from "@ui/opening-hours-dialog"
-import { Button } from "@ui/button"
-import { Dialog } from "@base-ui/react/dialog"
-import type { ComponentProps } from "react"
+
+import { EditRestaurantDialog } from "./edit-restaurant-dialog"
 
 export function RestaurantCard({ restaurant, ...cardProps }: { restaurant: Restaurant } & ComponentProps<typeof Card>) {
     const [showEdit, setShowEdit] = useState(false)

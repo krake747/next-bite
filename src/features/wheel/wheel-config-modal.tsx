@@ -1,14 +1,16 @@
-import { useState, useEffect } from "react"
 import { Dialog } from "@base-ui/react/dialog"
-import { useWheel } from "./wheel-context"
-import { type Restaurant } from "@core/hooks"
-import { cx } from "@ui/variants"
-import Sliders from "lucide-react/icons/sliders"
 import Check from "lucide-react/icons/check"
 import AlertCircle from "lucide-react/icons/circle-alert"
-import X from "lucide-react/icons/x"
 import Search from "lucide-react/icons/search"
+import Sliders from "lucide-react/icons/sliders"
+import X from "lucide-react/icons/x"
+import { useState, useEffect } from "react"
+
+import { type Restaurant } from "@core/hooks"
 import { Button } from "@ui/button"
+import { cx } from "@ui/variants"
+
+import { useWheel } from "./wheel-context"
 
 export function WheelConfigModal({
     show,

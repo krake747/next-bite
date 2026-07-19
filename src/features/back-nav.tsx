@@ -1,8 +1,9 @@
 import { Link } from "@tanstack/react-router"
-import { Button } from "@ui/button"
 import ArrowLeft from "lucide-react/icons/arrow-left"
 import Shuffle from "lucide-react/icons/shuffle"
 import Sliders from "lucide-react/icons/sliders"
+
+import { Button } from "@ui/button"
 
 type BackNavProps = {
     backTo?: string

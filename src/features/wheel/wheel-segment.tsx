@@ -1,6 +1,7 @@
+import { type Restaurant } from "@core/hooks"
+
 import { useWheel } from "./wheel-context"
 import { WHEEL_CONFIG_CONSTANTS } from "./wheel-store"
-import { type Restaurant } from "@core/hooks"
 
 const MAX_LABEL_LENGTH = 18
 

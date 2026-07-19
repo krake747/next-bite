@@ -1,4 +1,5 @@
 import { useState, type ComponentProps } from "react"
+
 import { cx } from "@ui/variants"
 
 const MAX_LOADED_IMAGES = 100

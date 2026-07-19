@@ -1,10 +1,11 @@
 import { useNavigate } from "@tanstack/react-router"
-import { Button } from "@ui/button"
-import Utensils from "lucide-react/icons/utensils"
 import Plus from "lucide-react/icons/plus"
 import SearchX from "lucide-react/icons/search-x"
 import Sparkles from "lucide-react/icons/sparkles"
+import Utensils from "lucide-react/icons/utensils"
+
 import { useAuth } from "@core/hooks"
+import { Button } from "@ui/button"
 
 export function EmptyRestaurantsState({
     hasFilter,

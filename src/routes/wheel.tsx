@@ -1,16 +1,18 @@
-import { Suspense, useState } from "react"
 import { createFileRoute } from "@tanstack/react-router"
-import { Header, HeaderSubtitle, HeaderTitle } from "./-layout/header"
-import { PageLayout } from "./-layout/page-layout"
-import { PageContainer } from "./-layout/page-container"
-import { BackNav } from "@features/back-nav"
+import { Suspense, useState } from "react"
+
 import { useRestaurants } from "@core/hooks"
-import { useWheelStore } from "@features/wheel/wheel-store"
-import { WheelProvider } from "@features/wheel/wheel-context"
+import { BackNav } from "@features/back-nav"
+import { EmptyWheelState } from "@features/wheel/empty-wheel-state"
 import { SpinningWheel } from "@features/wheel/spinning-wheel"
 import { WheelConfigModal } from "@features/wheel/wheel-config-modal"
-import { EmptyWheelState } from "@features/wheel/empty-wheel-state"
+import { WheelProvider } from "@features/wheel/wheel-context"
 import { Instructions, WinnerModal } from "@features/wheel/wheel-messages"
+import { useWheelStore } from "@features/wheel/wheel-store"
+
+import { Header, HeaderSubtitle, HeaderTitle } from "./-layout/header"
+import { PageContainer } from "./-layout/page-container"
+import { PageLayout } from "./-layout/page-layout"
 
 export const Route = createFileRoute("/wheel")({
     head: () => ({ meta: [{ title: "Spin the Wheel - Next Bite" }] }),

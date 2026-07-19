@@ -1,5 +1,6 @@
-import { useState } from "react"
 import { useForm, Field, Form, reset, setInput } from "@formisch/react"
+import { useState } from "react"
+
 import {
     useAddRestaurantWithHours,
     useUpdateRestaurant,
@@ -8,12 +9,12 @@ import {
     type ImageRecord,
     type Restaurant,
 } from "@core/hooks"
+import { RestaurantSchema, type RestaurantOutput } from "@core/schemas"
+import { EmojiRating } from "@pattern/emoji-rating"
+import { ImageUpload } from "@pattern/image-upload"
+import { PlacesAutocomplete } from "@pattern/places-autocomplete"
 import { Button } from "@ui/button"
 import { FieldWrapper, Input, Textarea, Select } from "@ui/field"
-import { RestaurantSchema, type RestaurantOutput } from "@core/schemas"
-import { PlacesAutocomplete } from "@pattern/places-autocomplete"
-import { ImageUpload } from "@pattern/image-upload"
-import { EmojiRating } from "@pattern/emoji-rating"
 
 export type RestaurantFormProps =
     | { mode: "add"; onSuccess: () => void; onCancel: () => void }

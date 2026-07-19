@@ -1,11 +1,12 @@
-import { createFileRoute, useNavigate, Link } from "@tanstack/react-router"
 import { useForm, Field, Form } from "@formisch/react"
+import { createFileRoute, useNavigate, Link } from "@tanstack/react-router"
+import UtensilsCrossed from "lucide-react/icons/utensils-crossed"
+import * as v from "valibot"
+
 import { useAuth } from "@core/hooks"
 import { Button } from "@ui/button"
 import { FieldWrapper, Input } from "@ui/field"
 import { LoadingPlaceholder } from "@ui/loading"
-import UtensilsCrossed from "lucide-react/icons/utensils-crossed"
-import * as v from "valibot"
 
 const LoginSchema = v.object({
     email: v.pipe(v.string(), v.email()),

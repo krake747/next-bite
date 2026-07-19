@@ -1,7 +1,9 @@
 import { Dialog } from "@base-ui/react/dialog"
 import { Link } from "@tanstack/react-router"
-import { useAuth } from "@core/hooks"
 import UtensilsCrossed from "lucide-react/icons/utensils-crossed"
+
+import { useAuth } from "@core/hooks"
+
 import { RestaurantForm } from "./restaurant-form"
 
 export function AddRestaurantDialog({ show, onOpenChange }: { show: boolean; onOpenChange: (open: boolean) => void }) {

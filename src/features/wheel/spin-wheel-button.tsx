@@ -1,7 +1,9 @@
-import type { ComponentProps } from "react"
-import { useWheel } from "./wheel-context"
-import { cx } from "@ui/variants"
 import Play from "lucide-react/icons/play"
+import type { ComponentProps } from "react"
+
+import { cx } from "@ui/variants"
+
+import { useWheel } from "./wheel-context"
 
 export function SpinWheelButton(props: ComponentProps<"button">) {
     const wheel = useWheel()

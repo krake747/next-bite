@@ -1,7 +1,9 @@
 import { useEffect, useRef } from "react"
-import { RestaurantCard } from "./restaurant-card"
-import { EmptyRestaurantsState } from "./empty-restaurants-state"
+
 import type { Restaurant } from "@core/hooks"
+
+import { EmptyRestaurantsState } from "./empty-restaurants-state"
+import { RestaurantCard } from "./restaurant-card"
 
 const animatedRestaurantIds = new Set<string>()
 

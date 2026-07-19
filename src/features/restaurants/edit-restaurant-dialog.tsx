@@ -1,7 +1,9 @@
 import { Dialog } from "@base-ui/react/dialog"
 import { Link } from "@tanstack/react-router"
-import { useAuth, type Restaurant } from "@core/hooks"
 import UtensilsCrossed from "lucide-react/icons/utensils-crossed"
+
+import { useAuth, type Restaurant } from "@core/hooks"
+
 import { RestaurantForm } from "./restaurant-form"
 
 export function EditRestaurantDialog({
