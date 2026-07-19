@@ -37,7 +37,7 @@ Use RGR to complete the task:
 
 # PROJECT STANDARDS
 
-This is a SolidJS web application built with TypeScript, Tailwind CSS v4, and Convex.
+This is a React 19 web application built with TypeScript, Tailwind CSS v4, and Convex.
 
 - Use `pnpm` as the package manager.
 - Types over interfaces. Never cast types; fix at source instead.
