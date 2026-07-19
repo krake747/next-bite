@@ -38,29 +38,29 @@ export function AuthLayout({
                                 <div className="absolute top-0 -right-2 size-3 rounded-full bg-yellow-400" />
                             </div>
                         </div>
-                        {title}
-                        <p className="mt-4 text-lg text-neutral-600 dark:text-neutral-400">{subtitle}</p>
                     </div>
+                    {title}
+                    <p className="mt-4 text-lg text-neutral-600 dark:text-neutral-400">{subtitle}</p>
+                </div>
 
-                    <div className="relative rounded-2xl border border-neutral-200/60 bg-white/80 p-6 shadow-[0_4px_20px_rgb(0,0,0,0.08)] backdrop-blur-sm dark:border-white/10 dark:bg-white/5 dark:shadow-[0_4px_20px_rgb(0,0,0,0.3)]">
-                        {children}
-                    </div>
+                <div className="relative rounded-2xl border border-neutral-200/60 bg-white/80 p-6 shadow-[0_4px_20px_rgb(0,0,0,0.08)] backdrop-blur-sm dark:border-white/10 dark:bg-white/5 dark:shadow-[0_4px_20px_rgb(0,0,0,0.3)]">
+                    {children}
+                </div>
 
-                    <div className="mt-6 text-center">{footerLink}</div>
+                <div className="mt-6 text-center">{footerLink}</div>
 
-                    <div className="mt-4 text-center">
-                        <Link
-                            to="/"
-                            viewTransition
-                            className="group inline-flex items-center gap-2 text-sm text-neutral-500 transition-colors hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-white"
-                        >
-                            <UtensilsCrossed
-                                className="size-4 transition-transform group-hover:-rotate-12"
-                                aria-hidden="true"
-                            />
-                            Back to home
-                        </Link>
-                    </div>
+                <div className="mt-4 text-center">
+                    <Link
+                        to="/"
+                        viewTransition
+                        className="group inline-flex items-center gap-2 text-sm text-neutral-500 transition-colors hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-white"
+                    >
+                        <UtensilsCrossed
+                            className="size-4 transition-transform group-hover:-rotate-12"
+                            aria-hidden="true"
+                        />
+                        Back to home
+                    </Link>
                 </div>
             </div>
         </div>
