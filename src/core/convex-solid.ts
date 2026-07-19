@@ -1,40 +1,68 @@
 import { ConvexClient } from "convex/browser"
 import { type FunctionReference } from "convex/server"
-import { type Context } from "solid-js"
-import { createContext, from, useContext } from "solid-js"
+import { createContext, useContext, useState, useEffect, type ReactNode } from "react"
+import { useMutation, useQueryClient } from "@tanstack/react-query"
 
-export const ConvexContext: Context<ConvexClient | undefined> = createContext()
+const ConvexContext = createContext<ConvexClient | null>(null)
 
-export function createQuery<T>(query: FunctionReference<"query">, args?: {}): () => T | undefined {
-    const convex = useContext(ConvexContext)
-    if (convex === undefined) {
-        throw new Error("No convex context")
+function useConvexClient() {
+    const client = useContext(ConvexContext)
+    if (!client) {
+        throw new Error("ConvexClient not provided. Wrap with ConvexProvider.")
     }
+    return client
+}
 
-    return from((setter: (value: T | undefined) => void) => {
-        const unsubber = convex.onUpdate(query, args ?? {}, setter)
-        return unsubber
+function ConvexProvider({ client, children }: { client: ConvexClient; children: ReactNode }) {
+    return <ConvexContext.Provider value={client}>{children}</ConvexContext.Provider>
+}
+
+function useConvexQuery<T>(query: FunctionReference<"query">, args?: {}): T | undefined {
+    const client = useConvexClient()
+    const queryClient = useQueryClient()
+    const key = JSON.stringify(args)
+    const queryKey = [query, key] as const
+
+    const [data, setData] = useState<T | undefined>(() => {
+        return queryClient.getQueryData(queryKey) as T | undefined
+    })
+
+    useEffect(() => {
+        const unsub = client.onUpdate(query, args ?? {}, (value: T) => {
+            queryClient.setQueryData(queryKey, value)
+            setData(value)
+        })
+        return unsub
+    }, [query, key])
+
+    return data
+}
+
+function useConvexMutation<T>(mutation: FunctionReference<"mutation">) {
+    const client = useConvexClient()
+
+    return useMutation({
+        mutationFn: async (args?: {}): Promise<T> => {
+            return client.mutation(mutation, args ?? {}) as Promise<T>
+        },
     })
 }
 
-export function createMutation<T>(mutation: FunctionReference<"mutation">): (args?: {}) => Promise<T> {
-    const convex = useContext(ConvexContext)
-    if (convex === undefined) {
-        throw new Error("No convex context")
-    }
+function useConvexAction<T>(action: FunctionReference<"action">) {
+    const client = useConvexClient()
 
-    return async (args) => {
-        return convex.mutation(mutation, args ?? {})
-    }
+    return useMutation({
+        mutationFn: async (args?: {}): Promise<T> => {
+            return client.action(action, args ?? {}) as Promise<T>
+        },
+    })
 }
 
-export function createAction<T>(action: FunctionReference<"action">): (args?: {}) => Promise<T> {
-    const convex = useContext(ConvexContext)
-    if (convex === undefined) {
-        throw new Error("No convex context")
-    }
-
-    return async (args) => {
-        return convex.action(action, args ?? {})
-    }
+export {
+    ConvexContext,
+    ConvexProvider,
+    useConvexClient,
+    useConvexQuery,
+    useConvexMutation,
+    useConvexAction,
 }

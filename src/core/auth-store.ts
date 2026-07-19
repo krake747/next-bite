@@ -1,4 +1,4 @@
-import { createSignal, createRoot } from "solid-js"
+import { type Reducer, useReducer, useEffect, useCallback } from "react"
 import { authClient } from "./auth-client"
 
 type User = {
@@ -64,27 +64,53 @@ function clearSessionFromStorage(): void {
     }
 }
 
-function createAuthStore() {
-    const [isAuthenticated, setIsAuthenticated] = createSignal(false)
-    const [isLoading, setIsLoading] = createSignal(true)
-    const [user, setUser] = createSignal<User | null>(null)
-    const [error, setError] = createSignal<string | null>(null)
+type AuthState = {
+    isAuthenticated: boolean
+    isLoading: boolean
+    user: User | null
+    error: string | null
+}
 
-    const saveUser = (userData: User) => {
-        setUser(userData)
-        setIsAuthenticated(true)
+type AuthAction =
+    | { type: "SET_LOADING"; isLoading: boolean }
+    | { type: "SET_USER"; user: User }
+    | { type: "CLEAR_USER" }
+    | { type: "SET_ERROR"; error: string | null }
+
+function authReducer(state: AuthState, action: AuthAction): AuthState {
+    switch (action.type) {
+        case "SET_LOADING":
+            return { ...state, isLoading: action.isLoading }
+        case "SET_USER":
+            return { ...state, user: action.user, isAuthenticated: true, error: null }
+        case "CLEAR_USER":
+            return { ...state, user: null, isAuthenticated: false }
+        case "SET_ERROR":
+            return { ...state, error: action.error }
+    }
+}
+
+function useAuthStore() {
+    const [state, dispatch] = useReducer(authReducer, {
+        isAuthenticated: false,
+        isLoading: true,
+        user: null,
+        error: null,
+    })
+
+    const saveUser = useCallback((userData: User) => {
+        dispatch({ type: "SET_USER", user: userData })
         saveSessionToStorage(userData)
-    }
+    }, [])
 
-    const clearUser = () => {
-        setUser(null)
-        setIsAuthenticated(false)
+    const clearUser = useCallback(() => {
+        dispatch({ type: "CLEAR_USER" })
         clearSessionFromStorage()
-    }
+    }, [])
 
-    const initializeAuth = async () => {
-        setIsLoading(true)
-        setError(null)
+    const initializeAuth = useCallback(async () => {
+        dispatch({ type: "SET_LOADING", isLoading: true })
+        dispatch({ type: "SET_ERROR", error: null })
 
         const cachedUser = getSessionFromStorage()
 
@@ -93,8 +119,7 @@ function createAuthStore() {
 
             if (result.error) {
                 if (cachedUser) {
-                    setUser(cachedUser)
-                    setIsAuthenticated(true)
+                    dispatch({ type: "SET_USER", user: cachedUser })
                     return
                 }
                 throw new Error(result.error.message)
@@ -107,90 +132,92 @@ function createAuthStore() {
             }
         } catch {
             if (cachedUser) {
-                setUser(cachedUser)
-                setIsAuthenticated(true)
+                dispatch({ type: "SET_USER", user: cachedUser })
             } else {
                 clearUser()
             }
         } finally {
-            setIsLoading(false)
+            dispatch({ type: "SET_LOADING", isLoading: false })
         }
-    }
+    }, [saveUser, clearUser])
 
-    const signInWithPassword = async (email: string, password: string) => {
-        setIsLoading(true)
-        setError(null)
+    const signInWithPassword = useCallback(
+        async (email: string, password: string) => {
+            dispatch({ type: "SET_LOADING", isLoading: true })
+            dispatch({ type: "SET_ERROR", error: null })
 
-        try {
-            const result = await authClient.signIn.email({ email, password })
+            try {
+                const result = await authClient.signIn.email({ email, password })
 
-            if (result.error) {
-                const message = result.error.message ?? "Sign in failed"
-                setError(message)
-                throw new Error(message)
+                if (result.error) {
+                    const message = result.error.message ?? "Sign in failed"
+                    dispatch({ type: "SET_ERROR", error: message })
+                    throw new Error(message)
+                }
+
+                if (result.data?.user) {
+                    saveUser(mapSessionUserToUserPayload(result.data.user))
+                } else {
+                    throw new Error("No user returned: email verification required")
+                }
+            } catch (err) {
+                if (!state.error) {
+                    const message = err instanceof Error ? err.message : "Sign in failed"
+                    dispatch({ type: "SET_ERROR", error: message })
+                }
+                throw err
+            } finally {
+                dispatch({ type: "SET_LOADING", isLoading: false })
             }
+        },
+        [state.error, saveUser],
+    )
 
-            if (result.data?.user) {
-                saveUser(mapSessionUserToUserPayload(result.data.user))
-            } else {
-                throw new Error("No user returned: email verification required")
+    const signUpWithPassword = useCallback(
+        async (name: string, email: string, password: string) => {
+            dispatch({ type: "SET_LOADING", isLoading: true })
+            dispatch({ type: "SET_ERROR", error: null })
+
+            try {
+                const result = await authClient.signUp.email({ name, email, password })
+
+                if (result.error) {
+                    const message = result.error.message ?? "Sign up failed"
+                    dispatch({ type: "SET_ERROR", error: message })
+                    throw new Error(message)
+                }
+
+                if (result.data?.user) {
+                    saveUser(mapSessionUserToUserPayload(result.data.user))
+                } else {
+                    throw new Error("No user returned: email verification required")
+                }
+            } catch (err) {
+                if (!state.error) {
+                    const message = err instanceof Error ? err.message : "Sign up failed"
+                    dispatch({ type: "SET_ERROR", error: message })
+                }
+                throw err
+            } finally {
+                dispatch({ type: "SET_LOADING", isLoading: false })
             }
-        } catch (err) {
-            if (!error()) {
-                const message = err instanceof Error ? err.message : "Sign in failed"
-                setError(message)
-            }
-            throw err
-        } finally {
-            setIsLoading(false)
-        }
-    }
+        },
+        [state.error, saveUser],
+    )
 
-    const signUpWithPassword = async (name: string, email: string, password: string) => {
-        setIsLoading(true)
-        setError(null)
-
-        try {
-            const result = await authClient.signUp.email({ name, email, password })
-
-            if (result.error) {
-                const message = result.error.message ?? "Sign up failed"
-                setError(message)
-                throw new Error(message)
-            }
-
-            if (result.data?.user) {
-                saveUser(mapSessionUserToUserPayload(result.data.user))
-            } else {
-                throw new Error("No user returned: email verification required")
-            }
-        } catch (err) {
-            if (!error()) {
-                const message = err instanceof Error ? err.message : "Sign up failed"
-                setError(message)
-            }
-            throw err
-        } finally {
-            setIsLoading(false)
-        }
-    }
-
-    const signOut = async () => {
-        setIsLoading(true)
+    const signOut = useCallback(async () => {
+        dispatch({ type: "SET_LOADING", isLoading: true })
 
         try {
             await authClient.signOut()
         } finally {
             clearUser()
-            setIsLoading(false)
+            dispatch({ type: "SET_LOADING", isLoading: false })
         }
-    }
+    }, [clearUser])
 
     return {
-        isAuthenticated,
-        isLoading,
-        user,
-        error,
+        ...state,
         initializeAuth,
         signInWithPassword,
         signUpWithPassword,
@@ -198,4 +225,4 @@ function createAuthStore() {
     }
 }
 
-export const authStore = createRoot(createAuthStore)
+export { useAuthStore }
