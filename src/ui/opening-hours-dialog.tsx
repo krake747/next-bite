@@ -19,19 +19,11 @@ export function OpeningHoursDialog({
 }) {
     const openNow = openingHours ? isOpenNow(openingHours) : false
 
-    const fullWeek = (() => {
-        if (!openingHours?.weekdayText) return []
-        const texts = [...openingHours.weekdayText]
-        const mondayOnwards = texts.slice(1)
-        const sundayText = texts[0]
-        if (sundayText) mondayOnwards.push(sundayText)
-        return mondayOnwards
-    })()
+    const weekdayText = openingHours?.weekdayText
+    const fullWeek = weekdayText ? [...weekdayText.slice(1), ...(weekdayText[0] ? [weekdayText[0]] : [])] : []
 
-    const today = (() => {
-        const day = new Date().getDay()
-        return day === 0 ? 6 : day - 1
-    })()
+    const dayOfWeek = new Date().getDay()
+    const todayIndex = dayOfWeek === 0 ? 6 : dayOfWeek - 1
 
     return (
         <Dialog.Root open={show} onOpenChange={onOpenChange}>
@@ -62,7 +54,7 @@ export function OpeningHoursDialog({
                                 const parts = dayText.split(": ")
                                 const day = parts[0] ?? ""
                                 const hours = parts[1] ?? ""
-                                const isToday = index === today
+                                const isToday = index === todayIndex
                                 return (
                                     <div
                                         key={day}
