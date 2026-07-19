@@ -4,7 +4,7 @@ Here are the open issues in the repo:
 
 <issues-json>
 
-!`linear issues --label "agent-ready" | jq '[.data.issues.nodes[] | {id: .identifier, title, description, labels: [.labels.nodes[].name]}]'`
+!`linear issues --label "ready-for-agent" --state "Backlog" | jq '[(.data.issues.nodes // [])[] | {id: .identifier, title, description, labels: [.labels.nodes[].name]}]'`
 
 </issues-json>
 

@@ -11,7 +11,7 @@ fi
 
 graphql() {
   local query="$1"
-  local variables="${2:-{}}"
+  local variables="${2:-"{}"}"
   local escaped
   escaped=$(echo "$query" | jq -Rs .)
   curl -sS -X POST "$API_URL" \
@@ -28,18 +28,21 @@ issues)
   label=""
   limit="50"
   assignee=""
+  state=""
   while [ $# -gt 0 ]; do
     case "$1" in
       --label) label="$2"; shift 2 ;;
       --limit) limit="$2"; shift 2 ;;
       --assignee) assignee="$2"; shift 2 ;;
+      --state) state="$2"; shift 2 ;;
       *) shift ;;
     esac
   done
 
   filter_parts=""
-  [ -n "$label" ] && filter_parts="$filter_parts, \"label\": { \"name\": { \"eq\": \"$label\" } }"
+  [ -n "$label" ] && filter_parts="$filter_parts, \"labels\": { \"name\": { \"eq\": \"$label\" } }"
   [ -n "$assignee" ] && filter_parts="$filter_parts, \"assignee\": { \"name\": { \"eq\": \"$assignee\" } }"
+  [ -n "$state" ] && filter_parts="$filter_parts, \"state\": { \"name\": { \"eq\": \"$state\" } }"
 
   if [ -n "$filter_parts" ]; then
     # strip leading comma and space

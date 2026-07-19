@@ -1,10 +1,29 @@
 import * as sandcastle from "@ai-hero/sandcastle"
 import { docker } from "@ai-hero/sandcastle/sandboxes/docker"
+import { z } from "zod"
+
+const planSchema = z.object({
+    issues: z.array(
+        z.object({
+            id: z.string(),
+            title: z.string(),
+            branch: z.string(),
+            labels: z.array(z.string()),
+        }),
+    ),
+})
 
 const MAX_ITERATIONS = 10
 
 const hooks = {
-    sandbox: { onSandboxReady: [{ command: "pnpm install" }] },
+    sandbox: {
+        onSandboxReady: [
+            {
+                command:
+                    "gh auth setup-git && CI=true pnpm install --store-dir /home/agent/.local/share/pnpm/store --cache-dir /home/agent/.cache/pnpm",
+            },
+        ],
+    },
 }
 
 const copyToWorktree: string[] = ["node_modules"]
@@ -24,19 +43,12 @@ for (let iteration = 1; iteration <= MAX_ITERATIONS; iteration++) {
         sandbox: docker(),
         name: "planner",
         maxIterations: 1,
-        idleTimeoutSeconds: 600,
         agent: sandcastle.opencode(PLANNER_MODEL),
         promptFile: "./.sandcastle/plan-prompt.md",
+        output: sandcastle.Output.object({ tag: "plan", schema: planSchema }),
     })
 
-    const planMatch = plan.stdout.match(/<plan>([\s\S]*?)<\/plan>/)
-    if (!planMatch) {
-        throw new Error("Planning agent did not produce a <plan> tag.\n\n" + plan.stdout)
-    }
-
-    const { issues } = JSON.parse(planMatch[1]!) as {
-        issues: { id: string; title: string; branch: string; labels: string[] }[]
-    }
+    const { issues } = plan.output
 
     if (issues.length === 0) {
         console.log("No unblocked issues. Exiting.")
@@ -60,7 +72,6 @@ for (let iteration = 1; iteration <= MAX_ITERATIONS; iteration++) {
             const implement = await sandbox.run({
                 name: "implementer",
                 maxIterations: 100,
-                idleTimeoutSeconds: 600,
                 agent: sandcastle.opencode(IMPLEMENTER_MODEL, {
                     env: { OPENCODE_PERMISSION: "allow" },
                 }),
@@ -76,7 +87,6 @@ for (let iteration = 1; iteration <= MAX_ITERATIONS; iteration++) {
                 const review = await sandbox.run({
                     name: "reviewer",
                     maxIterations: 1,
-                    idleTimeoutSeconds: 600,
                     agent: sandcastle.opencode(REVIEWER_MODEL),
                     promptFile: "./.sandcastle/review-prompt.md",
                     promptArgs: {
@@ -122,7 +132,6 @@ for (let iteration = 1; iteration <= MAX_ITERATIONS; iteration++) {
         sandbox: docker(),
         name: "merger",
         maxIterations: 1,
-        idleTimeoutSeconds: 900,
         agent: sandcastle.opencode(MERGER_MODEL),
         promptFile: "./.sandcastle/merge-prompt.md",
         promptArgs: {

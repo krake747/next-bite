@@ -1,18 +1,26 @@
 # TASK
 
-Merge the following branches into the current branch:
+For each branch below, push it to origin, create a pull request, and then merge the PR.
 
 {{BRANCHES}}
 
+# PROCESS
+
 For each branch:
 
-1. Run `git merge <branch> --no-edit`
-2. If there are merge conflicts, resolve them intelligently by reading both sides and choosing the
-   correct resolution
-3. After resolving conflicts, run `pnpm lint` and `pnpm build` to verify everything works
-4. If builds fail, fix the issues before proceeding to the next branch
+1. Push the branch: `git push origin <branch>`
 
-After all branches are merged, make a single commit summarizing the merge.
+2. Create a pull request using `gh pr create`:
+   `gh pr create --base main --head <branch> --title "<title>" --body "<body>"`
+
+   Use the issue ID as the PR title and include a brief summary in the body. Enable auto-merge if
+   available.
+
+3. Merge the pull request: `gh pr merge <branch> --squash --delete-branch`
+
+   If the PR cannot be merged (e.g. conflicts), resolve them and then merge.
+
+4. After merging, checkout main: `git checkout main && git pull origin main`
 
 # UPDATE LINEAR ISSUES
 
