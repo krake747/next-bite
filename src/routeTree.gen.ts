@@ -11,9 +11,10 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as SplatRouteImport } from './routes/$'
+import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as SignupRouteImport } from './routes/signup'
-import { Route as WheelRouteImport } from './routes/wheel'
+import { Route as AuthenticatedWheelRouteImport } from './routes/_authenticated.wheel'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -23,6 +24,10 @@ const IndexRoute = IndexRouteImport.update({
 const SplatRoute = SplatRouteImport.update({
   id: '/$',
   path: '/$',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedRoute = AuthenticatedRouteImport.update({
+  id: '/_authenticated',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LoginRoute = LoginRouteImport.update({
@@ -35,10 +40,10 @@ const SignupRoute = SignupRouteImport.update({
   path: '/signup',
   getParentRoute: () => rootRouteImport,
 } as any)
-const WheelRoute = WheelRouteImport.update({
+const AuthenticatedWheelRoute = AuthenticatedWheelRouteImport.update({
   id: '/wheel',
   path: '/wheel',
-  getParentRoute: () => rootRouteImport,
+  getParentRoute: () => AuthenticatedRoute,
 } as any)
 
 export interface FileRoutesByFullPath {
@@ -46,37 +51,45 @@ export interface FileRoutesByFullPath {
   '/$': typeof SplatRoute
   '/login': typeof LoginRoute
   '/signup': typeof SignupRoute
-  '/wheel': typeof WheelRoute
+  '/wheel': typeof AuthenticatedWheelRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/$': typeof SplatRoute
   '/login': typeof LoginRoute
   '/signup': typeof SignupRoute
-  '/wheel': typeof WheelRoute
+  '/wheel': typeof AuthenticatedWheelRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/$': typeof SplatRoute
+  '/_authenticated': typeof AuthenticatedRouteWithChildren
   '/login': typeof LoginRoute
   '/signup': typeof SignupRoute
-  '/wheel': typeof WheelRoute
+  '/_authenticated/wheel': typeof AuthenticatedWheelRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths: '/' | '/$' | '/login' | '/signup' | '/wheel'
   fileRoutesByTo: FileRoutesByTo
   to: '/' | '/$' | '/login' | '/signup' | '/wheel'
-  id: '__root__' | '/' | '/$' | '/login' | '/signup' | '/wheel'
+  id:
+    | '__root__'
+    | '/'
+    | '/$'
+    | '/_authenticated'
+    | '/login'
+    | '/signup'
+    | '/_authenticated/wheel'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   SplatRoute: typeof SplatRoute
+  AuthenticatedRoute: typeof AuthenticatedRouteWithChildren
   LoginRoute: typeof LoginRoute
   SignupRoute: typeof SignupRoute
-  WheelRoute: typeof WheelRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -95,6 +108,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SplatRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated': {
+      id: '/_authenticated'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof AuthenticatedRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/login': {
       id: '/login'
       path: '/login'
@@ -109,22 +129,34 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SignupRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/wheel': {
-      id: '/wheel'
+    '/_authenticated/wheel': {
+      id: '/_authenticated/wheel'
       path: '/wheel'
       fullPath: '/wheel'
-      preLoaderRoute: typeof WheelRouteImport
-      parentRoute: typeof rootRouteImport
+      preLoaderRoute: typeof AuthenticatedWheelRouteImport
+      parentRoute: typeof AuthenticatedRoute
     }
   }
 }
 
+interface AuthenticatedRouteChildren {
+  AuthenticatedWheelRoute: typeof AuthenticatedWheelRoute
+}
+
+const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
+  AuthenticatedWheelRoute: AuthenticatedWheelRoute,
+}
+
+const AuthenticatedRouteWithChildren = AuthenticatedRoute._addFileChildren(
+  AuthenticatedRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   SplatRoute: SplatRoute,
+  AuthenticatedRoute: AuthenticatedRouteWithChildren,
   LoginRoute: LoginRoute,
   SignupRoute: SignupRoute,
-  WheelRoute: WheelRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

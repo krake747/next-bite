@@ -10,11 +10,10 @@ import { AddRestaurantDialog } from "@features/restaurants/add-restaurant-dialog
 import { RestaurantCardSkeleton } from "@features/restaurants/restaurant-card-skeleton"
 import { RestaurantList } from "@features/restaurants/restaurant-list"
 import { Button } from "@ui/button"
+import { Header, HeaderSubtitle, HeaderTitle, HeaderBadge } from "@ui/header"
 import { useFilterState } from "@ui/hooks/use-filter"
-
-import { Header, HeaderSubtitle, HeaderTitle, HeaderBadge } from "./-layout/header"
-import { PageContainer } from "./-layout/page-container"
-import { PageLayout } from "./-layout/page-layout"
+import { PageContainer } from "@ui/page-container"
+import { PageLayout } from "@ui/page-layout"
 
 export const Route = createFileRoute("/")({
     head: () => ({ meta: [{ title: "Our next bite" }] }),
