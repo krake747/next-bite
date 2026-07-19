@@ -92,7 +92,6 @@ export async function addRestaurant(
         cuisine: string
         location: string
         notes?: string
-        friendName: string
     },
 ): Promise<void> {
     await page.goto("/")
@@ -108,39 +107,21 @@ export async function addRestaurant(
         await page.getByLabel("Notes").fill(data.notes)
     }
 
-    await page.getByLabel("Added by").selectOption(data.friendName)
+    await waitForFriendOptions(page)
+    await page.getByLabel("Added by").selectOption({ index: 1 })
 
     await page.getByRole("button", { name: "Add Restaurant" }).last().click()
 
     await page.waitForTimeout(2000)
 }
 
-export async function getFirstFriendName(page: Page): Promise<string> {
-    await waitForAppLoad(page)
-    await page.waitForTimeout(3000)
-    await page.getByRole("button", { name: "Add Restaurant" }).click()
-    await page.waitForTimeout(5000)
-
+export async function waitForFriendOptions(page: Page): Promise<void> {
     const select = page.getByLabel("Added by")
-
     const start = Date.now()
     while (Date.now() - start < 15000) {
         const count = await select.locator("option").count()
-        if (count > 1) break
+        if (count > 1) return
         await page.waitForTimeout(500)
     }
-
-    const optionCount = await select.locator("option").count()
-    if (optionCount <= 1) {
-        throw new Error(
-            `No friends available (found ${optionCount} options). Seed the friends table before running tests.`,
-        )
-    }
-
-    const name = await select.locator("option").nth(1).textContent()
-    if (!name) {
-        throw new Error("Could not read friend name from select option")
-    }
-    await page.getByRole("button", { name: "Cancel" }).click()
-    return name
+    throw new Error("Friend options did not load")
 }

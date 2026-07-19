@@ -5,7 +5,7 @@ import {
     testPassword,
     signUp,
     waitForAppLoad,
-    getFirstFriendName,
+    waitForFriendOptions,
     fillLocationField,
 } from "./utils/test-helpers"
 
@@ -18,8 +18,6 @@ test("spin the wheel with random selection and see winner", async ({ page }) => 
 
     await signUp(page, EMAIL, PASSWORD, NAME)
 
-    const friendName = await getFirstFriendName(page)
-
     for (const baseName of ["Wheel Test Pho", "Wheel Test Sushi", "Wheel Test Ramen"]) {
         await page.goto("/")
         await waitForAppLoad(page)
@@ -28,7 +26,8 @@ test("spin the wheel with random selection and see winner", async ({ page }) => 
         await page.getByLabel("Restaurant name").fill(baseName)
         await page.getByLabel("Cuisine").fill("Asian")
         await fillLocationField(page, "Karl-Marx-Allee 1, Berlin")
-        await page.getByLabel("Added by").selectOption(friendName)
+        await waitForFriendOptions(page)
+        await page.getByLabel("Added by").selectOption({ index: 1 })
 
         await page.getByRole("button", { name: "Add Restaurant" }).last().click()
 
