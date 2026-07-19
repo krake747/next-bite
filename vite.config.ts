@@ -1,9 +1,11 @@
 import { defineConfig } from "vite"
-import react from "@vitejs/plugin-react"
+import babel from "@rolldown/plugin-babel"
+import react, { reactCompilerPreset } from "@vitejs/plugin-react"
 import tailwindcss from "@tailwindcss/vite"
 import { tanstackRouter } from "@tanstack/router-plugin/vite"
 import path from "path"
 
+// oxlint-disable-next-line import/no-default-export
 export default defineConfig({
     resolve: {
         alias: {
@@ -23,7 +25,10 @@ export default defineConfig({
             target: "react",
             autoCodeSplitting: true,
         }),
-        tailwindcss(),
         react(),
+        babel({
+            presets: [reactCompilerPreset()],
+        }),
+        tailwindcss(),
     ],
 })
