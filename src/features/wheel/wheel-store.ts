@@ -47,7 +47,7 @@ function computeSegments(state: WheelState): Restaurant[] {
         return r.filter((r) => state.selectedIds.includes(r._id))
     }
     if (validTarget < 1) return []
-    const shuffled = [...r].sort(() => Math.random() - 0.5)
+    const shuffled = [...r].toSorted(() => Math.random() - 0.5)
     return shuffled.slice(0, validTarget)
 }
 
@@ -60,7 +60,7 @@ function createWheelStore(restaurants: Restaurant[]) {
     const totalCount = restaurants.length
     const validTarget = Math.min(4, totalCount)
     const initial: Restaurant[] =
-        validTarget < 1 ? [] : [...restaurants].sort(() => Math.random() - 0.5).slice(0, validTarget)
+        validTarget < 1 ? [] : [...restaurants].toSorted(() => Math.random() - 0.5).slice(0, validTarget)
 
     return create<WheelStore>()(
         immer((set, get) => ({

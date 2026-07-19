@@ -4,7 +4,7 @@ import Sparkles from "lucide-react/icons/sparkles"
 import Star from "lucide-react/icons/star"
 import UtensilsCrossed from "lucide-react/icons/utensils-crossed"
 import X from "lucide-react/icons/x"
-import { useState, useEffect } from "react"
+import { useState } from "react"
 
 import type { Restaurant } from "@core/hooks"
 import { Button } from "@ui/button"
@@ -26,10 +26,8 @@ type Particle = {
 const PARTICLE_COLORS = ["#f97316", "#fbbf24", "#f59e0b", "#ef4444", "#ec4899"]
 
 function CelebrationParticles() {
-    const [particles, setParticles] = useState<Particle[]>([])
-
-    useEffect(() => {
-        const newParticles: Particle[] = Array.from({ length: 24 }, (_, i) => {
+    const [particles] = useState<Particle[]>(() =>
+        Array.from({ length: 24 }, (_, i) => {
             const color = PARTICLE_COLORS[Math.floor(Math.random() * PARTICLE_COLORS.length)]!
             return {
                 id: i,
@@ -42,9 +40,8 @@ function CelebrationParticles() {
                 randSign: Math.random() > 0.5 ? 1 : -1,
                 randY: Math.random() * 50,
             }
-        })
-        setParticles(newParticles)
-    }, [])
+        }),
+    )
 
     return (
         <div className="pointer-events-none absolute inset-0 overflow-hidden">
@@ -186,7 +183,7 @@ export function WinnerModal({
                                         const lng = restaurant.lng
                                         const inviteUrl = `${window.location.origin}/wheel`
                                         const mapsUrl =
-                                            lat != null && lng != null
+                                            lat !== null && lng !== null
                                                 ? `https://maps.google.com/?q=${lat},${lng}`
                                                 : undefined
                                         const mapsLine = mapsUrl ? `\n\n📍 Google Maps: ${mapsUrl}` : ""

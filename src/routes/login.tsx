@@ -1,13 +1,15 @@
 import { useForm, Field, Form } from "@formisch/react"
-import { createFileRoute, useNavigate, Link } from "@tanstack/react-router"
+import { createFileRoute, useNavigate } from "@tanstack/react-router"
 import UtensilsCrossed from "lucide-react/icons/utensils-crossed"
 import * as v from "valibot"
 
 import { useAuth } from "@core/hooks"
 import { AuthLayout } from "@routes/-layouts/auth-layout"
 import { Button } from "@ui/button"
+import { ErrorBanner } from "@ui/error-banner"
 import { FieldWrapper, Input } from "@ui/field"
 import { LoadingPlaceholder } from "@ui/loading"
+import { TextLink } from "@ui/text-link"
 
 const LoginSchema = v.object({
     email: v.pipe(v.string(), v.email()),
@@ -66,21 +68,13 @@ function LoginPage() {
             footerLink={
                 <p className="text-sm text-neutral-600 dark:text-neutral-400">
                     Do not have an account?{" "}
-                    <Link
-                        to="/signup"
-                        viewTransition
-                        className="font-semibold text-flame-pea-600 transition-colors hover:text-flame-pea-500 dark:text-flame-pea-400 dark:hover:text-flame-pea-300"
-                    >
+                    <TextLink to="/signup" viewTransition>
                         Sign up
-                    </Link>
+                    </TextLink>
                 </p>
             }
         >
-            {auth.error && (
-                <div className="mb-4 rounded-lg bg-red-50/80 p-3 text-sm text-red-600 backdrop-blur-sm dark:bg-red-900/20 dark:text-red-400">
-                    {auth.error}
-                </div>
-            )}
+            {auth.error && <ErrorBanner>{auth.error}</ErrorBanner>}
 
             <Form of={form} onSubmit={handleEmailSubmit} className="space-y-4">
                 <Field of={form} path={["email"]}>

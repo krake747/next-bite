@@ -1,7 +1,8 @@
 import LoaderPinwheel from "lucide-react/icons/loader-pinwheel"
 import { useState } from "react"
 
-export { LoadingPlaceholder } from "@core/loading-placeholder"
+import { BackgroundLayers } from "./background-decoration"
+import { BrandIcon } from "./brand-icon"
 
 const LoadingVerbs = [
     "Accomplishing",
@@ -283,6 +284,30 @@ const LoadingVerbs = [
 
 function randomVerb() {
     return LoadingVerbs[Math.floor(Math.random() * LoadingVerbs.length)]
+}
+
+export function LoadingPlaceholder() {
+    const [verb] = useState(randomVerb)
+
+    return (
+        <div className="relative flex min-h-screen flex-col overflow-hidden bg-[#faf9f7] dark:bg-[#1a1918]">
+            <BackgroundLayers />
+            <div className="relative z-10 flex flex-1 items-center justify-center">
+                <div className="flex flex-col items-center justify-center space-y-6">
+                    <BrandIcon>
+                        <LoaderPinwheel className="size-7 animate-spin" aria-hidden="true" />
+                    </BrandIcon>
+
+                    <p
+                        className="text-lg text-neutral-600 dark:text-neutral-400"
+                        style={{ fontFamily: "var(--font-body)" }}
+                    >
+                        {verb}...
+                    </p>
+                </div>
+            </div>
+        </div>
+    )
 }
 
 export function Loading({ message, className }: { message?: string; className?: string }) {

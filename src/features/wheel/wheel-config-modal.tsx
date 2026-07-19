@@ -32,10 +32,8 @@ export function WheelConfigModal({
         if (show && defaultToManual) {
             wheel.setSelectionMode("manual")
         }
-    }, [show])
-
-    useEffect(() => {
         if (!show) {
+            // eslint-disable-next-line react-compiler/react-compiler
             setSearchQuery("")
         }
     }, [show])

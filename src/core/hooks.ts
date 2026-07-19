@@ -1,7 +1,7 @@
 import { api } from "../../convex/_generated/api"
 import type { Doc, Id } from "../../convex/_generated/dataModel"
 import { useAuth } from "./auth-provider"
-import { useConvexQuery, useConvexMutation, useConvexAction } from "./convex-solid.tsx"
+import { useConvexQuery, useConvexMutation, useConvexAction } from "./convex-client.tsx"
 
 export const useRestaurants = () => useConvexQuery<Restaurant[]>(api.restaurants.get)
 export const useFriends = () => useConvexQuery<Friend[]>(api.friends.get)
