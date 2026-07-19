@@ -18,11 +18,7 @@ export function SpinWheelButton(props: ComponentProps<"button">) {
                 props.className,
             )}
             aria-label={
-                wheel.isSpinning
-                    ? "Wheel spinning"
-                    : wheel.canSpin
-                      ? "Spin the wheel"
-                      : "Add more restaurants to spin"
+                wheel.isSpinning ? "Wheel spinning" : wheel.canSpin ? "Spin the wheel" : "Add more restaurants to spin"
             }
         >
             <div className="absolute inset-2 rounded-full border-2 border-white/20" />

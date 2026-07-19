@@ -186,7 +186,9 @@ export function WheelConfigModal({
                                                         <input
                                                             type="checkbox"
                                                             checked={isSelected}
-                                                            onChange={() => wheel.toggleRestaurantSelection(restaurant._id)}
+                                                            onChange={() =>
+                                                                wheel.toggleRestaurantSelection(restaurant._id)
+                                                            }
                                                             className="size-4 rounded border-neutral-300 text-flame-pea-700 focus:ring-flame-pea-700 dark:border-neutral-600"
                                                         />
                                                         <span
@@ -211,7 +213,8 @@ export function WheelConfigModal({
                                         )}
 
                                         {(wheel.selectedIds.length === 0 ||
-                                            (wheel.selectedIds.length > 0 && wheel.selectedIds.length < wheel.targetCount)) &&
+                                            (wheel.selectedIds.length > 0 &&
+                                                wheel.selectedIds.length < wheel.targetCount)) &&
                                             filteredRestaurants.length > 0 && (
                                                 <p className="text-xs text-amber-600 dark:text-amber-400">
                                                     {wheel.selectedIds.length === 0

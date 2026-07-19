@@ -17,7 +17,13 @@ function isOpenNow(openingHours: OpeningHours): boolean {
     return currentTime >= open && currentTime <= close
 }
 
-export function OpeningHours({ openingHours, onClick }: { openingHours: OpeningHours | undefined; onClick?: () => void }) {
+export function OpeningHours({
+    openingHours,
+    onClick,
+}: {
+    openingHours: OpeningHours | undefined
+    onClick?: () => void
+}) {
     const openNow = useMemo(() => {
         if (!openingHours) return false
         return isOpenNow(openingHours)

@@ -153,7 +153,11 @@ function DefaultChildren() {
     )
 }
 
-export function HeaderTitle({ children, className, ...props }: { children?: ReactNode; className?: string } & React.HTMLAttributes<HTMLHeadingElement>) {
+export function HeaderTitle({
+    children,
+    className,
+    ...props
+}: { children?: ReactNode; className?: string } & React.HTMLAttributes<HTMLHeadingElement>) {
     return (
         <h1
             className={`relative text-5xl leading-tight font-semibold tracking-tight text-neutral-900 sm:text-6xl lg:text-7xl dark:text-white ${className ?? ""}`}
@@ -175,8 +179,19 @@ export function HeaderTitle({ children, className, ...props }: { children?: Reac
     )
 }
 
-export function HeaderSubtitle({ children, className, ...props }: { children?: ReactNode; className?: string } & React.HTMLAttributes<HTMLParagraphElement>) {
-    return <p className={`mt-6 max-w-xl text-xl leading-relaxed text-neutral-600 dark:text-neutral-400 ${className ?? ""}`} {...props}>{children}</p>
+export function HeaderSubtitle({
+    children,
+    className,
+    ...props
+}: { children?: ReactNode; className?: string } & React.HTMLAttributes<HTMLParagraphElement>) {
+    return (
+        <p
+            className={`mt-6 max-w-xl text-xl leading-relaxed text-neutral-600 dark:text-neutral-400 ${className ?? ""}`}
+            {...props}
+        >
+            {children}
+        </p>
+    )
 }
 
 export function HeaderBadge({ count }: { count: number }) {

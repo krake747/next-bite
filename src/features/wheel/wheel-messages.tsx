@@ -191,11 +191,23 @@ export function WinnerModal({
                                         const text = `Just tried the dinner wheel... fate is UNHINGED! 😂 We're going to ${restaurant.name}!${mapsLine}\n\nYou gotta try this -> ${inviteUrl}`
                                         const shareData = { title: "Next Bite", text }
                                         if (navigator.share && navigator.canShare?.(shareData)) {
-                                            try { await navigator.share(shareData) } catch {
-                                                try { await navigator.clipboard.writeText(text); alert("Copied to clipboard!") } catch { alert("Failed to share. Please try again.") }
+                                            try {
+                                                await navigator.share(shareData)
+                                            } catch {
+                                                try {
+                                                    await navigator.clipboard.writeText(text)
+                                                    alert("Copied to clipboard!")
+                                                } catch {
+                                                    alert("Failed to share. Please try again.")
+                                                }
                                             }
                                         } else {
-                                            try { await navigator.clipboard.writeText(text); alert("Copied to clipboard!") } catch { alert("Failed to copy. Please try again.") }
+                                            try {
+                                                await navigator.clipboard.writeText(text)
+                                                alert("Copied to clipboard!")
+                                            } catch {
+                                                alert("Failed to copy. Please try again.")
+                                            }
                                         }
                                     }}
                                     className="flex-1"

@@ -13,7 +13,12 @@ export function WinnerCard({ restaurant }: { restaurant: Restaurant }) {
         <div className="overflow-hidden rounded-xl border border-neutral-200 bg-neutral-50 dark:border-white/8 dark:bg-neutral-800/50">
             {hasImages ? (
                 <div className="aspect-3/2 w-full overflow-hidden">
-                    <LazyImage src={imageSrc} alt={`${restaurant.name} - main image`} aspectRatio="3/2" loading="lazy" />
+                    <LazyImage
+                        src={imageSrc}
+                        alt={`${restaurant.name} - main image`}
+                        aspectRatio="3/2"
+                        loading="lazy"
+                    />
                     <div className="pointer-events-none absolute inset-0 bg-linear-to-t from-black/60 via-black/20 to-transparent" />
                 </div>
             ) : (

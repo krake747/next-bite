@@ -102,7 +102,10 @@ function Home() {
                                                 navigate({ to: "/login", from: Route.fullPath, viewTransition: true })
                                             }
                                         >
-                                            <Plus className="size-4 transition-transform duration-200 group-hover:rotate-90" aria-hidden="true" />
+                                            <Plus
+                                                className="size-4 transition-transform duration-200 group-hover:rotate-90"
+                                                aria-hidden="true"
+                                            />
                                             Sign in to add
                                         </Button>
                                     )}
@@ -118,9 +121,7 @@ function Home() {
                         />
                     </>
                 )}
-                {auth.isAuthenticated && (
-                    <AddRestaurantDialog show={showAddDialog} onOpenChange={setShowAddDialog} />
-                )}
+                {auth.isAuthenticated && <AddRestaurantDialog show={showAddDialog} onOpenChange={setShowAddDialog} />}
             </PageContainer>
         </PageLayout>
     )

@@ -6,7 +6,15 @@ import SearchX from "lucide-react/icons/search-x"
 import Sparkles from "lucide-react/icons/sparkles"
 import { useAuth } from "@core/hooks"
 
-export function EmptyRestaurantsState({ hasFilter, hasSearch, onAddClick }: { hasFilter?: boolean; hasSearch?: boolean; onAddClick?: () => void }) {
+export function EmptyRestaurantsState({
+    hasFilter,
+    hasSearch,
+    onAddClick,
+}: {
+    hasFilter?: boolean
+    hasSearch?: boolean
+    onAddClick?: () => void
+}) {
     const navigate = useNavigate()
     const auth = useAuth()
 
@@ -34,13 +42,19 @@ export function EmptyRestaurantsState({ hasFilter, hasSearch, onAddClick }: { ha
             </h3>
 
             <p className="mb-6 max-w-sm text-neutral-600 dark:text-neutral-400">
-                {isSearching
-                    ? "Try adjusting your filters or search to discover more restaurants."
-                    : <span>Your culinary wishlist awaits its first entry.<br />Be the first to suggest a memorable dining experience.</span>}
+                {isSearching ? (
+                    "Try adjusting your filters or search to discover more restaurants."
+                ) : (
+                    <span>
+                        Your culinary wishlist awaits its first entry.
+                        <br />
+                        Be the first to suggest a memorable dining experience.
+                    </span>
+                )}
             </p>
 
-            {!isSearching && (
-                auth.isAuthenticated ? (
+            {!isSearching &&
+                (auth.isAuthenticated ? (
                     <Button onClick={onAddClick}>
                         <Plus className="size-4" />
                         Add your first restaurant
@@ -50,8 +64,7 @@ export function EmptyRestaurantsState({ hasFilter, hasSearch, onAddClick }: { ha
                         <Sparkles className="size-4" />
                         Sign in to add restaurants
                     </Button>
-                )
-            )}
+                ))}
         </div>
     )
 }

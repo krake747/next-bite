@@ -195,15 +195,20 @@ export function ImageUpload(props: ImageUploadProps) {
     )
 }
 
-function ImagePreview({ imageUrl, index, onRemove, disabled }: { imageUrl: string; index: number; onRemove: () => void; disabled: boolean }) {
+function ImagePreview({
+    imageUrl,
+    index,
+    onRemove,
+    disabled,
+}: {
+    imageUrl: string
+    index: number
+    onRemove: () => void
+    disabled: boolean
+}) {
     return (
         <div className="group relative aspect-square overflow-hidden rounded-lg bg-neutral-100 dark:bg-neutral-800">
-            <img
-                src={imageUrl}
-                alt={`Image ${index + 1}`}
-                className="h-full w-full object-cover"
-                loading="lazy"
-            />
+            <img src={imageUrl} alt={`Image ${index + 1}`} className="h-full w-full object-cover" loading="lazy" />
 
             {!disabled && (
                 <button

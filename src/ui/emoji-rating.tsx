@@ -23,17 +23,15 @@ const EMOJI_TITLES: Record<(typeof RATING_EMOJIS)[number], string> = {
     "🍆": "The food was horny and now so am I",
 }
 
-const RATING_COLORS = [
-    "#b53920",
-    "#db573d",
-    "#eb6348",
-    "#7d2b1f",
-    "#f58974",
-    "#fab5a7",
-    "#fde7e3",
-] as const
+const RATING_COLORS = ["#b53920", "#db573d", "#eb6348", "#7d2b1f", "#f58974", "#fab5a7", "#fde7e3"] as const
 
-export function EmojiRating({ rating, onRate }: { rating: number | null; onRate: (rating: number) => void | Promise<void> }) {
+export function EmojiRating({
+    rating,
+    onRate,
+}: {
+    rating: number | null
+    onRate: (rating: number) => void | Promise<void>
+}) {
     const [hoverRating, setHoverRating] = useState<number | null>(null)
 
     const displayRating = hoverRating ?? rating
@@ -71,9 +69,7 @@ export function EmojiRating({ rating, onRate }: { rating: number | null; onRate:
                             className={cx(
                                 "flex size-8 items-center justify-center text-lg transition-all duration-200 focus:outline-none sm:size-9 sm:text-xl",
                                 isActive ? "scale-110" : "hover:scale-105",
-                                isActive
-                                    ? "opacity-100"
-                                    : "opacity-40 grayscale hover:opacity-70 hover:grayscale-50",
+                                isActive ? "opacity-100" : "opacity-40 grayscale hover:opacity-70 hover:grayscale-50",
                             )}
                             style={isActive ? { color: activeColor } : undefined}
                         >
