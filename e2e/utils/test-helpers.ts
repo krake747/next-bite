@@ -116,23 +116,28 @@ export async function addRestaurant(
 }
 
 export async function getFirstFriendName(page: Page): Promise<string> {
-    await page.goto("/")
     await waitForAppLoad(page)
     await page.waitForTimeout(3000)
     await page.getByRole("button", { name: "Add Restaurant" }).click()
-
-    await page.waitForTimeout(3000)
+    await page.waitForTimeout(5000)
 
     const select = page.getByLabel("Added by")
 
-    try {
-        await select.locator("option").nth(1).waitFor({ timeout: 15000 })
-    } catch {
-        throw new Error("No friends available. Seed the friends table before running tests.")
+    const start = Date.now()
+    while (Date.now() - start < 15000) {
+        const count = await select.locator("option").count()
+        if (count > 1) break
+        await page.waitForTimeout(500)
     }
 
-    const options = select.locator("option")
-    const name = await options.nth(1).textContent()
+    const optionCount = await select.locator("option").count()
+    if (optionCount <= 1) {
+        throw new Error(
+            `No friends available (found ${optionCount} options). Seed the friends table before running tests.`,
+        )
+    }
+
+    const name = await select.locator("option").nth(1).textContent()
     if (!name) {
         throw new Error("Could not read friend name from select option")
     }

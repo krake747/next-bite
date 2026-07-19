@@ -31,7 +31,7 @@ test("spin the wheel with random selection and see winner", async ({ page }) => 
 
         await page.getByRole("button", { name: "Add Restaurant" }).last().click()
 
-        await expect(page.getByRole("heading", { name: baseName })).toBeVisible({ timeout: 10000 })
+        await expect(page.getByRole("heading", { name: baseName }).first()).toBeVisible({ timeout: 10000 })
     }
 
     await page.goto("/wheel")
@@ -39,5 +39,5 @@ test("spin the wheel with random selection and see winner", async ({ page }) => 
 
     await page.getByRole("button", { name: "Random" }).click()
 
-    await expect(page.getByText("WINNER")).toBeVisible({ timeout: 20000 })
+    await expect(page.getByRole("heading", { name: "Winner" }).first()).toBeVisible({ timeout: 20000 })
 })

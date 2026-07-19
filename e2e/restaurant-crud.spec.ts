@@ -49,5 +49,5 @@ test("restaurant CRUD: add, edit, view card", async ({ page }) => {
 
     await expect(page.getByRole("heading", { name: RESTAURANT.updatedName })).toBeVisible({ timeout: 10000 })
 
-    await expect(page.getByText(RESTAURANT.cuisine)).toBeVisible()
+    await expect(page.getByText(RESTAURANT.cuisine).first()).toBeVisible()
 })
