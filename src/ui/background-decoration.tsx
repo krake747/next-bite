@@ -1,14 +1,3 @@
-import type { ReactNode } from "react"
-
-export function BackgroundDecoration({ children }: { children?: ReactNode }) {
-    return (
-        <div className="relative flex min-h-screen flex-col overflow-hidden bg-[#faf9f7] dark:bg-[#1a1918]">
-            <BackgroundLayers />
-            {children}
-        </div>
-    )
-}
-
 export function BackgroundLayers() {
     return (
         <>
