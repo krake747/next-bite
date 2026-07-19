@@ -1,5 +1,5 @@
-import { For, Show, createSignal, onCleanup } from "solid-js"
-import { createForm, Field, Form, reset, setInput } from "@formisch/solid"
+import { useState, useCallback } from "react"
+import { createForm, Field, Form, reset, setInput } from "@formisch/react"
 import {
     useAddRestaurantWithHours,
     useUpdateRestaurant,
@@ -26,8 +26,8 @@ export function RestaurantForm(props: RestaurantFormProps) {
     const cleanupStorage = useCleanupStorage()
 
     const initialImages = props.mode === "edit" ? (props.restaurant.images ?? []) : []
-    const [images, setImages] = createSignal<ImageRecord[]>(initialImages)
-    const [pendingRemovedStorageIds, setPendingRemovedStorageIds] = createSignal<string[]>([])
+    const [images, setImages] = useState<ImageRecord[]>(initialImages)
+    const [pendingRemovedStorageIds, setPendingRemovedStorageIds] = useState<string[]>([])
 
     const form = createForm({
         schema: RestaurantSchema,
@@ -48,38 +48,28 @@ export function RestaurantForm(props: RestaurantFormProps) {
             : {}),
     })
 
-    const cleanupImages = async () => {
+    const cleanupImages = useCallback(async () => {
         if (props.mode === "add") {
-            for (const img of images()) {
+            for (const img of images) {
                 try {
-                    await cleanupStorage({ storageId: img.storageId })
-                } catch {
-                    // Storage may already be deleted or not exist
-                }
+                    await cleanupStorage.mutateAsync({ storageId: img.storageId })
+                } catch {}
             }
-            for (const storageId of pendingRemovedStorageIds()) {
+            for (const storageId of pendingRemovedStorageIds) {
                 try {
-                    await cleanupStorage({ storageId })
-                } catch {
-                    // Storage may already be deleted or not exist
-                }
+                    await cleanupStorage.mutateAsync({ storageId })
+                } catch {}
             }
             setPendingRemovedStorageIds([])
         }
         setImages([])
-    }
+    }, [images, pendingRemovedStorageIds, cleanupStorage, props.mode])
 
     const handleClose = async () => {
         await cleanupImages()
         reset(form)
         props.onCancel()
     }
-
-    onCleanup(() => {
-        if (props.mode === "add") {
-            cleanupImages()
-        }
-    })
 
     const handleLocationChange = (address: string, lat?: number, lng?: number) => {
         setInput(form, { path: ["location"], input: address })
@@ -95,17 +85,15 @@ export function RestaurantForm(props: RestaurantFormProps) {
     const handleSubmit = async (output: RestaurantOutput) => {
         try {
             if (props.mode === "add") {
-                await addRestaurantWithHours({ ...output, images: images() })
-                for (const storageId of pendingRemovedStorageIds()) {
+                await addRestaurantWithHours.mutateAsync({ ...output, images })
+                for (const storageId of pendingRemovedStorageIds) {
                     try {
-                        await cleanupStorage({ storageId })
-                    } catch {
-                        // Storage may already be deleted or not exist
-                    }
+                        await cleanupStorage.mutateAsync({ storageId })
+                    } catch {}
                 }
                 setPendingRemovedStorageIds([])
             } else {
-                await updateRestaurant({ id: props.restaurant._id, ...output, images: images() })
+                await updateRestaurant.mutateAsync({ id: props.restaurant._id, ...output, images })
             }
             reset(form)
             setImages([])
@@ -116,8 +104,8 @@ export function RestaurantForm(props: RestaurantFormProps) {
     }
 
     return (
-        <Form of={form} onSubmit={handleSubmit} class="space-y-4">
-            <div class="grid grid-cols-2 gap-4">
+        <Form of={form} onSubmit={handleSubmit} className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
                 <Field of={form} path={["name"]}>
                     {(field) => (
                         <FieldWrapper errors={field.errors}>
@@ -171,7 +159,7 @@ export function RestaurantForm(props: RestaurantFormProps) {
                     </FieldWrapper>
                 )}
             </Field>
-            <div class="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-2 gap-4">
                 <Field of={form} path={["link"]}>
                     {(field) => (
                         <FieldWrapper errors={field.errors}>
@@ -191,30 +179,24 @@ export function RestaurantForm(props: RestaurantFormProps) {
                         <FieldWrapper errors={field.errors}>
                             <Select {...field.props} input={field.input} errors={field.errors} label="Added by">
                                 <option value="">Select friend</option>
-                                <Show when={friends()}>
-                                    {(friends) => (
-                                        <For each={friends()}>
-                                            {(f) => (
-                                                <option value={f.name} selected={field.input === f.name}>
-                                                    {f.name}
-                                                </option>
-                                            )}
-                                        </For>
-                                    )}
-                                </Show>
+                                {friends?.map((f) => (
+                                    <option key={f.name} value={f.name}>
+                                        {f.name}
+                                    </option>
+                                ))}
                             </Select>
                         </FieldWrapper>
                     )}
                 </Field>
             </div>
-            <Show when={props.mode === "edit"}>
+            {props.mode === "edit" && (
                 <Field of={form} path={["rating"]}>
                     {(field) => (
                         <FieldWrapper errors={field.errors}>
-                            <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300">
+                            <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300">
                                 Rating
                             </label>
-                            <div class="mt-2">
+                            <div className="mt-2">
                                 <EmojiRating
                                     rating={typeof field.input === "number" && field.input >= 1 ? field.input : null}
                                     onRate={(rating) => setInput(form, { path: ["rating"], input: rating })}
@@ -223,18 +205,18 @@ export function RestaurantForm(props: RestaurantFormProps) {
                         </FieldWrapper>
                     )}
                 </Field>
-            </Show>
+            )}
             <ImageUpload
-                images={images()}
+                images={images}
                 onImagesChange={setImages}
                 maxImages={5}
                 {...(props.mode === "edit"
                     ? { restaurantId: props.restaurant._id }
                     : { onRemove: (storageId) => setPendingRemovedStorageIds((prev) => [...prev, storageId]) })}
             />
-            <div class="flex justify-end gap-2 pt-2">
+            <div className="flex justify-end gap-2 pt-2">
                 <Button type="button" variant="secondary" onClick={handleClose}>
-                    {props.mode === "add" ? "Cancel" : "Cancel"}
+                    Cancel
                 </Button>
                 <Button type="submit">{props.mode === "add" ? "Add Restaurant" : "Save Changes"}</Button>
             </div>

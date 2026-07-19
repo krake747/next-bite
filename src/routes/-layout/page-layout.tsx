@@ -1,12 +1,12 @@
-import type { JSX } from "solid-js"
+import type { ReactNode } from "react"
 import { TopBar } from "./top-bar"
 import { Footer } from "./footer"
 
-export function PageLayout(props: { children: JSX.Element }) {
+export function PageLayout({ children }: { children: ReactNode }) {
     return (
-        <div data-component="page-layout" class="flex min-h-screen flex-col">
+        <div data-component="page-layout" className="flex min-h-screen flex-col">
             <TopBar />
-            <main class="flex-1">{props.children}</main>
+            <main className="flex-1">{children}</main>
             <Footer />
         </div>
     )

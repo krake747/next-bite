@@ -1,45 +1,48 @@
-import { createContext, useContext, createSignal, onMount, type JSX } from "solid-js"
+import { createContext, useContext, useState, useEffect, useMemo, type ReactNode } from "react"
 
 const ThemeKey = "next-bite-theme"
 
 type Theme = "light" | "dark"
 
 type ThemeContextValue = {
-    theme: () => Theme
+    theme: Theme
     toggleTheme: () => void
-    isDark: () => boolean
+    isDark: boolean
 }
 
-const ThemeContext = createContext<ThemeContextValue>()
+const ThemeContext = createContext<ThemeContextValue | null>(null)
 
 function isValidTheme(value: string | null): value is Theme {
     return value === "light" || value === "dark"
 }
 
-export function ThemeProvider(props: { children: JSX.Element }) {
-    const [theme, setTheme] = createSignal<Theme>("light")
+export function ThemeProvider({ children }: { children: ReactNode }) {
+    const [theme, setTheme] = useState<Theme>("light")
 
-    onMount(() => {
+    useEffect(() => {
         const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches
         const stored = localStorage.getItem(ThemeKey)
 
         const initial: Theme = isValidTheme(stored) ? stored : prefersDark ? "dark" : "light"
         setTheme(initial)
         document.documentElement.classList.toggle("dark", initial === "dark")
-    })
+    }, [])
 
     const toggleTheme = () => {
-        const next = theme() === "dark" ? "light" : "dark"
-        setTheme(next)
-        document.documentElement.classList.toggle("dark", next === "dark")
-        localStorage.setItem(ThemeKey, next)
+        setTheme((prev) => {
+            const next = prev === "dark" ? "light" : "dark"
+            document.documentElement.classList.toggle("dark", next === "dark")
+            localStorage.setItem(ThemeKey, next)
+            return next
+        })
     }
 
-    return (
-        <ThemeContext.Provider value={{ theme, toggleTheme, isDark: () => theme() === "dark" }}>
-            {props.children}
-        </ThemeContext.Provider>
+    const value = useMemo<ThemeContextValue>(
+        () => ({ theme, toggleTheme, isDark: theme === "dark" }),
+        [theme],
     )
+
+    return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>
 }
 
 export function useTheme() {

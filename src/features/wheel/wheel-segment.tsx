@@ -1,4 +1,4 @@
-import { createMemo } from "solid-js"
+import { useMemo } from "react"
 import { useWheel } from "./wheel-context"
 import { WHEEL_CONFIG_CONSTANTS } from "./wheel-store"
 import { type Restaurant } from "@core/hooks"
@@ -46,20 +46,20 @@ function getContrastColor(bgColor: string): string {
     return luminance > 0.5 ? "#000000" : "#ffffff"
 }
 
-export function WheelSegment(props: { restaurant: Restaurant; idx: number }) {
+export function WheelSegment({ restaurant, idx }: { restaurant: Restaurant; idx: number }) {
     const wheel = useWheel()
     const { radius, center } = WHEEL_CONFIG_CONSTANTS
 
-    const segment = createMemo(() => {
+    const segment = useMemo(() => {
         const point = (angle: number, factor = 1) => [
             center + radius * factor * Math.cos(angle),
             center + radius * factor * Math.sin(angle),
         ]
 
-        const segmentCount = wheel.segments().length
+        const segmentCount = wheel.segments.length
         const segmentAngle = segmentCount > 0 ? 360 / segmentCount : 0
-        const start = (props.idx * segmentAngle * Math.PI) / 180
-        const end = ((props.idx + 1) * segmentAngle * Math.PI) / 180
+        const start = (idx * segmentAngle * Math.PI) / 180
+        const end = ((idx + 1) * segmentAngle * Math.PI) / 180
         const arc = segmentAngle > 180 ? 1 : 0
         const [x1, y1] = point(start)
         const [x2, y2] = point(end)
@@ -76,31 +76,30 @@ export function WheelSegment(props: { restaurant: Restaurant; idx: number }) {
             y,
             rotation,
         }
-    })
+    }, [wheel.segments.length, idx, radius, center])
 
-    const colorIndex = createMemo(() => getRestaurantColorId(props.restaurant._id, props.idx, wheel.segments().length))
-    const bgColor = createMemo(() => WHEEL_COLORS[colorIndex()] ?? WHEEL_COLORS[0])
-    const contrastColor = createMemo(() => getContrastColor(bgColor()))
+    const colorIndex = useMemo(
+        () => getRestaurantColorId(restaurant._id, idx, wheel.segments.length),
+        [restaurant._id, idx, wheel.segments.length],
+    )
+    const bgColor = WHEEL_COLORS[colorIndex] ?? WHEEL_COLORS[0]
+    const contrastColor = getContrastColor(bgColor)
     const displayName =
-        props.restaurant.name.length > MAX_LABEL_LENGTH
-            ? props.restaurant.name.slice(0, MAX_LABEL_LENGTH - 3) + "..."
-            : props.restaurant.name
+        restaurant.name.length > MAX_LABEL_LENGTH
+            ? restaurant.name.slice(0, MAX_LABEL_LENGTH - 3) + "..."
+            : restaurant.name
 
     return (
         <g>
-            <path d={segment().path} fill={bgColor()} />
+            <path d={segment.path} fill={bgColor} />
             <text
-                x={segment().x}
-                y={segment().y}
-                fill={contrastColor()}
-                text-anchor="middle"
-                dominant-baseline="middle"
-                transform={`rotate(${segment().rotation}, ${segment().x}, ${segment().y})`}
-                style={{
-                    "font-family": "var(--font-body)",
-                    "font-size": "13px",
-                    "font-weight": "500",
-                }}
+                x={segment.x}
+                y={segment.y}
+                fill={contrastColor}
+                textAnchor="middle"
+                dominantBaseline="middle"
+                transform={`rotate(${segment.rotation}, ${segment.x}, ${segment.y})`}
+                style={{ fontFamily: "var(--font-body)", fontSize: "13px", fontWeight: "500" }}
             >
                 {displayName}
             </text>

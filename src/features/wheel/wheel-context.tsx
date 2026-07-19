@@ -1,12 +1,12 @@
-import { createContext, useContext } from "solid-js"
+import { createContext, useContext, type ReactNode } from "react"
 import { useWheelStore } from "./wheel-store"
 
 export type WheelStoreType = ReturnType<typeof useWheelStore>
 
-const WheelContext = createContext<WheelStoreType>()
+const WheelContext = createContext<WheelStoreType | null>(null)
 
-export function WheelProvider(props: { store: WheelStoreType; children: any }) {
-    return <WheelContext.Provider value={props.store}>{props.children}</WheelContext.Provider>
+export function WheelProvider({ store, children }: { store: WheelStoreType; children: ReactNode }) {
+    return <WheelContext.Provider value={store}>{children}</WheelContext.Provider>
 }
 
 export function useWheel() {
