@@ -162,13 +162,14 @@
             }
         },
         {
-            "files": ["**/*.spec.{ts,tsx}"],
+            "files": ["**/*.{spec,test}.{ts,tsx}"],
             "plugins": ["vitest", "typescript", "eslint"],
             "rules": {
                 "typescript/no-explicit-any": "allow",
                 "no-undefined": "allow",
                 "require-unicode-regexp": "allow",
-                "no-await-in-loop": "allow"
+                "no-await-in-loop": "allow",
+                "vitest/require-test-timeout": "allow"
             }
         },
         {
@@ -181,7 +182,7 @@
             }
         },
         {
-            "files": ["playwright.config.ts"],
+            "files": ["{playwright,vitest}.config.ts"],
             "plugins": ["import"],
             "rules": {
                 "import/no-default-export": "allow"

@@ -20,7 +20,7 @@ const hooks = {
         onSandboxReady: [
             {
                 command:
-                    "gh auth setup-git && CI=true pnpm install --store-dir /home/agent/.local/share/pnpm/store --cache-dir /home/agent/.cache/pnpm",
+                    "CI=true pnpm install --store-dir /home/agent/.local/share/pnpm/store --cache-dir /home/agent/.cache/pnpm",
             },
         ],
     },

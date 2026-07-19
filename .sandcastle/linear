@@ -20,6 +20,19 @@ graphql() {
     -d "{\"query\": $escaped, \"variables\": $variables}"
 }
 
+resolve_project_id() {
+  local name="$1"
+  local result
+  result=$(graphql '
+    query Projects($name: String!) {
+      projects(filter: { name: { eq: $name } }, first: 1) {
+        nodes { id name }
+      }
+    }
+  ' "{\"name\": \"$name\"}")
+  echo "$result" | jq -r '.data.projects.nodes[0].id // empty'
+}
+
 cmd="${1:-}"
 shift 2>/dev/null || true
 
@@ -29,12 +42,14 @@ issues)
   limit="50"
   assignee=""
   state=""
+  project=""
   while [ $# -gt 0 ]; do
     case "$1" in
       --label) label="$2"; shift 2 ;;
       --limit) limit="$2"; shift 2 ;;
       --assignee) assignee="$2"; shift 2 ;;
       --state) state="$2"; shift 2 ;;
+      --project) project="$2"; shift 2 ;;
       *) shift ;;
     esac
   done
@@ -43,6 +58,14 @@ issues)
   [ -n "$label" ] && filter_parts="$filter_parts, \"labels\": { \"name\": { \"eq\": \"$label\" } }"
   [ -n "$assignee" ] && filter_parts="$filter_parts, \"assignee\": { \"name\": { \"eq\": \"$assignee\" } }"
   [ -n "$state" ] && filter_parts="$filter_parts, \"state\": { \"name\": { \"eq\": \"$state\" } }"
+  if [ -n "$project" ]; then
+    project_id=$(resolve_project_id "$project")
+    if [ -z "$project_id" ]; then
+      echo "{\"error\": \"Project not found: $project\"}" >&2
+      exit 1
+    fi
+    filter_parts="$filter_parts, \"project\": { \"id\": { \"eq\": \"$project_id\" } }"
+  fi
 
   if [ -n "$filter_parts" ]; then
     # strip leading comma and space
