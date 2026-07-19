@@ -3,7 +3,6 @@ import { useState } from "react"
 
 import { BackgroundLayers } from "./background-decoration"
 import { BrandIcon } from "./brand-icon"
-
 const LoadingVerbs = [
     "Accomplishing",
     "Actioning",
@@ -329,3 +328,5 @@ export function LoadingInline({ message, className }: { message?: string; classN
         </span>
     )
 }
+
+
