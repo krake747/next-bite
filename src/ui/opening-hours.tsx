@@ -13,19 +13,14 @@ export function OpeningHours({
 }) {
     const openNow = openingHours ? isOpenNow(openingHours) : false
 
-    const todayIndex = (() => {
-        const day = new Date().getDay()
-        return day === 0 ? 6 : day - 1
-    })()
+    if (!openingHours?.weekdayText?.length) return null
 
-    const texts = openingHours?.weekdayText
-    const todayText = texts && texts.length > 0 ? (texts[todayIndex] ?? "") : ""
+    const day = new Date().getDay()
+    const todayIndex = day === 0 ? 6 : day - 1
 
-    const todayDayName = todayText ? (todayText.split(":")[0] ?? "") : ""
-
-    const todayHours = todayText ? (todayText.split(": ")[1] ?? "") : ""
-
-    if (!openingHours?.weekdayText || openingHours.weekdayText.length === 0) return null
+    const dayText = openingHours.weekdayText[todayIndex] ?? ""
+    const todayDayName = dayText.split(":")[0] ?? ""
+    const todayHours = dayText.split(": ")[1] ?? ""
 
     return (
         <button
