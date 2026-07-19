@@ -1,13 +1,13 @@
-/* @refresh reload */
-import { render } from "solid-js/web"
-import { RouterProvider, createRouter, createBrowserHistory } from "@tanstack/solid-router"
+import { StrictMode } from "react"
+import { createRoot } from "react-dom/client"
+import { RouterProvider, createRouter, createBrowserHistory } from "@tanstack/react-router"
 import { routeTree } from "./routeTree.gen"
 
 import "./fonts.css"
 import "./index.css"
 
-const root = document.getElementById("root")
-if (!root) {
+const rootEl = document.getElementById("root")
+if (!rootEl) {
     throw new Error("Root element not found")
 }
 
@@ -16,10 +16,14 @@ const router = createRouter({
     history: createBrowserHistory(),
 })
 
-declare module "@tanstack/solid-router" {
+declare module "@tanstack/react-router" {
     interface Register {
         router: typeof router
     }
 }
 
-render(() => <RouterProvider router={router} />, root)
+createRoot(rootEl).render(
+    <StrictMode>
+        <RouterProvider router={router} />
+    </StrictMode>,
+)
