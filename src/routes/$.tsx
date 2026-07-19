@@ -1,4 +1,4 @@
-import { Link, createFileRoute } from "@tanstack/solid-router"
+import { Link, createFileRoute } from "@tanstack/react-router"
 import ArrowRight from "lucide-solid/icons/arrow-right"
 
 export const Route = createFileRoute("/$")({

@@ -1,5 +1,5 @@
 import { Show, Suspense, createSignal } from "solid-js"
-import { createFileRoute } from "@tanstack/solid-router"
+import { createFileRoute } from "@tanstack/react-router"
 import { Header, HeaderSubtitle, HeaderTitle } from "./-layout/header"
 import { PageLayout } from "./-layout/page-layout"
 import { PageContainer } from "./-layout/page-container"

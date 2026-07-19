@@ -1,5 +1,5 @@
 import { createSignal, createMemo, Show } from "solid-js"
-import { createFileRoute, useNavigate } from "@tanstack/solid-router"
+import { createFileRoute, useNavigate } from "@tanstack/react-router"
 import { Header, HeaderSubtitle, HeaderTitle, HeaderBadge } from "./-layout/header"
 import { PageLayout } from "./-layout/page-layout"
 import { PageContainer } from "./-layout/page-container"

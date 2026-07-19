@@ -22,8 +22,8 @@
         "verbatimModuleSyntax": true,
         "moduleDetection": "force",
         "noEmit": true,
-        "jsx": "preserve",
-        "jsxImportSource": "solid-js",
+        "jsx": "react-jsx",
+        "jsxImportSource": "react",
 
         /* Linting */
         "strict": true,

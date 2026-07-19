@@ -1,5 +1,5 @@
 import { Show } from "solid-js"
-import { createFileRoute, useNavigate, Link } from "@tanstack/solid-router"
+import { createFileRoute, useNavigate, Link } from "@tanstack/react-router"
 import { createForm, Field, Form } from "@formisch/solid"
 import { useAuth } from "@core/hooks"
 import { Button } from "@ui/button"
