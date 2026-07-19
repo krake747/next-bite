@@ -27,7 +27,7 @@ import { ImageGalleryModal } from "@ui/image-gallery-modal"
 import { OpeningHours } from "@ui/opening-hours"
 import { OpeningHoursDialog } from "@ui/opening-hours-dialog"
 import { Button } from "@ui/button"
-import { Dialog } from "@base-ui-components/react/dialog"
+import { Dialog } from "@base-ui/react/dialog"
 import type { ComponentProps } from "react"
 
 export function RestaurantCard({ restaurant, ...cardProps }: { restaurant: Restaurant } & ComponentProps<typeof Card>) {

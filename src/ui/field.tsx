@@ -19,7 +19,7 @@ type InputProps = FieldElementProps & {
     errors: string[] | null
 }
 
-export function Input({ input, errors, type, placeholder, label, id, ...inputProps }: InputProps) {
+export function Input({ input, errors: _errors, type, placeholder, label, id, ...inputProps }: InputProps) {
     const inputId = id || useId()
     return (
         <div className="space-y-1.5">
@@ -49,7 +49,7 @@ type TextareaProps = FieldElementProps & {
     errors: string[] | null
 }
 
-export function Textarea({ input, errors, placeholder, rows, label, id, ...textareaProps }: TextareaProps) {
+export function Textarea({ input, errors: _errors, placeholder, rows, label, id, ...textareaProps }: TextareaProps) {
     const textareaId = id || useId()
     return (
         <div className="space-y-1.5">
@@ -81,7 +81,7 @@ type SelectProps = FieldElementProps & {
     errors: string[] | null
 }
 
-export function Select({ input, errors, children, label, id, ...selectProps }: SelectProps) {
+export function Select({ input: _input, errors: _errors, children, label, id, ...selectProps }: SelectProps) {
     const selectId = id || useId()
     return (
         <div className="space-y-1.5">

@@ -1,4 +1,4 @@
-import { Dialog } from "@base-ui-components/react/dialog"
+import { Dialog } from "@base-ui/react/dialog"
 import { Link } from "@tanstack/react-router"
 import { useAuth } from "@core/hooks"
 import UtensilsCrossed from "lucide-react/icons/utensils-crossed"

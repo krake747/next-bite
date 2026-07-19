@@ -1,4 +1,4 @@
-import { Popover } from "@base-ui-components/react/popover"
+import { Popover } from "@base-ui/react/popover"
 import { Link } from "@tanstack/react-router"
 import UtensilsCrossed from "lucide-react/icons/utensils-crossed"
 import User from "lucide-react/icons/user"

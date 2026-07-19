@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from "react"
-import { Dialog } from "@base-ui-components/react/dialog"
+import { Dialog } from "@base-ui/react/dialog"
 import { LazyImage } from "./lazy-image"
 import { NavigationArrow } from "./gallery/navigation-arrow"
 import { ZoomControls } from "./gallery/zoom-controls"

@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react"
-import { Dialog } from "@base-ui-components/react/dialog"
+import { Dialog } from "@base-ui/react/dialog"
 import Sparkles from "lucide-react/icons/sparkles"
 import UtensilsCrossed from "lucide-react/icons/utensils-crossed"
 import Star from "lucide-react/icons/star"
