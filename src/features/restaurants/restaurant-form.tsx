@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react"
+import { useState } from "react"
 import { useForm, Field, Form, reset, setInput } from "@formisch/react"
 import {
     useAddRestaurantWithHours,
@@ -48,7 +48,7 @@ export function RestaurantForm(props: RestaurantFormProps) {
             : {}),
     })
 
-    const cleanupImages = useCallback(async () => {
+    const cleanupImages = async () => {
         if (props.mode === "add") {
             for (const img of images) {
                 try {
@@ -63,7 +63,7 @@ export function RestaurantForm(props: RestaurantFormProps) {
             setPendingRemovedStorageIds([])
         }
         setImages([])
-    }, [images, pendingRemovedStorageIds, cleanupStorage, props.mode])
+    }
 
     const handleClose = async () => {
         await cleanupImages()

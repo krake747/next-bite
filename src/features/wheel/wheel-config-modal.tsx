@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from "react"
+import { useState, useEffect } from "react"
 import { Dialog } from "@base-ui/react/dialog"
 import { useWheel } from "./wheel-context"
 import { type Restaurant } from "@core/hooks"
@@ -38,11 +38,8 @@ export function WheelConfigModal({
         }
     }, [show])
 
-    const filteredRestaurants = useMemo(() => {
-        const query = searchQuery.toLowerCase().trim()
-        if (!query) return restaurants
-        return restaurants.filter((r) => r.name.toLowerCase().includes(query))
-    }, [searchQuery, restaurants])
+    const query = searchQuery.toLowerCase().trim()
+    const filteredRestaurants = query ? restaurants.filter((r) => r.name.toLowerCase().includes(query)) : restaurants
 
     const canSpin = wheel.hasEnoughRestaurants && wheel.selectedIds.length > 0
 

@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from "react"
+import { useState, useEffect, useRef } from "react"
 import { Dialog } from "@base-ui/react/dialog"
 import { LazyImage } from "./lazy-image"
 import { NavigationArrow } from "./gallery/navigation-arrow"
@@ -121,11 +121,11 @@ export function ImageGalleryModal(props: ImageGalleryModalProps) {
         }
     }, [zoom, pan.x, pan.y])
 
-    const resetZoom = useCallback(() => {
+    const resetZoom = () => {
         setZoom(1)
         setPan({ x: 0, y: 0 })
         setRotation(0)
-    }, [])
+    }
 
     const handleZoomIn = () => {
         setZoom((z) => Math.min(z + ZOOM_STEP, MAX_ZOOM))

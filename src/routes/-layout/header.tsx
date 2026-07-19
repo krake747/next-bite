@@ -1,5 +1,5 @@
 import UtensilsCrossed from "lucide-react/icons/utensils-crossed"
-import { useState, useEffect, useMemo, type ReactNode } from "react"
+import { useState, useEffect, type ReactNode } from "react"
 
 export function Header({ children }: { children?: ReactNode }) {
     const [scrollY, setScrollY] = useState(0)
@@ -12,9 +12,9 @@ export function Header({ children }: { children?: ReactNode }) {
         return () => window.removeEventListener("scroll", handleScroll)
     }, [])
 
-    const parallax1 = useMemo(() => scrollY * 0.15, [scrollY])
-    const parallax2 = useMemo(() => scrollY * -0.1, [scrollY])
-    const parallax3 = useMemo(() => scrollY * 0.08, [scrollY])
+    const parallax1 = scrollY * 0.15
+    const parallax2 = scrollY * -0.1
+    const parallax3 = scrollY * 0.08
     const parallaxTopRight = `translateY(${scrollY * 0.12}px)`
     const parallaxLeftMiddle = `translateY(${scrollY * -0.15}px)`
     const parallaxLeftBottom = `translateY(${scrollY * 0.06}px)`

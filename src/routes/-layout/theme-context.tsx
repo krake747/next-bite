@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect, useMemo, type ReactNode } from "react"
+import { createContext, useContext, useState, useEffect, type ReactNode } from "react"
 
 const ThemeKey = "next-bite-theme"
 
@@ -37,7 +37,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
         })
     }
 
-    const value = useMemo<ThemeContextValue>(() => ({ theme, toggleTheme, isDark: theme === "dark" }), [theme])
+    const value = { theme, toggleTheme, isDark: theme === "dark" }
 
     return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>
 }

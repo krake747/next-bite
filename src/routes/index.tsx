@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react"
+import { useState } from "react"
 import { createFileRoute, useNavigate } from "@tanstack/react-router"
 import { Header, HeaderSubtitle, HeaderTitle, HeaderBadge } from "./-layout/header"
 import { PageLayout } from "./-layout/page-layout"
@@ -31,24 +31,22 @@ function Home() {
     const filterState = useFilterState()
     const [sortOrder, setSortOrder] = useState<"added" | "name">("added")
 
-    const filteredRestaurants = useMemo(() => {
-        let result = restaurantListState
+    let filteredResult = restaurantListState
 
-        if (filterState.filter) {
-            result = result.filter((r) => r.addedBy === filterState.filter)
-        }
+    if (filterState.filter) {
+        filteredResult = filteredResult.filter((r) => r.addedBy === filterState.filter)
+    }
 
-        const searchTerm = filterState.search.trim().toLowerCase()
-        if (searchTerm) {
-            result = result.filter((r) => r.name.toLowerCase().includes(searchTerm))
-        }
+    const searchTerm = filterState.search.trim().toLowerCase()
+    if (searchTerm) {
+        filteredResult = filteredResult.filter((r) => r.name.toLowerCase().includes(searchTerm))
+    }
 
-        if (sortOrder === "name") {
-            result = [...result].sort((a, b) => a.name.localeCompare(b.name))
-        }
+    if (sortOrder === "name") {
+        filteredResult = [...filteredResult].sort((a, b) => a.name.localeCompare(b.name))
+    }
 
-        return result
-    }, [restaurantListState, filterState.filter, filterState.search, sortOrder])
+    const filteredRestaurants = filteredResult
 
     return (
         <PageLayout>

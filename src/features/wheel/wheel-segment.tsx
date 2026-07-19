@@ -1,4 +1,3 @@
-import { useMemo } from "react"
 import { useWheel } from "./wheel-context"
 import { WHEEL_CONFIG_CONSTANTS } from "./wheel-store"
 import { type Restaurant } from "@core/hooks"
@@ -50,38 +49,28 @@ export function WheelSegment({ restaurant, idx }: { restaurant: Restaurant; idx:
     const wheel = useWheel()
     const { radius, center } = WHEEL_CONFIG_CONSTANTS
 
-    const segment = useMemo(() => {
-        const point = (angle: number, factor = 1) => [
-            center + radius * factor * Math.cos(angle),
-            center + radius * factor * Math.sin(angle),
-        ]
+    const point = (angle: number, factor = 1) => [
+        center + radius * factor * Math.cos(angle),
+        center + radius * factor * Math.sin(angle),
+    ]
 
-        const segmentCount = wheel.segments.length
-        const segmentAngle = segmentCount > 0 ? 360 / segmentCount : 0
-        const start = (idx * segmentAngle * Math.PI) / 180
-        const end = ((idx + 1) * segmentAngle * Math.PI) / 180
-        const arc = segmentAngle > 180 ? 1 : 0
-        const [x1, y1] = point(start)
-        const [x2, y2] = point(end)
-        const labelAngle = start + (end - start) / 2
+    const segmentCount = wheel.segments.length
+    const segmentAngle = segmentCount > 0 ? 360 / segmentCount : 0
+    const start = (idx * segmentAngle * Math.PI) / 180
+    const end = ((idx + 1) * segmentAngle * Math.PI) / 180
+    const arc = segmentAngle > 180 ? 1 : 0
+    const [x1, y1] = point(start)
+    const [x2, y2] = point(end)
+    const labelAngle = start + (end - start) / 2
 
-        const [x, y] = point(labelAngle, 0.62)
+    const [x, y] = point(labelAngle, 0.62)
 
-        const rotationDeg = ((labelAngle * 180) / Math.PI + 360) % 360
-        const rotation = rotationDeg > 180 ? rotationDeg - 180 : rotationDeg
+    const rotationDeg = ((labelAngle * 180) / Math.PI + 360) % 360
+    const rotation = rotationDeg > 180 ? rotationDeg - 180 : rotationDeg
 
-        return {
-            path: `M ${center} ${center} L ${x1} ${y1} A ${radius} ${radius} 0 ${arc} 1 ${x2} ${y2} Z`,
-            x,
-            y,
-            rotation,
-        }
-    }, [wheel.segments.length, idx, radius, center])
+    const path = `M ${center} ${center} L ${x1} ${y1} A ${radius} ${radius} 0 ${arc} 1 ${x2} ${y2} Z`
 
-    const colorIndex = useMemo(
-        () => getRestaurantColorId(restaurant._id, idx, wheel.segments.length),
-        [restaurant._id, idx, wheel.segments.length],
-    )
+    const colorIndex = getRestaurantColorId(restaurant._id, idx, wheel.segments.length)
     const bgColor = WHEEL_COLORS[colorIndex] ?? WHEEL_COLORS[0]
     const contrastColor = getContrastColor(bgColor)
     const displayName =
@@ -91,14 +80,14 @@ export function WheelSegment({ restaurant, idx }: { restaurant: Restaurant; idx:
 
     return (
         <g>
-            <path d={segment.path} fill={bgColor} />
+            <path d={path} fill={bgColor} />
             <text
-                x={segment.x}
-                y={segment.y}
+                x={x}
+                y={y}
                 fill={contrastColor}
                 textAnchor="middle"
                 dominantBaseline="middle"
-                transform={`rotate(${segment.rotation}, ${segment.x}, ${segment.y})`}
+                transform={`rotate(${rotation}, ${x}, ${y})`}
                 style={{ fontFamily: "var(--font-body)", fontSize: "13px", fontWeight: "500" }}
             >
                 {displayName}
