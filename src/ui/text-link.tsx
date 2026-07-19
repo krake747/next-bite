@@ -3,9 +3,7 @@ import type { ComponentProps } from "react"
 
 import { cx } from "@ui/variants"
 
-type TextLinkProps = ComponentProps<typeof Link> & {
-    className?: string
-}
+type TextLinkProps = ComponentProps<typeof Link>
 
 export function TextLink({ className, ...props }: TextLinkProps) {
     return (
