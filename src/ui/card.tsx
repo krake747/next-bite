@@ -4,7 +4,7 @@ import { cx } from "@ui/variants"
 export function Card({ className, ...props }: ComponentProps<"div">) {
     return (
         <div
-            data-component="card"
+            data-slot="card"
             {...props}
             className={cx(
                 "group relative flex flex-col overflow-hidden rounded-2xl bg-white",
@@ -21,7 +21,7 @@ export function Card({ className, ...props }: ComponentProps<"div">) {
 export function CardFooter({ className, ...props }: ComponentProps<"div">) {
     return (
         <div
-            data-component="card-footer"
+            data-slot="card-footer"
             {...props}
             className={cx("border-t border-neutral-100/80 px-6 py-4 dark:border-white/6", className)}
         />

@@ -26,7 +26,7 @@ type ButtonProps = ComponentProps<typeof BaseButton> & VariantProps<typeof butto
 
 export function Button({ variant, size, className, children, ...rest }: ButtonProps) {
     return (
-        <BaseButton data-component="button" {...rest} className={button({ variant, size, class: className })}>
+        <BaseButton data-slot="button" {...rest} className={button({ variant, size, class: className })}>
             {children}
         </BaseButton>
     )

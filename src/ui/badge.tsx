@@ -22,7 +22,7 @@ type BadgeProps = VariantProps<typeof badge> & {
 
 export function Badge({ variant, className, children }: BadgeProps) {
     return (
-        <span data-component="badge" className={cx(badge({ variant }), className)}>
+        <span data-slot="badge" className={cx(badge({ variant }), className)}>
             {children}
         </span>
     )

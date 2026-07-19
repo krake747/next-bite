@@ -22,7 +22,7 @@ export function Header({ children }: { children?: ReactNode }) {
 
     return (
         <header
-            data-component="header"
+            data-slot="header"
             className="relative overflow-hidden border-b border-neutral-200/60 bg-[#faf9f7] dark:border-white/10 dark:bg-[#1a1918]"
         >
             <div

@@ -9,7 +9,7 @@ import { useAuth } from "@core/hooks"
 export function TopBar() {
     return (
         <div
-            data-component="top-bar"
+            data-slot="top-bar"
             className="sticky top-0 z-40 w-full border-b border-neutral-200/60 bg-[#faf9f7]/80 backdrop-blur-md dark:border-white/10 dark:bg-[#1a1918]/80"
         >
             <div className="mx-auto flex h-14 w-full max-w-350 items-center justify-between px-4 sm:px-6 lg:px-12">

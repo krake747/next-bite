@@ -34,7 +34,7 @@ export function RestaurantList({ restaurants, hasFilter, hasSearch, onAddClick, 
     }
 
     return (
-        <div data-component="restaurant-list" className="grid gap-8 md:grid-cols-2 md:gap-10">
+        <div data-slot="restaurant-list" className="grid gap-8 md:grid-cols-2 md:gap-10">
             {restaurants.length > 0 ? (
                 restaurants.map((restaurant, index) => {
                     const animationProps = getAnimationProps(restaurant, index)
