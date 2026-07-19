@@ -21,9 +21,9 @@ import {
     type Restaurant,
 } from "@core/hooks"
 import { EditRestaurantDialog } from "./edit-restaurant-dialog"
-import { EmojiRating } from "@ui/emoji-rating"
-import { LazyImage } from "@ui/lazy-image"
-import { ImageGalleryModal } from "@ui/image-gallery-modal"
+import { EmojiRating } from "@pattern/emoji-rating"
+import { LazyImage } from "@pattern/lazy-image"
+import { ImageGalleryModal } from "@pattern/image-gallery-modal"
 import { OpeningHours } from "@ui/opening-hours"
 import { OpeningHoursDialog } from "@ui/opening-hours-dialog"
 import { Button } from "@ui/button"

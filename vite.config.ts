@@ -11,6 +11,7 @@ export default defineConfig({
         alias: {
             "lucide-react/icons": path.resolve(__dirname, "./node_modules/lucide-react/dist/esm/icons"),
             "@ui": path.resolve(__dirname, "./src/ui"),
+            "@pattern": path.resolve(__dirname, "./src/pattern"),
             "@core": path.resolve(__dirname, "./src/core"),
             "@features": path.resolve(__dirname, "./src/features"),
             "@routes": path.resolve(__dirname, "./src/routes"),

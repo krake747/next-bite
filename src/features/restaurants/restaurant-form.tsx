@@ -11,9 +11,9 @@ import {
 import { Button } from "@ui/button"
 import { FieldWrapper, Input, Textarea, Select } from "@ui/field"
 import { RestaurantSchema, type RestaurantOutput } from "@core/schemas"
-import { PlacesAutocomplete } from "@ui/places-autocomplete"
-import { ImageUpload } from "@ui/image-upload"
-import { EmojiRating } from "@ui/emoji-rating"
+import { PlacesAutocomplete } from "@pattern/places-autocomplete"
+import { ImageUpload } from "@pattern/image-upload"
+import { EmojiRating } from "@pattern/emoji-rating"
 
 export type RestaurantFormProps =
     | { mode: "add"; onSuccess: () => void; onCancel: () => void }
