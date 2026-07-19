@@ -65,7 +65,8 @@ Make a git commit. The commit message must:
 
 Keep it concise.
 
-Push your branch to origin: `git push origin {{BRANCH}}`.
+Push your branch to origin: `git push origin {{BRANCH}}`. If the push fails, you must fix the issue
+before completing. Do NOT mark the task complete if the branch cannot be pushed.
 
 # THE ISSUE
 
