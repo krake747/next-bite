@@ -14,6 +14,7 @@ import type * as friends from "../friends.js";
 import type * as http from "../http.js";
 import type * as migrate from "../migrate.js";
 import type * as restaurants from "../restaurants.js";
+import type * as test from "../test.js";
 
 import type {
   ApiFromModules,
@@ -28,6 +29,7 @@ declare const fullApi: ApiFromModules<{
   http: typeof http;
   migrate: typeof migrate;
   restaurants: typeof restaurants;
+  test: typeof test;
 }>;
 
 /**
