@@ -1,0 +1,34 @@
+{
+    "$schema": "./node_modules/fallow/schema.json",
+    "entry": ["src/index.{ts,tsx,js,jsx}", "src/main.{ts,tsx,js,jsx}"],
+    "workspaces": {
+        "patterns": ["."]
+    },
+    "duplicates": {
+        "minOccurrences": 3
+    },
+    "rules": {
+        "unused-dependencies": "warn",
+        "unused-export": "warn",
+        "unused-file": "warn",
+        "boundary-violation": "error"
+    },
+    "boundaries": {
+        "zones": [
+            { "name": "core", "patterns": ["src/core/**"] },
+            { "name": "ui", "patterns": ["src/ui/**"] },
+            { "name": "pattern", "patterns": ["src/pattern/**"] },
+            { "name": "features", "patterns": ["src/features/**"] },
+            { "name": "routes", "patterns": ["src/routes/**"] },
+            { "name": "convex", "patterns": ["convex/**"] }
+        ],
+        "rules": [
+            { "from": "core", "allow": ["core", "convex"] },
+            { "from": "ui", "allow": ["core", "ui"] },
+            { "from": "pattern", "allow": ["core", "ui", "pattern", "convex"] },
+            { "from": "features", "allow": ["core", "ui", "pattern", "features", "convex"] },
+            { "from": "routes", "allow": ["core", "ui", "pattern", "features", "convex"] },
+            { "from": "convex", "allow": ["convex", "core"] }
+        ]
+    }
+}

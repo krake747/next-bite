@@ -12,3 +12,6 @@ pre-commit:
       glob: "*.{ts,tsx}"
       run: pnpm exec oxlint --fix {staged_files}
       stage_fixed: true
+    fallow:
+      glob: "*.{ts,tsx}"
+      run: pnpm exec fallow audit --base HEAD

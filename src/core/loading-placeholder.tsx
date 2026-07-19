@@ -1,8 +1,6 @@
 import LoaderPinwheel from "lucide-react/icons/loader-pinwheel"
 import { useState } from "react"
 
-export { LoadingPlaceholder } from "@core/loading-placeholder"
-
 const LoadingVerbs = [
     "Accomplishing",
     "Actioning",
@@ -285,22 +283,47 @@ function randomVerb() {
     return LoadingVerbs[Math.floor(Math.random() * LoadingVerbs.length)]
 }
 
-export function Loading({ message, className }: { message?: string; className?: string }) {
+export function LoadingPlaceholder() {
     const [verb] = useState(randomVerb)
 
     return (
-        <span data-slot="loading" className={className}>
-            {verb}
-            {message ? ` ${message}` : ""}...
-        </span>
-    )
-}
+        <div className="relative flex min-h-screen flex-col overflow-hidden bg-[#faf9f7] dark:bg-[#1a1918]">
+            <div
+                className="pointer-events-none absolute inset-0 opacity-[0.02] dark:opacity-[0.03]"
+                style={{
+                    backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")`,
+                }}
+            />
 
-export function LoadingInline({ message, className }: { message?: string; className?: string }) {
-    return (
-        <span data-slot="loading-inline" className={className}>
-            <LoaderPinwheel className="size-4 animate-spin text-neutral-400" />
-            {message && <span className="ml-2 text-neutral-500">{message}...</span>}
-        </span>
+            <div className="pointer-events-none absolute inset-0">
+                <div className="absolute top-0 left-0 h-full w-1/2 bg-linear-to-br from-flame-pea-100/40 via-transparent to-transparent dark:from-flame-pea-900/20" />
+                <div className="absolute right-0 bottom-0 h-full w-1/2 bg-linear-to-tl from-orange-100/30 via-transparent to-transparent dark:from-orange-900/10" />
+            </div>
+
+            <div className="animate-float pointer-events-none absolute top-[20%] left-[10%] h-32 w-32 rounded-full bg-flame-pea-300/15 blur-[80px] will-change-transform" />
+            <div
+                className="animate-float pointer-events-none absolute right-[15%] bottom-[10%] h-24 w-24 rounded-full bg-orange-300/10 blur-[60px] will-change-transform"
+                style={{ animationDelay: "1s" }}
+            />
+
+            <div className="relative z-10 flex flex-1 items-center justify-center">
+                <div className="flex flex-col items-center justify-center space-y-6">
+                    <div className="relative">
+                        <div className="absolute inset-0 animate-pulse rounded-full bg-flame-pea-500/20 blur-2xl" />
+                        <div className="absolute inset-0 rounded-full bg-flame-pea-400/10 blur-xl" />
+                        <div className="relative flex size-16 items-center justify-center rounded-2xl bg-linear-to-br from-flame-pea-500 to-flame-pea-600 text-white shadow-[0_8px_30px_rgb(181,57,32,0.3)] dark:from-flame-pea-600 dark:to-flame-pea-700 dark:shadow-[0_8px_30px_rgb(181,57,32,0.4)]">
+                            <LoaderPinwheel className="size-7 animate-spin" aria-hidden="true" />
+                        </div>
+                    </div>
+
+                    <p
+                        className="text-lg text-neutral-600 dark:text-neutral-400"
+                        style={{ fontFamily: "var(--font-body)" }}
+                    >
+                        {verb}...
+                    </p>
+                </div>
+            </div>
+        </div>
     )
 }

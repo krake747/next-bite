@@ -35,3 +35,4 @@ dist-ssr
 
 # Playwright
 test-results/
+.fallow/
