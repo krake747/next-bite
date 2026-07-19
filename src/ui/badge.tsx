@@ -1,6 +1,5 @@
 import { cva, cx, type VariantProps } from "@ui/variants"
-import { splitProps, type ComponentProps } from "solid-js"
-import { Dynamic } from "solid-js/web"
+import type { ComponentProps } from "react"
 
 const badge = cva({
     base: "inline-flex items-center rounded-full text-xs font-medium",
@@ -17,21 +16,13 @@ const badge = cva({
     },
 })
 
-interface BadgeProps extends ComponentProps<"span">, VariantProps<typeof badge> {
-    as?: string
-}
+type BadgeProps = ComponentProps<"span"> &
+    VariantProps<typeof badge> & {
+        as?: keyof HTMLElementTagNameMap
+    }
 
-export function Badge(props: BadgeProps) {
-    const [local, rest] = splitProps(props, ["variant", "as", "class"])
-
+export function Badge({ variant, as: As = "span", className, ...rest }: BadgeProps) {
     return (
-        <Dynamic
-            data-component="badge"
-            {...rest}
-            component={local.as ?? "span"}
-            class={cx(badge({ variant: local.variant }), local.class)}
-        >
-            {props.children}
-        </Dynamic>
+        <As data-component="badge" {...rest} className={cx(badge({ variant }), className)} />
     )
 }

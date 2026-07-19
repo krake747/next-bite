@@ -1,24 +1,27 @@
-import { createSignal } from "solid-js"
+import { useState, useCallback } from "react"
 
 export function useFilterState(initial: string | null = null) {
-    const [filter, setFilter] = createSignal<string | null>(initial)
-    const [search, setSearch] = createSignal("")
+    const [filter, setFilter] = useState<string | null>(initial)
+    const [search, setSearch] = useState("")
 
-    const filtered = <T>(items: T[], getName: (item: T) => string): T[] => {
-        let result = filter() ? items.filter((x) => getName(x) === filter()) : items
-        const searchTerm = search().trim().toLowerCase()
-        if (searchTerm) {
-            result = result.filter((x) => getName(x).toLowerCase().includes(searchTerm))
-        }
-        return result
-    }
+    const filtered = useCallback(
+        <T>(items: T[], getName: (item: T) => string): T[] => {
+            let result = filter ? items.filter((x) => getName(x) === filter) : items
+            const searchTerm = search.trim().toLowerCase()
+            if (searchTerm) {
+                result = result.filter((x) => getName(x).toLowerCase().includes(searchTerm))
+            }
+            return result
+        },
+        [filter, search],
+    )
 
-    const hasActive = () => filter() !== null || search().trim() !== ""
+    const hasActive = filter !== null || search.trim() !== ""
 
-    const clear = () => {
+    const clear = useCallback(() => {
         setFilter(null)
         setSearch("")
-    }
+    }, [])
 
     return {
         filter,

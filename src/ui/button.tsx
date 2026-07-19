@@ -1,6 +1,6 @@
-import { Root } from "@kobalte/core/button"
+import { Button as BaseButton } from "@base-ui-components/react/button"
 import { cva, type VariantProps } from "@ui/variants"
-import { splitProps, type ComponentProps } from "solid-js"
+import type { ComponentProps } from "react"
 
 const button = cva({
     base: "group inline-flex cursor-pointer items-center justify-center font-semibold shadow-xs focus-visible:outline-2 focus-visible:outline-offset-2 active:scale-[0.97] dark:shadow-none",
@@ -22,18 +22,16 @@ const button = cva({
     },
 })
 
-interface ButtonProps extends ComponentProps<typeof Root>, VariantProps<typeof button> {}
+type ButtonProps = ComponentProps<typeof BaseButton> & VariantProps<typeof button>
 
-export function Button(props: ButtonProps) {
-    const [local, rest] = splitProps(props, ["variant", "size", "class"])
-
+export function Button({ variant, size, className, children, ...rest }: ButtonProps) {
     return (
-        <Root
+        <BaseButton
             data-component="button"
             {...rest}
-            class={button({ variant: local.variant, size: local.size, class: local.class })}
+            className={button({ variant, size, class: className })}
         >
-            {props.children}
-        </Root>
+            {children}
+        </BaseButton>
     )
 }
