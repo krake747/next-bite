@@ -1,5 +1,7 @@
 FROM node:26-bookworm
 
+ENV CI=true
+
 RUN apt-get update && apt-get install -y \
   git \
   curl \
@@ -27,6 +29,8 @@ RUN chmod +x /usr/local/bin/linear
 USER ${AGENT_UID}:${AGENT_GID}
 
 WORKDIR /home/agent
+
+RUN mkdir -p /home/agent/.local/share/pnpm/store /home/agent/.cache/pnpm
 
 RUN git config --global user.name "RALPH (Sandcastle)" && git config --global user.email "ralph@sandcastle.local"
 

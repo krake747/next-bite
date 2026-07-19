@@ -16,8 +16,8 @@
         "netlify": "pnpx netlify",
         "postinstall": "lefthook install",
         "preview": "vite preview --port=5173",
-        "sandcastle:build": "sandcastle docker build-image",
-        "sandcastle:run": "tsx .sandcastle/main.ts",
+        "sandcastle:build": "pnpm --filter @next-bite/sandcastle-tools sandcastle:build",
+        "sandcastle:run": "pnpm --filter @next-bite/sandcastle-tools sandcastle:run",
         "skills:krake747": "pnx skills add krake747/skills",
         "skills:mattpocock": "pnx skills add mattpocock/skills",
         "test:e2e": "playwright test"
@@ -45,7 +45,6 @@
         "zustand": "^5.0.14"
     },
     "devDependencies": {
-        "@ai-hero/sandcastle": "^0.12.0",
         "@playwright/test": "^1.61.1",
         "@rolldown/plugin-babel": "^0.2.3",
         "@tanstack/router-plugin": "^1.168.22",

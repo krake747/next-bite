@@ -1,0 +1,13 @@
+{
+    "name": "@next-bite/sandcastle-tools",
+    "private": true,
+    "type": "module",
+    "scripts": {
+        "sandcastle:build": "cd .. && sandcastle docker build-image",
+        "sandcastle:run": "cd .. && tsx .sandcastle/main.ts"
+    },
+    "devDependencies": {
+        "@ai-hero/sandcastle": "^0.12.0",
+        "zod": "^4.4.3"
+    }
+}

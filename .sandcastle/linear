@@ -11,7 +11,7 @@ fi
 
 graphql() {
   local query="$1"
-  local variables="${2:-{}}"
+  local variables="${2:-"{}"}"
   local escaped
   escaped=$(echo "$query" | jq -Rs .)
   curl -sS -X POST "$API_URL" \
@@ -38,7 +38,7 @@ issues)
   done
 
   filter_parts=""
-  [ -n "$label" ] && filter_parts="$filter_parts, \"label\": { \"name\": { \"eq\": \"$label\" } }"
+  [ -n "$label" ] && filter_parts="$filter_parts, \"labels\": { \"name\": { \"eq\": \"$label\" } }"
   [ -n "$assignee" ] && filter_parts="$filter_parts, \"assignee\": { \"name\": { \"eq\": \"$assignee\" } }"
 
   if [ -n "$filter_parts" ]; then

@@ -1,5 +1,6 @@
 packages:
   - .
+  - .sandcastle
 
 allowBuilds:
   "@prisma/engines": true
