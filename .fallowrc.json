@@ -27,7 +27,7 @@
             { "from": "ui", "allow": ["core", "ui"] },
             { "from": "pattern", "allow": ["core", "ui", "pattern", "convex"] },
             { "from": "features", "allow": ["core", "ui", "pattern", "features", "convex"] },
-            { "from": "routes", "allow": ["core", "ui", "pattern", "features", "convex"] },
+            { "from": "routes", "allow": ["core", "ui", "pattern", "features", "convex", "routes"] },
             { "from": "convex", "allow": ["convex", "core"] }
         ]
     }

@@ -1,8 +1,8 @@
 import { createFileRoute, Outlet, redirect } from "@tanstack/react-router"
 
 import { useAuth } from "@core/hooks"
-import { PageContainer } from "@ui/page-container"
-import { PageLayout } from "@ui/page-layout"
+import { PageContainer } from "@routes/-layouts/page-container"
+import { PageLayout } from "@routes/-layouts/page-layout"
 
 export const Route = createFileRoute("/_authenticated")({
     component: AuthenticatedLayout,

@@ -60,6 +60,12 @@
             "skillPath": "skills/productivity/handoff/SKILL.md",
             "computedHash": "ad03e8d4ea3cbbff66420eb7ba3cc375b5cbe1821a2449b53e863256cf5b5cde"
         },
+        "humanize-spec": {
+            "source": "krake747/skills",
+            "sourceType": "github",
+            "skillPath": "humanize-spec/SKILL.md",
+            "computedHash": "b7d17c32e28a232755bc6a8c4decb4a7cb3caf699cb834df0257d6031453f66b"
+        },
         "implement": {
             "source": "mattpocock/skills",
             "sourceType": "github",
@@ -71,6 +77,12 @@
             "sourceType": "github",
             "skillPath": "skills/engineering/improve-codebase-architecture/SKILL.md",
             "computedHash": "66e8a50c83c3c724fcfe0769701b665c56cec220cc4f49cc1aee8bdfc07de94a"
+        },
+        "match-style": {
+            "source": "krake747/skills",
+            "sourceType": "github",
+            "skillPath": "match-style/SKILL.md",
+            "computedHash": "251a415a8482f6e50feeb4d687718aab82cc593e5cee8afa5e1c24486eea5989"
         },
         "prototype": {
             "source": "mattpocock/skills",

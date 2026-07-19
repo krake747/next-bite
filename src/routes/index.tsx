@@ -9,11 +9,11 @@ import { FriendsFilterSkeleton } from "@features/friends-filter"
 import { AddRestaurantDialog } from "@features/restaurants/add-restaurant-dialog"
 import { RestaurantCardSkeleton } from "@features/restaurants/restaurant-card-skeleton"
 import { RestaurantList } from "@features/restaurants/restaurant-list"
+import { PageContainer } from "@routes/-layouts/page-container"
+import { PageLayout } from "@routes/-layouts/page-layout"
 import { Button } from "@ui/button"
 import { Header, HeaderSubtitle, HeaderTitle, HeaderBadge } from "@ui/header"
 import { useFilterState } from "@ui/hooks/use-filter"
-import { PageContainer } from "@ui/page-container"
-import { PageLayout } from "@ui/page-layout"
 
 export const Route = createFileRoute("/")({
     head: () => ({ meta: [{ title: "Our next bite" }] }),

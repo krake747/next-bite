@@ -1,7 +1,7 @@
 import Moon from "lucide-react/icons/moon"
 import Sun from "lucide-react/icons/sun"
 
-import { useTheme } from "./theme-context"
+import { useTheme } from "@ui/theme-context"
 
 export function ThemeToggle() {
     const { isDark, toggleTheme } = useTheme()
