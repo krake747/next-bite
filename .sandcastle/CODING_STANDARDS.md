@@ -8,8 +8,9 @@
 - When comments are needed, do not use em dashes. Use periods, commas, or colons instead.
 - Follow existing patterns in the codebase for component structure, file naming, and module
   organization.
-- Use SolidJS primitives (`createSignal`, `createResource`, `createEffect`) idiomatically.
-- Reactive state belongs in signals; derived state belongs in `createMemo`.
+- Use React hooks idiomatically. State belongs in `useState`; derived values compute inline.
+- Use TanStack Query for server state (`useQuery`, `useMutation`). Never fetch in effects.
+- Use Base UI primitives for interactive components (Dialog, Popover, Menu).
 
 ## Convex
 
@@ -19,9 +20,11 @@
 
 ## Testing
 
-- Tests live alongside source files with `.test.ts` or `.test.tsx` extension.
+- Unit tests (`*.test.ts`) live alongside source files, running in node via Vitest.
+- Browser tests (`*.test.tsx`) render with @testing-library/react in jsdom via Vitest.
+- E2E tests live in `e2e/` and run with Playwright against the dev server.
 - Use descriptive test names that explain the expected behavior.
-- Prefer integration-style tests over shallow unit tests where practical.
+- Query components by text content or `data-slot` attributes, not CSS classes.
 
 ## Commits
 
@@ -33,5 +36,5 @@
 
 - Components should be focused on a single responsibility.
 - Prefer composition over inheritance.
-- Shared utilities belong in `src/lib/`.
+- Shared utilities belong in `src/core/`.
 - Follow existing module boundaries and avoid cross-cutting imports between unrelated domains.
