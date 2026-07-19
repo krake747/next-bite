@@ -19,6 +19,7 @@
         "sandcastle:build": "sandcastle docker build-image",
         "sandcastle:run": "tsx .sandcastle/main.ts",
         "skills:krake747": "pnx skills add krake747/skills",
+        "skills:krake747:bump": "pnx skills update krake747/skills",
         "test:e2e": "playwright test"
     },
     "dependencies": {

@@ -2,13 +2,13 @@ import { createFileRoute } from "@tanstack/react-router"
 import { Suspense, useState } from "react"
 
 import { useRestaurants } from "@core/hooks"
-import { BackNav } from "@features/back-nav"
 import { EmptyWheelState } from "@features/wheel/empty-wheel-state"
 import { SpinningWheel } from "@features/wheel/spinning-wheel"
 import { WheelConfigModal } from "@features/wheel/wheel-config-modal"
 import { WheelProvider } from "@features/wheel/wheel-context"
 import { Instructions, WinnerModal } from "@features/wheel/wheel-messages"
 import { useWheelStore } from "@features/wheel/wheel-store"
+import { BackNav } from "@routes/-layouts/back-nav"
 import { Header, HeaderSubtitle, HeaderTitle } from "@ui/header"
 
 export const Route = createFileRoute("/_authenticated/wheel")({

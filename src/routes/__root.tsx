@@ -3,7 +3,7 @@ import { APIProvider } from "@vis.gl/react-google-maps"
 import { Suspense } from "react"
 
 import { AuthProvider } from "@core/auth-provider"
-import { LoadingPlaceholder } from "@ui/loading"
+import { LoadingPlaceholder } from "@core/loading-placeholder"
 import { ThemeProvider } from "@ui/theme-context"
 
 export const Route = createRootRoute({
