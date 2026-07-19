@@ -28,7 +28,6 @@ export function ImageGalleryModal(props: ImageGalleryModalProps) {
     const [isPanning, setIsPanning] = useState(false)
     const [isFullscreen, setIsFullscreen] = useState(false)
     const [rotation, setRotation] = useState(0)
-    const [suppressClickAfterPan, setSuppressClickAfterPan] = useState(false)
     const imageContainerRef = useRef<HTMLDivElement>(null)
     const dialogContentRef = useRef<HTMLDivElement>(null)
     const initialPinchDistance = useRef<number | undefined>(undefined)
@@ -38,7 +37,7 @@ export function ImageGalleryModal(props: ImageGalleryModalProps) {
 
     const PAN_THRESHOLD = 5
 
-    const getTouchDistance = (touches: TouchList) => {
+    const getTouchDistance = (touches: React.TouchList) => {
         if (touches.length < 2) return 0
         const touch0 = touches[0]
         const touch1 = touches[1]
@@ -99,7 +98,6 @@ export function ImageGalleryModal(props: ImageGalleryModalProps) {
             const dy = Math.abs(e.clientY - ptrRef.y)
             if (dx > PAN_THRESHOLD || dy > PAN_THRESHOLD) {
                 suppressClickAfterPanRef.current = true
-                setSuppressClickAfterPan(true)
             }
             setPan({ x: e.clientX - startPan.current.x, y: e.clientY - startPan.current.y })
         }
@@ -109,7 +107,6 @@ export function ImageGalleryModal(props: ImageGalleryModalProps) {
             setIsPanning(false)
             queueMicrotask(() => {
                 suppressClickAfterPanRef.current = false
-                setSuppressClickAfterPan(false)
             })
         }
 
@@ -147,7 +144,6 @@ export function ImageGalleryModal(props: ImageGalleryModalProps) {
     const handleClickZoom = () => {
         if (suppressClickAfterPanRef.current) {
             suppressClickAfterPanRef.current = false
-            setSuppressClickAfterPan(false)
             return
         }
         if (zoom > DEFAULT_ZOOM) {

@@ -15,7 +15,7 @@ type BackNavProps = {
 }
 
 export function BackNav({ backTo, showWheelOptions, onRandom, onBuildYourOwn, isSpinning, disabled }: BackNavProps) {
-    const isDisabled = disabled || isSpinning
+    const isDisabled = !!(disabled || isSpinning)
 
     return (
         <div data-component="back-nav" className="border-b border-neutral-200/60 py-4 dark:border-white/10">
@@ -34,6 +34,7 @@ export function BackNav({ backTo, showWheelOptions, onRandom, onBuildYourOwn, is
                         <Button
                             variant="primary"
                             size="md"
+                            nativeButton
                             onClick={onRandom}
                             disabled={isDisabled}
                             className="flex-1 sm:flex-initial"
@@ -44,6 +45,7 @@ export function BackNav({ backTo, showWheelOptions, onRandom, onBuildYourOwn, is
                         <Button
                             variant="secondary"
                             size="md"
+                            nativeButton
                             onClick={onBuildYourOwn}
                             disabled={isDisabled}
                             className="flex-1 sm:flex-initial"

@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react"
+import { useState } from "react"
 import { Card } from "@ui/card"
 import { Badge } from "@ui/badge"
 import MapPin from "lucide-react/icons/map-pin"
@@ -43,7 +43,8 @@ export function RestaurantCard({ restaurant, ...cardProps }: { restaurant: Resta
         setIsRefreshing(true)
         try {
             await refreshOpeningHours.mutateAsync({ restaurantId: restaurant._id })
-        } catch {} finally {
+        } catch {
+        } finally {
             setIsRefreshing(false)
         }
     }
@@ -52,20 +53,21 @@ export function RestaurantCard({ restaurant, ...cardProps }: { restaurant: Resta
         setIsRefreshing(true)
         try {
             await lookupPlaceIdAndHours.mutateAsync({ restaurantId: restaurant._id })
-        } catch {} finally {
+        } catch {
+        } finally {
             setIsRefreshing(false)
         }
     }
 
     const hasLocation = restaurant.lat != null && restaurant.lng != null
+    const location: { lat: number; lng: number } | null = hasLocation
+        ? { lat: restaurant.lat!, lng: restaurant.lng! }
+        : null
+
     const hasImages = (restaurant.images?.length ?? 0) > 0
     const imageCount = restaurant.images?.length ?? 0
     const imageSrc = hasImages ? restaurant.images?.[0]?.url : undefined
-    const imageUrls = useMemo(() => restaurant.images?.map((img) => img.url) ?? [], [restaurant.images])
-
-    const location = useMemo(() =>
-        hasLocation ? ({ lat: restaurant.lat, lng: restaurant.lng } as const) : undefined,
-    [restaurant.lat, restaurant.lng, hasLocation])
+    const imageUrls = restaurant.images?.map((img) => img.url) ?? []
 
     const handleRate = async (rating: number) => {
         await updateRestaurant.mutateAsync({ id: restaurant._id, rating })
@@ -150,14 +152,22 @@ function RestaurantCardImage({
         <div className="relative aspect-2/1 w-full overflow-hidden">
             {hasImages ? (
                 <>
-                    <LazyImage src={imageSrc} alt={`${restaurant.name} - main image`} aspectRatio="2/1" loading="lazy" />
+                    <LazyImage
+                        src={imageSrc}
+                        alt={`${restaurant.name} - main image`}
+                        aspectRatio="2/1"
+                        loading="lazy"
+                    />
                     <div className="pointer-events-none absolute inset-0 bg-linear-to-t from-black/70 via-black/20 to-transparent" />
                 </>
             ) : (
                 <div className="absolute inset-0 flex items-center justify-center bg-linear-to-br from-[#f5f4f2] to-[#ebe9e6] dark:from-[#2d2b29] dark:to-[#262523]">
                     <div className="flex items-center gap-2">
                         <Utensils className="size-5 text-neutral-400 dark:text-neutral-500" />
-                        <span className="text-xs tracking-wide text-neutral-500 uppercase dark:text-neutral-500" style={{ fontFamily: "var(--font-body)" }}>
+                        <span
+                            className="text-xs tracking-wide text-neutral-500 uppercase dark:text-neutral-500"
+                            style={{ fontFamily: "var(--font-body)" }}
+                        >
                             {restaurant.cuisine}
                         </span>
                     </div>
@@ -224,7 +234,15 @@ function RestaurantCardImage({
     )
 }
 
-function RestaurantCardContent({ restaurant, hasLocation, onShowHours }: { restaurant: Restaurant; hasLocation: boolean; onShowHours: () => void }) {
+function RestaurantCardContent({
+    restaurant,
+    hasLocation,
+    onShowHours,
+}: {
+    restaurant: Restaurant
+    hasLocation: boolean
+    onShowHours: () => void
+}) {
     return (
         <div className="flex flex-col gap-4 p-5 md:gap-3 md:p-4">
             <div className="flex flex-col gap-1">
@@ -295,7 +313,10 @@ function RestaurantCardNotes({ notes }: { notes: string | null | undefined }) {
                     "
                 </div>
                 <div className="border-l-2 border-flame-pea-400/50 bg-flame-pea-50/30 py-3 pr-3 pl-5 dark:border-flame-pea-600/40 dark:bg-flame-pea-950/15">
-                    <p className="text-sm leading-relaxed text-neutral-700 italic dark:text-neutral-300" style={{ fontFamily: "var(--font-body)" }}>
+                    <p
+                        className="text-sm leading-relaxed text-neutral-700 italic dark:text-neutral-300"
+                        style={{ fontFamily: "var(--font-body)" }}
+                    >
                         {notes}
                     </p>
                 </div>
@@ -367,7 +388,13 @@ function RestaurantCardMap({
     )
 }
 
-function RestaurantCardRating({ rating, onRate }: { rating: number | null; onRate: (rating: number) => void | Promise<void> }) {
+function RestaurantCardRating({
+    rating,
+    onRate,
+}: {
+    rating: number | null
+    onRate: (rating: number) => void | Promise<void>
+}) {
     return (
         <div className="px-5 py-2 md:px-4 md:py-2">
             <EmojiRating rating={rating} onRate={onRate} />

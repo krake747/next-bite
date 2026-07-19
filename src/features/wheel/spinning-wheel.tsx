@@ -1,4 +1,3 @@
-import { useMemo } from "react"
 import { useWheel } from "./wheel-context"
 import { WHEEL_CONFIG_CONSTANTS } from "./wheel-store"
 import { WheelSegment } from "./wheel-segment"

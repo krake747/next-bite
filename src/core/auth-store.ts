@@ -1,4 +1,4 @@
-import { type Reducer, useReducer, useEffect, useCallback } from "react"
+import { useReducer, useCallback } from "react"
 import { authClient } from "./auth-client"
 
 type User = {

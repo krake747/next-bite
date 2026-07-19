@@ -1,8 +1,8 @@
 import { Dialog } from "@base-ui-components/react/dialog"
+import { Link } from "@tanstack/react-router"
 import { useAuth } from "@core/hooks"
-import { Button } from "@ui/button"
-import { RestaurantForm } from "./restaurant-form"
 import UtensilsCrossed from "lucide-react/icons/utensils-crossed"
+import { RestaurantForm } from "./restaurant-form"
 
 export function AddRestaurantDialog({ show, onOpenChange }: { show: boolean; onOpenChange: (open: boolean) => void }) {
     const auth = useAuth()
@@ -32,10 +32,16 @@ export function AddRestaurantDialog({ show, onOpenChange }: { show: boolean; onO
                             <RestaurantForm mode="add" onSuccess={handleSuccess} onCancel={handleCancel} />
                         ) : (
                             <div className="space-y-4 py-8 text-center">
-                                <p className="text-neutral-600 dark:text-neutral-400">Please sign in to add restaurants.</p>
-                                <Button as="a" href="/login" className="w-full">
+                                <p className="text-neutral-600 dark:text-neutral-400">
+                                    Please sign in to add restaurants.
+                                </p>
+                                <Link
+                                    to="/login"
+                                    viewTransition
+                                    className="inline-flex w-full cursor-pointer items-center justify-center gap-x-1.5 rounded-md bg-flame-pea-700 px-3 py-2 text-sm font-semibold text-white shadow-xs hover:bg-flame-pea-600 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-flame-pea-700 active:scale-[0.97] dark:bg-flame-pea-800 dark:text-white dark:shadow-none dark:hover:bg-flame-pea-700 dark:focus-visible:outline-flame-pea-50"
+                                >
                                     Sign In
-                                </Button>
+                                </Link>
                             </div>
                         )}
                     </Dialog.Popup>

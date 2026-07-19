@@ -1,5 +1,4 @@
 import { cva, cx, type VariantProps } from "@ui/variants"
-import type { ComponentProps } from "react"
 
 const badge = cva({
     base: "inline-flex items-center rounded-full text-xs font-medium",
@@ -16,13 +15,15 @@ const badge = cva({
     },
 })
 
-type BadgeProps = ComponentProps<"span"> &
-    VariantProps<typeof badge> & {
-        as?: keyof HTMLElementTagNameMap
-    }
+type BadgeProps = VariantProps<typeof badge> & {
+    className?: string
+    children?: React.ReactNode
+}
 
-export function Badge({ variant, as: As = "span", className, ...rest }: BadgeProps) {
+export function Badge({ variant, className, children }: BadgeProps) {
     return (
-        <As data-component="badge" {...rest} className={cx(badge({ variant }), className)} />
+        <span data-component="badge" className={cx(badge({ variant }), className)}>
+            {children}
+        </span>
     )
 }
