@@ -11,6 +11,10 @@ import { FieldWrapper, Input } from "@ui/field"
 import { LoadingPlaceholder } from "@ui/loading"
 import { TextLink } from "@ui/text-link"
 
+const LoginSearchSchema = v.object({
+    redirect: v.optional(v.string()),
+})
+
 const LoginSchema = v.object({
     email: v.pipe(v.string(), v.email()),
     password: v.pipe(v.string(), v.minLength(8)),
@@ -19,12 +23,14 @@ const LoginSchema = v.object({
 type LoginInput = v.InferInput<typeof LoginSchema>
 
 export const Route = createFileRoute("/login")({
+    validateSearch: LoginSearchSchema,
     head: () => ({ meta: [{ title: "Sign In - Next Bite" }] }),
     component: LoginPage,
 })
 
 function LoginPage() {
     const navigate = useNavigate()
+    const { redirect: redirectTo } = Route.useSearch()
     const auth = useAuth()
 
     const form = useForm({ schema: LoginSchema })
@@ -32,7 +38,7 @@ function LoginPage() {
     const handleEmailSubmit = async (output: LoginInput) => {
         try {
             await auth.signInWithPassword(output.email, output.password)
-            navigate({ to: "/", replace: true, from: Route.fullPath })
+            navigate({ to: redirectTo ?? "/", replace: true, from: Route.fullPath })
         } catch {
             return
         }

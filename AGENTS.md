@@ -47,7 +47,6 @@ pnpm lint:ts       # TypeScript type-checking
 pnpm build         # production build
 pnpm fallow audit  # layer boundaries + unused code
 pnpm test          # Vitest unit + browser tests
-pnpm test:e2e      # Playwright E2E suite
 ```
 
 ## Agent skills

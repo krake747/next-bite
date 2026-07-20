@@ -12,6 +12,10 @@ import { FieldWrapper, Input } from "@ui/field"
 import { LoadingPlaceholder } from "@ui/loading"
 import { TextLink } from "@ui/text-link"
 
+const SignupSearchSchema = v.object({
+    redirect: v.optional(v.string()),
+})
+
 const SignupSchema = v.object({
     name: v.pipe(v.string(), v.minLength(1)),
     email: v.pipe(v.string(), v.email()),
@@ -22,12 +26,14 @@ const SignupSchema = v.object({
 type SignupInput = v.InferInput<typeof SignupSchema>
 
 export const Route = createFileRoute("/signup")({
+    validateSearch: SignupSearchSchema,
     head: () => ({ meta: [{ title: "Sign Up - Next Bite" }] }),
     component: SignupPage,
 })
 
 function SignupPage() {
     const navigate = useNavigate()
+    const { redirect: redirectTo } = Route.useSearch()
     const auth = useAuth()
 
     const [passwordError, setPasswordError] = useState<string | null>(null)
@@ -44,7 +50,7 @@ function SignupPage() {
 
         try {
             await auth.signUpWithPassword(output.name, output.email, output.password)
-            navigate({ to: "/", replace: true, from: Route.fullPath })
+            navigate({ to: redirectTo ?? "/", replace: true, from: Route.fullPath })
         } catch {
             return
         }

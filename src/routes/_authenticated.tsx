@@ -1,4 +1,4 @@
-import { createFileRoute, Outlet, redirect } from "@tanstack/react-router"
+import { createFileRoute, Outlet, redirect, useRouter } from "@tanstack/react-router"
 
 import { useAuth } from "@core/hooks"
 import { PageContainer } from "@routes/-layouts/page-container"
@@ -9,12 +9,16 @@ export const Route = createFileRoute("/_authenticated")({
 })
 
 function AuthenticatedLayout() {
+    const router = useRouter()
     const auth = useAuth()
 
     if (auth.isLoading) return null
 
     if (!auth.isAuthenticated) {
-        throw redirect({ to: "/login" })
+        throw redirect({
+            to: "/login",
+            search: { redirect: router.state.location.pathname },
+        })
     }
 
     return (
