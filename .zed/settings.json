@@ -1,3 +1,7 @@
+// Folder-specific settings
+//
+// For a full list of overridable settings, and general information on folder-specific settings,
+// see the documentation: https://zed.dev/docs/configuring-zed#settings-files
 {
     "lsp": {
         "oxlint": {
@@ -7,7 +11,7 @@
                     "run": "onType",
                     "disableNestedConfig": false,
                     "fixKind": "safe_fix",
-                    "typeAware": true,
+                    "typeAware": false,
                     "unusedDisableDirectives": "deny"
                 }
             }
@@ -15,7 +19,7 @@
         "oxfmt": {
             "initialization_options": {
                 "settings": {
-                    "configPath": null,
+                    "configPath": "./vite.config.ts",
                     "run": "onSave"
                 }
             }
