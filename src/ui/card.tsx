@@ -18,13 +18,3 @@ export function Card({ className, ...props }: ComponentProps<"div">) {
         />
     )
 }
-
-export function CardFooter({ className, ...props }: ComponentProps<"div">) {
-    return (
-        <div
-            data-slot="card-footer"
-            {...props}
-            className={cx("border-t border-neutral-100/80 px-6 py-4 dark:border-white/6", className)}
-        />
-    )
-}

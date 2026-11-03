@@ -1,5 +1,5 @@
 import { api } from "../../convex/_generated/api"
-import { type Doc, type Id } from "../../convex/_generated/dataModel"
+import { type Doc } from "../../convex/_generated/dataModel"
 import { useAuth } from "./auth-provider"
 import { useConvexQuery, useConvexMutation, useConvexAction } from "./convex-client.tsx"
 import { env } from "./env"
@@ -7,7 +7,6 @@ import { env } from "./env"
 export const useRestaurants = () => useConvexQuery<Restaurant[]>(api.restaurants.get)
 export const useFriends = () => useConvexQuery<Friend[]>(api.friends.get)
 
-export const useAddRestaurant = () => useConvexMutation(api.restaurants.add)
 export const useAddRestaurantWithHours = () => useConvexAction(api.restaurants.addWithOpeningHours)
 export const useUpdateRestaurant = () => useConvexMutation(api.restaurants.update)
 export const useDeleteRestaurant = () => useConvexMutation(api.restaurants.remove)
@@ -55,5 +54,5 @@ export function useUploadImage() {
 export { useAuth }
 
 export type Restaurant = Doc<"restaurants">
-export type Friend = Doc<"friends">
-export type StorageId = Id<"_storage">
+
+type Friend = Doc<"friends">

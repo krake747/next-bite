@@ -308,23 +308,3 @@ export function LoadingPlaceholder() {
         </div>
     )
 }
-
-export function Loading({ message, className }: { message?: string; className?: string }) {
-    const [verb] = useState(randomVerb)
-
-    return (
-        <span data-slot="loading" className={className}>
-            {verb}
-            {message ? ` ${message}` : ""}...
-        </span>
-    )
-}
-
-export function LoadingInline({ message, className }: { message?: string; className?: string }) {
-    return (
-        <span data-slot="loading-inline" className={className}>
-            <LoaderPinwheel className="size-4 animate-spin text-neutral-400" />
-            {message && <span className="ml-2 text-neutral-500">{message}...</span>}
-        </span>
-    )
-}

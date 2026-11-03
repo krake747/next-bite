@@ -64,4 +64,4 @@ function useConvexAction<T>(action: FunctionReference<"action">) {
     })
 }
 
-export { ConvexContext, ConvexProvider, useConvexClient, useConvexQuery, useConvexMutation, useConvexAction }
+export { ConvexProvider, useConvexQuery, useConvexMutation, useConvexAction }

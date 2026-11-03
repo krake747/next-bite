@@ -13,6 +13,8 @@
         "unused-file": "warn",
         "boundary-violation": "error"
     },
+    "ignoreDependencies": ["@fontsource-variable/*"],
+    "ignoreFindings": ["cloudflare.config.ts"],
     "boundaries": {
         "zones": [
             { "name": "core", "patterns": ["src/core/**"] },
