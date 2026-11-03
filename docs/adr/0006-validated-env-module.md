@@ -16,5 +16,3 @@ runtime. All call sites read from `env`; `AGENTS.md` records the rule.
 **Consequences**
 
 - Adding a variable means extending the schema plus the spec, not scattering reads.
-- The HTML shell (`index.html`) keeps its own `%VITE_POSTHOG_KEY%` placeholder; only TypeScript
-  reads go through the module.
