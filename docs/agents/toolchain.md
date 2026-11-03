@@ -79,6 +79,13 @@ set -a; . ./.env.production.local; set +a; pnpm deploy
 Deploying needs `cf auth login` or `CLOUDFLARE_API_TOKEN`. See
 [ADR-0008](../adr/0008-cloudflare-workers-assets.md).
 
+## Release
+
+Releases ship from `main` via the manual `release.yaml` workflow (`workflow_dispatch` with
+`patch`/`minor`/`major` plus a dry-run flag). It gates on PR CI, builds, deploys with `cf`, then
+tags and publishes a GitHub Release. Needs `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`, and the
+three `VITE_*` values as repository secrets. See [ADR-0009](../adr/0009-manual-release-pipeline.md).
+
 ## Verification chain
 
 Run `pnpm check:full` before committing (stop at first failure). It runs each gate in order:
