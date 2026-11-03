@@ -6,6 +6,7 @@ allowBuilds:
   esbuild: true
   lefthook: true
   prisma: true
+  workerd: true
 
 minimumReleaseAgeExclude:
   - "@oxc-transform-react/binding-android-arm-eabi@0.157.0"

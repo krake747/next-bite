@@ -62,6 +62,17 @@ pnpm convex:deploy   # deploy to production
 Schema in `convex/schema.ts`. Queries (`query`), mutations (`mutation`), and actions (`action`) in
 `convex/`.
 
+## Deploy
+
+```
+pnpm deploy    # cf deploy (builds, then uploads dist/ as Worker assets)
+```
+
+Hosting is an asset-only Cloudflare Worker (`next-bite`) with SPA fallback, configured in
+`cloudflare.config.ts`. `VITE_*` values bake in at build time, so the shell must provide them.
+Deploying needs `cf auth login` or `CLOUDFLARE_API_TOKEN`. See
+[ADR-0008](../adr/0008-cloudflare-workers-assets.md).
+
 ## Verification chain
 
 Run `pnpm check:full` before committing (stop at first failure). It runs each gate in order:

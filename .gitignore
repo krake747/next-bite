@@ -29,6 +29,9 @@ dist-ssr
 # Wrangler local state
 .wrangler/
 
+# Cloudflare CLI build output and generated types
+.cloudflare/
+
 # Agent plan outputs
 .agents/plans
 

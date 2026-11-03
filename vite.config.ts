@@ -299,7 +299,7 @@ export default defineConfig({
                 },
             },
             {
-                files: ["vite.config.ts"],
+                files: ["vite.config.ts", "cloudflare.config.ts", "wrangler.config.ts"],
                 plugins: ["import"],
                 rules: {
                     "import/no-default-export": "allow",
