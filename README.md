@@ -1,20 +1,19 @@
 # Our Next Bite
 
-[![Netlify Status](https://api.netlify.com/api/v1/badges/a733814f-3e1f-4b8f-9dab-87b931715958/deploy-status)](https://app.netlify.com/projects/magnificent-frangollo-7954c2/deploys)
-
 ![CodeRabbit Pull Request Reviews](https://img.shields.io/coderabbit/prs/github/krake747/next-bite?utm_source=oss&utm_medium=github&utm_campaign=krake747%2Fnext-bite&labelColor=171717&color=FF570A&link=https%3A%2F%2Fcoderabbit.ai&label=CodeRabbit+Reviews)
 
 A fun web app for friends to share and discover restaurant recommendations. Never wonder where to
-eat next! Built with SolidJS, Vite, Tailwind CSS, Convex, Formisch, and Valibot.
+eat next! Built with React, TypeScript, Tailwind CSS, TanStack Router, TanStack Query, Convex, and
+Valibot.
 
-[Our next bite](https://nextbite.kevinkraemer.com)
+[Our next bite](https://next-bite.kraemer-kevin747.workers.dev)
 
 ## Getting Started
 
 ### Prerequisites
 
-- Node.js (Latest stable version recommended)
-- pnpm (Package manager)
+- Node.js 26+ (pinned by `.node-version`)
+- pnpm 12 (pinned by `packageManager`)
 - Convex account and project (see [Convex docs](https://docs.convex.dev/quickstart))
 - `.env.local` file configured (see Environment Setup below)
 
@@ -50,6 +49,13 @@ CONVEX_DEPLOYMENT=your-deployment-name
 # Used by the application at runtime
 VITE_CONVEX_URL=https://your-deployment.convex.cloud
 VITE_CONVEX_SITE_URL=https://your-deployment.convex.site
+```
+
+For production deploys, put the same keys in `.env.production.local` (gitignored, never committed)
+and export them before deploying:
+
+```bash
+set -a; . ./.env.production.local; set +a; pnpm deploy
 ```
 
 Set the required Convex environment variables for authentication:
@@ -96,17 +102,21 @@ Open [http://localhost:5173](http://localhost:5173) in your browser.
 
 ## Available Scripts
 
-- `pnpm dev` - Start frontend development server
+- `pnpm dev` - Start frontend development server (`vp dev`)
 - `pnpm convex:dev` - Start local Convex dev server (syncs to cloud dev)
 - `pnpm convex:deploy` - Deploy Convex to production
 - `pnpm build` - Build for production
+- `pnpm deploy` - Deploy the frontend to Cloudflare Workers (needs `cf auth login`)
 - `pnpm preview` - Preview production build
+- `pnpm test` - Run all Vitest tiers (`test:pure`, `test:unit`, `test:browser`, `test:integration`)
+- `pnpm check:full` - Full local gate (format, lint, types, tests, boundaries, build)
 - `pnpm fmt` - Format code
 - `pnpm lint` - Lint code
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+This project is licensed under the GNU Affero General Public License v3.0 - see the
+[LICENSE](LICENSE) file for details.
 
 ## Contributing
 
@@ -115,4 +125,4 @@ are greatly appreciated!
 
 ## Acknowledgments
 
-Made with ❤️ for food lovers who love trying new bites 🍝. Built with SolidJS.
+Made with ❤️ for food lovers who love trying new bites 🍝. Built with React.
