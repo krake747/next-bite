@@ -69,7 +69,13 @@ pnpm deploy    # cf deploy (builds, then uploads dist/ as Worker assets)
 ```
 
 Hosting is an asset-only Cloudflare Worker (`next-bite`) with SPA fallback, configured in
-`cloudflare.config.ts`. `VITE_*` values bake in at build time, so the shell must provide them.
+`cloudflare.config.ts`. `VITE_*` values bake in at build time. The `cf` build does not read
+`.env.production.local`, so export the values in your shell first:
+
+```
+set -a; . ./.env.production.local; set +a; pnpm deploy
+```
+
 Deploying needs `cf auth login` or `CLOUDFLARE_API_TOKEN`. See
 [ADR-0008](../adr/0008-cloudflare-workers-assets.md).
 
