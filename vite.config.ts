@@ -70,6 +70,11 @@ export default defineConfig({
             builtin: true,
             browser: true,
         },
+        settings: {
+            shadcn: {
+                ui: "@ui",
+            },
+        },
         categories: {
             correctness: "error",
             perf: "error",
@@ -132,6 +137,18 @@ export default defineConfig({
             "no-array-sort": "error",
             "no-array-callback-reference": "allow",
             eqeqeq: "error",
+            "shadcn/no-restyle": [
+                "error",
+                {
+                    allow: ["layout"],
+                    contracts: [
+                        {
+                            pattern: "^Skeleton$",
+                            allow: ["layout", "shape", "color"],
+                        },
+                    ],
+                },
+            ],
             "react/todo": "allow",
             "react/refs": "allow",
             "react/purity": "allow",
@@ -300,11 +317,17 @@ export default defineConfig({
                 },
             },
             {
-                files: ["vite.config.ts", "cloudflare.config.ts", "wrangler.config.ts"],
+                files: ["vite.config.ts", "cloudflare.config.ts"],
                 plugins: ["import"],
                 rules: {
                     "import/no-default-export": "allow",
                 },
+            },
+        ],
+        jsPlugins: [
+            {
+                name: "shadcn",
+                specifier: "@shadcn/lint",
             },
         ],
     },

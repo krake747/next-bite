@@ -1,10 +1,6 @@
-import { defineConfig, type VariantProps } from "cva"
-import { twMerge } from "tailwind-merge"
+import { cn } from "cn"
+import { defineConfig, type VariantProps } from "cva/config"
 
-const { cva, cx } = defineConfig({
-    hooks: {
-        onComplete: (className) => twMerge(className),
-    },
-})
+const { cva, cx } = defineConfig({ cx: cn })
 
 export { cva, cx, type VariantProps }

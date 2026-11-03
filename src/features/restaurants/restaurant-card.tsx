@@ -473,9 +473,8 @@ function DeleteConfirmDialog({
                                 }
                             />
                             <Button
-                                variant="primary"
+                                variant="danger"
                                 size="md"
-                                className="bg-red-600 hover:bg-red-700 dark:bg-red-700 dark:hover:bg-red-600"
                                 onClick={() => {
                                     onConfirm()
                                     onOpenChange(false)
