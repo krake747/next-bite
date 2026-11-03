@@ -3,15 +3,20 @@ pre-commit:
   commands:
     fmt:
       glob: "*.{ts,tsx,js,jsx,json,css,md}"
-      run: pnpm exec oxfmt --no-error-on-unmatched-pattern {staged_files}
+      run: pnpm exec vp fmt --no-error-on-unmatched-pattern {staged_files}
       stage_fixed: true
     types:
       glob: "*.{ts,tsx}"
       run: pnpm exec tsc -b --noEmit
     lint:
       glob: "*.{ts,tsx}"
-      run: pnpm exec oxlint --fix {staged_files}
+      run: pnpm exec vp lint --no-error-on-unmatched-pattern --fix {staged_files}
       stage_fixed: true
-    # fallow:
-    #   glob: "*.{ts,tsx}"
-    #   run: pnpm exec fallow audit --base HEAD
+commit-msg:
+  commands:
+    commitlint:
+      run: pnpm exec commitlint --edit {1}
+pre-push:
+  commands:
+    check:
+      run: pnpm check

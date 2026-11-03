@@ -223,10 +223,11 @@ function App() {
 #### React (Vite)
 
 ```tsx
+import { ConvexProvider, ConvexReactClient } from "convex/react"
 // src/main.tsx
 import { StrictMode } from "react"
 import { createRoot } from "react-dom/client"
-import { ConvexProvider, ConvexReactClient } from "convex/react"
+
 import App from "./App"
 
 const convex = new ConvexReactClient(import.meta.env.VITE_CONVEX_URL as string)
@@ -347,8 +348,9 @@ export default defineSchema({
 `convex/tasks.ts`:
 
 ```ts
-import { query, mutation } from "./_generated/server"
 import { v } from "convex/values"
+
+import { query, mutation } from "./_generated/server"
 
 export const list = query({
   args: {},
@@ -369,6 +371,7 @@ Use in a React component (adjust the import path based on your file location rel
 
 ```tsx
 import { useQuery, useMutation } from "convex/react"
+
 import { api } from "../convex/_generated/api"
 
 function Tasks() {

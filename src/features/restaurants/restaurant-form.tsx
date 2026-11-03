@@ -49,18 +49,18 @@ export function RestaurantForm(props: RestaurantFormProps) {
             : {}),
     })
 
+    const cleanupStorageIds = async (storageIds: string[]) => {
+        for (const storageId of storageIds) {
+            try {
+                await cleanupStorage.mutateAsync({ storageId })
+            } catch {}
+        }
+    }
+
     const cleanupImages = async () => {
         if (props.mode === "add") {
-            for (const img of images) {
-                try {
-                    await cleanupStorage.mutateAsync({ storageId: img.storageId })
-                } catch {}
-            }
-            for (const storageId of pendingRemovedStorageIds) {
-                try {
-                    await cleanupStorage.mutateAsync({ storageId })
-                } catch {}
-            }
+            await cleanupStorageIds(images.map((img) => img.storageId))
+            await cleanupStorageIds(pendingRemovedStorageIds)
             setPendingRemovedStorageIds([])
         }
         setImages([])
@@ -87,11 +87,7 @@ export function RestaurantForm(props: RestaurantFormProps) {
         try {
             if (props.mode === "add") {
                 await addRestaurantWithHours.mutateAsync({ ...output, images })
-                for (const storageId of pendingRemovedStorageIds) {
-                    try {
-                        await cleanupStorage.mutateAsync({ storageId })
-                    } catch {}
-                }
+                await cleanupStorageIds(pendingRemovedStorageIds)
                 setPendingRemovedStorageIds([])
             } else {
                 await updateRestaurant.mutateAsync({ id: props.restaurant._id, ...output, images })

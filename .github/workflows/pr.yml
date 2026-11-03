@@ -8,34 +8,21 @@ permissions:
   contents: read
 
 jobs:
-  build:
-    name: Format and Lint
+  gate:
+    name: Full local gate
     runs-on: ubuntu-latest
-
-    strategy:
-      matrix:
-        node-version: [24.x, 25.x]
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v7
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v7
+      - uses: voidzero-dev/setup-vp@v1.22.0
         with:
-          node-version: ${{ matrix.node-version }}
-
-      - name: Install pnpm
-        uses: pnpm/action-setup@v6
+          node-version-file: ".node-version"
+          cache: true
 
       - name: Install dependencies
-        run: pnpm install
+        run: vp install
 
-      - name: Oxfmt
-        run: pnpm fmt:check
-
-      - name: Oxlint
-        run: pnpm lint
-
-      - name: Build the app
-        run: pnpm build
+      - name: Full local gate
+        run: vp run check:full

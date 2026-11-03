@@ -8,11 +8,13 @@ export const convertImagesToObjects = internalMutation(async (ctx) => {
 
     for (const restaurant of restaurants) {
         const images = restaurant.images as string[] | undefined
-        if (!images) continue
+        if (!images) {
+            continue
+        }
 
         const hasOldFormat = typeof images[0] === "string"
         if (!hasOldFormat) {
-            skipCount++
+            skipCount += 1
             continue
         }
 
@@ -23,7 +25,7 @@ export const convertImagesToObjects = internalMutation(async (ctx) => {
         })
 
         await ctx.db.patch(restaurant._id, { images: newImages })
-        convertedCount++
+        convertedCount += 1
     }
 
     return { converted: convertedCount, skipped: skipCount }

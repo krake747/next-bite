@@ -11,7 +11,7 @@ import SquarePen from "lucide-react/icons/square-pen"
 import Trash2 from "lucide-react/icons/trash-2"
 import Utensils from "lucide-react/icons/utensils"
 import { useState } from "react"
-import type { ComponentProps } from "react"
+import { type ComponentProps } from "react"
 
 import {
     useUpdateRestaurant,
@@ -333,7 +333,9 @@ function RestaurantCardContent({
 }
 
 function RestaurantCardNotes({ notes }: { notes: string | null | undefined }) {
-    if (!notes) return null
+    if (!notes) {
+        return null
+    }
     return (
         <div className="px-5 pb-2 md:px-4">
             <div className="relative">

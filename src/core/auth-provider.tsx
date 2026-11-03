@@ -5,8 +5,9 @@ import { LoadingPlaceholder } from "@ui/loading"
 
 import { useAuthStore } from "./auth-store"
 import { ConvexProvider } from "./convex-client.tsx"
+import { env } from "./env"
 
-const convex = new ConvexClient(import.meta.env.VITE_CONVEX_URL)
+const convex = new ConvexClient(env.VITE_CONVEX_URL)
 
 type AuthStore = ReturnType<typeof useAuthStore>
 

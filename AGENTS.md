@@ -2,12 +2,12 @@
 
 ## Tech stack
 
-- React 19, TypeScript, Tailwind CSS v4, Vite
+- React 19, TypeScript, Tailwind CSS v4, Vite+ (`vp`) toolchain
 - TanStack Router (file-based routing), TanStack Query (server state)
 - Convex (backend: realtime DB, auth, file storage)
 - Base UI (headless primitives)
-- Playwright (E2E tests), Vitest (unit + browser tests)
-- oxlint + oxfmt (lint + format)
+- Vitest in tiers (pure, unit, browser, integration)
+- `vp` (lint + format)
 - fallow (layer boundary enforcement, unused code detection)
 
 ## Style
@@ -15,6 +15,8 @@
 - Use `pnpm` as the package manager. Never `npm` or `yarn`.
 - We develop on WSL within Windows.
 - Types over interfaces. Never cast types; fix at source instead.
+- Read env only through `src/core/env.ts`. Never read `import.meta.env` at a call site.
+- React Compiler owns memoization. Do not add `useMemo`, `useCallback`, or `React.memo`.
 - Do not add comments unless explicitly asked.
 - When comments are needed, do not use em dashes. Use periods, commas, or colons instead.
 - Follow existing patterns in the codebase for component structure, file naming, and module
@@ -27,26 +29,27 @@
 
 Code lives in `src/` under these zones (enforced by fallow boundary rules):
 
-| Zone        | Purpose                                                | May import from                             |
-| ----------- | ------------------------------------------------------ | ------------------------------------------- |
-| `core/`     | Shared utilities, types, Zod schemas, hooks with no UI | core, convex, ui                            |
-| `ui/`       | Base UI wrappers, low-level components                 | core, ui                                    |
-| `pattern/`  | Composable patterns (cards, empty states, top bars)    | core, ui, pattern, convex                   |
-| `features/` | Feature-specific logic (auth, sync, dashboard)         | core, ui, pattern, features, convex         |
-| `routes/`   | File-based TanStack Router pages                       | core, ui, pattern, features, convex, routes |
-| `convex/`   | Backend (schema, queries, mutations, actions)          | convex, core                                |
+| Zone        | Purpose                                                        | May import from                             |
+| ----------- | -------------------------------------------------------------- | ------------------------------------------- |
+| `core/`     | Shared utilities, types, Zod schemas, hooks with no UI         | core, convex, ui                            |
+| `ui/`       | Base UI wrappers, low-level components                         | core, ui                                    |
+| `pattern/`  | Composable patterns (cards, empty states, top bars)            | core, ui, pattern, convex                   |
+| `features/` | Feature-specific logic, one zone per area (restaurants, wheel) | core, ui, pattern, features, convex         |
+| `routes/`   | File-based TanStack Router pages                               | core, ui, pattern, features, convex, routes |
+| `convex/`   | Backend (schema, queries, mutations, actions)                  | convex, core                                |
 
 ## Verification chain
 
-Before considering work done, run these in order (stop at first failure):
+Run `pnpm check:full` before considering work done. It runs these gates in order (stop at first
+failure):
 
 ```
 pnpm fmt:check     # formatting
-pnpm lint          # oxlint
+pnpm lint          # lint
 pnpm lint:ts       # TypeScript type-checking
 pnpm build         # production build
 pnpm fallow audit  # layer boundaries + unused code
-pnpm test          # Vitest unit + browser tests
+pnpm test          # Vitest (all tiers)
 ```
 
 ## Agent skills
@@ -67,8 +70,8 @@ Single-context layout: `CONTEXT.md` at repo root, ADRs under `docs/adr/`. See
 
 ### Testing
 
-Vitest (unit + browser) and Playwright (E2E). See `docs/agents/testing.md`.
+Vitest in tiers (pure, unit, browser, integration). See `docs/agents/testing.md`.
 
 ### Toolchain
 
-Build, lint, test, and sandcastle commands. See `docs/agents/toolchain.md`.
+Build, lint, and test commands. See `docs/agents/toolchain.md`.

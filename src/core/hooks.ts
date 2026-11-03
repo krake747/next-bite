@@ -1,7 +1,8 @@
 import { api } from "../../convex/_generated/api"
-import type { Doc, Id } from "../../convex/_generated/dataModel"
+import { type Doc, type Id } from "../../convex/_generated/dataModel"
 import { useAuth } from "./auth-provider"
 import { useConvexQuery, useConvexMutation, useConvexAction } from "./convex-client.tsx"
+import { env } from "./env"
 
 export const useRestaurants = () => useConvexQuery<Restaurant[]>(api.restaurants.get)
 export const useFriends = () => useConvexQuery<Friend[]>(api.friends.get)
@@ -23,22 +24,17 @@ export type ImageRecord = {
 
 export type OpeningHours = {
     openNow: boolean
-    periods: Array<{
+    periods: {
         day: number
         openTime: string
         closeTime: string
-    }>
+    }[]
     weekdayText: string[]
 }
 
 export function useUploadImage() {
     return async (file: File): Promise<ImageRecord> => {
-        const siteUrl = import.meta.env.VITE_CONVEX_SITE_URL
-        if (!siteUrl) {
-            throw new Error("VITE_CONVEX_SITE_URL is not defined")
-        }
-
-        const uploadUrl = `${siteUrl}/upload`
+        const uploadUrl = `${env.VITE_CONVEX_SITE_URL}/upload`
 
         const response = await fetch(uploadUrl, {
             method: "POST",

@@ -1,6 +1,6 @@
 import ArrowUpDown from "lucide-react/icons/arrow-up-down"
 import Funnel from "lucide-react/icons/funnel"
-import type { ReactNode } from "react"
+import { type ReactNode } from "react"
 
 import { useFriends } from "@core/hooks"
 import { SearchInput } from "@ui/search-input"

@@ -1,6 +1,6 @@
 import { Link } from "@tanstack/react-router"
 import UtensilsCrossed from "lucide-react/icons/utensils-crossed"
-import type { ReactNode } from "react"
+import { type ReactNode } from "react"
 
 import { BackgroundLayers } from "@ui/background-decoration"
 import { BrandIcon } from "@ui/brand-icon"

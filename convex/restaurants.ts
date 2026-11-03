@@ -2,16 +2,16 @@ import { v } from "convex/values"
 
 import { MAX_IMAGES } from "../src/core/constants"
 import { internal } from "./_generated/api"
-import type { Id } from "./_generated/dataModel"
+import { type Id } from "./_generated/dataModel"
 import { query, mutation, action, internalQuery, internalMutation, internalAction } from "./_generated/server"
 
 type OpeningHoursData = {
     openNow: boolean
-    periods: Array<{
+    periods: {
         day: number
         openTime: string
         closeTime: string
-    }>
+    }[]
     weekdayText: string[]
 }
 
@@ -40,10 +40,10 @@ async function fetchOpeningHoursFromGoogle(placeId: string): Promise<OpeningHour
         const data = (await response.json()) as {
             currentOpeningHours?: {
                 openNow?: boolean
-                periods?: Array<{
+                periods?: {
                     open?: { day?: number; hour?: number; minute?: number }
                     close?: { day?: number; hour?: number; minute?: number }
-                }>
+                }[]
                 weekdayDescriptions?: string[]
             }
         }
@@ -59,7 +59,9 @@ async function fetchOpeningHoursFromGoogle(placeId: string): Promise<OpeningHour
 
         for (const period of google.periods || []) {
             const day = period.open?.day
-            if (day === undefined || seenDays.has(day)) continue
+            if (day === undefined || seenDays.has(day)) {
+                continue
+            }
 
             const openH = period.open?.hour ?? 0
             const openM = period.open?.minute ?? 0
@@ -147,10 +149,10 @@ async function lookupPlaceIdFromGoogle(name: string, location: string): Promise<
         }
 
         const data = (await response.json()) as {
-            places?: Array<{
+            places?: {
                 id?: string
                 location?: { latitude?: number; longitude?: number }
-            }>
+            }[]
         }
         console.log("lookupPlaceIdFromGoogle: Result:", JSON.stringify(data))
 
@@ -437,8 +439,12 @@ export const lookupPlaceIdAndHours = action({
             placeId: google.placeId,
             openingHours,
         }
-        if (google.lat !== null) patchArgs.lat = google.lat as number
-        if (google.lng !== null) patchArgs.lng = google.lng as number
+        if (google.lat !== null) {
+            patchArgs.lat = google.lat as number
+        }
+        if (google.lng !== null) {
+            patchArgs.lng = google.lng as number
+        }
         await ctx.runMutation(internal.restaurants._patchRestaurant, patchArgs)
         console.log("lookupPlaceIdAndHours: Done!")
     },

@@ -44,10 +44,14 @@ export function ImageGalleryModal(props: ImageGalleryModalProps) {
     }, [props.initialIndex])
 
     const getTouchDistance = (touches: React.TouchList) => {
-        if (touches.length < 2) return 0
+        if (touches.length < 2) {
+            return 0
+        }
         const touch0 = touches[0]
         const touch1 = touches[1]
-        if (!touch0 || !touch1) return 0
+        if (!touch0 || !touch1) {
+            return 0
+        }
         const dx = touch0.clientX - touch1.clientX
         const dy = touch0.clientY - touch1.clientY
         return Math.sqrt(dx * dx + dy * dy)
@@ -81,12 +85,16 @@ export function ImageGalleryModal(props: ImageGalleryModalProps) {
 
     useEffect(() => {
         const container = imageContainerRef.current
-        if (!container) return
+        if (!container) {
+            return
+        }
 
         let ptrRef: { x: number; y: number } | null = null
 
         const onPointerDown = (e: PointerEvent) => {
-            if (zoom <= DEFAULT_ZOOM) return
+            if (zoom <= DEFAULT_ZOOM) {
+                return
+            }
             e.preventDefault()
             container.setPointerCapture(e.pointerId)
             ptrRef = { x: e.clientX, y: e.clientY }
@@ -95,7 +103,9 @@ export function ImageGalleryModal(props: ImageGalleryModalProps) {
         }
 
         const onPointerMove = (e: PointerEvent) => {
-            if (!ptrRef) return
+            if (!ptrRef) {
+                return
+            }
             const dx = Math.abs(e.clientX - ptrRef.x)
             const dy = Math.abs(e.clientY - ptrRef.y)
             if (dx > PAN_THRESHOLD || dy > PAN_THRESHOLD) {
@@ -159,7 +169,9 @@ export function ImageGalleryModal(props: ImageGalleryModalProps) {
 
     const toggleFullscreen = async () => {
         const elem = dialogContentRef.current
-        if (!elem) return
+        if (!elem) {
+            return
+        }
 
         try {
             if (!document.fullscreenElement) {
@@ -194,7 +206,9 @@ export function ImageGalleryModal(props: ImageGalleryModalProps) {
     }
 
     const currentImage = props.images[currentIndex]
-    if (currentImage === undefined) return null
+    if (currentImage === undefined) {
+        return null
+    }
 
     const handlePrevious = () => {
         const newIndex = currentIndex === 0 ? props.images.length - 1 : currentIndex - 1

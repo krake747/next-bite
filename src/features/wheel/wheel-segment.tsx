@@ -29,7 +29,9 @@ function getRestaurantColorId(id: string, idx: number, total: number): number {
     }
     let colorIdx = Math.abs(hash) % WHEEL_COLORS.length
 
-    if (total <= 1) return colorIdx
+    if (total <= 1) {
+        return colorIdx
+    }
 
     const step = Math.floor(WHEEL_COLORS.length / total) || 1
     colorIdx = (idx * step + colorIdx) % WHEEL_COLORS.length

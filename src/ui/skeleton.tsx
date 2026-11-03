@@ -1,4 +1,4 @@
-import type { ComponentProps } from "react"
+import { type ComponentProps } from "react"
 
 import { cx } from "@ui/variants"
 

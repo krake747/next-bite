@@ -49,7 +49,9 @@ function saveSessionToStorage(user: User): void {
 function getSessionFromStorage(): User | null {
     try {
         const stored = localStorage.getItem(SESSION_KEY)
-        if (!stored) return null
+        if (!stored) {
+            return null
+        }
         const parsed = JSON.parse(stored) as unknown
         return isValidUser(parsed) ? parsed : null
     } catch {

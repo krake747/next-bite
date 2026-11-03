@@ -3,7 +3,7 @@ import Upload from "lucide-react/icons/upload"
 import X from "lucide-react/icons/x"
 import { useState, useRef, type DragEvent } from "react"
 
-import type { Id } from "@convex/_generated/dataModel"
+import { type Id } from "@convex/_generated/dataModel"
 import { useUploadImage, useDeleteImage, type ImageRecord } from "@core/hooks"
 import { processImage, formatFileSize, MAX_IMAGES, MAX_FILE_SIZE } from "@core/image-utils"
 import { cx } from "@ui/variants"
@@ -30,7 +30,9 @@ export function ImageUpload(props: ImageUploadProps) {
         const fileArray = Array.from(files).filter((f) => f.type.startsWith("image/"))
         const remainingSlots = maxImages - props.images.length
         const filesToProcess = fileArray.slice(0, remainingSlots)
-        if (filesToProcess.length === 0) return
+        if (filesToProcess.length === 0) {
+            return
+        }
 
         setIsUploading(true)
         setUploadError(null)
@@ -94,7 +96,9 @@ export function ImageUpload(props: ImageUploadProps) {
     }
 
     const handleClick = () => {
-        if (props.disabled) return
+        if (props.disabled) {
+            return
+        }
         fileInputRef.current?.click()
     }
 

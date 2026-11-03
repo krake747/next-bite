@@ -18,7 +18,9 @@
             { "name": "core", "patterns": ["src/core/**"] },
             { "name": "ui", "patterns": ["src/ui/**"] },
             { "name": "pattern", "patterns": ["src/pattern/**"] },
-            { "name": "features", "patterns": ["src/features/**"] },
+            { "name": "features", "patterns": ["src/features/*.ts", "src/features/*.tsx"] },
+            { "name": "features-restaurants", "patterns": ["src/features/restaurants/**"] },
+            { "name": "features-wheel", "patterns": ["src/features/wheel/**"] },
             { "name": "routes", "patterns": ["src/routes/**"] },
             { "name": "convex", "patterns": ["convex/**"] }
         ],
@@ -27,7 +29,21 @@
             { "from": "ui", "allow": ["core", "ui"] },
             { "from": "pattern", "allow": ["core", "ui", "pattern", "convex"] },
             { "from": "features", "allow": ["core", "ui", "pattern", "features", "convex"] },
-            { "from": "routes", "allow": ["core", "ui", "pattern", "features", "convex", "routes"] },
+            { "from": "features-restaurants", "allow": ["core", "ui", "pattern", "features", "convex"] },
+            { "from": "features-wheel", "allow": ["core", "ui", "pattern", "features", "convex"] },
+            {
+                "from": "routes",
+                "allow": [
+                    "core",
+                    "ui",
+                    "pattern",
+                    "features",
+                    "features-restaurants",
+                    "features-wheel",
+                    "convex",
+                    "routes"
+                ]
+            },
             { "from": "convex", "allow": ["convex", "core"] }
         ]
     }

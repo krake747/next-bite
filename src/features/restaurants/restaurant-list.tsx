@@ -1,6 +1,6 @@
 import { useEffect, useRef } from "react"
 
-import type { Restaurant } from "@core/hooks"
+import { type Restaurant } from "@core/hooks"
 
 import { EmptyRestaurantsState } from "./empty-restaurants-state"
 import { RestaurantCard } from "./restaurant-card"
@@ -26,8 +26,12 @@ export function RestaurantList({ restaurants, hasFilter, hasSearch, onAddClick, 
     }, [sortOrder])
 
     const getAnimationProps = (restaurant: Restaurant, index: number) => {
-        if (sortOrder === "name") return {}
-        if (animatedRestaurantIds.has(restaurant._id)) return {}
+        if (sortOrder === "name") {
+            return {}
+        }
+        if (animatedRestaurantIds.has(restaurant._id)) {
+            return {}
+        }
         animatedRestaurantIds.add(restaurant._id)
         return {
             className: "animate-card-enter",

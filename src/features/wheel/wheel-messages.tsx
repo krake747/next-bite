@@ -6,7 +6,7 @@ import UtensilsCrossed from "lucide-react/icons/utensils-crossed"
 import X from "lucide-react/icons/x"
 import { useState } from "react"
 
-import type { Restaurant } from "@core/hooks"
+import { type Restaurant } from "@core/hooks"
 import { Button } from "@ui/button"
 
 import { WinnerCard } from "./winner-card"

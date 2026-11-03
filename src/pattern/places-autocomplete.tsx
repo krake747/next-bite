@@ -37,7 +37,9 @@ export function PlacesAutocomplete({ value, onChange, placeholder, label, classN
     useEffect(() => {
         const container = containerRef.current
         const places = placesLib
-        if (!places || !container || initializedRef.current) return
+        if (!places || !container || initializedRef.current) {
+            return
+        }
         initializedRef.current = true
 
         const PlaceAutocompleteElement = (places as unknown as { PlaceAutocompleteElement: PlaceAutocompleteElement })
@@ -63,7 +65,9 @@ export function PlacesAutocomplete({ value, onChange, placeholder, label, classN
 
         autocompleteElement.addEventListener("gmp-select", async (event: PlaceSelectEvent) => {
             const placePrediction = event.placePrediction
-            if (!placePrediction) return
+            if (!placePrediction) {
+                return
+            }
 
             const place = placePrediction.toPlace()
             await place.fetchFields({

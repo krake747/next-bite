@@ -2,20 +2,36 @@
 
 ## Test types
 
-| Type    | Runner     | Env      | Location            |
-| ------- | ---------- | -------- | ------------------- |
-| Unit    | Vitest     | node     | `src/**/*.test.ts`  |
-| Browser | Vitest     | jsdom    | `src/**/*.test.tsx` |
-| E2E     | Playwright | Chromium | `e2e/*.spec.ts`     |
+Tiers are picked by filename suffix. `pnpm test` runs them all; scope with `pnpm test:pure`,
+`pnpm test:unit`, `pnpm test:browser`, or `pnpm test:integration`.
+
+| Suffix                  | Runner | Env       | Location                       |
+| ----------------------- | ------ | --------- | ------------------------------ |
+| `*.pure.spec.ts`        | Vitest | node      | `src/**/*.pure.spec.ts`        |
+| `*.spec.{ts,tsx}`       | Vitest | happy-dom | `src/**/*.spec.{ts,tsx}`       |
+| `*.browser.spec.tsx`    | Vitest | happy-dom | `src/**/*.browser.spec.tsx`    |
+| `*.integration.spec.ts` | Vitest | happy-dom | `src/**/*.integration.spec.ts` |
+
+- `*.pure.spec.ts`: logic with no DOM. Runs in node with no setup file, stays fast.
+- `*.spec.{ts,tsx}`: unit scope. Hooks and isolated UI under happy-dom. The unit project excludes
+  the suffixed tiers in `vite.config.ts`.
+- `*.browser.spec.tsx`: real components through full interaction: open the popup, then choose by
+  keyboard. Runs under happy-dom today; this project is the seam for a real-browser runner later.
+- `*.integration.spec.{ts,tsx}`: few, only where it truly matters. Route-level specs against the
+  real `routeTree` or a backend contract.
 
 ## Commands
 
-| Command           | What                                  |
-| ----------------- | ------------------------------------- |
-| `pnpm test`       | Run all Vitest tests (unit + browser) |
-| `pnpm test:watch` | Vitest in watch mode                  |
-| `pnpm test:e2e`   | Playwright E2E suite                  |
-| `pnpm test:all`   | Vitest + Playwright                   |
+| Command                 | What                              |
+| ----------------------- | --------------------------------- |
+| `pnpm test`             | Run all Vitest tiers              |
+| `pnpm test:pure`        | Logic with no DOM                 |
+| `pnpm test:unit`        | Hooks and isolated UI             |
+| `pnpm test:browser`     | Full interaction components       |
+| `pnpm test:integration` | Route-level and backend contracts |
+| `pnpm test:watch`       | Vitest in watch mode              |
+
+Run tests only for files you change. Run the full suite only when asked.
 
 ## Unit tests
 
@@ -23,6 +39,7 @@ Pure logic, no DOM. Functions in `src/core/` are the primary target.
 
 ```ts
 import { describe, it, expect } from "vitest"
+
 import { formatFileSize } from "./image-utils"
 
 describe("formatFileSize", () => {
@@ -32,18 +49,21 @@ describe("formatFileSize", () => {
 })
 ```
 
-- Place tests alongside source: `src/core/image-utils.test.ts` next to `src/core/image-utils.ts`
+- Place tests alongside source: `src/core/image-utils.pure.spec.ts` next to
+  `src/core/image-utils.ts`
 - Prefer testing exported functions at their public interface
 - Do not test implementation details (internals, private helpers)
+- Keep timeouts in `vite.config.ts` test projects, never `vi.setConfig` timeouts in spec files
 
 ## Browser tests
 
-Component tests with jsdom + @testing-library/react. Components in `src/ui/` and `src/pattern/` are
-the primary targets.
+Component tests with happy-dom plus @testing-library/react. Components in `src/ui/` and
+`src/pattern/` are the primary targets.
 
 ```tsx
-import { describe, it, expect } from "vitest"
 import { render, screen } from "@testing-library/react"
+import { describe, it, expect } from "vitest"
+
 import { Badge } from "./badge"
 
 describe("Badge", () => {
@@ -57,15 +77,19 @@ describe("Badge", () => {
 - Render the component with realistic props
 - Query by text content or `data-slot` attribute (not CSS classes)
 - Test one behaviour per test case
-- `@testing-library/jest-dom` matchers are auto-loaded via `src/test-setup.ts`
+- Interact like the browser does: open popups through the real path, then choose by keyboard
+- `@testing-library/jest-dom` matchers are auto-loaded via `src/vitest.setup.ts`
 
-## E2E tests
+## MSW for HTTP
 
-Playwright tests in `e2e/*.spec.ts`. See `docs/agents/testing.md` for conventions. Key helpers live
-in `e2e/utils/test-helpers.ts`.
+Selected specs control HTTP at the boundary with Mock Service Worker (`msw/node` `setupServer`).
+Lifecycle lives in `src/vitest.setup.ts` (listen with `onUnhandledFrame: "error"`, `resetHandlers`
+after each test, `close` after the suite).
+
+Use `server.use(...)` per test for one-off sequences. Prefer that over `vi.stubGlobal("fetch")`. Do
+not add Testcontainers or a live backend dependency to these tests.
 
 ## Configuration
 
-- `vitest.config.ts` — Vitest config with jsdom environment, React plugin, and path aliases
-- `src/test-setup.ts` — auto-imports `@testing-library/jest-dom/vitest` matchers
-- `playwright.config.ts` — Playwright config with global setup/teardown
+- `vite.config.ts` holds the Vitest projects (timeouts, environments, aliases)
+- `src/vitest.setup.ts` wires `@testing-library/jest-dom/vitest` matchers plus the MSW lifecycle

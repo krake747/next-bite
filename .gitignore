@@ -29,14 +29,8 @@ dist-ssr
 # Agent plan outputs
 .agents/plans
 
-# Sandcastle
-.sandcastle/logs/
-.sandcastle/.env
-
 # Pnpm artifacts created in Docker sandbox (metadata cache is always project-local)
 .pnpm-store/
 .cache/
 
-# Playwright
-test-results/
 .fallow/

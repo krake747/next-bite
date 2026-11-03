@@ -44,7 +44,9 @@ function LoginPage() {
         }
     }
 
-    if (auth.isLoading) return <LoadingPlaceholder />
+    if (auth.isLoading) {
+        return <LoadingPlaceholder />
+    }
 
     return (
         <AuthLayout

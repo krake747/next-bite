@@ -46,13 +46,17 @@ function computeSegments(state: WheelState): Restaurant[] {
     if (state.selectionMode === "manual") {
         return r.filter((r) => state.selectedIds.includes(r._id))
     }
-    if (validTarget < 1) return []
+    if (validTarget < 1) {
+        return []
+    }
     const shuffled = [...r].toSorted(() => Math.random() - 0.5)
     return shuffled.slice(0, validTarget)
 }
 
 function restaurantsFingerprint(r: Restaurant[]): string {
-    if (r.length === 0) return "empty"
+    if (r.length === 0) {
+        return "empty"
+    }
     return `${r.length}:${r[0]!._id}:${r[r.length - 1]!._id}`
 }
 
@@ -76,7 +80,9 @@ function createWheelStore(restaurants: Restaurant[]) {
 
             spin: () => {
                 const state = get()
-                if (state.spinStart !== null) return
+                if (state.spinStart !== null) {
+                    return
+                }
 
                 const segments = computeSegments(state)
                 if (state.filterClosedToday) {
@@ -84,7 +90,9 @@ function createWheelStore(restaurants: Restaurant[]) {
                     const filtered = segments.filter(
                         (r) => !r.openingHours?.periods || r.openingHours.periods.some((p) => p.day === today),
                     )
-                    if (filtered.length === 0) return
+                    if (filtered.length === 0) {
+                        return
+                    }
                 } else if (segments.length === 0) {
                     return
                 }
@@ -106,7 +114,9 @@ function createWheelStore(restaurants: Restaurant[]) {
             setSelectionMode: (mode) =>
                 set((s) => {
                     s.selectionMode = mode
-                    if (mode === "random") s.selectedIds = []
+                    if (mode === "random") {
+                        s.selectedIds = []
+                    }
                     s.selected = null
                     s.spinStart = null
                     s.displaySegments = computeSegments(s)
@@ -115,7 +125,9 @@ function createWheelStore(restaurants: Restaurant[]) {
             setTargetCount: (count) =>
                 set((s) => {
                     s.targetCount = count
-                    if (s.selectedIds.length > count) s.selectedIds = s.selectedIds.slice(0, count)
+                    if (s.selectedIds.length > count) {
+                        s.selectedIds = s.selectedIds.slice(0, count)
+                    }
                     s.selected = null
                     s.spinStart = null
                     s.displaySegments = computeSegments(s)
@@ -205,7 +217,9 @@ export function useWheelStore(restaurants: Restaurant[]) {
     const hasEnoughRestaurants = totalCount >= 1
 
     const isOpenToday = (r: Restaurant) => {
-        if (!r.openingHours?.periods) return true
+        if (!r.openingHours?.periods) {
+            return true
+        }
         const today = new Date().getDay()
         return r.openingHours.periods.some((p) => p.day === today)
     }
@@ -229,7 +243,9 @@ export function useWheelStore(restaurants: Restaurant[]) {
     const computedSelected = selectedIdx >= 0 ? (segments[selectedIdx] ?? null) : null
 
     useEffect(() => {
-        if (!isSpinning || spinProgress < 1) return
+        if (!isSpinning || spinProgress < 1) {
+            return
+        }
         store.getState().setSelected(computedSelected?._id ?? null)
         store.setState({ spinStart: null })
     }, [spinProgress, isSpinning, computedSelected, store])

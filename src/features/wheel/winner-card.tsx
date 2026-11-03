@@ -1,7 +1,7 @@
 import MapPin from "lucide-react/icons/map-pin"
 import Utensils from "lucide-react/icons/utensils"
 
-import type { Restaurant } from "@core/hooks"
+import { type Restaurant } from "@core/hooks"
 import { LazyImage } from "@pattern/lazy-image"
 import { OpeningHours } from "@ui/opening-hours"
 

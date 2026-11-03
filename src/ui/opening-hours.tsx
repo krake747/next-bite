@@ -1,6 +1,6 @@
 import Clock from "lucide-react/icons/clock"
 
-import type { OpeningHours } from "@core/hooks"
+import { type OpeningHours as OpeningHoursData } from "@core/hooks"
 
 import { isOpenNow } from "./opening-hours-utils"
 
@@ -8,12 +8,14 @@ export function OpeningHours({
     openingHours,
     onClick,
 }: {
-    openingHours: OpeningHours | undefined
+    openingHours: OpeningHoursData | undefined
     onClick?: () => void
 }) {
     const openNow = openingHours ? isOpenNow(openingHours) : false
 
-    if (!openingHours?.weekdayText?.length) return null
+    if (!openingHours?.weekdayText?.length) {
+        return null
+    }
 
     const day = new Date().getDay()
     const todayIndex = day === 0 ? 6 : day - 1

@@ -1,0 +1,23 @@
+# Technical documentation
+
+Long-lived explanations of this project's architecture and technical decisions.
+
+- Start at [Next Bite](../CONTEXT.md) for domain language. The map of contexts lives in
+  [CONTEXT-MAP](../CONTEXT-MAP.md).
+- Guides: [toolchain](agents/toolchain.md) and [testing](agents/testing.md), plus agent guides for
+  the [issue tracker](agents/issue-tracker.md), [triage labels](agents/triage-labels.md), and
+  [domain layout](agents/domain.md).
+- Decisions: [ADRs](adr/0001-bottom-up-migration-solidjs-to-react.md). Read the catalog below before
+  changing an established area; when a change conflicts with a recorded decision, surface the
+  conflict instead of silently overriding it.
+- Data model: [migrations](../migrations.md).
+
+## ADRs
+
+- [0001](adr/0001-bottom-up-migration-solidjs-to-react.md): bottom-up SolidJS to React migration.
+- [0002](adr/0002-base-ui-headless-primitives.md): Base UI headless primitives.
+- [0003](adr/0003-tanstack-query-convex-data.md): TanStack Query for Convex data fetching.
+- [0004](adr/0004-vite-plus-toolchain.md): Vite+ toolchain with co-located config.
+- [0005](adr/0005-tiered-vitest-projects.md): tiered Vitest projects on happy-dom.
+- [0006](adr/0006-validated-env-module.md): validated env module owns all reads.
+- [0007](adr/0007-react-compiler-owns-memoization.md): React Compiler owns memoization.

@@ -39,7 +39,9 @@ export function EmojiRating({
 
     const selectedTitle = (() => {
         const idx = hoverRating ?? rating
-        if (idx === null) return "Tap an emoji to rate"
+        if (idx === null) {
+            return "Tap an emoji to rate"
+        }
         const emoji = RATING_EMOJIS[idx]
         return emoji !== undefined ? EMOJI_TITLES[emoji] : ""
     })()
