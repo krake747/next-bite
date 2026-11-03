@@ -56,8 +56,8 @@ pnpm test          # Vitest (all tiers)
 
 ### Issue tracker
 
-Issues are tracked in Linear (project "next bite") via the official Linear MCP server. See
-`docs/agents/issue-tracker.md`.
+Issues are tracked in GitHub Issues (krake747/next-bite), MCP first with the `gh` CLI as fallback.
+See `docs/agents/issue-tracker.md`.
 
 ### Triage labels
 
@@ -65,7 +65,7 @@ The five canonical triage roles use the default label names. See `docs/agents/tr
 
 ### Domain docs
 
-Single-context layout: `CONTEXT.md` at repo root, ADRs under `docs/adr/`. See
+Single-context layout: `GLOSSARY.md` at repo root, ADRs under `docs/adr/`. See
 `docs/agents/domain.md`.
 
 ### Testing

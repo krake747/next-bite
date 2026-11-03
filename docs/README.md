@@ -2,8 +2,8 @@
 
 Long-lived explanations of this project's architecture and technical decisions.
 
-- Start at [Next Bite](../CONTEXT.md) for domain language. The map of contexts lives in
-  [CONTEXT-MAP](../CONTEXT-MAP.md).
+- Start at [Next Bite](../GLOSSARY.md) for domain language. The map of glossaries lives in
+  [GLOSSARY-MAP](../GLOSSARY-MAP.md).
 - Guides: [toolchain](agents/toolchain.md) and [testing](agents/testing.md), plus agent guides for
   the [issue tracker](agents/issue-tracker.md), [triage labels](agents/triage-labels.md), and
   [domain layout](agents/domain.md).
