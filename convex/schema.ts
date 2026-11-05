@@ -3,6 +3,12 @@ import { v } from "convex/values"
 
 import { openingHoursValidator, restaurantImageValidator } from "./validators"
 
+const socialFields = {
+    restaurantId: v.id("restaurants"),
+    userId: v.string(),
+    displayName: v.string(),
+}
+
 export default defineSchema({
     restaurants: defineTable({
         name: v.string(),
@@ -19,6 +25,24 @@ export default defineSchema({
         placeId: v.optional(v.string()),
         openingHours: v.optional(openingHoursValidator),
     }),
+    interests: defineTable({
+        ...socialFields,
+        status: v.union(v.literal("want"), v.literal("been")),
+        updatedAt: v.number(),
+    })
+        .index("by_restaurant", ["restaurantId"])
+        .index("by_user_restaurant", ["userId", "restaurantId"]),
+    likes: defineTable({
+        ...socialFields,
+        createdAt: v.number(),
+    })
+        .index("by_restaurant", ["restaurantId"])
+        .index("by_user_restaurant", ["userId", "restaurantId"]),
+    comments: defineTable({
+        ...socialFields,
+        text: v.string(),
+        createdAt: v.number(),
+    }).index("by_restaurant", ["restaurantId"]),
     friends: defineTable({
         name: v.string(),
     }),

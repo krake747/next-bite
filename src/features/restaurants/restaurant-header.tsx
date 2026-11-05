@@ -1,3 +1,4 @@
+import { Link } from "@tanstack/react-router"
 import ExternalLink from "lucide-react/icons/external-link"
 import MapPin from "lucide-react/icons/map-pin"
 import Utensils from "lucide-react/icons/utensils"
@@ -16,6 +17,7 @@ export function RestaurantHeader({
     hasLocation,
     openingHours,
     onShowHours,
+    detailsHref,
 }: Readonly<{
     name: string
     link?: string | undefined
@@ -26,14 +28,28 @@ export function RestaurantHeader({
     hasLocation: boolean
     openingHours?: OpeningHours | undefined
     onShowHours?: (() => void) | undefined
+    detailsHref?: string | undefined
 }>) {
+    const heading = (
+        <h3 className="flex-1 font-display text-[22px] leading-7 font-semibold tracking-tight text-stone-900">
+            {name}
+        </h3>
+    )
     return (
         <div className="flex flex-col gap-4 p-5 md:gap-3 md:p-4">
             <div className="flex flex-col gap-1">
                 <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between md:gap-3">
-                    <h3 className="flex-1 font-display text-[22px] leading-7 font-semibold tracking-tight text-stone-900">
-                        {name}
-                    </h3>
+                    {detailsHref !== undefined ? (
+                        <Link
+                            to={detailsHref}
+                            viewTransition
+                            className="flex-1 rounded-control transition-colors hover:text-tomato-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+                        >
+                            {heading}
+                        </Link>
+                    ) : (
+                        heading
+                    )}
                     {link !== undefined && link !== "" && (
                         <a
                             href={link}

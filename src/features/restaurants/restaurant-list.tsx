@@ -1,6 +1,7 @@
 import { useEffect, useRef } from "react"
 
 import { type Restaurant } from "@core/hooks"
+import { type RestaurantSocial } from "@core/social"
 
 import { EmptyRestaurantsState } from "./empty-restaurants-state"
 import { RestaurantCard } from "./restaurant-card"
@@ -13,6 +14,9 @@ type RestaurantListProps = {
     hasSearch?: boolean | undefined
     onAddClick: () => void
     sortOrder?: "added" | "name" | undefined
+    socialFor?: ((restaurant: Restaurant) => RestaurantSocial) | undefined
+    onToggleWant?: ((restaurant: Restaurant) => void) | undefined
+    detailsHrefFor?: ((restaurant: Restaurant) => string) | undefined
 }
 
 export function RestaurantList({
@@ -21,6 +25,9 @@ export function RestaurantList({
     hasSearch,
     onAddClick,
     sortOrder,
+    socialFor,
+    onToggleWant,
+    detailsHrefFor,
 }: Readonly<RestaurantListProps>) {
     const previousSortOrder = useRef(sortOrder)
 
@@ -54,6 +61,15 @@ export function RestaurantList({
                         <RestaurantCard
                             key={restaurant._id}
                             restaurant={restaurant}
+                            social={socialFor?.(restaurant)}
+                            onToggleWant={
+                                onToggleWant === undefined
+                                    ? undefined
+                                    : () => {
+                                          onToggleWant(restaurant)
+                                      }
+                            }
+                            detailsHref={detailsHrefFor?.(restaurant)}
                             style={animationProps.style}
                             className={animationProps.className}
                         />

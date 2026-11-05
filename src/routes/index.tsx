@@ -4,12 +4,23 @@ import Plus from "lucide-react/icons/plus"
 import { useState } from "react"
 
 import { useRestaurants, useAuth, type Restaurant } from "@core/hooks"
+import {
+    emptySocial,
+    feedTextFor,
+    orderFeedByRecency,
+    summarizeSocial,
+    useSocialSnapshot,
+    useToggleInterest,
+    useToggleLike,
+    type RestaurantSocial,
+} from "@core/social"
 import { useFilterState } from "@core/use-filter"
 import { FriendsFilter } from "@features/friends-filter"
 import { FriendsFilterSkeleton } from "@features/friends-filter"
 import { AddRestaurantDialog } from "@features/restaurants/add-restaurant-dialog"
 import { RestaurantCardSkeleton } from "@features/restaurants/restaurant-card-skeleton"
 import { RestaurantList } from "@features/restaurants/restaurant-list"
+import { ActivityPost } from "@features/social/activity-post"
 import { PageContainer } from "@routes/-layouts/page-container"
 import { PageLayout } from "@routes/-layouts/page-layout"
 import { Button } from "@ui/button"
@@ -44,42 +55,201 @@ function filterRestaurants(
     return filteredResult
 }
 
-function Home() {
+function useSocialActions() {
     const navigate = useNavigate()
     const auth = useAuth()
-    const restaurants = useRestaurants()
-    const [showAddDialog, setShowAddDialog] = useState(false)
+    const snapshot = useSocialSnapshot()
+    const toggleInterest = useToggleInterest()
+    const toggleLike = useToggleLike()
 
-    const restaurantListState = restaurants ?? []
-    const count = restaurantListState.length
-
-    const filterState = useFilterState()
-    const [sortOrder, setSortOrder] = useState<"added" | "name">("added")
-
-    const filteredRestaurants = filterRestaurants(
-        restaurantListState,
-        filterState.filter,
-        filterState.search,
-        sortOrder,
-    )
-
-    const goToWheel = () => {
-        void navigate({ from: Route.fullPath, to: "/wheel", viewTransition: true })
-    }
+    const userId = auth.user?.id ?? null
+    const displayName = auth.user?.name ?? auth.user?.email ?? "Someone"
 
     const goToLogin = () => {
-        void navigate({ to: "/login", from: Route.fullPath, viewTransition: true })
+        void navigate({ to: "/login", viewTransition: true })
     }
+
+    const goToDetail = (restaurant: Restaurant) => {
+        void navigate({
+            to: "/restaurants/$restaurantId",
+            params: { restaurantId: restaurant._id },
+            viewTransition: true,
+        })
+    }
+
+    const socialFor = (restaurant: Restaurant): RestaurantSocial =>
+        snapshot === undefined ? emptySocial : summarizeSocial(restaurant._id, snapshot, userId)
+
+    const toggleWantFor = (restaurant: Restaurant) => () => {
+        if (!auth.isAuthenticated) {
+            goToLogin()
+            return
+        }
+        toggleInterest.mutate({ restaurantId: restaurant._id, status: "want", displayName })
+    }
+
+    const toggleLikeFor = (restaurant: Restaurant) => () => {
+        if (!auth.isAuthenticated) {
+            goToLogin()
+            return
+        }
+        toggleLike.mutate({ restaurantId: restaurant._id, displayName })
+    }
+
+    return { auth, snapshot, socialFor, toggleWantFor, toggleLikeFor, goToDetail, goToLogin, displayName }
+}
+
+type SocialActions = ReturnType<typeof useSocialActions>
+
+function HomeFeed({
+    feed,
+    actions,
+}: Readonly<{
+    feed: ReadonlyArray<Restaurant>
+    actions: SocialActions
+}>) {
+    return (
+        <div className="space-y-6 pt-4">
+            {feed.map((restaurant) => {
+                const social = actions.socialFor(restaurant)
+                return (
+                    <ActivityPost
+                        key={restaurant._id}
+                        author={{ name: restaurant.addedBy }}
+                        time={new Date(restaurant._creationTime).toLocaleDateString()}
+                        text={feedTextFor(restaurant.name, restaurant.notes)}
+                        restaurantName={restaurant.name}
+                        restaurantCuisine={restaurant.cuisine}
+                        photoUrls={(restaurant.images ?? []).map((img) => img.url)}
+                        addedBy={restaurant.addedBy}
+                        wantCount={social.wantCount}
+                        beenCount={social.beenCount}
+                        interestedFriends={social.interestedNames.map((name) => ({ name }))}
+                        reactions={{
+                            liked: social.liked,
+                            likeCount: social.likeCount,
+                            onToggleLike: actions.toggleLikeFor(restaurant),
+                            commentCount: social.comments.length,
+                            onComment: () => {
+                                actions.goToDetail(restaurant)
+                            },
+                            wanted: social.wanted,
+                            wantCount: social.wantCount,
+                            onToggleWant: actions.toggleWantFor(restaurant),
+                        }}
+                    />
+                )
+            })}
+        </div>
+    )
+}
+
+function HomeDiscover({
+    restaurants,
+    sortOrder,
+    onSortChange,
+    onAddClick,
+    actions,
+}: Readonly<{
+    restaurants: ReadonlyArray<Restaurant>
+    sortOrder: "added" | "name"
+    onSortChange: (order: "added" | "name") => void
+    onAddClick: () => void
+    actions: SocialActions
+}>) {
+    const filterState = useFilterState()
+    const filtered = filterRestaurants(restaurants, filterState.filter, filterState.search, sortOrder)
+    return (
+        <>
+            <div className="pt-10">
+                <h2 className="font-display text-2xl font-semibold text-stone-900">Discover</h2>
+            </div>
+            <div className="pt-4">
+                <FriendsFilter
+                    filter={filterState.filter}
+                    handleFilter={(name) => {
+                        filterState.setFilter(name)
+                    }}
+                    search={filterState.search}
+                    handleSearch={(value) => {
+                        filterState.setSearch(value)
+                    }}
+                    sortOrder={sortOrder}
+                    onSortChange={onSortChange}
+                >
+                    <HomeActions onAddClick={onAddClick} />
+                </FriendsFilter>
+            </div>
+            <RestaurantList
+                restaurants={filtered}
+                hasFilter={filterState.filter !== null && filterState.filter !== ""}
+                hasSearch={filterState.search !== ""}
+                onAddClick={onAddClick}
+                sortOrder={sortOrder}
+                socialFor={actions.socialFor}
+                onToggleWant={(restaurant) => {
+                    actions.toggleWantFor(restaurant)()
+                }}
+                detailsHrefFor={(restaurant) => `/restaurants/${restaurant._id}`}
+            />
+        </>
+    )
+}
+
+function HomeActions({ onAddClick }: Readonly<{ onAddClick: () => void }>) {
+    const navigate = useNavigate()
+    const auth = useAuth()
+    return (
+        <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row">
+            <Button
+                onClick={() => {
+                    void navigate({ to: "/wheel", viewTransition: true })
+                }}
+            >
+                <LoaderPinwheel className="size-4 transition-transform duration-200 group-hover:rotate-90" />
+                Spin the wheel
+            </Button>
+            {auth.isAuthenticated ? (
+                <Button variant="secondary" onClick={onAddClick}>
+                    <Plus className="size-4 transition-transform duration-200 group-hover:rotate-90" />
+                    Add Restaurant
+                </Button>
+            ) : (
+                <Button
+                    variant="secondary"
+                    onClick={() => {
+                        void navigate({ to: "/login", viewTransition: true })
+                    }}
+                >
+                    <Plus
+                        className="size-4 transition-transform duration-200 group-hover:rotate-90"
+                        aria-hidden="true"
+                    />
+                    Sign in to add
+                </Button>
+            )}
+        </div>
+    )
+}
+
+function Home() {
+    const actions = useSocialActions()
+    const restaurants = useRestaurants()
+    const [showAddDialog, setShowAddDialog] = useState(false)
+    const [sortOrder, setSortOrder] = useState<"added" | "name">("added")
+
+    const restaurantListState = restaurants ?? []
+    const feed = orderFeedByRecency(restaurantListState)
 
     return (
         <PageLayout>
             <PageContainer>
                 <Header>
-                    <HeaderTitle>Our next bite</HeaderTitle>
-                    <HeaderSubtitle>Places we're dreaming of trying together</HeaderSubtitle>
-                    <HeaderBadge count={count} />
+                    <HeaderTitle>Your friends have good taste</HeaderTitle>
+                    <HeaderSubtitle>See what&apos;s new and find your next place to eat</HeaderSubtitle>
+                    <HeaderBadge count={restaurantListState.length} />
                 </Header>
-                {!restaurants ? (
+                {restaurants === undefined ? (
                     <>
                         <div className="pt-4">
                             <FriendsFilterSkeleton />
@@ -93,58 +263,21 @@ function Home() {
                     </>
                 ) : (
                     <>
-                        <div className="pt-4">
-                            <FriendsFilter
-                                filter={filterState.filter}
-                                handleFilter={(name) => {
-                                    filterState.setFilter(name)
-                                }}
-                                search={filterState.search}
-                                handleSearch={(value) => {
-                                    filterState.setSearch(value)
-                                }}
-                                sortOrder={sortOrder}
-                                onSortChange={setSortOrder}
-                            >
-                                <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row">
-                                    <Button onClick={goToWheel}>
-                                        <LoaderPinwheel className="size-4 transition-transform duration-200 group-hover:rotate-90" />
-                                        Spin the wheel
-                                    </Button>
-                                    {auth.isAuthenticated ? (
-                                        <Button
-                                            variant="secondary"
-                                            onClick={() => {
-                                                setShowAddDialog(true)
-                                            }}
-                                        >
-                                            <Plus className="size-4 transition-transform duration-200 group-hover:rotate-90" />
-                                            Add Restaurant
-                                        </Button>
-                                    ) : (
-                                        <Button variant="secondary" onClick={goToLogin}>
-                                            <Plus
-                                                className="size-4 transition-transform duration-200 group-hover:rotate-90"
-                                                aria-hidden="true"
-                                            />
-                                            Sign in to add
-                                        </Button>
-                                    )}
-                                </div>
-                            </FriendsFilter>
-                        </div>
-                        <RestaurantList
-                            restaurants={filteredRestaurants}
-                            hasFilter={filterState.filter !== null && filterState.filter !== ""}
-                            hasSearch={filterState.search !== ""}
+                        <HomeFeed feed={feed} actions={actions} />
+                        <HomeDiscover
+                            restaurants={restaurantListState}
+                            sortOrder={sortOrder}
+                            onSortChange={setSortOrder}
                             onAddClick={() => {
                                 setShowAddDialog(true)
                             }}
-                            sortOrder={sortOrder}
+                            actions={actions}
                         />
                     </>
                 )}
-                {auth.isAuthenticated && <AddRestaurantDialog show={showAddDialog} onOpenChange={setShowAddDialog} />}
+                {actions.auth.isAuthenticated && (
+                    <AddRestaurantDialog show={showAddDialog} onOpenChange={setShowAddDialog} />
+                )}
             </PageContainer>
         </PageLayout>
     )

@@ -28,5 +28,6 @@ Long-lived explanations of this project's architecture and technical decisions.
   Butter).
 - [0012](adr/0012-core-ui-standardization.md): core UI standardization (eleven primitives, one
   contract).
+- [0015](adr/0015-application-experience.md): application experience (feed, detail, social backend).
 - [0014](adr/0014-restaurant-group-components.md): restaurant and group components, presentational.
 - [0013](adr/0013-social-components-presentational.md): social components, presentational only.

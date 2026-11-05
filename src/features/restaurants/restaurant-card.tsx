@@ -15,6 +15,7 @@ import {
     useLookupPlaceIdAndHours,
     type Restaurant,
 } from "@core/hooks"
+import { emptySocial, type RestaurantSocial } from "@core/social"
 import { EmojiRating } from "@pattern/emoji-rating"
 import { Button } from "@ui/button"
 import { Card } from "@ui/card"
@@ -28,9 +29,15 @@ import { RestaurantInterestButton } from "./restaurant-interest-button"
 
 export function RestaurantCard({
     restaurant,
+    social,
+    onToggleWant,
+    detailsHref,
     ...cardProps
 }: Readonly<{
     restaurant: Restaurant
+    social?: RestaurantSocial | undefined
+    onToggleWant?: (() => void) | undefined
+    detailsHref?: string | undefined
     className?: string | undefined
     style?: Readonly<{ readonly animationDelay?: string }> | undefined
 }>) {
@@ -88,6 +95,9 @@ export function RestaurantCard({
         : null
 
     const photos = (restaurant.images ?? []).map((img) => ({ url: img.url }))
+
+    const active = social ?? emptySocial
+    const handleToggleWant = onToggleWant ?? (() => {})
 
     const handleRate = async (rating: number) => {
         await updateRestaurant.mutateAsync({ id: restaurant._id, rating })
@@ -160,16 +170,23 @@ export function RestaurantCard({
                     name={restaurant.name}
                     link={restaurant.link}
                     addedBy={restaurant.addedBy}
+                    wantCount={active.wantCount}
+                    beenCount={active.beenCount}
                     location={restaurant.location}
                     hasLocation={hasLocation}
                     openingHours={restaurant.openingHours}
                     onShowHours={() => {
                         setShowHours(true)
                     }}
+                    detailsHref={detailsHref}
                 />
                 <RestaurantCardNotes notes={restaurant.notes} />
                 <div className="px-5 pt-1 pb-2 md:px-4">
-                    <RestaurantInterestButton wanted={false} wantCount={0} onToggleWant={() => {}} />
+                    <RestaurantInterestButton
+                        wanted={active.wanted}
+                        wantCount={active.wantCount}
+                        onToggleWant={handleToggleWant}
+                    />
                 </div>
                 {hasLocation && location && (
                     <RestaurantCardMap
