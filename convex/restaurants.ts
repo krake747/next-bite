@@ -471,6 +471,9 @@ export const remove = mutation({
         const restaurant = await requireOwnedRestaurant(ctx, args.id)
 
         for (const img of restaurant.images) {
+            if (img.storageId === "") {
+                continue
+            }
             try {
                 await ctx.storage.delete(asStorageId(img.storageId))
             } catch (error) {
@@ -491,7 +494,9 @@ export const deleteImage = mutation({
     handler: async (ctx, args) => {
         const restaurant = await requireOwnedRestaurant(ctx, args.restaurantId)
 
-        await ctx.storage.delete(asStorageId(args.storageId))
+        if (args.storageId !== "") {
+            await ctx.storage.delete(asStorageId(args.storageId))
+        }
 
         const updatedImages = restaurant.images.filter((img) => img.url !== args.imageUrl)
         if (updatedImages.length !== restaurant.images.length) {
@@ -511,7 +516,9 @@ export const cleanupStorage = mutation({
             throw new Error("Unauthorized: authentication required")
         }
 
-        await ctx.storage.delete(asStorageId(args.storageId))
+        if (args.storageId !== "") {
+            await ctx.storage.delete(asStorageId(args.storageId))
+        }
 
         if (args.restaurantId === undefined) {
             return

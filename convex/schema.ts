@@ -16,15 +16,19 @@ const socialFields = {
 }
 
 export default defineSchema({
+    // TEMPORARY BACKFILL STEP 1: these fields are optional only until
+    // migrate:backfillLegacyRestaurants has run. Re-tighten right after.
     restaurants: defineTable({
-        ownerId: v.string(),
-        ownerName: v.string(),
+        ownerId: v.optional(v.string()),
+        ownerName: v.optional(v.string()),
         name: v.string(),
         cuisine: v.string(),
-        address: v.object({
-            label: v.string(),
-            enrichment: v.optional(enrichmentValidator),
-        }),
+        address: v.optional(
+            v.object({
+                label: v.string(),
+                enrichment: v.optional(enrichmentValidator),
+            }),
+        ),
         details: v.optional(
             v.object({
                 notes: v.optional(v.string()),
@@ -33,8 +37,8 @@ export default defineSchema({
         ),
         rating: v.optional(v.number()),
         images: v.array(restaurantImageValidator),
-        visibility: v.union(v.literal("private"), v.literal("shared")),
-        createdAt: v.number(),
+        visibility: v.optional(v.union(v.literal("private"), v.literal("shared"))),
+        createdAt: v.optional(v.number()),
     }).index("by_owner", ["ownerId"]),
     interests: defineTable({
         ...socialFields,
