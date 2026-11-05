@@ -7,8 +7,6 @@ import { useAuthStore } from "./auth-store"
 import { ConvexProvider } from "./convex-client.tsx"
 import { env } from "./env"
 
-const convex = new ConvexClient(env.VITE_CONVEX_URL)
-
 type AuthStore = ReturnType<typeof useAuthStore>
 
 const AuthContext = createContext<AuthStore | null>(null)
@@ -22,6 +20,9 @@ function useAuth() {
 }
 
 function AuthProvider({ children }: Readonly<{ children: React.ReactNode }>) {
+    const [convex] = useState<ConvexClient | null>(() =>
+        typeof window === "undefined" ? null : new ConvexClient(env.VITE_CONVEX_URL),
+    )
     const [isInitialized, setIsInitialized] = useState(false)
     const store = useAuthStore()
 
