@@ -15,7 +15,7 @@ function ActivityAuthorHeader({ author, time }: Readonly<{ author: ActivityAutho
             <AvatarGroup members={[{ name: author.name, src: author.src }]} max={1} />
             <div>
                 <p className="text-sm font-semibold text-stone-900">{author.name}</p>
-                <p className="text-xs text-stone-500">{time}</p>
+                <p className="text-xs text-stone-600">{time}</p>
             </div>
         </div>
     )
@@ -36,8 +36,8 @@ function ActivityRestaurant({
         <div className="space-y-2">
             {showCover && <LazyImage src={cover} alt={name} aspectRatio="16/9" className="rounded-lg" />}
             <div>
-                <p className="font-display text-lg font-semibold text-stone-900">{name}</p>
-                {cuisine !== undefined && cuisine !== "" && <p className="text-sm text-stone-500">{cuisine}</p>}
+                <p className="font-display text-lg font-semibold text-balance text-stone-900">{name}</p>
+                {cuisine !== undefined && cuisine !== "" && <p className="text-sm text-stone-600">{cuisine}</p>}
             </div>
         </div>
     )

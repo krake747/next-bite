@@ -27,7 +27,7 @@ const fallbackText = cva({
     base: "font-semibold",
     variants: {
         size: {
-            xs: "text-[10px]",
+            xs: "text-xs",
             sm: "text-xs",
             md: "text-sm",
             lg: "text-base",

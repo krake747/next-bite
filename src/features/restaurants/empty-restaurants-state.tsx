@@ -35,7 +35,7 @@ export function EmptyRestaurantsState({
                 <div className="absolute -bottom-1 -left-1 h-2 w-2 rounded-full bg-mango-400/60" />
             </div>
 
-            <h3 className="mb-2 text-xl font-semibold text-stone-900" style={{ fontFamily: "var(--font-display)" }}>
+            <h3 className="mb-2 font-display text-xl font-semibold text-balance text-stone-900">
                 {isSearching ? "No matches found" : "The table is set, but empty"}
             </h3>
 

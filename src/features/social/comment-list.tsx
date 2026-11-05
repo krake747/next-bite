@@ -32,9 +32,9 @@ export function CommentList({
 
     return (
         <div className="space-y-3">
-            <p className="text-sm font-medium text-stone-700">{formatCount(comments.length)}</p>
+            <p className="text-sm font-medium text-stone-700 tabular-nums">{formatCount(comments.length)}</p>
             {comments.length === 0 ? (
-                <p className="text-sm text-stone-500">Nothing cooking just yet. Start the conversation.</p>
+                <p className="text-sm text-stone-600">Nothing cooking just yet. Start the conversation.</p>
             ) : (
                 <ul className="space-y-3">
                     {comments.map((comment) => (
@@ -42,10 +42,12 @@ export function CommentList({
                             <AvatarGroup members={[{ name: comment.author, src: comment.authorSrc }]} max={1} />
                             <div className="min-w-0 flex-1 rounded-lg bg-stone-100 px-3 py-2">
                                 <div className="flex items-baseline justify-between gap-2">
-                                    <p className="truncate text-sm font-semibold text-stone-900">{comment.author}</p>
-                                    <p className="shrink-0 text-xs text-stone-500">{comment.time}</p>
+                                    <p className="truncate text-sm font-semibold text-stone-900" title={comment.author}>
+                                        {comment.author}
+                                    </p>
+                                    <p className="shrink-0 text-xs text-stone-600">{comment.time}</p>
                                 </div>
-                                <p className="text-sm text-stone-800">{comment.text}</p>
+                                <p className="text-sm leading-relaxed text-stone-800">{comment.text}</p>
                             </div>
                             {onDelete !== undefined && currentUser !== undefined && comment.author === currentUser && (
                                 <Button
@@ -85,8 +87,8 @@ export function CommentList({
                         onChange={(event) => {
                             setDraft(event.currentTarget.value)
                         }}
-                        placeholder="Add a comment..."
-                        className="w-full rounded-control border border-stone-200 bg-surface px-3 py-2 text-sm text-stone-900 placeholder:text-stone-400 focus:border-ring focus:ring-1 focus:ring-ring focus:outline-none"
+                        placeholder="Add a comment…"
+                        className="w-full rounded-control border border-border bg-surface px-3 py-2 text-base text-stone-900 transition-colors duration-150 placeholder:text-stone-600 hover:border-border-strong focus:border-ring focus:ring-1 focus:ring-ring focus:outline-none md:text-sm"
                     />
                     <Button type="submit" size="md" disabled={draft.trim() === ""}>
                         Post

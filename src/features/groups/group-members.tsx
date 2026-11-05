@@ -8,12 +8,14 @@ export function GroupMembers({
     className?: string | undefined
 }>) {
     if (members.length === 0) {
-        return <p className="text-sm text-stone-500">No members yet. Invite your friends.</p>
+        return <p className="text-sm text-stone-600">No members yet. Invite your friends.</p>
     }
     return (
         <div className={`flex items-center gap-2.5 ${className ?? ""}`}>
             <AvatarGroup members={members} />
-            <p className="text-sm text-stone-600">{members.length === 1 ? "1 member" : `${members.length} members`}</p>
+            <p className="text-sm text-stone-600 tabular-nums">
+                {members.length === 1 ? "1 member" : `${members.length} members`}
+            </p>
         </div>
     )
 }

@@ -21,7 +21,7 @@ function ReactionButton({ pressed, count, label, onToggle, children }: ReactionB
             aria-label={`${label}, ${count}`}
             className={cx(
                 "inline-flex cursor-pointer items-center gap-1.5 rounded-full px-2.5 py-1 text-sm transition-colors",
-                pressed ? "text-tomato-700" : "text-stone-500 hover:bg-stone-100 hover:text-stone-700",
+                pressed ? "text-tomato-700" : "text-stone-600 hover:bg-stone-100 hover:text-stone-700",
             )}
         >
             {children}

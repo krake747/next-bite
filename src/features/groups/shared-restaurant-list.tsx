@@ -17,7 +17,7 @@ export function SharedRestaurantList({
     onSelect?: ((id: string) => void) | undefined
 }>) {
     if (items.length === 0) {
-        return <p className="px-4 py-3 text-sm text-stone-500">No spots yet. Share somewhere you'd love to try.</p>
+        return <p className="px-4 py-3 text-sm text-stone-600">No spots yet. Share somewhere you'd love to try.</p>
     }
     return (
         <ul className="divide-y divide-stone-100">
@@ -25,9 +25,13 @@ export function SharedRestaurantList({
                 const row = (
                     <>
                         <div className="min-w-0 flex-1">
-                            <p className="truncate text-sm font-medium text-stone-900">{item.name}</p>
+                            <p className="truncate text-sm font-medium text-stone-900" title={item.name}>
+                                {item.name}
+                            </p>
                             {item.addedBy !== undefined && item.addedBy !== "" && (
-                                <p className="truncate text-xs text-stone-500">Added by {item.addedBy}</p>
+                                <p className="truncate text-xs text-stone-600" title={`Added by ${item.addedBy}`}>
+                                    Added by {item.addedBy}
+                                </p>
                             )}
                         </div>
                         <Badge variant="neutral">{item.cuisine}</Badge>

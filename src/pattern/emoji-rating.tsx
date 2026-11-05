@@ -105,7 +105,7 @@ export function EmojiRating({
                     )
                 })}
             </div>
-            <p className="max-w-full text-center text-sm leading-snug font-medium text-balance text-tomato-700 italic transition-colors duration-150">
+            <p className="max-w-full text-center text-sm leading-snug font-medium text-balance text-tomato-700 transition-colors duration-150">
                 {selectedTitle}
             </p>
         </div>

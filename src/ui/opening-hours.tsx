@@ -35,7 +35,7 @@ export function OpeningHours({
                 <Clock className="size-3.5 text-stone-400" aria-hidden="true" />
             </div>
             <div className="flex items-center gap-2 text-sm">
-                <span className={`font-medium ${openNow ? "text-tomato-600" : "text-stone-500"}`}>
+                <span className={`font-medium ${openNow ? "text-tomato-600" : "text-stone-600"}`}>
                     {openNow ? "Open now" : "Closed"}
                 </span>
                 <span className="text-stone-300">·</span>

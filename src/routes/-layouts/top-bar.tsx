@@ -22,9 +22,7 @@ export function TopBar() {
                     <div className="flex size-8 items-center justify-center rounded-lg bg-tomato-100 text-tomato-600">
                         <UtensilsCrossed className="size-4" />
                     </div>
-                    <span className="text-lg font-semibold" style={{ fontFamily: "var(--font-display)" }}>
-                        Next Bite
-                    </span>
+                    <span className="font-display text-lg font-semibold">Next Bite</span>
                 </Link>
 
                 <div className="flex items-center gap-3">
@@ -62,7 +60,7 @@ function AuthButton() {
             <PopoverPanel className="w-56">
                 <div className="border-b border-stone-200 px-4 py-2">
                     <p className="text-sm font-medium text-stone-900">{auth.user?.name ?? "User"}</p>
-                    <p className="text-xs text-stone-500">{auth.user?.email}</p>
+                    <p className="text-xs text-stone-600">{auth.user?.email}</p>
                 </div>
                 <button
                     onClick={() => {

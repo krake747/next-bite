@@ -87,7 +87,7 @@ export function DialogPanel({ size, padding, tone, className, children, ...rest 
 }
 
 const title = cva({
-    base: "font-display font-semibold text-stone-900",
+    base: "font-display font-semibold text-balance text-stone-900",
     variants: {
         size: {
             md: "text-lg",

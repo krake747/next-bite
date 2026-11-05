@@ -19,7 +19,7 @@ const refCallbackSchema = v.custom<FieldElementProps["ref"]>(
 )
 
 const controlClass =
-    "w-full rounded-control border border-border bg-surface px-3 py-2.5 text-stone-900 transition-colors duration-150 placeholder:text-stone-400 hover:border-border-strong focus:border-ring focus:ring-1 focus:ring-ring focus:outline-none disabled:cursor-not-allowed disabled:bg-surface-muted disabled:text-muted-foreground"
+    "w-full rounded-control border border-border bg-surface px-3 py-2.5 text-stone-900 transition-colors duration-150 placeholder:text-stone-600 hover:border-border-strong focus:border-ring focus:ring-1 focus:ring-ring focus:outline-none disabled:cursor-not-allowed disabled:bg-surface-muted disabled:text-muted-foreground"
 
 const labelClass = "block text-sm font-medium text-stone-700"
 
@@ -188,7 +188,7 @@ export function Select(props: Readonly<SelectProps>) {
                     className={cx(
                         controlClass,
                         "flex items-center justify-between gap-2 text-left",
-                        value === "" && "text-stone-400",
+                        value === "" && "text-stone-600",
                         invalid && "border-destructive focus:border-destructive focus:ring-destructive",
                     )}
                 >

@@ -35,7 +35,7 @@ export function RestaurantGallery({
                     <div className="absolute inset-0 flex items-center justify-center bg-linear-to-br from-stone-200 to-stone-300">
                         <div className="flex items-center gap-2">
                             <Utensils className="size-5 text-stone-400" />
-                            <span className="font-sans text-xs tracking-wide text-stone-500 uppercase">{cuisine}</span>
+                            <span className="font-sans text-xs tracking-wide text-stone-600 uppercase">{cuisine}</span>
                         </div>
                     </div>
                 )}

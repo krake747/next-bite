@@ -33,7 +33,7 @@ export function FriendsFilter({
         <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-start">
             <div className="flex flex-1 flex-col gap-3">
                 <div className="flex flex-wrap items-center gap-2">
-                    <div className="flex items-center gap-1.5 text-stone-500">
+                    <div className="flex items-center gap-1.5 text-stone-600">
                         <Funnel
                             className={cx(
                                 "size-4",
@@ -75,7 +75,7 @@ export function FriendsFilter({
                     <SearchInput
                         value={search}
                         onChange={handleSearch}
-                        placeholder="Search restaurants..."
+                        placeholder="Search restaurants…"
                         className="w-full"
                     />
                     <div className="flex items-center gap-1.5">

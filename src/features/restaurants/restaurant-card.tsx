@@ -225,19 +225,13 @@ function RestaurantCardNotes({ notes }: Readonly<{ notes: string | null | undefi
         <div className="px-5 pb-2 md:px-4">
             <div className="relative">
                 <div
-                    className="absolute -top-1 left-2 font-serif text-5xl leading-none text-tomato-400/30 select-none"
-                    style={{ fontFamily: "var(--font-display)" }}
+                    className="absolute -top-1 left-2 font-display text-5xl leading-none text-tomato-400/30 select-none"
                     aria-hidden="true"
                 >
                     "
                 </div>
                 <div className="border-l-2 border-tomato-400/50 bg-tomato-50/30 py-3 pr-3 pl-5">
-                    <p
-                        className="text-sm leading-relaxed text-stone-700 italic"
-                        style={{ fontFamily: "var(--font-body)" }}
-                    >
-                        {notes}
-                    </p>
+                    <p className="text-sm leading-relaxed text-stone-700 italic">{notes}</p>
                 </div>
             </div>
         </div>
@@ -268,7 +262,7 @@ function RestaurantCardMap({
             >
                 <div className="flex items-center gap-3">
                     <div className="flex size-7 items-center justify-center rounded-full bg-stone-100 transition-colors duration-200 group-hover/trigger:bg-tomato-100">
-                        <Navigation className="size-3.5 text-stone-500 transition-colors duration-200 group-hover/trigger:text-tomato-600" />
+                        <Navigation className="size-3.5 text-stone-600 transition-colors duration-200 group-hover/trigger:text-tomato-600" />
                     </div>
                     <span className="font-medium">View on Map</span>
                 </div>
@@ -300,7 +294,7 @@ function RestaurantCardMap({
                             <AdvancedMarker position={location} title={restaurant.name ?? undefined} />
                         </Map>
                     </a>
-                    <p className="mt-2 text-center text-xs text-stone-500">Click map to get directions</p>
+                    <p className="mt-2 text-center text-xs text-stone-600">Click map to get directions</p>
                 </div>
             )}
         </div>

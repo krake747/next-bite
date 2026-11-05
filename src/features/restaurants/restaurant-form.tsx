@@ -156,7 +156,7 @@ export function RestaurantForm(props: Readonly<RestaurantFormProps>) {
                             value={locationField.input ?? ""}
                             onChange={handleLocationChange}
                             label="Location"
-                            placeholder="Search for a restaurant..."
+                            placeholder="Search for a restaurant…"
                         />
                     </FieldWrapper>
                 )}
@@ -168,7 +168,7 @@ export function RestaurantForm(props: Readonly<RestaurantFormProps>) {
                             input={notesField.input}
                             errors={notesField.errors}
                             label="Notes"
-                            placeholder="What to order..."
+                            placeholder="What to order…"
                             rows={3}
                             {...notesField.props}
                         />
@@ -184,7 +184,7 @@ export function RestaurantForm(props: Readonly<RestaurantFormProps>) {
                                 errors={linkField.errors}
                                 type="url"
                                 label="Menu link"
-                                placeholder="https://menu.com/..."
+                                placeholder="https://menu.com/…"
                                 {...linkField.props}
                             />
                         </FieldWrapper>

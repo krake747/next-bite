@@ -43,7 +43,7 @@ export function PhotoGallery({
                             className="transition-transform duration-200 ease-out group-hover:scale-105"
                         />
                         {photo.author !== undefined && photo.author !== "" && (
-                            <span className="absolute bottom-1 left-1 rounded-full bg-black/60 px-2 py-0.5 text-[11px] font-medium text-white">
+                            <span className="absolute bottom-1 left-1 rounded-full bg-black/60 px-2 py-0.5 text-xs font-medium whitespace-nowrap text-white">
                                 {photo.author}
                             </span>
                         )}

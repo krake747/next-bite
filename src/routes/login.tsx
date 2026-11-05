@@ -54,10 +54,7 @@ function LoginPage() {
         <AuthLayout
             icon={<UtensilsCrossed className="size-8" />}
             title={
-                <h2
-                    className="relative text-4xl font-semibold tracking-tight text-stone-900 sm:text-5xl"
-                    style={{ fontFamily: "var(--font-display)" }}
-                >
+                <h2 className="relative font-display text-4xl font-semibold tracking-tight text-balance text-stone-900 sm:text-5xl">
                     Welcome back
                     <svg
                         className="absolute -bottom-2 left-1/2 h-2 w-24 -translate-x-1/2"

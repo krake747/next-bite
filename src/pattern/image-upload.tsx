@@ -158,7 +158,7 @@ export function ImageUpload(props: Readonly<ImageUploadProps>) {
         <div className="space-y-4">
             <div className="flex items-center justify-between">
                 <label className="text-sm font-medium text-stone-700">Images</label>
-                <span className="text-xs text-stone-500">
+                <span className="text-xs text-stone-600">
                     {props.images.length}/{maxImages}
                 </span>
             </div>
@@ -211,14 +211,14 @@ export function ImageUpload(props: Readonly<ImageUploadProps>) {
                         <span className="text-sm text-stone-600">
                             {isDragging ? "Drop images here" : "Click or drag & drop to upload images"}
                         </span>
-                        <span className="mt-1 text-xs text-stone-500">
+                        <span className="mt-1 text-xs text-stone-600">
                             JPEG, PNG, WebP, GIF up to {formatFileSize(MAX_FILE_SIZE)}
                         </span>
                     </div>
                 </>
             )}
 
-            {isUploading && <p className="text-center text-sm text-stone-600">Uploading...</p>}
+            {isUploading && <p className="text-center text-sm text-stone-600">Uploading…</p>}
 
             {uploadError !== null && uploadError !== "" && <p className="text-sm text-destructive">{uploadError}</p>}
         </div>

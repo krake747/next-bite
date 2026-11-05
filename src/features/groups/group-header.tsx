@@ -26,10 +26,10 @@ export function GroupHeader({
             )}
             <div className="space-y-2 p-4 pb-0">
                 <div className="flex items-baseline justify-between gap-2">
-                    <h3 className="font-display text-[22px] leading-7 font-semibold tracking-tight text-stone-900">
+                    <h3 className="font-display text-xl leading-7 font-semibold tracking-tight text-balance text-stone-900">
                         {name}
                     </h3>
-                    <p className="shrink-0 text-xs font-medium text-stone-500">
+                    <p className="shrink-0 text-xs font-medium text-stone-600">
                         {restaurantCount === 1 ? "1 spot" : `${restaurantCount} spots`}
                     </p>
                 </div>

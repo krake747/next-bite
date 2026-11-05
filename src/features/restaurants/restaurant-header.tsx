@@ -31,7 +31,7 @@ export function RestaurantHeader({
     detailsHref?: string | undefined
 }>) {
     const heading = (
-        <h3 className="flex-1 font-display text-[22px] leading-7 font-semibold tracking-tight text-stone-900">
+        <h3 className="flex-1 font-display text-xl leading-7 font-semibold tracking-tight text-balance text-stone-900">
             {name}
         </h3>
     )
@@ -79,12 +79,15 @@ export function RestaurantHeader({
                                     href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(location)}`}
                                     target="_blank"
                                     rel="noopener noreferrer"
+                                    title={location}
                                     className="truncate transition-colors duration-200 hover:text-tomato-600"
                                 >
                                     {location}
                                 </a>
                             ) : (
-                                <span className="truncate">{location}</span>
+                                <span className="truncate" title={location}>
+                                    {location}
+                                </span>
                             )}
                         </div>
                     )}

@@ -38,7 +38,7 @@ export function OpeningHoursDialog({
                         Hours
                     </DialogTitle>
 
-                    <p className="mb-4 text-sm text-stone-500">{restaurantName}</p>
+                    <p className="mb-4 text-sm text-stone-600">{restaurantName}</p>
 
                     <div className="mb-5 flex items-center gap-2">
                         <Badge variant={openNow ? "success" : "neutral"}>{openNow ? "Open now" : "Closed"}</Badge>

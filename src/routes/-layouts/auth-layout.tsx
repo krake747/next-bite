@@ -52,7 +52,7 @@ export function AuthLayout({
                     <Link
                         to="/"
                         viewTransition
-                        className="group inline-flex items-center gap-2 text-sm text-stone-500 transition-colors hover:text-stone-900"
+                        className="group inline-flex items-center gap-2 text-sm text-stone-600 transition-colors hover:text-stone-900"
                     >
                         <UtensilsCrossed
                             className="size-4 transition-transform group-hover:-rotate-12"

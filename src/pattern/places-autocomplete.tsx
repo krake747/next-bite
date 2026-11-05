@@ -57,7 +57,7 @@ export function PlacesAutocomplete({
         autocompleteElement.style.colorScheme = "light"
 
         autocompleteElement.className =
-            "w-full rounded-lg border border-stone-200 bg-surface text-stone-900 text-sm placeholder:text-stone-400 focus:border-tomato-500 focus:outline-none focus:ring-1 focus:ring-tomato-500"
+            "w-full rounded-control border border-border bg-surface px-3 py-2.5 text-base text-stone-900 transition-colors duration-150 placeholder:text-stone-600 hover:border-border-strong focus:border-ring focus:outline-none focus:ring-1 focus:ring-ring md:text-sm"
 
         const handlePlaceSelect = (event: unknown) => {
             if (!isPlaceSelectEvent(event)) {
@@ -95,7 +95,7 @@ export function PlacesAutocomplete({
     }, [placesLib, onChange])
 
     return (
-        <div className="space-y-1.5">
+        <div className="flex flex-col gap-1.5">
             {label !== undefined && label !== "" && (
                 <label className="block text-sm font-medium text-stone-700">{label}</label>
             )}
@@ -109,7 +109,7 @@ export function PlacesAutocomplete({
                         onChange={(e: Readonly<{ readonly currentTarget: Readonly<{ readonly value: string }> }>) => {
                             onChange(e.currentTarget.value)
                         }}
-                        className="absolute inset-0 z-10 w-full rounded-lg border border-stone-200 bg-surface px-3 py-2.5 text-sm text-stone-900 placeholder:text-stone-400 focus:border-tomato-500 focus:ring-1 focus:ring-tomato-500 focus:outline-none"
+                        className="absolute inset-0 z-10 w-full rounded-control border border-border bg-surface px-3 py-2.5 text-base text-stone-900 transition-colors duration-150 placeholder:text-stone-600 hover:border-border-strong focus:border-ring focus:ring-1 focus:ring-ring focus:outline-none md:text-sm"
                         data-fallback-location
                     />
                 )}

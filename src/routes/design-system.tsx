@@ -35,8 +35,8 @@ function Section({ title, body, children }: Readonly<{ title: string; body: stri
     return (
         <section className="space-y-4">
             <div>
-                <h2 className="font-display text-2xl font-semibold text-stone-900">{title}</h2>
-                <p className="mt-1 max-w-2xl text-sm text-stone-600">{body}</p>
+                <h2 className="font-display text-2xl font-semibold text-balance text-stone-900">{title}</h2>
+                <p className="mt-1 max-w-2xl text-sm text-pretty text-stone-600">{body}</p>
             </div>
             <Card>
                 <div className="flex flex-wrap items-center gap-3 p-5">{children}</div>
@@ -151,10 +151,12 @@ function TypographySection() {
             body="Bricolage Grotesque for display, DM Sans for interface. Utilities only; no named display styles."
         >
             <div className="w-full space-y-3">
-                <p className="font-display text-2xl font-semibold text-stone-900">What&apos;s the next bite?</p>
+                <p className="font-display text-2xl font-semibold text-balance text-stone-900">
+                    What&apos;s the next bite?
+                </p>
                 <p className="text-body text-stone-700">Good food. Great company.</p>
                 <p className="text-sm text-stone-600">Body small for secondary content and metadata.</p>
-                <p className="text-xs text-stone-500">Caption for timestamps and counts.</p>
+                <p className="text-xs text-stone-600">Caption for timestamps and counts.</p>
             </div>
         </Section>
     )
@@ -276,8 +278,8 @@ function CardsBadgesSection() {
         >
             <Card className="max-w-sm">
                 <div className="p-4">
-                    <p className="font-display text-lg font-semibold text-stone-900">Card default</p>
-                    <p className="mt-1 text-sm text-stone-600">White surface, Stone border, card shadow.</p>
+                    <p className="font-display text-lg font-semibold text-balance text-stone-900">Card default</p>
+                    <p className="mt-1 text-sm text-pretty text-stone-600">White surface, Stone border, card shadow.</p>
                 </div>
             </Card>
             <div className="flex flex-wrap gap-2">
@@ -445,7 +447,7 @@ function OverlaysSection() {
                 <DialogBackdrop>
                     <DialogPanel size="sm">
                         <DialogTitle>Example dialog</DialogTitle>
-                        <p className="mt-2 text-sm text-stone-600">
+                        <p className="mt-2 text-sm text-pretty text-stone-600">
                             Backdrop, panel, title, and close button from the shared wrapper.
                         </p>
                         <DialogCloseButton

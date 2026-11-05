@@ -85,8 +85,10 @@ function DetailHero({
             <div className="space-y-3 p-5 md:p-4">
                 {restaurant.notes !== undefined && restaurant.notes !== "" && (
                     <div>
-                        <h2 className="font-display text-lg font-semibold text-stone-900">Why it&apos;s recommended</h2>
-                        <p className="text-body mt-1 text-stone-700">{restaurant.notes}</p>
+                        <h2 className="font-display text-lg font-semibold text-balance text-stone-900">
+                            Why it&apos;s recommended
+                        </h2>
+                        <p className="text-body mt-1 leading-relaxed text-pretty text-stone-700">{restaurant.notes}</p>
                     </div>
                 )}
                 <SocialMetadata
@@ -108,7 +110,7 @@ function DetailPhotos({ photos }: Readonly<{ photos: ReadonlyArray<GalleryPhoto>
     }
     return (
         <div className="rounded-card border border-border bg-surface p-4 shadow-card">
-            <h2 className="font-display text-lg font-semibold text-stone-900">Friends&apos; photos</h2>
+            <h2 className="font-display text-lg font-semibold text-balance text-stone-900">Friends&apos; photos</h2>
             <div className="pt-3">
                 <PhotoGallery photos={photos} />
             </div>
@@ -150,7 +152,7 @@ function DetailComments({
                     deleteComment.mutate({ id: asCommentId(id) })
                 }}
             />
-            {!isAuthenticated && <p className="pt-2 text-sm text-stone-500">Sign in to join the conversation.</p>}
+            {!isAuthenticated && <p className="pt-2 text-sm text-stone-600">Sign in to join the conversation.</p>}
         </div>
     )
 }
@@ -159,7 +161,7 @@ function DetailLoading() {
     return (
         <PageLayout>
             <PageContainer>
-                <p className="py-16 text-center text-sm text-stone-500">Loading…</p>
+                <p className="py-16 text-center text-sm text-stone-600">Loading…</p>
             </PageContainer>
         </PageLayout>
     )
@@ -171,8 +173,10 @@ function DetailNotFound() {
             <PageContainer>
                 <BackNav backTo="/" />
                 <div className="py-16 text-center">
-                    <p className="font-display text-2xl font-semibold text-stone-900">Spot not found</p>
-                    <p className="mt-2 text-sm text-stone-600">This page went out for snacks and never came back.</p>
+                    <p className="font-display text-2xl font-semibold text-balance text-stone-900">Spot not found</p>
+                    <p className="mt-2 text-sm text-pretty text-stone-600">
+                        This page went out for snacks and never came back.
+                    </p>
                 </div>
             </PageContainer>
         </PageLayout>

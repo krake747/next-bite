@@ -81,7 +81,7 @@ export function LazyImage({
 
             {hasError && (
                 <div className="absolute inset-0 flex items-center justify-center bg-stone-100">
-                    <span className="text-sm text-stone-500">Failed to load image</span>
+                    <span className="text-sm text-stone-600">Failed to load image</span>
                 </div>
             )}
 

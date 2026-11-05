@@ -74,7 +74,7 @@ export function HeaderSubtitle({
     ...props
 }: Readonly<{ children?: React.ReactNode | undefined; className?: string | undefined }>) {
     return (
-        <p className={`mt-6 max-w-xl text-xl leading-relaxed text-stone-600 ${className ?? ""}`} {...props}>
+        <p className={`mt-6 max-w-xl text-xl leading-relaxed text-pretty text-stone-600 ${className ?? ""}`} {...props}>
             {children}
         </p>
     )
@@ -83,7 +83,7 @@ export function HeaderSubtitle({
 export function HeaderBadge({ count }: Readonly<{ count: number }>) {
     return (
         <div className="mt-8 inline-flex items-center gap-3 rounded-full bg-surface/80 py-1 pr-4 pl-1 text-sm font-semibold text-stone-700 shadow-card ring-1 ring-border backdrop-blur-sm">
-            <span className="flex h-8 w-8 items-center justify-center rounded-full bg-linear-to-br from-tomato-500 to-tomato-600 text-white shadow-inner">
+            <span className="flex h-8 w-8 items-center justify-center rounded-full bg-linear-to-br from-tomato-500 to-tomato-600 text-white tabular-nums shadow-inner">
                 {count}
             </span>
             <span>places to try</span>
