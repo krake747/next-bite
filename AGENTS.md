@@ -25,6 +25,24 @@
   for each answer before asking the next question. Only after all questions are answered and you
   have no remaining uncertainties, present the final plan.
 
+## Design system
+
+The visual identity is Tomato and Butter on Stone neutrals, light only. Bricolage Grotesque for
+display, DM Sans for interface. The living inventory lives at `/design-system` and renders the real
+components; `registry.json` distributes source when asked.
+
+- Use semantic Tailwind tokens (`bg-background`, `text-muted-foreground`, `border-border`,
+  `bg-primary`, `text-destructive`). Never scatter raw hex values in components.
+- Use Base UI for accessible interactive primitives. Never adopt a second component implementation
+  alongside one. Compose Base UI primitives into styled application components.
+- Use CVA for reusable component variants. Reuse components from `src/ui`. Keep domain-specific
+  components in feature directories. Prefer composition over duplicated implementations.
+- Wrappers own their color, typography, spacing, and motion (`shadcn/no-restyle` enforced). Call
+  sites may only pass layout classes and must use variants for the rest.
+- Do not introduce dark mode or `.dark` styles.
+- Interest is Tomato for Want to try and Basil for Been there, always with a text label. Never
+  communicate state through colour alone.
+
 ## Layers
 
 Code lives in `src/` under these zones (enforced by fallow boundary rules):

@@ -31,3 +31,4 @@ Long-lived explanations of this project's architecture and technical decisions.
 - [0015](adr/0015-application-experience.md): application experience (feed, detail, social backend).
 - [0014](adr/0014-restaurant-group-components.md): restaurant and group components, presentational.
 - [0013](adr/0013-social-components-presentational.md): social components, presentational only.
+- [0016](adr/0016-design-system-docs.md): design-system documentation and distribution.

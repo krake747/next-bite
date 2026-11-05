@@ -1,0 +1,122 @@
+{
+    "$schema": "https://ui.shadcn.com/schema/registry.json",
+    "name": "nextbite",
+    "homepage": "https://github.com/krake747/next-bite",
+    "items": [
+        {
+            "name": "button",
+            "type": "registry:ui",
+            "description": "Tomato primary, secondary, outline, ghost, destructive. Small, medium, large, icon. Loading state.",
+            "files": [{ "path": "src/ui/button.tsx", "type": "registry:ui" }]
+        },
+        {
+            "name": "badge",
+            "type": "registry:ui",
+            "description": "Restrained labels. Neutral, brand, success, accent, outline.",
+            "files": [{ "path": "src/ui/badge.tsx", "type": "registry:ui" }]
+        },
+        {
+            "name": "avatar",
+            "type": "registry:ui",
+            "description": "Friend avatar with initials fallback, five sizes, optional presence dot.",
+            "files": [{ "path": "src/ui/avatar.tsx", "type": "registry:ui" }]
+        },
+        {
+            "name": "card",
+            "type": "registry:ui",
+            "description": "White surface, Stone border, card shadow. Single default variant.",
+            "files": [{ "path": "src/ui/card.tsx", "type": "registry:ui" }]
+        },
+        {
+            "name": "dialog",
+            "type": "registry:ui",
+            "description": "Light overlay wrapper: backdrop, panel, title, description, close button, action.",
+            "files": [{ "path": "src/ui/dialog.tsx", "type": "registry:ui" }]
+        },
+        {
+            "name": "popover",
+            "type": "registry:ui",
+            "description": "Plain and tinted triggers with a shadow-popover panel.",
+            "files": [{ "path": "src/ui/popover.tsx", "type": "registry:ui" }]
+        },
+        {
+            "name": "tabs",
+            "type": "registry:ui",
+            "description": "Standard tab list, tab, and panel.",
+            "files": [{ "path": "src/ui/tabs.tsx", "type": "registry:ui" }]
+        },
+        {
+            "name": "field",
+            "type": "registry:ui",
+            "description": "Formisch-coupled Input, Textarea, and Base UI Select with error and disabled states.",
+            "files": [{ "path": "src/ui/field.tsx", "type": "registry:ui" }]
+        },
+        {
+            "name": "skeleton",
+            "type": "registry:ui",
+            "description": "Pulse placeholder for loading content.",
+            "files": [{ "path": "src/ui/skeleton.tsx", "type": "registry:ui" }]
+        },
+        {
+            "name": "avatar-group",
+            "type": "registry:component",
+            "description": "Overlapping friend avatars with overflow count and accessible label.",
+            "files": [{ "path": "src/features/social/avatar-group.tsx", "type": "registry:component" }]
+        },
+        {
+            "name": "reaction-bar",
+            "type": "registry:component",
+            "description": "Like, comment, and want-to-try toggles with counts.",
+            "files": [{ "path": "src/features/social/reaction-bar.tsx", "type": "registry:component" }]
+        },
+        {
+            "name": "comment-list",
+            "type": "registry:component",
+            "description": "Plain-text comments, author-only delete, draft form.",
+            "files": [{ "path": "src/features/social/comment-list.tsx", "type": "registry:component" }]
+        },
+        {
+            "name": "activity-post",
+            "type": "registry:component",
+            "description": "Feed post composing author, text, restaurant, social context, and reactions.",
+            "files": [{ "path": "src/features/social/activity-post.tsx", "type": "registry:component" }]
+        },
+        {
+            "name": "photo-gallery",
+            "type": "registry:component",
+            "description": "Attributed photo grid with shared viewer and add-photo entry.",
+            "files": [{ "path": "src/features/social/photo-gallery.tsx", "type": "registry:component" }]
+        },
+        {
+            "name": "restaurant-header",
+            "type": "registry:component",
+            "description": "Restaurant title block with menu pill, attribution, location, and hours.",
+            "files": [{ "path": "src/features/restaurants/restaurant-header.tsx", "type": "registry:component" }]
+        },
+        {
+            "name": "restaurant-gallery",
+            "type": "registry:component",
+            "description": "Restaurant hero image with badge, actions, count button, and viewer wiring.",
+            "files": [{ "path": "src/features/restaurants/restaurant-gallery.tsx", "type": "registry:component" }]
+        },
+        {
+            "name": "restaurant-interest-button",
+            "type": "registry:component",
+            "description": "Labeled Want-to-try toggle with count and pressed state.",
+            "files": [
+                { "path": "src/features/restaurants/restaurant-interest-button.tsx", "type": "registry:component" }
+            ]
+        },
+        {
+            "name": "group-card",
+            "type": "registry:block",
+            "description": "Shared food-club card: header, members, and restaurant collection.",
+            "files": [
+                { "path": "src/features/groups/group-card.tsx", "type": "registry:block" },
+                { "path": "src/features/groups/group-header.tsx", "type": "registry:block" },
+                { "path": "src/features/groups/group-members.tsx", "type": "registry:block" },
+                { "path": "src/features/groups/shared-restaurant-list.tsx", "type": "registry:block" }
+            ]
+        }
+    ]
+}
