@@ -148,15 +148,26 @@ function useAuthStore() {
         }
     }
 
-    const signInWithPassword = async (email: string, password: string) => {
+    const authenticateWithPassword = async (
+        action: "signIn" | "signUp",
+        credentials: Readonly<{ name?: string | undefined; email: string; password: string }>,
+    ) => {
+        const fallbackMessage = action === "signIn" ? "Sign in failed" : "Sign up failed"
         dispatch({ type: "SET_LOADING", isLoading: true })
         dispatch({ type: "SET_ERROR", error: null })
 
         try {
-            const result = await authClient.signIn.email({ email, password })
+            const result =
+                action === "signIn"
+                    ? await authClient.signIn.email({ email: credentials.email, password: credentials.password })
+                    : await authClient.signUp.email({
+                          name: credentials.name ?? "",
+                          email: credentials.email,
+                          password: credentials.password,
+                      })
 
             if (result.error) {
-                const message = result.error.message ?? "Sign in failed"
+                const message = result.error.message ?? fallbackMessage
                 dispatch({ type: "SET_ERROR", error: message })
                 throw new Error(message)
             }
@@ -168,7 +179,7 @@ function useAuthStore() {
             }
         } catch (err) {
             if (state.error === null || state.error === "") {
-                const message = err instanceof Error ? err.message : "Sign in failed"
+                const message = err instanceof Error ? err.message : fallbackMessage
                 dispatch({ type: "SET_ERROR", error: message })
             }
             throw err
@@ -177,33 +188,12 @@ function useAuthStore() {
         }
     }
 
+    const signInWithPassword = async (email: string, password: string) => {
+        await authenticateWithPassword("signIn", { email, password })
+    }
+
     const signUpWithPassword = async (name: string, email: string, password: string) => {
-        dispatch({ type: "SET_LOADING", isLoading: true })
-        dispatch({ type: "SET_ERROR", error: null })
-
-        try {
-            const result = await authClient.signUp.email({ name, email, password })
-
-            if (result.error) {
-                const message = result.error.message ?? "Sign up failed"
-                dispatch({ type: "SET_ERROR", error: message })
-                throw new Error(message)
-            }
-
-            if (result.data?.user !== undefined && result.data?.user !== null) {
-                saveUser(mapSessionUserToUserPayload(result.data.user))
-            } else {
-                throw new Error("No user returned: email verification required")
-            }
-        } catch (err) {
-            if (state.error === null || state.error === "") {
-                const message = err instanceof Error ? err.message : "Sign up failed"
-                dispatch({ type: "SET_ERROR", error: message })
-            }
-            throw err
-        } finally {
-            dispatch({ type: "SET_LOADING", isLoading: false })
-        }
+        await authenticateWithPassword("signUp", { name, email, password })
     }
 
     const signOut = async () => {
