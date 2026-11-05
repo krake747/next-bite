@@ -115,8 +115,8 @@ function LoginPage() {
                         </FieldWrapper>
                     )}
                 </Field>
-                <Button type="submit" className="w-full" disabled={auth.isLoading}>
-                    {auth.isLoading ? "Signing in..." : "Sign In"}
+                <Button type="submit" className="w-full" loading={auth.isLoading}>
+                    Sign In
                 </Button>
             </Form>
         </AuthLayout>

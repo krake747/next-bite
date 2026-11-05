@@ -159,8 +159,8 @@ function SignupPage() {
                         </FieldWrapper>
                     )}
                 </Field>
-                <Button type="submit" className="w-full" disabled={auth.isLoading}>
-                    {auth.isLoading ? "Creating account..." : "Create Account"}
+                <Button type="submit" className="w-full" loading={auth.isLoading}>
+                    Create Account
                 </Button>
             </Form>
         </AuthLayout>

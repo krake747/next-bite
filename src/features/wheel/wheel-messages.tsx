@@ -1,13 +1,12 @@
-import { Dialog } from "@base-ui/react/dialog"
 import Share from "lucide-react/icons/share"
 import Sparkles from "lucide-react/icons/sparkles"
 import Star from "lucide-react/icons/star"
 import UtensilsCrossed from "lucide-react/icons/utensils-crossed"
-import X from "lucide-react/icons/x"
 import { useState } from "react"
 
 import { type Restaurant } from "@core/hooks"
 import { Button } from "@ui/button"
+import { Dialog, DialogBackdrop, DialogCloseButton, DialogPanel, DialogTitle } from "@ui/dialog"
 
 import { WinnerCard } from "./winner-card"
 
@@ -105,135 +104,132 @@ export function WinnerModal({
     isSpinning: boolean
 }>) {
     return (
-        <Dialog.Root open={show} onOpenChange={onOpenChange}>
-            <Dialog.Portal>
-                <Dialog.Backdrop
-                    className="animate-in fade-in fixed inset-0 z-50 flex items-center justify-center bg-stone-900/80 backdrop-blur-sm duration-200"
-                    onClick={() => {
-                        onOpenChange(false)
+        <Dialog show={show} onOpenChange={onOpenChange}>
+            <DialogBackdrop
+                tone="deep"
+                onClick={() => {
+                    onOpenChange(false)
+                }}
+            >
+                <DialogPanel
+                    size="sm"
+                    padding="none"
+                    tone="celebration"
+                    onClick={(e: Readonly<{ stopPropagation: () => void }>) => {
+                        e.stopPropagation()
                     }}
                 >
-                    <Dialog.Popup
-                        className="animate-winner-modal relative w-[90%] max-w-sm overflow-hidden rounded-2xl bg-surface shadow-2xl outline-none"
-                        onClick={(e: Readonly<{ stopPropagation: () => void }>) => {
-                            e.stopPropagation()
-                        }}
-                    >
-                        <div className="pointer-events-none absolute inset-0 -mx-4 -mt-16 flex items-center justify-center">
-                            <SpotlightRing />
-                            <CelebrationParticles />
+                    <div className="pointer-events-none absolute inset-0 -mx-4 -mt-16 flex items-center justify-center">
+                        <SpotlightRing />
+                        <CelebrationParticles />
+                    </div>
+
+                    <div className="relative px-5 pt-8 pb-5">
+                        <DialogCloseButton
+                            onClose={() => {
+                                onOpenChange(false)
+                            }}
+                            tone="soft"
+                            className="top-2 right-2"
+                        />
+
+                        <div className="relative mb-4 flex justify-center">
+                            <div className="relative">
+                                <div className="animate-winner-glow absolute inset-0 rounded-full bg-tomato-400/30 blur-xl" />
+                                <div className="relative flex size-14 items-center justify-center rounded-full bg-linear-to-br from-tomato-500 via-tomato-600 to-tomato-800 shadow-lg ring-4 ring-tomato-400/20">
+                                    <Sparkles className="size-7 text-white" />
+                                </div>
+                            </div>
                         </div>
 
-                        <div className="relative px-5 pt-8 pb-5">
-                            <button
+                        <div className="relative mb-3 flex items-center justify-center gap-2">
+                            <div className="h-px w-6 bg-linear-to-r from-transparent to-tomato-400/50" />
+                            <div className="flex items-center gap-1 text-xs font-medium tracking-widest text-tomato-600 uppercase">
+                                <Star className="size-2.5 fill-current" />
+                                Winner
+                                <Star className="size-2.5 fill-current" />
+                            </div>
+                            <div className="h-px w-6 bg-linear-to-l from-transparent to-tomato-400/50" />
+                        </div>
+
+                        <DialogTitle className="sr-only">Winner</DialogTitle>
+
+                        <h2
+                            className="animate-title-reveal bg-linear-to-br from-stone-900 via-stone-800 to-stone-900 bg-clip-text text-center text-2xl font-bold tracking-tight text-transparent"
+                            style={{ fontFamily: "var(--font-display)" }}
+                        >
+                            {restaurant.name}
+                        </h2>
+
+                        <p className="animate-fade-in-up mt-1.5 text-center text-xs text-stone-500">
+                            Your next culinary adventure awaits
+                        </p>
+
+                        <div className="animate-card-reveal mt-4">
+                            <WinnerCard restaurant={restaurant} />
+                        </div>
+
+                        <div className="mt-4 flex gap-2">
+                            <Button
+                                variant="primary"
+                                size="md"
+                                onClick={onSpinAgain}
+                                disabled={isSpinning}
+                                className="flex-1"
+                            >
+                                <Sparkles className="size-4" />
+                                <span>Spin Again</span>
+                            </Button>
+                            <Button
+                                variant="secondary"
+                                size="md"
                                 onClick={() => {
-                                    onOpenChange(false)
-                                }}
-                                className="absolute top-2 right-2 flex size-8 items-center justify-center rounded-full bg-stone-100 text-stone-400 transition-colors hover:bg-stone-200"
-                            >
-                                <X className="size-4" />
-                            </button>
-
-                            <div className="relative mb-4 flex justify-center">
-                                <div className="relative">
-                                    <div className="animate-winner-glow absolute inset-0 rounded-full bg-tomato-400/30 blur-xl" />
-                                    <div className="relative flex size-14 items-center justify-center rounded-full bg-linear-to-br from-tomato-500 via-tomato-600 to-tomato-800 shadow-lg ring-4 ring-tomato-400/20">
-                                        <Sparkles className="size-7 text-white" />
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div className="relative mb-3 flex items-center justify-center gap-2">
-                                <div className="h-px w-6 bg-linear-to-r from-transparent to-tomato-400/50" />
-                                <div className="flex items-center gap-1 text-xs font-medium tracking-widest text-tomato-600 uppercase">
-                                    <Star className="size-2.5 fill-current" />
-                                    Winner
-                                    <Star className="size-2.5 fill-current" />
-                                </div>
-                                <div className="h-px w-6 bg-linear-to-l from-transparent to-tomato-400/50" />
-                            </div>
-
-                            <Dialog.Title className="sr-only">Winner</Dialog.Title>
-
-                            <h2
-                                className="animate-title-reveal bg-linear-to-br from-stone-900 via-stone-800 to-stone-900 bg-clip-text text-center text-2xl font-bold tracking-tight text-transparent"
-                                style={{ fontFamily: "var(--font-display)" }}
-                            >
-                                {restaurant.name}
-                            </h2>
-
-                            <p className="animate-fade-in-up mt-1.5 text-center text-xs text-stone-500">
-                                Your next culinary adventure awaits
-                            </p>
-
-                            <div className="animate-card-reveal mt-4">
-                                <WinnerCard restaurant={restaurant} />
-                            </div>
-
-                            <div className="mt-4 flex gap-2">
-                                <Button
-                                    variant="primary"
-                                    size="md"
-                                    onClick={onSpinAgain}
-                                    disabled={isSpinning}
-                                    className="flex-1"
-                                >
-                                    <Sparkles className="size-4" />
-                                    <span>Spin Again</span>
-                                </Button>
-                                <Button
-                                    variant="secondary"
-                                    size="md"
-                                    onClick={() => {
-                                        const lat = restaurant.lat
-                                        const lng = restaurant.lng
-                                        const inviteUrl = `${window.location.origin}/wheel`
-                                        const mapsUrl =
-                                            lat !== null && lng !== null
-                                                ? `https://maps.google.com/?q=${lat},${lng}`
-                                                : undefined
-                                        const mapsLine =
-                                            mapsUrl !== undefined && mapsUrl !== ""
-                                                ? `\n\n📍 Google Maps: ${mapsUrl}`
-                                                : ""
-                                        const text = `Just tried the dinner wheel... fate is UNHINGED! 😂 We're going to ${restaurant.name}!${mapsLine}\n\nYou gotta try this -> ${inviteUrl}`
-                                        const shareData = { title: "Next Bite", text }
-                                        if (
-                                            navigator.share !== undefined &&
-                                            navigator.canShare !== undefined &&
-                                            navigator.canShare(shareData)
-                                        ) {
-                                            void navigator.share(shareData).catch(() => {
-                                                void navigator.clipboard
-                                                    .writeText(text)
-                                                    .then(() => {
-                                                        alert("Copied to clipboard!")
-                                                    })
-                                                    .catch(() => {
-                                                        alert("Failed to share. Please try again.")
-                                                    })
-                                            })
-                                        } else {
+                                    const lat = restaurant.lat
+                                    const lng = restaurant.lng
+                                    const inviteUrl = `${window.location.origin}/wheel`
+                                    const mapsUrl =
+                                        lat !== null && lng !== null
+                                            ? `https://maps.google.com/?q=${lat},${lng}`
+                                            : undefined
+                                    const mapsLine =
+                                        mapsUrl !== undefined && mapsUrl !== "" ? `\n\n📍 Google Maps: ${mapsUrl}` : ""
+                                    const text = `Just tried the dinner wheel... fate is UNHINGED! 😂 We're going to ${restaurant.name}!${mapsLine}\n\nYou gotta try this -> ${inviteUrl}`
+                                    const shareData = { title: "Next Bite", text }
+                                    if (
+                                        navigator.share !== undefined &&
+                                        navigator.canShare !== undefined &&
+                                        navigator.canShare(shareData)
+                                    ) {
+                                        void navigator.share(shareData).catch(() => {
                                             void navigator.clipboard
                                                 .writeText(text)
                                                 .then(() => {
                                                     alert("Copied to clipboard!")
                                                 })
                                                 .catch(() => {
-                                                    alert("Failed to copy. Please try again.")
+                                                    alert("Failed to share. Please try again.")
                                                 })
-                                        }
-                                    }}
-                                    className="flex-1"
-                                >
-                                    <Share className="size-4" />
-                                    <span>Share</span>
-                                </Button>
-                            </div>
+                                        })
+                                    } else {
+                                        void navigator.clipboard
+                                            .writeText(text)
+                                            .then(() => {
+                                                alert("Copied to clipboard!")
+                                            })
+                                            .catch(() => {
+                                                alert("Failed to copy. Please try again.")
+                                            })
+                                    }
+                                }}
+                                className="flex-1"
+                            >
+                                <Share className="size-4" />
+                                <span>Share</span>
+                            </Button>
                         </div>
-                    </Dialog.Popup>
-                </Dialog.Backdrop>
-            </Dialog.Portal>
-        </Dialog.Root>
+                    </div>
+                </DialogPanel>
+            </DialogBackdrop>
+        </Dialog>
     )
 }

@@ -1,6 +1,11 @@
+import { Select as BaseSelect } from "@base-ui/react/select"
 import { type FieldElementProps } from "@formisch/react"
-import { useId } from "react"
+import Check from "lucide-react/icons/check"
+import ChevronDown from "lucide-react/icons/chevron-down"
+import { useEffect, useId, useRef } from "react"
 import * as v from "valibot"
+
+import { cx } from "@ui/variants"
 
 const changeHandlerSchema = v.custom<FieldElementProps["onChange"]>(
     (value) => typeof value === "function",
@@ -11,6 +16,11 @@ const refCallbackSchema = v.custom<FieldElementProps["ref"]>(
     (value) => typeof value === "function",
     "Expected a ref callback function",
 )
+
+const controlClass =
+    "w-full rounded-control border border-stone-200 bg-surface px-3 py-2.5 text-stone-900 placeholder:text-stone-400 focus:border-ring focus:ring-1 focus:ring-ring focus:outline-none disabled:cursor-not-allowed disabled:opacity-60"
+
+const labelClass = "block text-sm font-medium text-stone-700"
 
 export function FieldWrapper({ errors, children }: Readonly<{ errors: unknown; children: React.ReactNode }>) {
     return (
@@ -32,16 +42,20 @@ type InputProps = Omit<FieldElementProps, "onChange" | "ref"> & {
     readonly errors: Readonly<[string, ...string[]]> | null
 }
 
+function hasErrors(errors: Readonly<[string, ...string[]]> | null): boolean {
+    return errors !== null
+}
+
 export function Input(props: Readonly<InputProps>) {
     const fallbackId = useId()
-    const { input, errors: _errors, type, placeholder, label, id, onChange, ref, ...inputProps } = props
+    const { input, errors, type, placeholder, label, id, onChange, ref, ...inputProps } = props
     const handleChange = v.parse(changeHandlerSchema, onChange)
     const inputRef = v.parse(refCallbackSchema, ref)
     const inputId = id ?? fallbackId
     return (
         <div className="space-y-1.5">
             {label !== undefined && label !== "" && (
-                <label htmlFor={inputId} className="block text-sm font-medium text-stone-700">
+                <label htmlFor={inputId} className={labelClass}>
                     {label}
                 </label>
             )}
@@ -52,7 +66,11 @@ export function Input(props: Readonly<InputProps>) {
                 value={input ?? ""}
                 type={type ?? "text"}
                 placeholder={placeholder ?? ""}
-                className="w-full rounded-lg border border-stone-200 bg-surface px-3 py-2.5 text-stone-900 placeholder:text-stone-400 focus:border-tomato-500 focus:ring-1 focus:ring-tomato-500 focus:outline-none"
+                aria-invalid={hasErrors(errors)}
+                className={cx(
+                    controlClass,
+                    hasErrors(errors) && "border-destructive focus:border-destructive focus:ring-destructive",
+                )}
                 {...inputProps}
             />
         </div>
@@ -72,14 +90,14 @@ type TextareaProps = Omit<FieldElementProps, "onChange" | "ref"> & {
 
 export function Textarea(props: Readonly<TextareaProps>) {
     const fallbackId = useId()
-    const { input, errors: _errors, placeholder, rows, label, id, onChange, ref, ...textareaProps } = props
+    const { input, errors, placeholder, rows, label, id, onChange, ref, ...textareaProps } = props
     const handleChange = v.parse(changeHandlerSchema, onChange)
     const textareaRef = v.parse(refCallbackSchema, ref)
     const textareaId = id ?? fallbackId
     return (
         <div className="space-y-1.5">
             {label !== undefined && label !== "" && (
-                <label htmlFor={textareaId} className="block text-sm font-medium text-stone-700">
+                <label htmlFor={textareaId} className={labelClass}>
                     {label}
                 </label>
             )}
@@ -90,17 +108,26 @@ export function Textarea(props: Readonly<TextareaProps>) {
                 value={input ?? ""}
                 placeholder={placeholder ?? ""}
                 rows={rows ?? 3}
-                className="w-full rounded-lg border border-stone-200 bg-surface px-3 py-2.5 text-stone-900 placeholder:text-stone-400 focus:border-tomato-500 focus:ring-1 focus:ring-tomato-500 focus:outline-none"
+                aria-invalid={hasErrors(errors)}
+                className={cx(
+                    controlClass,
+                    hasErrors(errors) && "border-destructive focus:border-destructive focus:ring-destructive",
+                )}
                 {...textareaProps}
             />
         </div>
     )
 }
 
+type SelectOption = {
+    readonly value: string
+    readonly label: string
+}
+
 type SelectProps = Omit<FieldElementProps, "onChange" | "ref"> & {
     readonly onChange: unknown
     readonly ref: unknown
-    readonly children: React.ReactNode
+    readonly options: ReadonlyArray<SelectOption>
     readonly label?: string | undefined
     readonly id?: string | undefined
     readonly input: string | undefined
@@ -109,31 +136,100 @@ type SelectProps = Omit<FieldElementProps, "onChange" | "ref"> & {
 
 export function Select(props: Readonly<SelectProps>) {
     const fallbackId = useId()
-    const { input: _input, errors: _errors, children, label, id, onChange, ref, ...selectProps } = props
+    const labelId = useId()
+    const { input, errors, options, label, id, onChange, ref, ...selectProps } = props
     const handleChange = v.parse(changeHandlerSchema, onChange)
     const selectRef = v.parse(refCallbackSchema, ref)
     const selectId = id ?? fallbackId
+    const hiddenRef = useRef<HTMLSelectElement | null>(null)
+    const value = input ?? ""
+    const invalid = hasErrors(errors)
+    const selectedLabel = options.find((item) => item.value === value)?.label ?? ""
+
+    useEffect(() => {
+        const element = hiddenRef.current
+        if (element !== null && element.value !== value) {
+            element.value = value
+        }
+    }, [value])
+
     return (
         <div className="space-y-1.5">
             {label !== undefined && label !== "" && (
-                <label htmlFor={selectId} className="block text-sm font-medium text-stone-700">
+                <label id={labelId} htmlFor={selectId} className={labelClass}>
                     {label}
                 </label>
             )}
-            <select
-                ref={selectRef}
-                onChange={handleChange}
-                id={selectId}
-                className="w-full rounded-lg border border-stone-200 bg-surface px-3 py-2.5 text-stone-900 focus:border-tomato-500 focus:ring-1 focus:ring-tomato-500 focus:outline-none"
-                {...selectProps}
+            <BaseSelect.Root
+                value={value}
+                onValueChange={(next) => {
+                    const element = hiddenRef.current
+                    if (element !== null) {
+                        element.value = next ?? ""
+                        element.dispatchEvent(new Event("change", { bubbles: true }))
+                    }
+                }}
             >
-                {children}
-            </select>
+                <BaseSelect.Trigger
+                    id={selectId}
+                    aria-labelledby={label !== undefined && label !== "" ? labelId : undefined}
+                    aria-invalid={invalid}
+                    className={cx(
+                        controlClass,
+                        "flex items-center justify-between gap-2 text-left",
+                        value === "" && "text-stone-400",
+                        invalid && "border-destructive focus:border-destructive focus:ring-destructive",
+                    )}
+                >
+                    <BaseSelect.Value>{() => selectedLabel}</BaseSelect.Value>
+                    <BaseSelect.Icon>
+                        <ChevronDown className="size-4 shrink-0 text-stone-400" aria-hidden="true" />
+                    </BaseSelect.Icon>
+                </BaseSelect.Trigger>
+                <BaseSelect.Portal>
+                    <BaseSelect.Positioner sideOffset={4}>
+                        <BaseSelect.Popup className="z-50 max-h-64 overflow-y-auto rounded-lg border border-border bg-surface py-1 shadow-popover outline-none">
+                            <BaseSelect.List>
+                                {options.map((item) => (
+                                    <BaseSelect.Item
+                                        key={item.value === "" ? "__empty" : item.value}
+                                        value={item.value}
+                                        className="flex cursor-pointer items-center justify-between gap-2 px-3 py-2 text-sm text-stone-900 outline-none data-highlighted:bg-stone-100"
+                                    >
+                                        <BaseSelect.ItemText>{item.label}</BaseSelect.ItemText>
+                                        <BaseSelect.ItemIndicator>
+                                            <Check className="size-4 text-tomato-600" aria-hidden="true" />
+                                        </BaseSelect.ItemIndicator>
+                                    </BaseSelect.Item>
+                                ))}
+                            </BaseSelect.List>
+                        </BaseSelect.Popup>
+                    </BaseSelect.Positioner>
+                </BaseSelect.Portal>
+                <select
+                    ref={(element) => {
+                        hiddenRef.current = element
+                        selectRef(element)
+                    }}
+                    onChange={handleChange}
+                    defaultValue={value}
+                    tabIndex={-1}
+                    aria-hidden="true"
+                    className="hidden"
+                    {...selectProps}
+                >
+                    {options.map((item) => (
+                        <option key={item.value === "" ? "__empty" : item.value} value={item.value}>
+                            {item.label}
+                        </option>
+                    ))}
+                </select>
+            </BaseSelect.Root>
         </div>
     )
 }
 
 function FieldErrors({ errors }: Readonly<{ errors: unknown }>) {
     const message = Array.isArray(errors) && typeof errors[0] === "string" ? errors[0] : null
-    return message !== null && message !== "" ? <div className="text-sm text-red-500">{message}</div> : null
+    return message !== null && message !== "" ? <div className="text-sm text-destructive">{message}</div> : null
 }

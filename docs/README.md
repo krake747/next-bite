@@ -26,3 +26,5 @@ Long-lived explanations of this project's architecture and technical decisions.
 - [0010](adr/0010-tanstack-start-shell.md): TanStack Start shell with SSR off.
 - [0011](adr/0011-design-system-foundation.md): design system foundation (light-only Tomato and
   Butter).
+- [0012](adr/0012-core-ui-standardization.md): core UI standardization (eleven primitives, one
+  contract).

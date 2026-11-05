@@ -1,4 +1,3 @@
-import { Dialog } from "@base-ui/react/dialog"
 import { Map, AdvancedMarker } from "@vis.gl/react-google-maps"
 import ChevronDown from "lucide-react/icons/chevron-down"
 import ExternalLink from "lucide-react/icons/external-link"
@@ -26,6 +25,7 @@ import { LazyImage } from "@pattern/lazy-image"
 import { Badge } from "@ui/badge"
 import { Button } from "@ui/button"
 import { Card } from "@ui/card"
+import { Dialog, DialogAction, DialogBackdrop, DialogDescription, DialogPanel, DialogTitle } from "@ui/dialog"
 import { OpeningHours } from "@ui/opening-hours"
 import { OpeningHoursDialog } from "@ui/opening-hours-dialog"
 
@@ -215,7 +215,7 @@ function RestaurantCardImage({
             )}
 
             <div className="absolute top-3 left-3">
-                <Badge variant="editorial">
+                <Badge variant="brand">
                     <Utensils className="mr-1 size-3" />
                     {restaurant.cuisine}
                 </Badge>
@@ -263,7 +263,7 @@ function RestaurantCardImage({
                             setShowDeleteConfirm(true)
                         }}
                         aria-label="Delete restaurant"
-                        className="flex h-7 w-7 items-center justify-center rounded-full bg-surface/90 text-red-600 shadow-md backdrop-blur-sm transition-all duration-200 hover:bg-red-50 hover:text-red-700 hover:shadow-lg"
+                        className="flex h-7 w-7 items-center justify-center rounded-full bg-surface/90 text-destructive shadow-md backdrop-blur-sm transition-all duration-200 hover:bg-destructive/10 hover:shadow-lg"
                         title="Delete restaurant"
                     >
                         <Trash2 className="size-3.5" aria-hidden="true" />
@@ -471,43 +471,35 @@ function DeleteConfirmDialog({
     restaurantName: string
 }>) {
     return (
-        <Dialog.Root open={show} onOpenChange={onOpenChange}>
-            <Dialog.Portal>
-                <Dialog.Backdrop className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm" />
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-                    <Dialog.Popup className="relative w-full max-w-sm rounded-2xl border border-stone-200/60 bg-surface p-6 shadow-popover">
-                        <Dialog.Title
-                            className="text-lg font-semibold text-stone-900"
-                            style={{ fontFamily: "var(--font-display)" }}
+        <Dialog show={show} onOpenChange={onOpenChange}>
+            <DialogBackdrop>
+                <DialogPanel size="sm">
+                    <DialogTitle>Delete restaurant</DialogTitle>
+                    <DialogDescription>
+                        Are you sure you want to delete <strong className="text-stone-900">{restaurantName}</strong>?
+                        This action cannot be undone.
+                    </DialogDescription>
+                    <div className="mt-6 flex justify-end gap-2">
+                        <DialogAction
+                            render={
+                                <Button variant="secondary" size="md">
+                                    Cancel
+                                </Button>
+                            }
+                        />
+                        <Button
+                            variant="destructive"
+                            size="md"
+                            onClick={() => {
+                                onConfirm()
+                                onOpenChange(false)
+                            }}
                         >
-                            Delete restaurant
-                        </Dialog.Title>
-                        <Dialog.Description className="mt-2 text-sm text-stone-600">
-                            Are you sure you want to delete <strong className="text-stone-900">{restaurantName}</strong>
-                            ? This action cannot be undone.
-                        </Dialog.Description>
-                        <div className="mt-6 flex justify-end gap-2">
-                            <Dialog.Close
-                                render={
-                                    <Button variant="secondary" size="md">
-                                        Cancel
-                                    </Button>
-                                }
-                            />
-                            <Button
-                                variant="danger"
-                                size="md"
-                                onClick={() => {
-                                    onConfirm()
-                                    onOpenChange(false)
-                                }}
-                            >
-                                Delete
-                            </Button>
-                        </div>
-                    </Dialog.Popup>
-                </div>
-            </Dialog.Portal>
-        </Dialog.Root>
+                            Delete
+                        </Button>
+                    </div>
+                </DialogPanel>
+            </DialogBackdrop>
+        </Dialog>
     )
 }

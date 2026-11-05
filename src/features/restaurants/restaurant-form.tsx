@@ -197,15 +197,15 @@ export function RestaurantForm(props: Readonly<RestaurantFormProps>) {
                                 input={addedByField.input}
                                 errors={addedByField.errors}
                                 label="Added by"
+                                options={[
+                                    { value: "", label: "Select friend" },
+                                    ...(friends ?? []).map((f: Readonly<{ name: string }>) => ({
+                                        value: f.name,
+                                        label: f.name,
+                                    })),
+                                ]}
                                 {...addedByField.props}
-                            >
-                                <option value="">Select friend</option>
-                                {friends?.map((f: Readonly<{ name: string }>) => (
-                                    <option key={f.name} value={f.name}>
-                                        {f.name}
-                                    </option>
-                                ))}
-                            </Select>
+                            />
                         </FieldWrapper>
                     )}
                 </Field>

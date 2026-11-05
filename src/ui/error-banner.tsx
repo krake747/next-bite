@@ -8,7 +8,7 @@ export function ErrorBanner({
     return (
         <div
             data-slot="error-banner"
-            className={cx("mb-4 rounded-lg bg-red-50/80 p-3 text-sm text-red-600 backdrop-blur-sm", className)}
+            className={cx("mb-4 rounded-lg bg-destructive/10 p-3 text-sm text-destructive backdrop-blur-sm", className)}
             {...props}
         >
             {children}

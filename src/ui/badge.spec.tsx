@@ -9,15 +9,16 @@ describe("Badge", () => {
         expect(screen.getByText("Hello")).toBeInTheDocument()
     })
 
-    it("renders with primary variant by default", () => {
+    it("renders with neutral variant by default", () => {
         render(<Badge>Default</Badge>)
         expect(screen.getByText("Default")).toBeInTheDocument()
     })
 
-    it("renders with gray variant", () => {
-        render(<Badge variant="gray">Gray</Badge>)
-        const badge = screen.getByText("Gray")
-        expect(badge).toBeInTheDocument()
+    it("renders interest states with accessible labels", () => {
+        render(<Badge variant="brand">Want to try</Badge>)
+        expect(screen.getByText("Want to try")).toBeInTheDocument()
+        render(<Badge variant="success">Been there</Badge>)
+        expect(screen.getByText("Been there")).toBeInTheDocument()
     })
 
     it("applies custom className", () => {

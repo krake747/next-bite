@@ -220,7 +220,7 @@ export function ImageUpload(props: Readonly<ImageUploadProps>) {
 
             {isUploading && <p className="text-center text-sm text-stone-600">Uploading...</p>}
 
-            {uploadError !== null && uploadError !== "" && <p className="text-sm text-red-600">{uploadError}</p>}
+            {uploadError !== null && uploadError !== "" && <p className="text-sm text-destructive">{uploadError}</p>}
         </div>
     )
 }
@@ -244,7 +244,7 @@ function ImagePreview({
                 <button
                     type="button"
                     onClick={onRemove}
-                    className="absolute top-1 right-1 rounded-full bg-red-600 p-1 text-white opacity-0 shadow-md transition-opacity duration-150 ease group-hover:opacity-100 hover:bg-red-700 focus:opacity-100 focus-visible:opacity-100 active:opacity-100 pointer-coarse:opacity-100"
+                    className="absolute top-1 right-1 rounded-full bg-destructive p-1 text-white opacity-0 shadow-md transition-opacity duration-150 ease group-hover:opacity-100 hover:bg-destructive/90 focus:opacity-100 focus-visible:opacity-100 active:opacity-100 pointer-coarse:opacity-100"
                     aria-label="Remove image"
                 >
                     <X className="size-3" />

@@ -1,17 +1,18 @@
 import { cva, cx, type VariantProps } from "@ui/variants"
 
 const badge = cva({
-    base: "inline-flex items-center rounded-full text-xs font-medium",
+    base: "inline-flex items-center rounded-full px-2 py-1 text-xs font-medium",
     variants: {
         variant: {
-            primary: "bg-tomato-50 px-2 py-1 text-tomato-700 inset-ring inset-ring-tomato-700/10",
-            gray: "bg-stone-50 px-2 py-1 text-stone-600 inset-ring inset-ring-stone-500/10",
-            pink: "bg-pink-50 px-2 py-1 text-pink-700 inset-ring inset-ring-pink-700/10",
-            editorial: "bg-tomato-600 px-3 py-1.5 font-semibold tracking-wide text-white",
+            neutral: "bg-stone-100 text-stone-700 inset-ring inset-ring-stone-900/10",
+            brand: "bg-tomato-100 text-tomato-700 inset-ring inset-ring-tomato-700/10",
+            success: "bg-basil-100 text-basil-600 inset-ring inset-ring-basil-600/10",
+            accent: "bg-plum/10 text-plum inset-ring inset-ring-plum/20",
+            outline: "border border-border bg-transparent text-stone-600",
         },
     },
     defaultVariants: {
-        variant: "primary",
+        variant: "neutral",
     },
 })
 

@@ -32,7 +32,7 @@ export function EmptyRestaurantsState({
                     )}
                 </div>
                 <div className="absolute -top-1 -right-1 h-3 w-3 rounded-full bg-tomato-400/60" />
-                <div className="absolute -bottom-1 -left-1 h-2 w-2 rounded-full bg-amber-400/60" />
+                <div className="absolute -bottom-1 -left-1 h-2 w-2 rounded-full bg-mango-400/60" />
             </div>
 
             <h3 className="mb-2 text-xl font-semibold text-stone-900" style={{ fontFamily: "var(--font-display)" }}>
