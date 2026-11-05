@@ -10,11 +10,11 @@ export function BackgroundLayers() {
 
             <div className="pointer-events-none absolute inset-0">
                 <div className="absolute top-0 left-0 h-full w-1/2 bg-linear-to-br from-tomato-100/40 via-transparent to-transparent" />
-                <div className="absolute right-0 bottom-0 h-full w-1/2 bg-linear-to-tl from-orange-100/30 via-transparent to-transparent" />
+                <div className="absolute right-0 bottom-0 h-full w-1/2 bg-linear-to-tl from-mango-100/30 via-transparent to-transparent" />
             </div>
 
             <div className="pointer-events-none absolute top-[20%] left-[10%] size-32 rounded-full bg-tomato-300/15 blur-[80px]" />
-            <div className="pointer-events-none absolute right-[15%] bottom-[10%] size-24 rounded-full bg-orange-300/10 blur-[60px]" />
+            <div className="pointer-events-none absolute right-[15%] bottom-[10%] size-24 rounded-full bg-mango-300/10 blur-[60px]" />
         </>
     )
 }

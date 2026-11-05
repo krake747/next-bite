@@ -2,7 +2,7 @@ import { Skeleton } from "@ui/skeleton"
 
 export function RestaurantCardSkeleton() {
     return (
-        <div className="animate-pulse overflow-hidden rounded-2xl bg-surface shadow-[0_1px_2px_rgba(0,0,0,0.02),0_4px_8px_rgba(0,0,0,0.03),0_8px_16px_rgba(0,0,0,0.02)]">
+        <div className="animate-pulse overflow-hidden rounded-card bg-surface shadow-card">
             <div className="relative aspect-2/1 w-full">
                 <Skeleton className="absolute top-3 left-3 h-6 w-20 rounded-full bg-stone-300" />
                 <Skeleton className="absolute top-3 right-3 size-7 rounded-full bg-stone-300" />

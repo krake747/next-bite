@@ -34,7 +34,7 @@ export function AuthLayout({
                         <div className="mx-auto mb-6 inline-flex">
                             <div className="relative">
                                 <BrandIcon>{icon}</BrandIcon>
-                                <div className="absolute top-0 -right-2 size-3 rounded-full bg-yellow-400" />
+                                <div className="absolute top-0 -right-2 size-3 rounded-full bg-mango-500" />
                             </div>
                         </div>
                     </div>
@@ -42,7 +42,7 @@ export function AuthLayout({
                     <p className="mt-4 text-lg text-stone-600">{subtitle}</p>
                 </div>
 
-                <div className="relative rounded-2xl border border-stone-200/60 bg-surface/80 p-6 shadow-[0_4px_20px_rgb(0,0,0,0.08)] backdrop-blur-sm">
+                <div className="relative rounded-card border border-stone-200/60 bg-surface/80 p-6 shadow-card backdrop-blur-sm">
                     {children}
                 </div>
 
