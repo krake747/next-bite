@@ -1,4 +1,5 @@
-import { internalMutation } from "./_generated/server"
+import { type Doc } from "./_generated/dataModel"
+import { internalMutation, type MutationCtx } from "./_generated/server"
 import { formatDisplayName } from "./helpers"
 
 export const cleanupOrphanedStorage = internalMutation(async (ctx) => {
@@ -104,6 +105,68 @@ function isMigratedShape(doc: LegacyRestaurantDoc): boolean {
     )
 }
 
+async function migrateLegacyDoc(
+    ctx: MutationCtx,
+    doc: Doc<"restaurants">,
+    profiles: ReadonlyArray<Doc<"profiles">>,
+): Promise<{ migrated: boolean; ownerId: string }> {
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- legacy docs predate the schema by definition
+    const legacy = doc as unknown as LegacyRestaurantDoc
+    if (isMigratedShape(legacy)) {
+        return { migrated: false, ownerId: "" }
+    }
+
+    const label = asNonEmptyString(legacy.location) ?? "Unknown location"
+    const lat = typeof legacy.lat === "number" ? legacy.lat : undefined
+    const lng = typeof legacy.lng === "number" ? legacy.lng : undefined
+    const placeId = asNonEmptyString(legacy.placeId)
+    const openingHours = normalizeOpeningHours(legacy.openingHours)
+    const enrichment =
+        placeId !== undefined || (lat !== undefined && lng !== undefined) || openingHours !== undefined
+            ? {
+                  ...(placeId !== undefined ? { placeId } : {}),
+                  ...(lat !== undefined && lng !== undefined ? { coords: { lat, lng } } : {}),
+                  ...(openingHours !== undefined ? { openingHours } : {}),
+              }
+            : undefined
+
+    const addedBy = asNonEmptyString(legacy.addedBy)
+    const profile =
+        addedBy !== undefined
+            ? profiles.find((candidate) => candidate.name.trim().toLowerCase() === addedBy.toLowerCase())
+            : undefined
+    const owner = profile ?? (profiles.length === 1 && profiles[0] !== undefined ? profiles[0] : undefined)
+    const ownerId = owner?.authUserId ?? ""
+
+    const notes = asNonEmptyString(legacy.notes)
+    const link = asNonEmptyString(legacy.link)
+    const rating = typeof legacy.rating === "number" ? legacy.rating : undefined
+
+    await ctx.db.replace(doc._id, {
+        ownerId,
+        ownerName: formatDisplayName(addedBy),
+        name: asNonEmptyString(legacy.name) ?? "Untitled",
+        cuisine: asNonEmptyString(legacy.cuisine) ?? "Unknown",
+        address: {
+            label,
+            ...(enrichment !== undefined ? { enrichment } : {}),
+        },
+        ...(notes !== undefined || link !== undefined
+            ? {
+                  details: {
+                      ...(notes !== undefined ? { notes } : {}),
+                      ...(link !== undefined ? { link } : {}),
+                  },
+              }
+            : {}),
+        ...(rating !== undefined ? { rating } : {}),
+        images: normalizeImages(legacy.images),
+        visibility: "private",
+        createdAt: Date.now(),
+    })
+    return { migrated: true, ownerId }
+}
+
 export const backfillLegacyRestaurants = internalMutation({
     args: {},
     handler: async (ctx) => {
@@ -113,65 +176,13 @@ export const backfillLegacyRestaurants = internalMutation({
         const needsOwner: string[] = []
 
         for (const doc of docs) {
-            // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- legacy docs predate the schema by definition
-            const legacy = doc as unknown as LegacyRestaurantDoc
-            if (isMigratedShape(legacy)) {
-                continue
+            const result = await migrateLegacyDoc(ctx, doc, profiles)
+            if (result.migrated) {
+                migrated.push(doc._id)
+                if (result.ownerId === "") {
+                    needsOwner.push(doc._id)
+                }
             }
-
-            const label = asNonEmptyString(legacy.location) ?? "Unknown location"
-            const lat = typeof legacy.lat === "number" ? legacy.lat : undefined
-            const lng = typeof legacy.lng === "number" ? legacy.lng : undefined
-            const placeId = asNonEmptyString(legacy.placeId)
-            const openingHours = normalizeOpeningHours(legacy.openingHours)
-            const enrichment =
-                placeId !== undefined || (lat !== undefined && lng !== undefined) || openingHours !== undefined
-                    ? {
-                          ...(placeId !== undefined ? { placeId } : {}),
-                          ...(lat !== undefined && lng !== undefined ? { coords: { lat, lng } } : {}),
-                          ...(openingHours !== undefined ? { openingHours } : {}),
-                      }
-                    : undefined
-
-            const addedBy = asNonEmptyString(legacy.addedBy)
-            const profile =
-                addedBy !== undefined
-                    ? profiles.find((candidate) => candidate.name.trim().toLowerCase() === addedBy.toLowerCase())
-                    : undefined
-            const owner =
-                profile ?? (profiles.length === 1 && profiles[0] !== undefined ? profiles[0] : undefined)
-            const ownerId = owner?.authUserId ?? ""
-            if (ownerId === "") {
-                needsOwner.push(doc._id)
-            }
-
-            const notes = asNonEmptyString(legacy.notes)
-            const link = asNonEmptyString(legacy.link)
-            const rating = typeof legacy.rating === "number" ? legacy.rating : undefined
-
-            await ctx.db.replace(doc._id, {
-                ownerId,
-                ownerName: formatDisplayName(addedBy),
-                name: asNonEmptyString(legacy.name) ?? "Untitled",
-                cuisine: asNonEmptyString(legacy.cuisine) ?? "Unknown",
-                address: {
-                    label,
-                    ...(enrichment !== undefined ? { enrichment } : {}),
-                },
-                ...(notes !== undefined || link !== undefined
-                    ? {
-                          details: {
-                              ...(notes !== undefined ? { notes } : {}),
-                              ...(link !== undefined ? { link } : {}),
-                          },
-                      }
-                    : {}),
-                ...(rating !== undefined ? { rating } : {}),
-                images: normalizeImages(legacy.images),
-                visibility: "private",
-                createdAt: Date.now(),
-            })
-            migrated.push(doc._id)
         }
 
         return { total: docs.length, migrated, needsOwner }
