@@ -29,10 +29,10 @@ cp .env.example .env.local
 set -a; . ./.env.production.local; set +a; pnpm deploy
 ```
 
-- Set the server-side Convex vars (never print their values):
+- Set the server-side Convex secret (never print its value). `CONVEX_SITE_URL` is built in to every
+  deployment and must not be set:
 
 ```bash
-npx convex env set CONVEX_SITE_URL "https://your-deployment.convex.site"
 npx convex env set BETTER_AUTH_SECRET "$(openssl rand -base64 32)"
 ```
 
