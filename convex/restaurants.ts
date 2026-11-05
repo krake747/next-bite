@@ -470,8 +470,8 @@ export const remove = mutation({
     handler: async (ctx, args) => {
         const restaurant = await requireOwnedRestaurant(ctx, args.id)
 
-        for (const img of restaurant.images) {
-            if (img.storageId === "") {
+        for (const img of restaurant.images ?? []) {
+            if (typeof img === "string" || img.storageId === "") {
                 continue
             }
             try {

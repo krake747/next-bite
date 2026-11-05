@@ -37,7 +37,7 @@ export default defineSchema({
             }),
         ),
         rating: v.optional(v.number()),
-        images: v.array(v.union(v.string(), restaurantImageValidator)),
+        images: v.optional(v.array(v.union(v.string(), restaurantImageValidator))),
         visibility: v.optional(v.union(v.literal("private"), v.literal("shared"))),
         createdAt: v.optional(v.number()),
         // Legacy flat shape (pre-address/owner schema). Remove on re-tighten.
