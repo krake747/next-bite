@@ -2,49 +2,49 @@
 
 @theme inline {
     /* Tomato */
-    --color-tomato-50: oklch(0.968 0.0161 36.53);
-    --color-tomato-100: oklch(0.9298 0.0366 36.77);
-    --color-tomato-200: oklch(0.8647 0.0744 36.13);
-    --color-tomato-300: oklch(0.7799 0.1184 35.1);
+    --color-tomato-50: oklch(0.968 0.016 36.53);
+    --color-tomato-100: oklch(0.93 0.037 36.77);
+    --color-tomato-200: oklch(0.865 0.074 36.13);
+    --color-tomato-300: oklch(0.78 0.118 35.1);
     --color-tomato-400: oklch(0.692 0.158 33.75);
-    --color-tomato-500: oklch(0.6257 0.1892 31.74);
-    --color-tomato-600: oklch(0.5679 0.1829 30.85);
-    --color-tomato-700: oklch(0.4882 0.1585 29.95);
-    --color-tomato-800: oklch(0.4204 0.1278 29.61);
-    --color-tomato-900: oklch(0.3704 0.1029 28.63);
+    --color-tomato-500: oklch(0.626 0.189 31.74);
+    --color-tomato-600: oklch(0.568 0.183 30.85);
+    --color-tomato-700: oklch(0.488 0.159 29.95);
+    --color-tomato-800: oklch(0.42 0.128 29.61);
+    --color-tomato-900: oklch(0.37 0.103 28.63);
 
     /* Mango */
-    --color-mango-50: oklch(0.9869 0.0214 95.28);
-    --color-mango-100: oklch(0.9658 0.0531 94.43);
-    --color-mango-200: oklch(0.9333 0.0859 94.68);
-    --color-mango-300: oklch(0.8857 0.1138 91.33);
-    --color-mango-400: oklch(0.8323 0.1308 88.37);
-    --color-mango-500: oklch(0.7581 0.1339 83.45);
-    --color-mango-600: oklch(0.6628 0.1203 80.44);
+    --color-mango-50: oklch(0.987 0.015 88);
+    --color-mango-100: oklch(0.966 0.04 88);
+    --color-mango-200: oklch(0.933 0.079 88);
+    --color-mango-300: oklch(0.886 0.114 88);
+    --color-mango-400: oklch(0.832 0.131 88);
+    --color-mango-500: oklch(0.758 0.134 88);
+    --color-mango-600: oklch(0.56 0.114 88);
 
     /* Basil */
-    --color-basil-50: oklch(0.9646 0.0126 126.37);
-    --color-basil-100: oklch(0.9309 0.0201 128.7);
-    --color-basil-200: oklch(0.8671 0.0407 129);
-    --color-basil-300: oklch(0.7913 0.0591 129.33);
-    --color-basil-400: oklch(0.7067 0.0704 131.21);
-    --color-basil-500: oklch(0.6638 0.0722 142.24);
-    --color-basil-600: oklch(0.5383 0.0588 134.2);
+    --color-basil-50: oklch(0.965 0.013 126.37);
+    --color-basil-100: oklch(0.931 0.02 128.7);
+    --color-basil-200: oklch(0.867 0.041 129);
+    --color-basil-300: oklch(0.791 0.059 129.33);
+    --color-basil-400: oklch(0.707 0.07 131.21);
+    --color-basil-500: oklch(0.664 0.072 131.5);
+    --color-basil-600: oklch(0.51 0.059 134.2);
 
     /* Plum */
-    --color-plum: oklch(0.6056 0.2189 292.72);
+    --color-plum: oklch(0.58 0.219 292.72);
 
     /* Stone neutrals */
-    --color-stone-50: oklch(0.9942 0.0069 88.64);
-    --color-stone-100: oklch(0.9818 0.0152 77.07);
-    --color-stone-200: oklch(0.9445 0.0213 85.94);
-    --color-stone-300: oklch(0.9006 0.0224 80.68);
-    --color-stone-400: oklch(0.803 0.0253 77.42);
-    --color-stone-500: oklch(0.6847 0.0263 77.37);
-    --color-stone-600: oklch(0.5718 0.0249 73.9);
-    --color-stone-700: oklch(0.4693 0.0209 72.82);
-    --color-stone-800: oklch(0.3489 0.018 74.08);
-    --color-stone-900: oklch(0.2668 0.0123 78.07);
+    --color-stone-50: oklch(0.994 0.007 88.64);
+    --color-stone-100: oklch(0.982 0.015 77.07);
+    --color-stone-200: oklch(0.945 0.021 85.94);
+    --color-stone-300: oklch(0.901 0.022 80.68);
+    --color-stone-400: oklch(0.803 0.025 77.42);
+    --color-stone-500: oklch(0.685 0.026 77.37);
+    --color-stone-600: oklch(0.55 0.025 73.9);
+    --color-stone-700: oklch(0.469 0.021 72.82);
+    --color-stone-800: oklch(0.349 0.018 74.08);
+    --color-stone-900: oklch(0.267 0.012 78.07);
 
     /* Semantic colors */
     --color-background: var(--color-stone-100);
@@ -59,8 +59,8 @@
     --color-border-strong: color-mix(in oklch, var(--color-stone-900) 20%, transparent);
     --color-success: var(--color-basil-600);
     --color-warning: var(--color-mango-600);
-    --color-destructive: oklch(0.5223 0.172 27.78);
-    --color-info: oklch(0.5668 0.0663 244.09);
+    --color-destructive: oklch(0.522 0.172 27.78);
+    --color-info: oklch(0.567 0.066 244.09);
     --color-ring: var(--color-tomato-600);
 
     /* Typography */
@@ -75,14 +75,14 @@
 
     /* Shadows */
     --shadow-card:
-        0 1px 2px oklch(0.2668 0.0123 78.07 / 0.05), 0 2px 8px oklch(0.2668 0.0123 78.07 / 0.05),
-        0 4px 16px oklch(0.2668 0.0123 78.07 / 0.04);
+        0 1px 2px oklch(0.267 0.012 78.07 / 0.05), 0 2px 8px oklch(0.267 0.012 78.07 / 0.05),
+        0 4px 16px oklch(0.267 0.012 78.07 / 0.04);
     --shadow-popover:
-        0 2px 4px oklch(0.2668 0.0123 78.07 / 0.06), 0 8px 24px oklch(0.2668 0.0123 78.07 / 0.08),
-        0 16px 40px oklch(0.2668 0.0123 78.07 / 0.06);
+        0 2px 4px oklch(0.267 0.012 78.07 / 0.06), 0 8px 24px oklch(0.267 0.012 78.07 / 0.08),
+        0 16px 40px oklch(0.267 0.012 78.07 / 0.06);
     --shadow-dialog:
-        0 4px 8px oklch(0.2668 0.0123 78.07 / 0.08), 0 12px 32px oklch(0.2668 0.0123 78.07 / 0.1),
-        0 24px 64px oklch(0.2668 0.0123 78.07 / 0.08);
+        0 4px 8px oklch(0.267 0.012 78.07 / 0.08), 0 12px 32px oklch(0.267 0.012 78.07 / 0.1),
+        0 24px 64px oklch(0.267 0.012 78.07 / 0.08);
 
     /* Tailwind's ease-initial → CSS default ease */
     /* Subtle visual transitions (hover, opacity, color) */
