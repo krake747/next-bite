@@ -30,7 +30,7 @@ export const collectionScopeValidator = v.object({
     groupId: v.id("groups"),
 })
 export const openingHoursValidator = v.object({
-    openNow: v.boolean(),
+    openState: v.union(v.literal("open"), v.literal("closed"), v.literal("unknown")),
     periods: v.array(
         v.object({
             day: v.number(),
@@ -46,16 +46,3 @@ export const enrichmentValidator = v.object({
     coords: v.optional(coordsValidator),
     openingHours: v.optional(openingHoursValidator),
 })
-
-export const restaurantArgs = {
-    name: v.string(),
-    cuisine: v.string(),
-    location: v.string(),
-    addedBy: v.string(),
-    lat: v.optional(v.number()),
-    lng: v.optional(v.number()),
-    notes: v.optional(v.string()),
-    link: v.optional(v.string()),
-    rating: v.optional(v.number()),
-    images: v.optional(v.array(restaurantImageValidator)),
-}

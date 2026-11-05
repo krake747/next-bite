@@ -349,7 +349,7 @@ function SocialSection() {
             body="Human language over database terms. Counts update optimistically in the app; here the callbacks are illustrative."
         >
             <div className="w-full space-y-4">
-                <SocialMetadata addedBy="Alex" wantCount={4} beenCount={1} />
+                <SocialMetadata ownerName="Alex" wantCount={4} beenCount={1} />
                 <ReactionBar
                     liked
                     likeCount={3}
@@ -387,7 +387,7 @@ function ActivitySection() {
                     text="You have to try this place."
                     restaurantName="Trattoria Verde"
                     restaurantCuisine="Italian"
-                    addedBy="Alex"
+                    ownerName="Alex"
                     wantCount={4}
                     interestedFriends={[{ name: "Priya" }, { name: "Jamie" }]}
                     reactions={{
@@ -425,7 +425,7 @@ function RestaurantSection() {
                     <RestaurantHeader
                         name="Trattoria Verde"
                         link="https://example.com/menu"
-                        addedBy="Alex"
+                        ownerName="Alex"
                         wantCount={4}
                         location="Luxembourg City"
                         hasLocation={false}
@@ -439,8 +439,8 @@ function RestaurantSection() {
                     description="Weekend brunch plans"
                     members={[{ name: "Alex" }, { name: "Priya" }, { name: "Jamie" }]}
                     restaurants={[
-                        { id: "r1", name: "Trattoria Verde", cuisine: "Italian", addedBy: "Alex" },
-                        { id: "r2", name: "Sushi Bar", cuisine: "Japanese", addedBy: "Priya" },
+                        { id: "r1", name: "Trattoria Verde", cuisine: "Italian", ownerName: "Alex" },
+                        { id: "r2", name: "Sushi Bar", cuisine: "Japanese", ownerName: "Priya" },
                     ]}
                 />
                 <div className="w-full">

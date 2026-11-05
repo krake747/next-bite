@@ -6,7 +6,7 @@ export type SharedRestaurant = {
     readonly id: string
     readonly name: string
     readonly cuisine: string
-    readonly addedBy?: string | undefined
+    readonly ownerName?: string | undefined
 }
 
 export function SharedRestaurantList({
@@ -28,9 +28,9 @@ export function SharedRestaurantList({
                             <p className="truncate text-sm font-medium text-stone-900" title={item.name}>
                                 {item.name}
                             </p>
-                            {item.addedBy !== undefined && item.addedBy !== "" && (
-                                <p className="truncate text-xs text-stone-600" title={`Added by ${item.addedBy}`}>
-                                    Added by {item.addedBy}
+                            {item.ownerName !== undefined && item.ownerName !== "" && (
+                                <p className="truncate text-xs text-stone-600" title={`Added by ${item.ownerName}`}>
+                                    Added by {item.ownerName}
                                 </p>
                             )}
                         </div>

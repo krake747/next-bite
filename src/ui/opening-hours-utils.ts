@@ -6,8 +6,11 @@ function parseTimeToMinutes(time: string): number {
 }
 
 export function isOpenNow(openingHours: Readonly<OpeningHours>): boolean {
-    if (openingHours.openNow !== undefined) {
-        return openingHours.openNow
+    if (openingHours.openState === "open") {
+        return true
+    }
+    if (openingHours.openState === "closed") {
+        return false
     }
     const now = new Date()
     const day = now.getDay()

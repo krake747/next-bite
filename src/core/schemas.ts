@@ -8,7 +8,6 @@ export const RestaurantSchema = v.object({
     lng: v.optional(v.number()),
     notes: v.optional(v.string()),
     link: v.optional(v.string()),
-    addedBy: v.pipe(v.string(), v.minLength(1, "Must select a friend")),
     rating: v.optional(
         v.pipe(v.number(), v.minValue(1, "Rating must be at least 1"), v.maxValue(6, "Rating must be at most 6")),
     ),

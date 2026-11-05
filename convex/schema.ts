@@ -3,9 +3,9 @@ import { v } from "convex/values"
 
 import {
     collectionScopeValidator,
+    enrichmentValidator,
     imageObjectValidator,
     inviteTargetValidator,
-    openingHoursValidator,
     restaurantImageValidator,
     shareTargetValidator,
 } from "./validators"
@@ -18,20 +18,25 @@ const socialFields = {
 
 export default defineSchema({
     restaurants: defineTable({
+        ownerId: v.string(),
+        ownerName: v.string(),
         name: v.string(),
         cuisine: v.string(),
-        location: v.string(),
-        lat: v.optional(v.number()),
-        lng: v.optional(v.number()),
-        notes: v.optional(v.string()),
-        link: v.optional(v.string()),
-        addedBy: v.string(),
+        address: v.object({
+            label: v.string(),
+            enrichment: v.optional(enrichmentValidator),
+        }),
+        details: v.optional(
+            v.object({
+                notes: v.optional(v.string()),
+                link: v.optional(v.string()),
+            }),
+        ),
         rating: v.optional(v.number()),
-        userId: v.optional(v.id("users")),
-        images: v.optional(v.array(restaurantImageValidator)),
-        placeId: v.optional(v.string()),
-        openingHours: v.optional(openingHoursValidator),
-    }),
+        images: v.array(restaurantImageValidator),
+        visibility: v.union(v.literal("private"), v.literal("shared")),
+        createdAt: v.number(),
+    }).index("by_owner", ["ownerId"]),
     interests: defineTable({
         ...socialFields,
         status: v.union(v.literal("want"), v.literal("been")),

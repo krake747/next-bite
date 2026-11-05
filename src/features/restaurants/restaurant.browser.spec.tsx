@@ -14,12 +14,12 @@ describe("RestaurantHeader", () => {
             <RestaurantHeader
                 name="Trattoria Verde"
                 link="https://example.com/menu"
-                addedBy="Alex"
+                ownerName="Alex"
                 wantCount={4}
                 location="Luxembourg City"
                 hasLocation
                 openingHours={{
-                    openNow: true,
+                    openState: "open",
                     periods: [],
                     weekdayText: [
                         "Monday: 9:00 AM – 10:00 PM",

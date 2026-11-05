@@ -99,7 +99,7 @@ export function orderFeedByRecency<Restaurant extends { readonly _creationTime: 
     return [...restaurants].toSorted((a, b) => b._creationTime - a._creationTime)
 }
 
-export function feedTextFor(name: string, notes: string | undefined | null): string {
+export function feedTextFor(name: string, notes: string | undefined): string {
     const trimmed = notes?.trim() ?? ""
     return trimmed === "" ? `Added ${name}.` : trimmed
 }

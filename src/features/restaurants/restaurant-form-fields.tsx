@@ -1,10 +1,9 @@
 import { Field, setInput, useField, type FormStore } from "@formisch/react"
 
-import { useFriends } from "@core/hooks"
 import { RestaurantSchema } from "@core/schemas"
 import { EmojiRating } from "@pattern/emoji-rating"
 import { PlacesAutocomplete } from "@pattern/places-autocomplete"
-import { FieldWrapper, Input, Select, Textarea } from "@ui/field"
+import { FieldWrapper, Input, Textarea } from "@ui/field"
 import { fieldLabel } from "@ui/variants"
 
 type RestaurantFormStore = FormStore<typeof RestaurantSchema>
@@ -88,52 +87,29 @@ export function NotesSection({ form }: Readonly<{ form: RestaurantFormStore }>) 
     )
 }
 
-export function LinkAddedByFields({ form }: Readonly<{ form: RestaurantFormStore }>) {
-    const friends = useFriends()
+export function LinkField({ form }: Readonly<{ form: RestaurantFormStore }>) {
     const linkField = useField(form, { path: ["link"] })
-    const addedByField = useField(form, { path: ["addedBy"] })
     return (
-        <div className="grid grid-cols-2 gap-4">
-            <Field of={form} path={["link"]}>
-                {() => (
-                    <FieldWrapper errors={linkField.errors}>
-                        <Input
-                            input={linkField.input}
-                            errors={linkField.errors}
-                            type="url"
-                            label="Menu link"
-                            placeholder="https://menu.com/…"
-                            {...linkField.props}
-                        />
-                    </FieldWrapper>
-                )}
-            </Field>
-            <Field of={form} path={["addedBy"]}>
-                {() => (
-                    <FieldWrapper errors={addedByField.errors}>
-                        <Select
-                            input={addedByField.input}
-                            errors={addedByField.errors}
-                            label="Added by"
-                            options={[
-                                { value: "", label: "Select friend" },
-                                ...(friends ?? []).map((f: Readonly<{ name: string }>) => ({
-                                    value: f.name,
-                                    label: f.name,
-                                })),
-                            ]}
-                            {...addedByField.props}
-                        />
-                    </FieldWrapper>
-                )}
-            </Field>
-        </div>
+        <Field of={form} path={["link"]}>
+            {() => (
+                <FieldWrapper errors={linkField.errors}>
+                    <Input
+                        input={linkField.input}
+                        errors={linkField.errors}
+                        type="url"
+                        label="Menu link"
+                        placeholder="https://menu.com/…"
+                        {...linkField.props}
+                    />
+                </FieldWrapper>
+            )}
+        </Field>
     )
 }
 
 export function RatingSection({ form }: Readonly<{ form: RestaurantFormStore }>) {
     const ratingField = useField(form, { path: ["rating"] })
-    const value = typeof ratingField.input === "number" && ratingField.input >= 1 ? ratingField.input : null
+    const value = typeof ratingField.input === "number" && ratingField.input >= 1 ? ratingField.input : undefined
     return (
         <Field of={form} path={["rating"]}>
             {() => (

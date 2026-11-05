@@ -54,12 +54,12 @@ pnpm convex run migrate:convertImagesToObjects
 ## Available Migrations
 
 ```bash
-# Convert string images to objects with storageId
-pnpm convex run migrate:convertImagesToObjects
-
 # Find orphaned storage files
 pnpm convex run migrate:cleanupOrphanedStorage
 ```
+
+The legacy string-image migration was removed with the tenant backend reshape; fresh data starts in
+the new shape.
 
 ## Troubleshooting
 

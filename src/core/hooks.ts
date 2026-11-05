@@ -18,7 +18,7 @@ export const useRefreshOpeningHours = () => useConvexAction(api.restaurants.refr
 export const useLookupPlaceIdAndHours = () => useConvexAction(api.restaurants.lookupPlaceIdAndHours)
 
 export type OpeningHours = {
-    readonly openNow: boolean
+    readonly openState: "open" | "closed" | "unknown"
     readonly periods: ReadonlyArray<
         Readonly<{
             readonly day: number

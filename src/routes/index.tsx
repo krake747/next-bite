@@ -38,7 +38,7 @@ function filterRestaurants(
     let filteredResult = [...restaurants]
 
     if (filter !== null && filter !== "") {
-        filteredResult = filteredResult.filter((r) => r.addedBy === filter)
+        filteredResult = filteredResult.filter((r) => r.ownerName === filter)
     }
 
     const searchTerm = search.trim().toLowerCase()
@@ -110,13 +110,13 @@ function HomeFeed({
                 return (
                     <ActivityPost
                         key={restaurant._id}
-                        author={{ name: restaurant.addedBy }}
+                        author={{ name: restaurant.ownerName }}
                         time={new Date(restaurant._creationTime).toLocaleDateString()}
-                        text={feedTextFor(restaurant.name, restaurant.notes)}
+                        text={feedTextFor(restaurant.name, restaurant.details?.notes)}
                         restaurantName={restaurant.name}
                         restaurantCuisine={restaurant.cuisine}
-                        photoUrls={(restaurant.images ?? []).map((img) => img.url)}
-                        addedBy={restaurant.addedBy}
+                        photoUrls={restaurant.images.map((img) => img.url)}
+                        ownerName={restaurant.ownerName}
                         wantCount={social.wantCount}
                         beenCount={social.beenCount}
                         interestedFriends={social.interestedNames.map((name) => ({ name }))}

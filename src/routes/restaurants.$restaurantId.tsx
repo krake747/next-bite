@@ -56,13 +56,13 @@ function DetailHero({
             <RestaurantGallery photos={photos} name={restaurant.name} cuisine={restaurant.cuisine} />
             <RestaurantHeader
                 name={restaurant.name}
-                link={restaurant.link}
-                addedBy={restaurant.addedBy}
+                link={restaurant.details?.link}
+                ownerName={restaurant.ownerName}
                 wantCount={social.wantCount}
                 beenCount={social.beenCount}
-                location={restaurant.location}
-                hasLocation={restaurant.lat !== null && restaurant.lng !== null}
-                openingHours={restaurant.openingHours}
+                location={restaurant.address.label}
+                hasLocation={restaurant.address.enrichment?.coords !== undefined}
+                openingHours={restaurant.address.enrichment?.openingHours}
                 onShowHours={onShowHours}
             />
             <div className="flex flex-wrap items-center gap-3 px-5 pb-2 md:px-4">
@@ -83,16 +83,18 @@ function DetailHero({
                 />
             </div>
             <div className="space-y-3 p-5 md:p-4">
-                {restaurant.notes !== undefined && restaurant.notes !== "" && (
+                {restaurant.details?.notes !== undefined && restaurant.details.notes !== "" && (
                     <div>
                         <h2 className="font-display text-lg font-semibold text-balance text-stone-900">
                             Why it&apos;s recommended
                         </h2>
-                        <p className="text-body mt-1 leading-relaxed text-pretty text-stone-700">{restaurant.notes}</p>
+                        <p className="text-body mt-1 leading-relaxed text-pretty text-stone-700">
+                            {restaurant.details.notes}
+                        </p>
                     </div>
                 )}
                 <SocialMetadata
-                    addedBy={restaurant.addedBy}
+                    ownerName={restaurant.ownerName}
                     wantCount={social.wantCount}
                     beenCount={social.beenCount}
                 />
@@ -207,7 +209,7 @@ function RestaurantDetail() {
     }
 
     const social = restaurantSocial ?? emptySocial
-    const photos = (restaurant.images ?? []).map((img) => ({ url: img.url }))
+    const photos = restaurant.images.map((img) => ({ url: img.url }))
 
     const goToLogin = () => {
         void navigate({ to: "/login", viewTransition: true })
@@ -256,7 +258,7 @@ function RestaurantDetail() {
             <OpeningHoursDialog
                 show={showHours}
                 onOpenChange={setShowHours}
-                openingHours={restaurant.openingHours}
+                openingHours={restaurant.address.enrichment?.openingHours}
                 restaurantName={restaurant.name}
             />
         </PageLayout>

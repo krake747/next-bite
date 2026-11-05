@@ -5,13 +5,7 @@ import { RestaurantSchema, type RestaurantOutput } from "@core/schemas"
 import { ImageUpload } from "@pattern/image-upload"
 import { Button } from "@ui/button"
 
-import {
-    LinkAddedByFields,
-    LocationSection,
-    NameCuisineFields,
-    NotesSection,
-    RatingSection,
-} from "./restaurant-form-fields"
+import { LinkField, LocationSection, NameCuisineFields, NotesSection, RatingSection } from "./restaurant-form-fields"
 import { useRestaurantImages } from "./use-restaurant-images"
 
 export type RestaurantFormProps =
@@ -33,7 +27,7 @@ function stripUndefined<T extends Record<string, unknown>>(output: T): StripUnde
 export function RestaurantForm(props: Readonly<RestaurantFormProps>) {
     const addRestaurantWithHours = useAddRestaurantWithHours()
     const updateRestaurant = useUpdateRestaurant()
-    const gallery = useRestaurantImages(props.mode, props.mode === "edit" ? (props.restaurant.images ?? []) : [])
+    const gallery = useRestaurantImages(props.mode, props.mode === "edit" ? props.restaurant.images : [])
 
     const form = useForm({
         schema: RestaurantSchema,
@@ -42,12 +36,11 @@ export function RestaurantForm(props: Readonly<RestaurantFormProps>) {
                   initialInput: {
                       name: props.restaurant.name,
                       cuisine: props.restaurant.cuisine,
-                      location: props.restaurant.location ?? "",
-                      lat: props.restaurant.lat,
-                      lng: props.restaurant.lng,
-                      notes: props.restaurant.notes ?? "",
-                      link: props.restaurant.link ?? "",
-                      addedBy: props.restaurant.addedBy,
+                      location: props.restaurant.address.label,
+                      lat: props.restaurant.address.enrichment?.coords?.lat,
+                      lng: props.restaurant.address.enrichment?.coords?.lng,
+                      notes: props.restaurant.details?.notes ?? "",
+                      link: props.restaurant.details?.link ?? "",
                       rating: props.restaurant.rating,
                   },
               }
@@ -71,15 +64,24 @@ export function RestaurantForm(props: Readonly<RestaurantFormProps>) {
         }
     }
 
-    const handleSubmit = async (output: Readonly<Omit<RestaurantOutput, "images">>) => {
+    const handleSubmit = async (output: Readonly<Omit<RestaurantOutput, "images" | "placeId">>) => {
+        const { location, lat, lng, ...rest } = stripUndefined(output)
+        const coords = lat !== undefined && lng !== undefined ? { lat, lng } : undefined
         try {
             if (props.mode === "add") {
-                await addRestaurantWithHours.mutateAsync({ ...stripUndefined(output), images: gallery.images })
+                await addRestaurantWithHours.mutateAsync({
+                    ...rest,
+                    addressLabel: location,
+                    ...(coords !== undefined ? { coords } : {}),
+                    images: gallery.images,
+                })
                 await gallery.completeAddSubmit()
             } else {
                 await updateRestaurant.mutateAsync({
                     id: props.restaurant._id,
-                    ...stripUndefined(output),
+                    ...rest,
+                    addressLabel: location,
+                    ...(coords !== undefined ? { coords } : {}),
                     images: gallery.images,
                 })
             }
@@ -96,7 +98,7 @@ export function RestaurantForm(props: Readonly<RestaurantFormProps>) {
             <NameCuisineFields form={form} />
             <LocationSection form={form} onLocationChange={handleLocationChange} />
             <NotesSection form={form} />
-            <LinkAddedByFields form={form} />
+            <LinkField form={form} />
             {props.mode === "edit" && <RatingSection form={form} />}
             <ImageUpload
                 images={gallery.images}

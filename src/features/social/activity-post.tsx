@@ -72,7 +72,7 @@ export function ActivityPost({
     restaurantName,
     restaurantCuisine,
     photoUrls,
-    addedBy,
+    ownerName,
     wantCount,
     beenCount,
     interestedFriends,
@@ -84,7 +84,7 @@ export function ActivityPost({
     restaurantName: string
     restaurantCuisine?: string | undefined
     photoUrls?: ReadonlyArray<string> | undefined
-    addedBy?: string | undefined
+    ownerName?: string | undefined
     wantCount?: number | undefined
     beenCount?: number | undefined
     interestedFriends?: ReadonlyArray<AvatarMember> | undefined
@@ -98,7 +98,7 @@ export function ActivityPost({
             <div className="space-y-3 p-4">
                 <p className="text-body text-stone-800">{text}</p>
                 <ActivityRestaurant name={restaurantName} cuisine={restaurantCuisine} photoUrls={photoUrls} />
-                <SocialMetadata addedBy={addedBy} wantCount={wantCount} beenCount={beenCount} />
+                <SocialMetadata ownerName={ownerName} wantCount={wantCount} beenCount={beenCount} />
                 {friends.length > 0 && <AvatarGroup members={friends} />}
                 <ReactionBar
                     liked={active.liked}

@@ -50,7 +50,8 @@ export function RestaurantCard({
     const refreshOpeningHours = useRefreshOpeningHours()
     const lookupPlaceIdAndHours = useLookupPlaceIdAndHours()
 
-    const hasPlaceId = restaurant.placeId !== undefined && restaurant.placeId !== ""
+    const enrichment = restaurant.address.enrichment
+    const hasPlaceId = enrichment?.placeId !== undefined && enrichment?.placeId !== ""
 
     const handleRefreshHours = () => {
         setIsRefreshing(true)
@@ -87,13 +88,10 @@ export function RestaurantCard({
         )
     }
 
-    const location =
-        typeof restaurant.lat === "number" && typeof restaurant.lng === "number"
-            ? { lat: restaurant.lat, lng: restaurant.lng }
-            : null
-    const hasLocation = location !== null
+    const coords = restaurant.address.enrichment?.coords
+    const hasLocation = coords !== undefined
 
-    const photos = (restaurant.images ?? []).map((img) => ({ url: img.url }))
+    const photos = restaurant.images.map((img) => ({ url: img.url }))
 
     const active = social ?? emptySocialSummary
     const handleToggleWant = onToggleWant ?? (() => {})
@@ -169,19 +167,19 @@ export function RestaurantCard({
                 />
                 <RestaurantHeader
                     name={restaurant.name}
-                    link={restaurant.link}
-                    addedBy={restaurant.addedBy}
+                    link={restaurant.details?.link}
+                    ownerName={restaurant.ownerName}
                     wantCount={active.wantCount}
                     beenCount={active.beenCount}
-                    location={restaurant.location}
+                    location={restaurant.address.label}
                     hasLocation={hasLocation}
-                    openingHours={restaurant.openingHours}
+                    openingHours={restaurant.address.enrichment?.openingHours}
                     onShowHours={() => {
                         setDialog("hours")
                     }}
                     detailsHref={detailsHref}
                 />
-                <RestaurantCardNotes notes={restaurant.notes} />
+                <RestaurantCardNotes notes={restaurant.details?.notes} />
                 <div className="px-5 pt-1 pb-2 md:px-4">
                     <RestaurantInterestButton
                         wanted={active.wanted}
@@ -189,15 +187,15 @@ export function RestaurantCard({
                         onToggleWant={handleToggleWant}
                     />
                 </div>
-                {hasLocation && (
+                {hasLocation && coords !== undefined && (
                     <RestaurantCardMap
                         showMap={showMap}
                         setShowMap={setShowMap}
-                        location={location}
+                        location={coords}
                         restaurant={restaurant}
                     />
                 )}
-                <RestaurantCardRating rating={restaurant.rating ?? null} onRate={handleRate} />
+                <RestaurantCardRating rating={restaurant.rating} onRate={handleRate} />
             </Card>
 
             <EditRestaurantDialog
@@ -208,7 +206,7 @@ export function RestaurantCard({
             <OpeningHoursDialog
                 show={dialog === "hours"}
                 onOpenChange={handleDialogOpenChange}
-                openingHours={restaurant.openingHours}
+                openingHours={restaurant.address.enrichment?.openingHours}
                 restaurantName={restaurant.name}
             />
             <DeleteConfirmDialog
@@ -308,7 +306,7 @@ function RestaurantCardRating({
     rating,
     onRate,
 }: Readonly<{
-    rating: number | null
+    rating: number | undefined
     onRate: (rating: number) => void | Promise<void>
 }>) {
     return (
