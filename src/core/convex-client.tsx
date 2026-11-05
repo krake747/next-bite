@@ -12,28 +12,30 @@ function ConvexProvider({ client, children }: Readonly<{ client: ConvexClient | 
 function useConvexQuery<Query extends FunctionReference<"query">>(
     query: Query,
     args?: FunctionArgs<Query>,
+    options?: Readonly<{ skip?: boolean | undefined }>,
 ): FunctionReturnType<Query> | undefined {
     const client = useContext(ConvexContext)
     const queryClient = useQueryClient()
     const key = JSON.stringify(args)
     const queryKey = [query, key] as const
+    const skip = options?.skip ?? false
 
     const [data, setData] = useState<FunctionReturnType<Query> | undefined>(() => {
-        return queryClient.getQueryData<FunctionReturnType<Query>>(queryKey)
+        return skip ? undefined : queryClient.getQueryData<FunctionReturnType<Query>>(queryKey)
     })
 
     useEffect(() => {
         const unsub =
-            client === null
+            skip || client === null
                 ? undefined
                 : client.onUpdate(query, { ...args }, (value) => {
                       queryClient.setQueryData<FunctionReturnType<Query>>(queryKey, value)
                       setData(value)
                   })
         return unsub
-    }, [query, key, client])
+    }, [query, key, client, skip])
 
-    return data
+    return skip ? undefined : data
 }
 
 function useConvexMutation<Mutation extends FunctionReference<"mutation">>(mutation: Mutation) {

@@ -219,11 +219,41 @@ function HomeActions({ onAddClick }: Readonly<{ onAddClick: () => void }>) {
     )
 }
 
+function SignedOutHome() {
+    const navigate = useNavigate()
+    return (
+        <PageLayout>
+            <PageContainer>
+                <Header>
+                    <HeaderTitle>Your friends have good taste</HeaderTitle>
+                    <HeaderSubtitle>See what&apos;s new and find your next place to eat</HeaderSubtitle>
+                </Header>
+                <div className="flex flex-col items-center gap-4 py-16 text-center">
+                    <p className="max-w-md text-stone-600">
+                        Sign in to see what your friends are eating and share your own discoveries.
+                    </p>
+                    <Button
+                        onClick={() => {
+                            void navigate({ to: "/login", viewTransition: true })
+                        }}
+                    >
+                        Sign In
+                    </Button>
+                </div>
+            </PageContainer>
+        </PageLayout>
+    )
+}
+
 function Home() {
     const restaurants = useRestaurants()
     const actions = useSocialActions(restaurants)
     const [showAddDialog, setShowAddDialog] = useState(false)
     const [sortOrder, setSortOrder] = useState<"added" | "name">("added")
+
+    if (!actions.auth.isAuthenticated) {
+        return <SignedOutHome />
+    }
 
     const restaurantListState = restaurants ?? []
     const feed = orderFeedByRecency(restaurantListState)

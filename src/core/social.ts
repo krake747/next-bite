@@ -1,5 +1,6 @@
 import { api } from "../../convex/_generated/api"
 import { type Id } from "../../convex/_generated/dataModel"
+import { useAuth } from "./auth-provider"
 import { useConvexMutation, useConvexQuery } from "./convex-client.tsx"
 
 export type InterestInput = {
@@ -108,7 +109,12 @@ export function feedTextFor(name: string, notes: string | undefined): string {
 export function useSocialSummaries(
     restaurantIds: ReadonlyArray<Id<"restaurants">>,
 ): ReadonlyMap<string, RestaurantSocialSummary> | undefined {
-    const summaries = useConvexQuery(api.social.getSummaries, { restaurantIds: [...restaurantIds] })
+    const { isAuthenticated } = useAuth()
+    const summaries = useConvexQuery(
+        api.social.getSummaries,
+        { restaurantIds: [...restaurantIds] },
+        { skip: !isAuthenticated },
+    )
     if (summaries === undefined) {
         return undefined
     }
@@ -119,7 +125,8 @@ export function useSocialForRestaurant(
     restaurantId: Id<"restaurants">,
     userId: string | null,
 ): RestaurantSocial | undefined {
-    const snapshot = useConvexQuery(api.social.getForRestaurant, { restaurantId })
+    const { isAuthenticated } = useAuth()
+    const snapshot = useConvexQuery(api.social.getForRestaurant, { restaurantId }, { skip: !isAuthenticated })
     if (snapshot === undefined) {
         return undefined
     }

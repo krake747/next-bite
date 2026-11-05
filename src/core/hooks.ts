@@ -5,8 +5,14 @@ import { useConvexQuery, useConvexMutation, useConvexAction } from "./convex-cli
 import { env } from "./env"
 import { parseImageRecord, type ImageRecord } from "./schemas"
 
-export const useRestaurants = () => useConvexQuery(api.restaurants.get)
-export const useFriends = () => useConvexQuery(api.friendships.listFriends)
+export const useRestaurants = () => {
+    const { isAuthenticated } = useAuth()
+    return useConvexQuery(api.restaurants.get, undefined, { skip: !isAuthenticated })
+}
+export const useFriends = () => {
+    const { isAuthenticated } = useAuth()
+    return useConvexQuery(api.friendships.listFriends, undefined, { skip: !isAuthenticated })
+}
 
 export type AuthMethods = {
     readonly password: boolean
