@@ -1,5 +1,8 @@
 import { useMapsLibrary } from "@vis.gl/react-google-maps"
-import { useRef, useState, useEffect } from "react"
+import { useRef, useState, useEffect, useId } from "react"
+
+import { controlClass, labelClass } from "@ui/field"
+import { cx } from "@ui/variants"
 
 type PlacesAutocompleteProps = {
     value: string
@@ -7,6 +10,7 @@ type PlacesAutocompleteProps = {
     placeholder?: string | undefined
     label?: string | undefined
     className?: string | undefined
+    id?: string | undefined
 }
 
 function isPlaceSelectEvent(value: unknown): value is google.maps.places.PlacePredictionSelectEvent {
@@ -27,17 +31,20 @@ export function PlacesAutocomplete({
     placeholder,
     label,
     className,
+    id,
 }: Readonly<PlacesAutocompleteProps>) {
     const placesLib = useMapsLibrary("places")
     const containerRef = useRef<HTMLDivElement>(null)
     const initializedRef = useRef(false)
     const [useFallback, setUseFallback] = useState(true)
+    const fallbackId = useId()
+    const inputId = id ?? fallbackId
 
     useEffect(() => {
         const container = containerRef.current
         const places = placesLib
         if (!places || !container || initializedRef.current) {
-            return
+            return () => {}
         }
         initializedRef.current = true
 
@@ -55,9 +62,9 @@ export function PlacesAutocomplete({
 
         autocompleteElement.style.width = "100%"
         autocompleteElement.style.colorScheme = "light"
+        autocompleteElement.id = inputId
 
-        autocompleteElement.className =
-            "w-full rounded-control border border-border bg-surface px-3 py-2.5 text-base text-stone-900 transition-colors duration-150 placeholder:text-stone-600 hover:border-border-strong focus:border-ring focus:outline-none focus:ring-1 focus:ring-ring md:text-sm"
+        autocompleteElement.className = controlClass.replace("text-base", "text-base md:text-sm")
 
         const handlePlaceSelect = (event: unknown) => {
             if (!isPlaceSelectEvent(event)) {
@@ -81,35 +88,45 @@ export function PlacesAutocomplete({
                 })
         }
 
-        autocompleteElement.addEventListener("gmp-select", (event: unknown) => {
+        const onSelect = (event: Event) => {
             handlePlaceSelect(event)
-        })
+        }
+        autocompleteElement.addEventListener("gmp-select", onSelect)
 
         container.appendChild(autocompleteElement)
 
-        setTimeout(() => {
+        const timer = setTimeout(() => {
             if (container.children.length > 0) {
                 setUseFallback(false)
             }
         }, 500)
-    }, [placesLib, onChange])
+        return () => {
+            clearTimeout(timer)
+            autocompleteElement.removeEventListener("gmp-select", onSelect)
+            autocompleteElement.remove()
+            initializedRef.current = false
+        }
+    }, [placesLib, onChange, inputId])
 
     return (
         <div className="flex flex-col gap-1.5">
             {label !== undefined && label !== "" && (
-                <label className="block text-sm font-medium text-stone-700">{label}</label>
+                <label htmlFor={inputId} className={labelClass}>
+                    {label}
+                </label>
             )}
             <div className="relative">
                 <div ref={containerRef} className={className} />
                 {useFallback && (
                     <input
+                        id={inputId}
                         type="text"
                         value={value}
                         placeholder={placeholder}
-                        onChange={(e: Readonly<{ readonly currentTarget: Readonly<{ readonly value: string }> }>) => {
-                            onChange(e.currentTarget.value)
+                        onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
+                            onChange(event.currentTarget.value)
                         }}
-                        className="absolute inset-0 z-10 w-full rounded-control border border-border bg-surface px-3 py-2.5 text-base text-stone-900 transition-colors duration-150 placeholder:text-stone-600 hover:border-border-strong focus:border-ring focus:ring-1 focus:ring-ring focus:outline-none md:text-sm"
+                        className={cx(controlClass, "absolute inset-0 z-10", "text-base md:text-sm")}
                         data-fallback-location
                     />
                 )}

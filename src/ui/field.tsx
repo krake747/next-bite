@@ -18,10 +18,10 @@ const refCallbackSchema = v.custom<FieldElementProps["ref"]>(
     "Expected a ref callback function",
 )
 
-const controlClass =
+export const controlClass =
     "w-full rounded-control border border-border bg-surface px-3 py-2.5 text-stone-900 transition-colors duration-150 placeholder:text-stone-600 hover:border-border-strong focus:border-ring focus:ring-1 focus:ring-ring focus:outline-none disabled:cursor-not-allowed disabled:bg-surface-muted disabled:text-muted-foreground"
 
-const labelClass = "block text-sm font-medium text-stone-700"
+export const labelClass = "block text-sm font-medium text-stone-700"
 
 export function FieldWrapper({ errors, children }: Readonly<{ errors: unknown; children: React.ReactNode }>) {
     return (

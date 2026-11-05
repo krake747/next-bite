@@ -22,32 +22,6 @@ type ImageGalleryModalProps = {
 
 type PanState = { x: number; y: number }
 
-type TouchListLike = Readonly<{
-    readonly length: number
-    readonly [index: number]: Readonly<{ readonly clientX: number; readonly clientY: number }>
-}>
-
-type TouchStateEvent = Readonly<{
-    readonly touches: TouchListLike
-    readonly preventDefault: () => void
-}>
-
-type PointerStateEvent = Readonly<{
-    readonly preventDefault: () => void
-    readonly pointerId: number
-    readonly clientX: number
-    readonly clientY: number
-}>
-
-type WheelStateEvent = Readonly<{
-    readonly preventDefault: () => void
-    readonly deltaY: number
-}>
-
-type KeyStateEvent = Readonly<{
-    readonly key: string
-}>
-
 export function ImageGalleryModal(props: Readonly<ImageGalleryModalProps>) {
     const [currentIndex, setCurrentIndex] = useState(props.initialIndex ?? 0)
     const [lightboxOpen, setLightboxOpen] = useState(false)
@@ -67,10 +41,12 @@ export function ImageGalleryModal(props: Readonly<ImageGalleryModalProps>) {
     const PAN_THRESHOLD = 5
 
     useEffect(() => {
-        setCurrentIndex(props.initialIndex ?? 0)
-    }, [props.initialIndex])
+        if (props.show) {
+            setCurrentIndex(props.initialIndex ?? 0)
+        }
+    }, [props.show, props.initialIndex])
 
-    const getTouchDistance = (touches: TouchListLike) => {
+    const getTouchDistance = (touches: React.TouchList) => {
         if (touches.length < 2) {
             return 0
         }
@@ -84,7 +60,7 @@ export function ImageGalleryModal(props: Readonly<ImageGalleryModalProps>) {
         return Math.sqrt(dx * dx + dy * dy)
     }
 
-    const handleTouchStart = (e: TouchStateEvent) => {
+    const handleTouchStart = (e: React.TouchEvent) => {
         if (e.touches.length === 2) {
             e.preventDefault()
             initialPinchDistance.current = getTouchDistance(e.touches)
@@ -92,7 +68,7 @@ export function ImageGalleryModal(props: Readonly<ImageGalleryModalProps>) {
         }
     }
 
-    const handleTouchMove = (e: TouchStateEvent) => {
+    const handleTouchMove = (e: React.TouchEvent) => {
         if (
             e.touches.length === 2 &&
             initialPinchDistance.current !== undefined &&
@@ -122,7 +98,7 @@ export function ImageGalleryModal(props: Readonly<ImageGalleryModalProps>) {
             return () => {}
         }
 
-        const onPointerDown = (e: PointerStateEvent) => {
+        const onPointerDown = (e: PointerEvent) => {
             if (zoom <= DEFAULT_ZOOM) {
                 return
             }
@@ -133,7 +109,7 @@ export function ImageGalleryModal(props: Readonly<ImageGalleryModalProps>) {
             setIsPanning(true)
         }
 
-        const onPointerMove = (e: PointerStateEvent) => {
+        const onPointerMove = (e: PointerEvent) => {
             const lastPointer = lastPointerRef.current
             if (!lastPointer) {
                 return
@@ -226,7 +202,7 @@ export function ImageGalleryModal(props: Readonly<ImageGalleryModalProps>) {
         }
     }, [])
 
-    const handleWheel = (e: WheelStateEvent) => {
+    const handleWheel = (e: React.WheelEvent) => {
         e.preventDefault()
         if (e.deltaY < 0) {
             handleZoomIn()
@@ -256,7 +232,7 @@ export function ImageGalleryModal(props: Readonly<ImageGalleryModalProps>) {
         resetZoom()
     }
 
-    const handleKeyDown = (e: KeyStateEvent) => {
+    const handleKeyDown = (e: React.KeyboardEvent) => {
         if (e.key === "ArrowLeft") {
             const newIndex = currentIndex === 0 ? props.images.length - 1 : currentIndex - 1
             setCurrentIndex(newIndex)

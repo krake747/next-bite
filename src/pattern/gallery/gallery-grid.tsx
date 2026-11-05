@@ -1,11 +1,17 @@
 import { LazyImage } from "@pattern/lazy-image"
+import { cx } from "@ui/variants"
 
 export function GalleryGrid({
     images,
     onSelect,
-}: Readonly<{ images: ReadonlyArray<string>; onSelect: (index: number) => void }>) {
+    className,
+}: Readonly<{
+    images: ReadonlyArray<string>
+    onSelect: (index: number) => void
+    className?: string | undefined
+}>) {
     return (
-        <div className="flex-1 overflow-y-auto p-4">
+        <div className={cx("flex-1 overflow-y-auto p-4", className)}>
             <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4">
                 {images.map((imageUrl, index) => (
                     <button
@@ -14,6 +20,7 @@ export function GalleryGrid({
                         onClick={() => {
                             onSelect(index)
                         }}
+                        aria-label={`Open image ${index + 1}`}
                         className="group relative aspect-square overflow-hidden rounded-lg"
                     >
                         <LazyImage

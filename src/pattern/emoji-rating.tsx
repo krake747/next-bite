@@ -45,17 +45,25 @@ type RateClickEvent = Readonly<{
 
 export function EmojiRating({
     rating,
+    defaultRating = null,
     onRate,
+    disabled,
+    className,
 }: Readonly<{
-    rating: number | null
+    rating?: number | null | undefined
+    defaultRating?: number | null | undefined
     onRate: (rating: number) => void | Promise<void>
+    disabled?: boolean | undefined
+    className?: string | undefined
 }>) {
     const [hoverRating, setHoverRating] = useState<number | null>(null)
-
-    const displayRating = hoverRating ?? rating
+    const [uncontrolled, setUncontrolled] = useState<number | null>(defaultRating ?? null)
+    const isControlled = rating !== undefined
+    const current = isControlled ? (rating ?? null) : uncontrolled
+    const displayRating = hoverRating ?? current
 
     const selectedTitle = (() => {
-        const idx = hoverRating ?? rating
+        const idx = hoverRating ?? current
         if (idx === null) {
             return "Tap an emoji to rate"
         }
@@ -66,12 +74,15 @@ export function EmojiRating({
     const activeColor = displayRating !== null ? RATING_COLORS[displayRating] : "oklch(0.5234 0.1645 33.24)"
 
     const handleRate = async (index: number, button: FocusableButton) => {
+        if (!isControlled) {
+            setUncontrolled(index)
+        }
         await onRate(index)
         button.focus({ preventScroll: true })
     }
 
     return (
-        <div className="flex w-full flex-col items-center gap-2">
+        <div className={cx("flex w-full flex-col items-center gap-2", className)}>
             <div
                 className="flex items-center gap-0.5"
                 onMouseLeave={() => {
@@ -83,18 +94,23 @@ export function EmojiRating({
 
                     return (
                         <button
-                            key={index}
+                            key={emoji}
                             type="button"
+                            disabled={disabled}
                             onMouseEnter={() => {
-                                setHoverRating(index)
+                                if (disabled !== true) {
+                                    setHoverRating(index)
+                                }
                             }}
                             onClick={(e: RateClickEvent) => {
                                 e.preventDefault()
                                 void handleRate(index, e.currentTarget)
                             }}
                             aria-label={EMOJI_LABELS[index]}
+                            aria-pressed={isActive}
                             className={cx(
                                 "hit-area-2 flex size-8 cursor-pointer items-center justify-center rounded-control text-lg transition-transform duration-150 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring sm:size-9 sm:text-xl",
+                                "disabled:cursor-not-allowed disabled:opacity-40",
                                 isActive ? "scale-110" : "hover:scale-105",
                                 isActive ? "opacity-100" : "opacity-40 grayscale hover:opacity-70",
                             )}

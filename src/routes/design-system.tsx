@@ -451,7 +451,7 @@ function OverlaysSection() {
                             Backdrop, panel, title, and close button from the shared wrapper.
                         </p>
                         <DialogCloseButton
-                            onClose={() => {
+                            onClick={() => {
                                 setShowDialog(false)
                             }}
                         />

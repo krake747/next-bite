@@ -5,11 +5,17 @@ import { cva, cx, type VariantProps } from "@ui/variants"
 
 export function Dialog({
     show,
+    defaultShow,
     onOpenChange,
     children,
-}: Readonly<{ show: boolean; onOpenChange: (open: boolean) => void; children?: React.ReactNode | undefined }>) {
+}: Readonly<{
+    show?: boolean | undefined
+    defaultShow?: boolean | undefined
+    onOpenChange: (open: boolean) => void
+    children?: React.ReactNode | undefined
+}>) {
     return (
-        <BaseDialog.Root open={show} onOpenChange={onOpenChange}>
+        <BaseDialog.Root open={show} defaultOpen={defaultShow} onOpenChange={onOpenChange}>
             <BaseDialog.Portal>{children}</BaseDialog.Portal>
         </BaseDialog.Root>
     )
@@ -147,18 +153,30 @@ const closeButton = cva({
 })
 
 export function DialogCloseButton({
-    onClose,
+    onClick,
     tone,
     className,
-}: Readonly<{ onClose: () => void } & VariantProps<typeof closeButton> & { className?: string | undefined }>) {
+    ...rest
+}: Readonly<
+    { onClick: () => void } & VariantProps<typeof closeButton> & { className?: string | undefined } & Omit<
+            React.ComponentProps<"button">,
+            "onClick" | "className" | "type" | "children"
+        >
+>) {
     return (
-        <button type="button" onClick={onClose} className={cx(closeButton({ tone }), className)}>
+        <button type="button" onClick={onClick} className={cx(closeButton({ tone }), className)} {...rest}>
             <X className="size-4" aria-hidden="true" />
             <span className="sr-only">Close</span>
         </button>
     )
 }
 
-export function DialogAction({ render }: Readonly<{ render: React.ReactElement | undefined }>) {
-    return <BaseDialog.Close render={render} />
+export function DialogAction({
+    render,
+    children,
+}: Readonly<{ render?: React.ReactElement | undefined; children?: React.ReactNode | undefined }>) {
+    if (render !== undefined) {
+        return <BaseDialog.Close render={render} />
+    }
+    return <BaseDialog.Close>{children}</BaseDialog.Close>
 }

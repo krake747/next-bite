@@ -29,19 +29,30 @@ const button = cva({
 
 type ButtonProps = VariantProps<typeof button> & {
     readonly type?: "button" | "submit" | "reset" | undefined
-    readonly onClick?: (() => void) | undefined
+    readonly onClick?: ((event: React.MouseEvent<HTMLButtonElement>) => void) | undefined
     readonly disabled?: boolean | undefined
     readonly loading?: boolean | undefined
     readonly nativeButton?: boolean | undefined
     readonly render?: React.ReactElement | undefined
+    readonly ref?: React.Ref<HTMLButtonElement> | undefined
     readonly className?: string | undefined
     readonly children?: React.ReactNode | undefined
 }
 
-export function Button({ variant, size, className, loading, disabled, children, ...rest }: Readonly<ButtonProps>) {
+export function Button({
+    variant,
+    size,
+    className,
+    loading,
+    disabled,
+    type,
+    children,
+    ...rest
+}: Readonly<ButtonProps>) {
     return (
         <BaseButton
             data-slot="button"
+            type={type ?? "button"}
             className={button({ variant, size, class: className })}
             disabled={disabled === true || loading === true}
             aria-busy={loading === true}

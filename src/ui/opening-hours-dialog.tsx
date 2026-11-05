@@ -65,7 +65,7 @@ export function OpeningHoursDialog({
                     </div>
 
                     <DialogCloseButton
-                        onClose={() => {
+                        onClick={() => {
                             onOpenChange(false)
                         }}
                     />

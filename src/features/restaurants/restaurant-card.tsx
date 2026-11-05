@@ -33,14 +33,14 @@ export function RestaurantCard({
     onToggleWant,
     detailsHref,
     ...cardProps
-}: Readonly<{
-    restaurant: Restaurant
-    social?: RestaurantSocial | RestaurantSocialSummary | undefined
-    onToggleWant?: (() => void) | undefined
-    detailsHref?: string | undefined
-    className?: string | undefined
-    style?: Readonly<{ readonly animationDelay?: string }> | undefined
-}>) {
+}: Readonly<
+    {
+        restaurant: Restaurant
+        social?: RestaurantSocial | RestaurantSocialSummary | undefined
+        onToggleWant?: (() => void) | undefined
+        detailsHref?: string | undefined
+    } & React.ComponentProps<typeof Card>
+>) {
     const [showEdit, setShowEdit] = useState(false)
     const [showMap, setShowMap] = useState(false)
     const [showHours, setShowHours] = useState(false)

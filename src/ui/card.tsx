@@ -1,17 +1,15 @@
 import { cx } from "@ui/variants"
 
-type CardStyle = {
-    readonly animationDelay?: string | undefined
-}
-
 export function Card({
     className,
     ...props
-}: Readonly<{
-    className?: string | undefined
-    style?: CardStyle | undefined
-    children?: React.ReactNode | undefined
-}>) {
+}: Readonly<
+    {
+        className?: string | undefined
+        style?: React.CSSProperties | undefined
+        children?: React.ReactNode | undefined
+    } & Omit<React.ComponentProps<"div">, "className" | "style" | "children">
+>) {
     return (
         <div
             data-slot="card"
