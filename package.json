@@ -63,6 +63,7 @@
         "@types/react-dom": "^19.3.0",
         "@vitejs/plugin-react": "^6.2.1",
         "cf": "1.0.0-beta.27",
+        "convex-test": "^0.0.67",
         "fallow": "^3.39.0",
         "happy-dom": "^21.0.4",
         "lefthook": "^2.2.2",

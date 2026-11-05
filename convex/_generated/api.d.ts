@@ -11,10 +11,12 @@
 import type * as auth from "../auth.js";
 import type * as env from "../env.js";
 import type * as friends from "../friends.js";
+import type * as helpers from "../helpers.js";
 import type * as http from "../http.js";
 import type * as migrate from "../migrate.js";
 import type * as restaurants from "../restaurants.js";
 import type * as social from "../social.js";
+import type * as users from "../users.js";
 import type * as validators from "../validators.js";
 
 import type {
@@ -27,10 +29,12 @@ declare const fullApi: ApiFromModules<{
   auth: typeof auth;
   env: typeof env;
   friends: typeof friends;
+  helpers: typeof helpers;
   http: typeof http;
   migrate: typeof migrate;
   restaurants: typeof restaurants;
   social: typeof social;
+  users: typeof users;
   validators: typeof validators;
 }>;
 
