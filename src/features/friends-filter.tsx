@@ -104,8 +104,8 @@ export function FriendsFilterSkeleton() {
             <div className="flex flex-1 flex-col gap-3">
                 <div className="flex flex-wrap items-center gap-2">
                     <div className="flex items-center gap-1.5">
-                        <Skeleton className="size-4 rounded" />
-                        <Skeleton className="h-3 w-12 rounded" />
+                        <Skeleton className="size-4 rounded-sm" />
+                        <Skeleton className="h-3 w-12 rounded-sm" />
                     </div>
                     <Skeleton className="h-4 w-px" />
                     <div className="flex gap-2">
@@ -117,8 +117,8 @@ export function FriendsFilterSkeleton() {
                 <div className="flex max-w-md items-center gap-3">
                     <Skeleton className="h-10 w-full max-w-xs rounded-lg" />
                     <div className="flex items-center gap-1.5">
-                        <Skeleton className="h-3.5 w-3.5 rounded bg-stone-300" />
-                        <Skeleton className="h-3 w-20 rounded" />
+                        <Skeleton className="h-3.5 w-3.5 rounded-sm bg-stone-300" />
+                        <Skeleton className="h-3 w-20 rounded-sm" />
                     </div>
                 </div>
             </div>
