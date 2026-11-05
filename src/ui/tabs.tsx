@@ -1,6 +1,6 @@
 import { Tabs as BaseTabs } from "@base-ui/react/tabs"
 
-import { cx } from "@ui/variants"
+import { cx, focusRing } from "@ui/variants"
 
 type TabsValue = string | number
 
@@ -53,8 +53,9 @@ export function TabsTab({
             disabled={disabled}
             data-slot="tabs-tab"
             className={cx(
+                focusRing(),
                 "hit-area-y-2 cursor-pointer rounded-md px-3 py-1.5 text-sm font-medium text-stone-600 transition-colors duration-150",
-                "hover:text-stone-900 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring",
+                "hover:text-stone-900",
                 "data-active:bg-surface data-active:text-stone-900 data-active:shadow-xs",
                 "disabled:cursor-not-allowed disabled:bg-transparent disabled:text-muted-foreground",
                 className,

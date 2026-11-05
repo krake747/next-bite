@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router"
+import { getSchema } from "cva/tools"
 import { useState } from "react"
 
 import { GroupCard } from "@features/groups/group-card"
@@ -16,8 +17,8 @@ import { SocialMetadata } from "@features/social/social-metadata"
 import { PageContainer } from "@routes/-layouts/page-container"
 import { PageLayout } from "@routes/-layouts/page-layout"
 import { Avatar } from "@ui/avatar"
-import { Badge } from "@ui/badge"
-import { Button } from "@ui/button"
+import { Badge, badge } from "@ui/badge"
+import { Button, button } from "@ui/button"
 import { Card } from "@ui/card"
 import { Dialog, DialogBackdrop, DialogCloseButton, DialogPanel, DialogTitle } from "@ui/dialog"
 import { Input, Textarea, Select } from "@ui/field"
@@ -187,21 +188,43 @@ function ShapeSection() {
     )
 }
 
+const buttonSchema = getSchema(button)
+const badgeSchema = getSchema(badge)
+
+const variantLabels: Record<string, string> = {
+    primary: "Primary",
+    secondary: "Secondary",
+    outline: "Outline",
+    ghost: "Ghost",
+    destructive: "Destructive",
+    neutral: "neutral",
+    brand: "Want to try",
+    success: "Been there",
+    accent: "Pizza Lovers",
+}
+
 function ButtonsSection() {
     return (
         <Section
             title="Buttons"
             body="Primary is Tomato and reserved for the main action. Ghost stays chromeless. Every button carries a visible focus ring and an active press."
         >
-            <Button variant="primary">Primary</Button>
-            <Button variant="secondary">Secondary</Button>
-            <Button variant="outline">Outline</Button>
-            <Button variant="ghost">Ghost</Button>
-            <Button variant="destructive">Destructive</Button>
-            <Button size="sm">Small</Button>
-            <Button size="icon" aria-label="Add">
-                +
-            </Button>
+            {buttonSchema.variant.values.map((variant) => (
+                <Button key={variant} variant={variant}>
+                    {variantLabels[variant]}
+                </Button>
+            ))}
+            {buttonSchema.size.values.map((size) =>
+                size === "icon" ? (
+                    <Button key={size} size={size} aria-label="Add">
+                        +
+                    </Button>
+                ) : (
+                    <Button key={size} size={size}>
+                        {size === "sm" ? "Small" : "Default"}
+                    </Button>
+                ),
+            )}
             <Button loading>Loading</Button>
             <Button disabled>Disabled</Button>
         </Section>
@@ -283,11 +306,11 @@ function CardsBadgesSection() {
                 </div>
             </Card>
             <div className="flex flex-wrap gap-2">
-                <Badge>neutral</Badge>
-                <Badge variant="brand">Want to try</Badge>
-                <Badge variant="success">Been there</Badge>
-                <Badge variant="accent">Pizza Lovers</Badge>
-                <Badge variant="outline">Italian</Badge>
+                {badgeSchema.variant.values.map((variant) => (
+                    <Badge key={variant} variant={variant}>
+                        {variantLabels[variant] ?? variant}
+                    </Badge>
+                ))}
             </div>
             <Skeleton className="h-16 w-48" />
         </Section>

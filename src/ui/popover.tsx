@@ -1,13 +1,14 @@
 import { Popover as BasePopover } from "@base-ui/react/popover"
 
-import { cva, cx, type VariantProps } from "@ui/variants"
+import { cva, cx, focusRing, type VariantProps } from "@ui/variants"
 
 export function Popover({ children }: Readonly<{ children?: React.ReactNode | undefined }>) {
     return <BasePopover.Root>{children}</BasePopover.Root>
 }
 
 const trigger = cva({
-    base: "hit-area-2 inline-flex cursor-pointer items-center justify-center transition-colors duration-150 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring",
+    base: "hit-area-2 inline-flex cursor-pointer items-center justify-center transition-colors duration-150",
+    composes: [focusRing],
     variants: {
         tone: {
             plain: "rounded-control",

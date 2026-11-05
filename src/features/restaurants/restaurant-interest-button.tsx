@@ -1,6 +1,6 @@
 import Bookmark from "lucide-react/icons/bookmark"
 
-import { cx } from "@ui/variants"
+import { cx, focusRing } from "@ui/variants"
 
 export function RestaurantInterestButton({
     wanted,
@@ -17,7 +17,8 @@ export function RestaurantInterestButton({
             onClick={onToggleWant}
             aria-pressed={wanted}
             className={cx(
-                "inline-flex cursor-pointer items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring",
+                focusRing(),
+                "inline-flex cursor-pointer items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold transition-colors",
                 wanted
                     ? "bg-tomato-700 text-white shadow-xs hover:bg-tomato-600"
                     : "bg-tomato-50 text-tomato-700 inset-ring inset-ring-tomato-700/10 hover:bg-tomato-100",

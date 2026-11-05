@@ -6,7 +6,7 @@ import CircleAlert from "lucide-react/icons/circle-alert"
 import { useEffect, useId, useRef } from "react"
 import * as v from "valibot"
 
-import { cx } from "@ui/variants"
+import { control, cx, fieldLabel } from "@ui/variants"
 
 const changeHandlerSchema = v.custom<FieldElementProps["onChange"]>(
     (value) => typeof value === "function",
@@ -17,11 +17,6 @@ const refCallbackSchema = v.custom<FieldElementProps["ref"]>(
     (value) => typeof value === "function",
     "Expected a ref callback function",
 )
-
-export const controlClass =
-    "w-full rounded-control border border-border bg-surface px-3 py-2.5 text-stone-900 transition-colors duration-150 placeholder:text-stone-600 hover:border-border-strong focus:border-ring focus:ring-1 focus:ring-ring focus:outline-none disabled:cursor-not-allowed disabled:bg-surface-muted disabled:text-muted-foreground"
-
-export const labelClass = "block text-sm font-medium text-stone-700"
 
 export function FieldWrapper({ errors, children }: Readonly<{ errors: unknown; children: React.ReactNode }>) {
     return (
@@ -58,7 +53,7 @@ export function Input(props: Readonly<InputProps>) {
     return (
         <div className="flex flex-col gap-1.5">
             {label !== undefined && label !== "" && (
-                <label htmlFor={inputId} className={labelClass}>
+                <label htmlFor={inputId} className={fieldLabel()}>
                     {label}
                 </label>
             )}
@@ -72,7 +67,7 @@ export function Input(props: Readonly<InputProps>) {
                 aria-invalid={invalid}
                 aria-describedby={invalid ? errorId : undefined}
                 className={cx(
-                    controlClass,
+                    control(),
                     invalid && "border-destructive focus:border-destructive focus:ring-destructive",
                 )}
                 {...inputProps}
@@ -104,7 +99,7 @@ export function Textarea(props: Readonly<TextareaProps>) {
     return (
         <div className="flex flex-col gap-1.5">
             {label !== undefined && label !== "" && (
-                <label htmlFor={textareaId} className={labelClass}>
+                <label htmlFor={textareaId} className={fieldLabel()}>
                     {label}
                 </label>
             )}
@@ -118,7 +113,7 @@ export function Textarea(props: Readonly<TextareaProps>) {
                 aria-invalid={invalid}
                 aria-describedby={invalid ? errorId : undefined}
                 className={cx(
-                    controlClass,
+                    control(),
                     invalid && "border-destructive focus:border-destructive focus:ring-destructive",
                 )}
                 {...textareaProps}
@@ -166,7 +161,7 @@ export function Select(props: Readonly<SelectProps>) {
     return (
         <div className="flex flex-col gap-1.5">
             {label !== undefined && label !== "" && (
-                <label id={labelId} htmlFor={selectId} className={labelClass}>
+                <label id={labelId} htmlFor={selectId} className={fieldLabel()}>
                     {label}
                 </label>
             )}
@@ -186,7 +181,7 @@ export function Select(props: Readonly<SelectProps>) {
                     aria-invalid={invalid}
                     aria-describedby={invalid ? errorId : undefined}
                     className={cx(
-                        controlClass,
+                        control(),
                         "flex items-center justify-between gap-2 text-left",
                         value === "" && "text-stone-600",
                         invalid && "border-destructive focus:border-destructive focus:ring-destructive",

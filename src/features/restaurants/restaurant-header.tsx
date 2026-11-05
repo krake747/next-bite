@@ -6,6 +6,7 @@ import Utensils from "lucide-react/icons/utensils"
 import { type OpeningHours } from "@core/hooks"
 import { SocialMetadata } from "@features/social/social-metadata"
 import { OpeningHours as OpeningHoursSummary } from "@ui/opening-hours"
+import { cx, focusRing } from "@ui/variants"
 
 export function RestaurantHeader({
     name,
@@ -43,7 +44,10 @@ export function RestaurantHeader({
                         <Link
                             to={detailsHref}
                             viewTransition
-                            className="flex-1 rounded-control transition-colors hover:text-tomato-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+                            className={cx(
+                                focusRing(),
+                                "flex-1 rounded-control transition-colors hover:text-tomato-700",
+                            )}
                         >
                             {heading}
                         </Link>

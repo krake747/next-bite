@@ -1,7 +1,7 @@
 import { Dialog as BaseDialog } from "@base-ui/react/dialog"
 import X from "lucide-react/icons/x"
 
-import { cva, cx, type VariantProps } from "@ui/variants"
+import { cva, cx, focusRing, type VariantProps } from "@ui/variants"
 
 export function Dialog({
     show,
@@ -140,7 +140,8 @@ export function DialogDescription({
 }
 
 const closeButton = cva({
-    base: "hit-area-2 absolute top-4 right-4 flex size-8 items-center justify-center rounded-full text-stone-400 transition-colors duration-150 hover:bg-stone-100 hover:text-stone-600 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring",
+    base: "hit-area-2 absolute top-4 right-4 flex size-8 items-center justify-center rounded-full text-stone-400 transition-colors duration-150 hover:bg-stone-100 hover:text-stone-600",
+    composes: [focusRing],
     variants: {
         tone: {
             default: "",

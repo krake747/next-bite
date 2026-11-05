@@ -1,6 +1,6 @@
 import { useState } from "react"
 
-import { cx } from "@ui/variants"
+import { cx, focusRing } from "@ui/variants"
 
 const RATING_EMOJIS = ["🚑", "💩", "🤡", "😐", "😏", "😍", "🍆"] as const
 
@@ -109,7 +109,8 @@ export function EmojiRating({
                             aria-label={EMOJI_LABELS[index]}
                             aria-pressed={isActive}
                             className={cx(
-                                "hit-area-2 flex size-8 cursor-pointer items-center justify-center rounded-control text-lg transition-transform duration-150 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring sm:size-9 sm:text-xl",
+                                focusRing(),
+                                "hit-area-2 flex size-8 cursor-pointer items-center justify-center rounded-control text-lg transition-transform duration-150 sm:size-9 sm:text-xl",
                                 "disabled:cursor-not-allowed disabled:opacity-40",
                                 isActive ? "scale-110" : "hover:scale-105",
                                 isActive ? "opacity-100" : "opacity-40 grayscale hover:opacity-70",

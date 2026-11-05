@@ -1,6 +1,6 @@
 import { cva, cx, type VariantProps } from "@ui/variants"
 
-const badge = cva({
+export const badge = cva({
     base: "inline-flex items-center rounded-full px-2 py-1 text-xs font-medium",
     variants: {
         variant: {

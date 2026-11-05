@@ -1,8 +1,7 @@
 import { useMapsLibrary } from "@vis.gl/react-google-maps"
 import { useRef, useState, useEffect, useId } from "react"
 
-import { controlClass, labelClass } from "@ui/field"
-import { cx } from "@ui/variants"
+import { control, cx, fieldLabel } from "@ui/variants"
 
 type PlacesAutocompleteProps = {
     value: string
@@ -64,7 +63,7 @@ export function PlacesAutocomplete({
         autocompleteElement.style.colorScheme = "light"
         autocompleteElement.id = inputId
 
-        autocompleteElement.className = controlClass.replace("text-base", "text-base md:text-sm")
+        autocompleteElement.className = control()
 
         const handlePlaceSelect = (event: unknown) => {
             if (!isPlaceSelectEvent(event)) {
@@ -111,7 +110,7 @@ export function PlacesAutocomplete({
     return (
         <div className="flex flex-col gap-1.5">
             {label !== undefined && label !== "" && (
-                <label htmlFor={inputId} className={labelClass}>
+                <label htmlFor={inputId} className={fieldLabel()}>
                     {label}
                 </label>
             )}
@@ -126,7 +125,7 @@ export function PlacesAutocomplete({
                         onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
                             onChange(event.currentTarget.value)
                         }}
-                        className={cx(controlClass, "absolute inset-0 z-10", "text-base md:text-sm")}
+                        className={cx(control(), "absolute inset-0 z-10", "text-base md:text-sm")}
                         data-fallback-location
                     />
                 )}

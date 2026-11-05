@@ -2,6 +2,7 @@ import Trash2 from "lucide-react/icons/trash-2"
 import { useState } from "react"
 
 import { Button } from "@ui/button"
+import { control, cx } from "@ui/variants"
 
 import { AvatarGroup } from "./avatar-group"
 
@@ -88,7 +89,7 @@ export function CommentList({
                             setDraft(event.currentTarget.value)
                         }}
                         placeholder="Add a comment…"
-                        className="w-full rounded-control border border-border bg-surface px-3 py-2 text-base text-stone-900 transition-colors duration-150 placeholder:text-stone-600 hover:border-border-strong focus:border-ring focus:ring-1 focus:ring-ring focus:outline-none md:text-sm"
+                        className={cx(control(), "text-base md:text-sm")}
                     />
                     <Button type="submit" size="md" disabled={draft.trim() === ""}>
                         Post

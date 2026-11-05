@@ -4,7 +4,8 @@ import { useFriends } from "@core/hooks"
 import { RestaurantSchema } from "@core/schemas"
 import { EmojiRating } from "@pattern/emoji-rating"
 import { PlacesAutocomplete } from "@pattern/places-autocomplete"
-import { FieldWrapper, Input, Select, Textarea, labelClass } from "@ui/field"
+import { FieldWrapper, Input, Select, Textarea } from "@ui/field"
+import { fieldLabel } from "@ui/variants"
 
 type RestaurantFormStore = FormStore<typeof RestaurantSchema>
 
@@ -137,7 +138,7 @@ export function RatingSection({ form }: Readonly<{ form: RestaurantFormStore }>)
         <Field of={form} path={["rating"]}>
             {() => (
                 <FieldWrapper errors={ratingField.errors}>
-                    <label className={labelClass}>Rating</label>
+                    <label className={fieldLabel()}>Rating</label>
                     <div className="mt-2">
                         <EmojiRating
                             rating={value}
