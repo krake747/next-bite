@@ -8,6 +8,15 @@ import { parseImageRecord, type ImageRecord } from "./schemas"
 export const useRestaurants = () => useConvexQuery(api.restaurants.get)
 export const useFriends = () => useConvexQuery(api.friendships.listFriends)
 
+export type AuthMethods = {
+    readonly password: boolean
+    readonly google: boolean
+    readonly github: boolean
+    readonly emailOtp: boolean
+}
+
+export const useAuthMethods = (): AuthMethods | undefined => useConvexQuery(api.auth.getAuthMethods)
+
 export const useAddRestaurantWithHours = () => useConvexAction(api.restaurants.addWithOpeningHours)
 export const useUpdateRestaurant = () => useConvexMutation(api.restaurants.update)
 export const useDeleteRestaurant = () => useConvexMutation(api.restaurants.remove)

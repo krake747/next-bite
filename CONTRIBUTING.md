@@ -40,6 +40,9 @@ npx convex env set BETTER_AUTH_SECRET "$(openssl rand -base64 32)"
   [Google Cloud Console](https://console.cloud.google.com/), with Maps JavaScript API and Places API
   enabled). For Advanced Markers you need a Map ID; `DEMO_MAP_ID` works for testing, create one in
   Maps Management for production.
+- Auth works out of the box with plain email signup. No OAuth or email setup needed: Google, GitHub,
+  and email OTP stay disabled until their server vars are set (see `.env.example`). Production
+  enables them via `npx convex env set`; the login UI reveals each method automatically.
 - Start the backend, then the frontend (separate terminals):
 
 ```bash

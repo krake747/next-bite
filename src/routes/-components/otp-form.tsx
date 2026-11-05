@@ -1,0 +1,102 @@
+import { Field, Form, useField, useForm } from "@formisch/react"
+import { useState } from "react"
+import * as v from "valibot"
+
+import { useAuth } from "@core/hooks"
+import { Button } from "@ui/button"
+import { FieldWrapper, Input } from "@ui/field"
+
+const OtpEmailSchema = v.object({
+    email: v.pipe(v.string(), v.email()),
+})
+
+const OtpCodeSchema = v.object({
+    code: v.pipe(v.string(), v.minLength(6)),
+})
+
+export function OtpForm({ onSuccess }: Readonly<{ onSuccess: () => void }>) {
+    const auth = useAuth()
+    const [email, setEmail] = useState<string | undefined>(undefined)
+    const emailForm = useForm({ schema: OtpEmailSchema })
+    const emailField = useField(emailForm, { path: ["email"] })
+    const codeForm = useForm({ schema: OtpCodeSchema })
+    const codeField = useField(codeForm, { path: ["code"] })
+
+    const handleSend = async (output: Readonly<{ email: string }>) => {
+        try {
+            await auth.requestOtp(output.email)
+            setEmail(output.email)
+        } catch {
+            return
+        }
+    }
+
+    const handleVerify = async (output: Readonly<{ code: string }>) => {
+        if (email === undefined) {
+            return
+        }
+        try {
+            await auth.verifyOtp(email, output.code)
+            onSuccess()
+        } catch {
+            return
+        }
+    }
+
+    if (email === undefined) {
+        return (
+            <Form of={emailForm} onSubmit={handleSend} className="space-y-4">
+                <Field of={emailForm} path={["email"]}>
+                    {() => (
+                        <FieldWrapper errors={emailField.errors}>
+                            <Input
+                                input={emailField.input}
+                                errors={emailField.errors}
+                                type="email"
+                                label="Email"
+                                placeholder="you@example.com"
+                                {...emailField.props}
+                            />
+                        </FieldWrapper>
+                    )}
+                </Field>
+                <Button type="submit" variant="secondary" className="w-full" loading={auth.isLoading}>
+                    Email me a code
+                </Button>
+            </Form>
+        )
+    }
+
+    return (
+        <Form of={codeForm} onSubmit={handleVerify} className="space-y-4">
+            <p className="text-sm text-stone-600">
+                Code sent to {email}.{" "}
+                <button
+                    type="button"
+                    className="font-medium text-tomato-600 underline-offset-2 hover:underline"
+                    onClick={() => {
+                        setEmail(undefined)
+                    }}
+                >
+                    Use a different email
+                </button>
+            </p>
+            <Field of={codeForm} path={["code"]}>
+                {() => (
+                    <FieldWrapper errors={codeField.errors}>
+                        <Input
+                            input={codeField.input}
+                            errors={codeField.errors}
+                            label="Code"
+                            placeholder="123456"
+                            {...codeField.props}
+                        />
+                    </FieldWrapper>
+                )}
+            </Field>
+            <Button type="submit" className="w-full" loading={auth.isLoading}>
+                Verify code
+            </Button>
+        </Form>
+    )
+}

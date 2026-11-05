@@ -4,7 +4,8 @@ import UserIcon from "lucide-react/icons/user"
 import { useState } from "react"
 import * as v from "valibot"
 
-import { useAuth } from "@core/hooks"
+import { useAuth, useAuthMethods } from "@core/hooks"
+import { AuthDivider, SocialButtons } from "@routes/-components/social-buttons"
 import { AuthLayout } from "@routes/-layouts/auth-layout"
 import { Button } from "@ui/button"
 import { ErrorBanner } from "@ui/error-banner"
@@ -43,6 +44,7 @@ function SignupPage() {
     const emailField = useField(form, { path: ["email"] })
     const passwordField = useField(form, { path: ["password"] })
     const confirmPasswordField = useField(form, { path: ["confirmPassword"] })
+    const methods = useAuthMethods()
 
     const handleSubmit = async (output: Readonly<SignupInput>) => {
         setPasswordError(null)
@@ -160,6 +162,12 @@ function SignupPage() {
                     Create Account
                 </Button>
             </Form>
+            {(methods?.google === true || methods?.github === true) && (
+                <>
+                    <AuthDivider />
+                    <SocialButtons google={methods.google} github={methods.github} />
+                </>
+            )}
         </AuthLayout>
     )
 }

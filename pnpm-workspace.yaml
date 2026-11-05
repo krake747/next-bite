@@ -8,34 +8,6 @@ allowBuilds:
   prisma: true
   workerd: true
 
-minimumReleaseAgeExclude:
-  - "@oxc-transform-react/binding-android-arm-eabi@0.157.0"
-  - "@oxc-transform-react/binding-darwin-x64@0.157.0"
-  - "@oxc-transform-react/binding-freebsd-x64@0.157.0"
-  - "@oxc-transform-react/binding-linux-arm-gnueabihf@0.157.0"
-  - "@oxc-transform-react/binding-linux-arm-musleabihf@0.157.0"
-  - "@oxc-transform-react/binding-linux-arm64-gnu@0.157.0"
-  - "@oxc-transform-react/binding-linux-arm64-musl@0.157.0"
-  - "@oxc-transform-react/binding-linux-ppc64-gnu@0.157.0"
-  - "@oxc-transform-react/binding-linux-riscv64-gnu@0.157.0"
-  - "@oxc-transform-react/binding-linux-riscv64-musl@0.157.0"
-  - "@oxc-transform-react/binding-linux-s390x-gnu@0.157.0"
-  - "@oxc-transform-react/binding-linux-x64-gnu@0.157.0"
-  - "@oxc-transform-react/binding-linux-x64-musl@0.157.0"
-  - "@oxc-transform-react/binding-openharmony-arm64@0.157.0"
-  - "@oxc-transform-react/binding-win32-ia32-msvc@0.157.0"
-  - "@oxc-transform-react/binding-win32-x64-msvc@0.157.0"
-  - oxc-transform-react@0.157.0
-  - "@convex-dev/better-auth@0.12.7"
-  - "@cloudflare/workerd-darwin-64@1.20261103.1"
-  - "@cloudflare/workerd-darwin-arm64@1.20261103.1"
-  - "@cloudflare/workerd-linux-64@1.20261103.1"
-  - "@cloudflare/workerd-linux-arm64@1.20261103.1"
-  - "@cloudflare/workerd-windows-64@1.20261103.1"
-  - miniflare@5.20261103.0-beta
-  - workerd@1.20261103.1
-  - wrangler@4.157.0
-
 permissions:
   "@tanstack/react-router":
     skills: true

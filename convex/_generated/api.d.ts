@@ -10,6 +10,7 @@
 
 import type * as auth from "../auth.js";
 import type * as collections from "../collections.js";
+import type * as email from "../email.js";
 import type * as env from "../env.js";
 import type * as friendships from "../friendships.js";
 import type * as groups from "../groups.js";
@@ -32,6 +33,7 @@ import type {
 declare const fullApi: ApiFromModules<{
   auth: typeof auth;
   collections: typeof collections;
+  email: typeof email;
   env: typeof env;
   friendships: typeof friendships;
   groups: typeof groups;
