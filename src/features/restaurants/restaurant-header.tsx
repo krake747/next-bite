@@ -12,7 +12,7 @@ import { focusRing } from "@ui/variants"
 export function RestaurantHeader({
     name,
     link,
-    addedBy,
+    ownerName,
     wantCount,
     beenCount,
     location,
@@ -23,7 +23,7 @@ export function RestaurantHeader({
 }: Readonly<{
     name: string
     link?: string | undefined
-    addedBy?: string | undefined
+    ownerName?: string | undefined
     wantCount?: number | undefined
     beenCount?: number | undefined
     location?: string | undefined
@@ -69,7 +69,7 @@ export function RestaurantHeader({
                         </a>
                     )}
                 </div>
-                <SocialMetadata addedBy={addedBy} wantCount={wantCount} beenCount={beenCount} />
+                <SocialMetadata ownerName={ownerName} wantCount={wantCount} beenCount={beenCount} />
             </div>
 
             {(location !== undefined || openingHours !== undefined) && (

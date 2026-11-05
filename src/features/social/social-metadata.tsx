@@ -3,17 +3,17 @@ function pluralize(count: number, singular: string): string {
 }
 
 export function SocialMetadata({
-    addedBy,
+    ownerName,
     wantCount,
     beenCount,
 }: Readonly<{
-    addedBy?: string | undefined
+    ownerName?: string | undefined
     wantCount?: number | undefined
     beenCount?: number | undefined
 }>) {
     const lines: string[] = []
-    if (addedBy !== undefined && addedBy !== "") {
-        lines.push(`Added by ${addedBy}`)
+    if (ownerName !== undefined && ownerName !== "") {
+        lines.push(`Added by ${ownerName}`)
     }
     if (wantCount !== undefined && wantCount > 0) {
         lines.push(`${pluralize(wantCount, "friend")} want${wantCount === 1 ? "s" : ""} to try`)

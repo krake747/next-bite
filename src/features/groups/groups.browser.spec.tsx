@@ -10,8 +10,8 @@ import { SharedRestaurantList } from "./shared-restaurant-list"
 const members = [{ name: "Alex" }, { name: "Priya" }, { name: "Jamie" }]
 
 const restaurants = [
-    { id: "r1", name: "Trattoria Verde", cuisine: "Italian", addedBy: "Alex" },
-    { id: "r2", name: "Sushi Bar", cuisine: "Japanese", addedBy: "Priya" },
+    { id: "r1", name: "Trattoria Verde", cuisine: "Italian", ownerName: "Alex" },
+    { id: "r2", name: "Sushi Bar", cuisine: "Japanese", ownerName: "Priya" },
 ]
 
 describe("GroupMembers", () => {

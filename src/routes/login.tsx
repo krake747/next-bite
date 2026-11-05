@@ -3,7 +3,9 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router"
 import UtensilsCrossed from "lucide-react/icons/utensils-crossed"
 import * as v from "valibot"
 
-import { useAuth } from "@core/hooks"
+import { useAuth, useAuthMethods } from "@core/hooks"
+import { OtpForm } from "@routes/-components/otp-form"
+import { AuthDivider, SocialButtons } from "@routes/-components/social-buttons"
 import { AuthLayout } from "@routes/-layouts/auth-layout"
 import { Button } from "@ui/button"
 import { ErrorBanner } from "@ui/error-banner"
@@ -36,11 +38,16 @@ function LoginPage() {
     const form = useForm({ schema: LoginSchema })
     const emailField = useField(form, { path: ["email"] })
     const passwordField = useField(form, { path: ["password"] })
+    const methods = useAuthMethods()
+
+    const goHome = () => {
+        void navigate({ to: redirectTo ?? "/", replace: true, from: Route.fullPath })
+    }
 
     const handleEmailSubmit = async (output: Readonly<LoginInput>) => {
         try {
             await auth.signInWithPassword(output.email, output.password)
-            void navigate({ to: redirectTo ?? "/", replace: true, from: Route.fullPath })
+            goHome()
         } catch {
             return
         }
@@ -116,6 +123,18 @@ function LoginPage() {
                     Sign In
                 </Button>
             </Form>
+            {(methods?.google === true || methods?.github === true) && (
+                <>
+                    <AuthDivider />
+                    <SocialButtons google={methods.google} github={methods.github} />
+                </>
+            )}
+            {methods?.emailOtp === true && (
+                <>
+                    <AuthDivider />
+                    <OtpForm onSuccess={goHome} />
+                </>
+            )}
         </AuthLayout>
     )
 }

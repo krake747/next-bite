@@ -38,7 +38,7 @@ describe("FriendPresence", () => {
 
 describe("SocialMetadata", () => {
     it("speaks in human language, not database terms", () => {
-        render(<SocialMetadata addedBy="Alex" wantCount={4} beenCount={1} />)
+        render(<SocialMetadata ownerName="Alex" wantCount={4} beenCount={1} />)
         expect(screen.getByText("Added by Alex")).toBeInTheDocument()
         expect(screen.getByText("4 friends want to try")).toBeInTheDocument()
         expect(screen.getByText("Visited by a friend")).toBeInTheDocument()
@@ -122,7 +122,7 @@ describe("ActivityPost", () => {
                 text="You have to try this place."
                 restaurantName="Trattoria Verde"
                 restaurantCuisine="Italian"
-                addedBy="Alex"
+                ownerName="Alex"
                 wantCount={4}
                 interestedFriends={friends.slice(0, 2)}
                 reactions={{

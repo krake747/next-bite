@@ -6,7 +6,16 @@ import { env } from "./env"
 import { parseImageRecord, type ImageRecord } from "./schemas"
 
 export const useRestaurants = () => useConvexQuery(api.restaurants.get)
-export const useFriends = () => useConvexQuery(api.friends.get)
+export const useFriends = () => useConvexQuery(api.friendships.listFriends)
+
+export type AuthMethods = {
+    readonly password: boolean
+    readonly google: boolean
+    readonly github: boolean
+    readonly emailOtp: boolean
+}
+
+export const useAuthMethods = (): AuthMethods | undefined => useConvexQuery(api.auth.getAuthMethods)
 
 export const useAddRestaurantWithHours = () => useConvexAction(api.restaurants.addWithOpeningHours)
 export const useUpdateRestaurant = () => useConvexMutation(api.restaurants.update)
@@ -18,7 +27,7 @@ export const useRefreshOpeningHours = () => useConvexAction(api.restaurants.refr
 export const useLookupPlaceIdAndHours = () => useConvexAction(api.restaurants.lookupPlaceIdAndHours)
 
 export type OpeningHours = {
-    readonly openNow: boolean
+    readonly openState: "open" | "closed" | "unknown"
     readonly periods: ReadonlyArray<
         Readonly<{
             readonly day: number

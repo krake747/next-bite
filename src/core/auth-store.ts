@@ -196,6 +196,77 @@ function useAuthStore() {
         await authenticateWithPassword("signUp", { name, email, password })
     }
 
+    const signInWithSocial = async (provider: "google" | "github") => {
+        dispatch({ type: "SET_LOADING", isLoading: true })
+        dispatch({ type: "SET_ERROR", error: null })
+
+        try {
+            const result = await authClient.signIn.social({ provider, callbackURL: "/" })
+            if (result.error) {
+                const message = result.error.message ?? "Social sign in failed"
+                dispatch({ type: "SET_ERROR", error: message })
+                throw new Error(message)
+            }
+        } catch (err) {
+            if (state.error === null || state.error === "") {
+                const message = err instanceof Error ? err.message : "Social sign in failed"
+                dispatch({ type: "SET_ERROR", error: message })
+            }
+            throw err
+        } finally {
+            dispatch({ type: "SET_LOADING", isLoading: false })
+        }
+    }
+
+    const requestOtp = async (email: string) => {
+        dispatch({ type: "SET_LOADING", isLoading: true })
+        dispatch({ type: "SET_ERROR", error: null })
+
+        try {
+            const result = await authClient.emailOtp.sendVerificationOtp({ email, type: "sign-in" })
+            if (result.error) {
+                const message = result.error.message ?? "Could not send code"
+                dispatch({ type: "SET_ERROR", error: message })
+                throw new Error(message)
+            }
+        } catch (err) {
+            if (state.error === null || state.error === "") {
+                const message = err instanceof Error ? err.message : "Could not send code"
+                dispatch({ type: "SET_ERROR", error: message })
+            }
+            throw err
+        } finally {
+            dispatch({ type: "SET_LOADING", isLoading: false })
+        }
+    }
+
+    const verifyOtp = async (email: string, otp: string) => {
+        dispatch({ type: "SET_LOADING", isLoading: true })
+        dispatch({ type: "SET_ERROR", error: null })
+
+        try {
+            const result = await authClient.signIn.emailOtp({ email, otp })
+            if (result.error) {
+                const message = result.error.message ?? "Invalid code"
+                dispatch({ type: "SET_ERROR", error: message })
+                throw new Error(message)
+            }
+            if (result.data?.user !== undefined && result.data?.user !== null) {
+                saveUser(mapSessionUserToUserPayload(result.data.user))
+            } else {
+                throw new Error("No user returned: email verification required")
+            }
+        } catch (err) {
+            if (state.error === null || state.error === "") {
+                const message = err instanceof Error ? err.message : "Invalid code"
+                dispatch({ type: "SET_ERROR", error: message })
+            }
+            throw err
+        } finally {
+            dispatch({ type: "SET_LOADING", isLoading: false })
+        }
+    }
+
     const signOut = async () => {
         dispatch({ type: "SET_LOADING", isLoading: true })
 
@@ -212,6 +283,9 @@ function useAuthStore() {
         initializeAuth,
         signInWithPassword,
         signUpWithPassword,
+        signInWithSocial,
+        requestOtp,
+        verifyOtp,
         signOut,
     }
 }

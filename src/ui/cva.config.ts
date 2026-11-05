@@ -3,4 +3,4 @@ import { defineConfig } from "cva/config"
 
 export const { cva, cx } = defineConfig({ cx: merge })
 
-export type { ClassValue, VariantProps } from "cva"
+export type { VariantProps } from "cva"
