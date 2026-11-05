@@ -1,4 +1,4 @@
-import { useForm, Field, Form } from "@formisch/react"
+import { useForm, Field, Form, useField } from "@formisch/react"
 import { createFileRoute, useNavigate } from "@tanstack/react-router"
 import UtensilsCrossed from "lucide-react/icons/utensils-crossed"
 import * as v from "valibot"
@@ -34,11 +34,13 @@ function LoginPage() {
     const auth = useAuth()
 
     const form = useForm({ schema: LoginSchema })
+    const emailField = useField(form, { path: ["email"] })
+    const passwordField = useField(form, { path: ["password"] })
 
-    const handleEmailSubmit = async (output: LoginInput) => {
+    const handleEmailSubmit = async (output: Readonly<LoginInput>) => {
         try {
             await auth.signInWithPassword(output.email, output.password)
-            navigate({ to: redirectTo ?? "/", replace: true, from: Route.fullPath })
+            void navigate({ to: redirectTo ?? "/", replace: true, from: Route.fullPath })
         } catch {
             return
         }
@@ -82,33 +84,33 @@ function LoginPage() {
                 </p>
             }
         >
-            {auth.error && <ErrorBanner>{auth.error}</ErrorBanner>}
+            {auth.error !== null && auth.error !== "" && <ErrorBanner>{auth.error}</ErrorBanner>}
 
             <Form of={form} onSubmit={handleEmailSubmit} className="space-y-4">
                 <Field of={form} path={["email"]}>
-                    {(field) => (
-                        <FieldWrapper errors={field.errors}>
+                    {() => (
+                        <FieldWrapper errors={emailField.errors}>
                             <Input
-                                {...field.props}
-                                input={field.input}
-                                errors={field.errors}
+                                input={emailField.input}
+                                errors={emailField.errors}
                                 type="email"
                                 label="Email"
                                 placeholder="you@example.com"
+                                {...emailField.props}
                             />
                         </FieldWrapper>
                     )}
                 </Field>
                 <Field of={form} path={["password"]}>
-                    {(field) => (
-                        <FieldWrapper errors={field.errors}>
+                    {() => (
+                        <FieldWrapper errors={passwordField.errors}>
                             <Input
-                                {...field.props}
-                                input={field.input}
-                                errors={field.errors}
+                                input={passwordField.input}
+                                errors={passwordField.errors}
                                 type="password"
                                 label="Password"
                                 placeholder="••••••••"
+                                {...passwordField.props}
                             />
                         </FieldWrapper>
                     )}

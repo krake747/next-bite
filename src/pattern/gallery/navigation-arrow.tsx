@@ -5,12 +5,12 @@ export function NavigationArrow({
     onClick,
     hidden,
     disabled,
-}: {
+}: Readonly<{
     direction: "prev" | "next"
     onClick: () => void
     hidden?: boolean
     disabled?: boolean
-}) {
+}>) {
     const isPrev = direction === "prev"
 
     return (
@@ -21,7 +21,7 @@ export function NavigationArrow({
             className={cx(
                 "absolute z-10 rounded-full bg-white/20 p-3 text-white backdrop-blur-sm transition-colors duration-150 ease hover:bg-white/30",
                 isPrev ? "left-4" : "right-4",
-                hidden && "hidden",
+                hidden === true && "hidden",
             )}
             aria-label={`${direction} image`}
         >

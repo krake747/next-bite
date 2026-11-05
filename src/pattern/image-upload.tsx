@@ -1,23 +1,43 @@
 import ImagePlus from "lucide-react/icons/image-plus"
 import Upload from "lucide-react/icons/upload"
 import X from "lucide-react/icons/x"
-import { useState, useRef, type DragEvent } from "react"
+import { useState, useRef } from "react"
 
 import { type Id } from "@convex/_generated/dataModel"
 import { useUploadImage, useDeleteImage, type ImageRecord } from "@core/hooks"
 import { processImage, formatFileSize, MAX_IMAGES, MAX_FILE_SIZE } from "@core/image-utils"
 import { cx } from "@ui/variants"
 
+type FileListLike = Readonly<{
+    readonly length: number
+    readonly [index: number]: Readonly<File>
+}>
+
+type DragStateEvent = Readonly<{
+    readonly preventDefault: () => void
+    readonly stopPropagation: () => void
+}>
+
+type DropEvent = Readonly<{
+    readonly preventDefault: () => void
+    readonly stopPropagation: () => void
+    readonly dataTransfer: Readonly<{ readonly files: FileListLike }> | null
+}>
+
+type FileInputEvent = Readonly<{
+    readonly target: Readonly<{ readonly files: FileListLike | null }>
+}>
+
 type ImageUploadProps = {
-    images: ImageRecord[]
-    onImagesChange: (images: ImageRecord[]) => void
-    maxImages?: number
-    disabled?: boolean
-    restaurantId?: Id<"restaurants">
-    onRemove?: (storageId: string) => void
+    readonly images: ReadonlyArray<Readonly<ImageRecord>>
+    readonly onImagesChange: (images: ReadonlyArray<Readonly<ImageRecord>>) => void
+    readonly maxImages?: number | undefined
+    readonly disabled?: boolean | undefined
+    readonly restaurantId?: Id<"restaurants"> | undefined
+    readonly onRemove?: ((storageId: string) => void) | undefined
 }
 
-export function ImageUpload(props: ImageUploadProps) {
+export function ImageUpload(props: Readonly<ImageUploadProps>) {
     const maxImages = props.maxImages ?? MAX_IMAGES
     const uploadImage = useUploadImage()
     const deleteImage = useDeleteImage()
@@ -26,7 +46,7 @@ export function ImageUpload(props: ImageUploadProps) {
     const [isDragging, setIsDragging] = useState(false)
     const fileInputRef = useRef<HTMLInputElement>(null)
 
-    const handleFiles = async (files: FileList | File[]) => {
+    const handleFiles = async (files: FileListLike) => {
         const fileArray = Array.from(files).filter((f) => f.type.startsWith("image/"))
         const remainingSlots = maxImages - props.images.length
         const filesToProcess = fileArray.slice(0, remainingSlots)
@@ -69,51 +89,54 @@ export function ImageUpload(props: ImageUploadProps) {
         }
     }
 
-    const handleDragEnter = (e: DragEvent) => {
+    const handleDragEnter = (e: DragStateEvent) => {
         e.preventDefault()
         e.stopPropagation()
         setIsDragging(true)
     }
 
-    const handleDragLeave = (e: DragEvent) => {
+    const handleDragLeave = (e: DragStateEvent) => {
         e.preventDefault()
         e.stopPropagation()
         setIsDragging(false)
     }
 
-    const handleDragOver = (e: DragEvent) => {
+    const handleDragOver = (e: DragStateEvent) => {
         e.preventDefault()
         e.stopPropagation()
     }
 
-    const handleDrop = (e: DragEvent) => {
+    const handleDrop = (e: DropEvent) => {
         e.preventDefault()
         e.stopPropagation()
         setIsDragging(false)
-        if (e.dataTransfer.files) {
-            void handleFiles(e.dataTransfer.files)
+        const droppedFiles = e.dataTransfer?.files
+        if (droppedFiles !== undefined && droppedFiles !== null && droppedFiles.length > 0) {
+            void handleFiles(droppedFiles)
         }
     }
 
     const handleClick = () => {
-        if (props.disabled) {
+        if (props.disabled === true) {
             return
         }
         fileInputRef.current?.click()
     }
 
-    const handleFileInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        if (e.target.files) {
+    const handleFileInputChange = (e: FileInputEvent) => {
+        if (e.target.files !== null) {
             void handleFiles(e.target.files)
-            e.target.value = ""
+            if (fileInputRef.current !== null) {
+                fileInputRef.current.value = ""
+            }
         }
     }
 
-    const handleRemove = async (index: number, image: ImageRecord) => {
+    const handleRemove = async (index: number, image: Readonly<ImageRecord>) => {
         const originalImages = [...props.images]
         props.onImagesChange(props.images.filter((_, i) => i !== index))
 
-        if (props.restaurantId) {
+        if (props.restaurantId !== undefined) {
             try {
                 await deleteImage.mutateAsync({
                     restaurantId: props.restaurantId,
@@ -147,14 +170,16 @@ export function ImageUpload(props: ImageUploadProps) {
                             key={image.storageId}
                             imageUrl={image.url}
                             index={index}
-                            onRemove={() => handleRemove(index, image)}
+                            onRemove={() => {
+                                void handleRemove(index, image)
+                            }}
                             disabled={props.disabled ?? false}
                         />
                     ))}
                 </div>
             )}
 
-            {canAddMore && !props.disabled && (
+            {canAddMore && props.disabled !== true && (
                 <>
                     <input
                         ref={fileInputRef}
@@ -195,7 +220,9 @@ export function ImageUpload(props: ImageUploadProps) {
 
             {isUploading && <p className="text-center text-sm text-neutral-600 dark:text-neutral-400">Uploading...</p>}
 
-            {uploadError && <p className="text-sm text-red-600 dark:text-red-400">{uploadError}</p>}
+            {uploadError !== null && uploadError !== "" && (
+                <p className="text-sm text-red-600 dark:text-red-400">{uploadError}</p>
+            )}
         </div>
     )
 }
@@ -205,12 +232,12 @@ function ImagePreview({
     index,
     onRemove,
     disabled,
-}: {
+}: Readonly<{
     imageUrl: string
     index: number
     onRemove: () => void
     disabled: boolean
-}) {
+}>) {
     return (
         <div className="group relative aspect-square overflow-hidden rounded-lg bg-neutral-100 dark:bg-neutral-800">
             <img src={imageUrl} alt={`Image ${index + 1}`} className="h-full w-full object-cover" loading="lazy" />

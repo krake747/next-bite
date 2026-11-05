@@ -1,5 +1,5 @@
 import { ConvexClient } from "convex/browser"
-import { useState, useEffect, createContext, useContext, type ReactNode } from "react"
+import { useState, useEffect, createContext, useContext } from "react"
 
 import { LoadingPlaceholder } from "@ui/loading"
 
@@ -21,7 +21,7 @@ function useAuth() {
     return ctx
 }
 
-function AuthProvider({ children }: { children: ReactNode }) {
+function AuthProvider({ children }: Readonly<{ children: React.ReactNode }>) {
     const [isInitialized, setIsInitialized] = useState(false)
     const store = useAuthStore()
 

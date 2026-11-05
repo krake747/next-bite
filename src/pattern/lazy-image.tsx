@@ -1,4 +1,4 @@
-import { useState, type ComponentProps } from "react"
+import { useState } from "react"
 
 import { cx } from "@ui/variants"
 
@@ -27,7 +27,7 @@ class BoundedImageCache {
             }
         } else if (this.order.length >= this.maxSize) {
             const oldest = this.order.shift()
-            if (oldest) {
+            if (oldest !== undefined && oldest !== "") {
                 this.cache.delete(oldest)
             }
         }
@@ -38,20 +38,31 @@ class BoundedImageCache {
 
 const loadedImages = new BoundedImageCache(MAX_LOADED_IMAGES)
 
-type LazyImageProps = Omit<ComponentProps<"img">, "src"> & {
-    src?: string | undefined
-    alt: string
-    loading?: "eager" | "lazy"
-    decoding?: "sync" | "async" | "auto"
-    aspectRatio?: string
+type LazyImageProps = {
+    readonly src?: string | undefined
+    readonly alt: string
+    readonly loading?: "eager" | "lazy" | undefined
+    readonly decoding?: "sync" | "async" | "auto" | undefined
+    readonly aspectRatio?: string | undefined
+    readonly className?: string | undefined
+    readonly style?: Readonly<{ readonly transform?: string }> | undefined
+    readonly draggable?: boolean | undefined
 }
 
-export function LazyImage({ src, alt, aspectRatio, className, loading, decoding, ...imgProps }: LazyImageProps) {
-    const [isLoaded, setIsLoaded] = useState(src ? loadedImages.has(src) : false)
+export function LazyImage({
+    src,
+    alt,
+    aspectRatio,
+    className,
+    loading,
+    decoding,
+    ...imgProps
+}: Readonly<LazyImageProps>) {
+    const [isLoaded, setIsLoaded] = useState(src !== undefined && src !== "" ? loadedImages.has(src) : false)
     const [hasError, setHasError] = useState(false)
 
     const handleLoad = () => {
-        if (src) {
+        if (src !== undefined && src !== "") {
             loadedImages.add(src)
         }
         setIsLoaded(true)
@@ -63,8 +74,8 @@ export function LazyImage({ src, alt, aspectRatio, className, loading, decoding,
 
     return (
         <div
-            className={cx("relative overflow-hidden", aspectRatio && "w-full")}
-            style={aspectRatio ? { aspectRatio } : undefined}
+            className={cx("relative overflow-hidden", aspectRatio !== undefined && aspectRatio !== "" && "w-full")}
+            style={aspectRatio !== undefined && aspectRatio !== "" ? { aspectRatio } : undefined}
         >
             {!isLoaded && !hasError && (
                 <div className="absolute inset-0 animate-pulse bg-[#e8e6e3] dark:bg-[#2d2b29]" />
@@ -76,9 +87,8 @@ export function LazyImage({ src, alt, aspectRatio, className, loading, decoding,
                 </div>
             )}
 
-            {src && (
+            {src !== undefined && src !== "" && (
                 <img
-                    {...imgProps}
                     src={src}
                     alt={alt}
                     loading={loading ?? "lazy"}
@@ -90,6 +100,7 @@ export function LazyImage({ src, alt, aspectRatio, className, loading, decoding,
                     )}
                     onLoad={handleLoad}
                     onError={handleError}
+                    {...imgProps}
                 />
             )}
         </div>

@@ -1,3 +1,5 @@
+import { type Restaurant } from "@core/hooks"
+
 import { SpinWheelButton } from "./spin-wheel-button"
 import { useWheel } from "./wheel-context"
 import { WheelNeedle } from "./wheel-needle"
@@ -82,7 +84,7 @@ export function SpinningWheel() {
                             : "transform 500ms",
                     }}
                 >
-                    {wheel.segments.map((restaurant, idx) => (
+                    {wheel.segments.map((restaurant: Restaurant, idx: number) => (
                         <WheelSegment key={restaurant._id} restaurant={restaurant} idx={idx} />
                     ))}
                 </svg>

@@ -58,7 +58,7 @@ function AuthButton() {
                 aria-label="Open account menu"
                 className="flex size-8 items-center justify-center rounded-full bg-flame-pea-100 text-flame-pea-600 transition-colors duration-150 ease hover:bg-flame-pea-200 dark:bg-flame-pea-900 dark:text-flame-pea-400 dark:hover:bg-flame-pea-800"
             >
-                {auth.user?.image ? (
+                {auth.user?.image !== undefined && auth.user?.image !== null && auth.user.image !== "" ? (
                     <img
                         src={auth.user.image}
                         alt={auth.user?.name ?? "User"}

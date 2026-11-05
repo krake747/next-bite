@@ -15,7 +15,7 @@ export function ZoomControls({
     onReset,
     isFullscreen,
     onBackToGrid,
-}: {
+}: Readonly<{
     zoom: number
     onZoomIn: () => void
     onZoomOut: () => void
@@ -24,7 +24,7 @@ export function ZoomControls({
     onReset: () => void
     isFullscreen: boolean
     onBackToGrid: () => void
-}) {
+}>) {
     return (
         <div className="flex flex-wrap items-center justify-center gap-2 p-4">
             <div className="flex items-center gap-1">

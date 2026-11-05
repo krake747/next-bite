@@ -1,4 +1,5 @@
 /// <reference types="vite/client" />
+/// <reference types="@types/google.maps" />
 
 declare module "lucide-react/icons/*" {
     import type { SVGProps, RefAttributes, ForwardRefExoticComponent } from "react"

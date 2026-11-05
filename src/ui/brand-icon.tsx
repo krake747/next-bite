@@ -1,6 +1,7 @@
-import { type ReactNode } from "react"
-
-export function BrandIcon({ children, size = "md" }: { children: ReactNode; size?: "sm" | "md" | "lg" }) {
+export function BrandIcon({
+    children,
+    size = "md",
+}: Readonly<{ children: React.ReactNode; size?: "sm" | "md" | "lg" }>) {
     const sizeClasses = size === "sm" ? "size-12" : size === "lg" ? "size-20" : "size-16"
 
     return (

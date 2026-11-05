@@ -15,8 +15,15 @@ type BackNavProps = {
     disabled?: boolean
 }
 
-export function BackNav({ backTo, showWheelOptions, onRandom, onBuildYourOwn, isSpinning, disabled }: BackNavProps) {
-    const isDisabled = !!(disabled || isSpinning)
+export function BackNav({
+    backTo,
+    showWheelOptions,
+    onRandom,
+    onBuildYourOwn,
+    isSpinning,
+    disabled,
+}: Readonly<BackNavProps>) {
+    const isDisabled = disabled === true || isSpinning === true
 
     return (
         <div data-slot="back-nav" className="border-b border-neutral-200/60 py-4 dark:border-white/10">
@@ -30,7 +37,7 @@ export function BackNav({ backTo, showWheelOptions, onRandom, onBuildYourOwn, is
                     <span className="hidden sm:inline">Back to restaurants</span>
                     <span className="sm:hidden">Back</span>
                 </Link>
-                {showWheelOptions && (
+                {showWheelOptions === true && (
                     <div className="flex w-full items-center gap-2 sm:w-auto">
                         <Button
                             variant="primary"

@@ -5,7 +5,7 @@ import { type Restaurant } from "@core/hooks"
 import { LazyImage } from "@pattern/lazy-image"
 import { OpeningHours } from "@ui/opening-hours"
 
-export function WinnerCard({ restaurant }: { restaurant: Restaurant }) {
+export function WinnerCard({ restaurant }: Readonly<{ restaurant: Restaurant }>) {
     const hasLocation = restaurant.lat !== null && restaurant.lng !== null
     const hasImages = (restaurant.images?.length ?? 0) > 0
     const imageSrc = hasImages ? restaurant.images?.[0]?.url : undefined
@@ -64,7 +64,19 @@ export function WinnerCard({ restaurant }: { restaurant: Restaurant }) {
                         )}
                     </div>
                 )}
-                {restaurant.openingHours && <OpeningHours openingHours={restaurant.openingHours} />}
+                {restaurant.openingHours !== undefined && (
+                    <OpeningHours
+                        openingHours={{
+                            openNow: restaurant.openingHours.openNow,
+                            periods: restaurant.openingHours.periods.map((p) => ({
+                                day: p.day,
+                                openTime: p.openTime,
+                                closeTime: p.closeTime,
+                            })),
+                            weekdayText: [...restaurant.openingHours.weekdayText],
+                        }}
+                    />
+                )}
             </div>
         </div>
     )

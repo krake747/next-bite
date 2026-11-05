@@ -45,7 +45,7 @@ function CelebrationParticles() {
 
     return (
         <div className="pointer-events-none absolute inset-0 overflow-hidden">
-            {particles.map((particle) => (
+            {particles.map((particle: Readonly<Particle>) => (
                 <div
                     key={particle.id}
                     className="animate-celebrate-particle absolute rounded-full"
@@ -97,23 +97,27 @@ export function WinnerModal({
     restaurant,
     onSpinAgain,
     isSpinning,
-}: {
+}: Readonly<{
     show: boolean
     onOpenChange: (open: boolean) => void
     restaurant: Restaurant
     onSpinAgain: () => void
     isSpinning: boolean
-}) {
+}>) {
     return (
         <Dialog.Root open={show} onOpenChange={onOpenChange}>
             <Dialog.Portal>
                 <Dialog.Backdrop
                     className="animate-in fade-in fixed inset-0 z-50 flex items-center justify-center bg-neutral-900/80 backdrop-blur-sm duration-200"
-                    onClick={() => onOpenChange(false)}
+                    onClick={() => {
+                        onOpenChange(false)
+                    }}
                 >
                     <Dialog.Popup
                         className="animate-winner-modal relative w-[90%] max-w-sm overflow-hidden rounded-2xl bg-white shadow-2xl outline-none dark:bg-neutral-900"
-                        onClick={(e) => e.stopPropagation()}
+                        onClick={(e: Readonly<{ stopPropagation: () => void }>) => {
+                            e.stopPropagation()
+                        }}
                     >
                         <div className="pointer-events-none absolute inset-0 -mx-4 -mt-16 flex items-center justify-center">
                             <SpotlightRing />
@@ -122,7 +126,9 @@ export function WinnerModal({
 
                         <div className="relative px-5 pt-8 pb-5">
                             <button
-                                onClick={() => onOpenChange(false)}
+                                onClick={() => {
+                                    onOpenChange(false)
+                                }}
                                 className="absolute top-2 right-2 flex size-8 items-center justify-center rounded-full bg-neutral-100 text-neutral-400 transition-colors hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700"
                             >
                                 <X className="size-4" />
@@ -178,7 +184,7 @@ export function WinnerModal({
                                 <Button
                                     variant="secondary"
                                     size="md"
-                                    onClick={async () => {
+                                    onClick={() => {
                                         const lat = restaurant.lat
                                         const lng = restaurant.lng
                                         const inviteUrl = `${window.location.origin}/wheel`
@@ -186,27 +192,36 @@ export function WinnerModal({
                                             lat !== null && lng !== null
                                                 ? `https://maps.google.com/?q=${lat},${lng}`
                                                 : undefined
-                                        const mapsLine = mapsUrl ? `\n\n📍 Google Maps: ${mapsUrl}` : ""
+                                        const mapsLine =
+                                            mapsUrl !== undefined && mapsUrl !== ""
+                                                ? `\n\n📍 Google Maps: ${mapsUrl}`
+                                                : ""
                                         const text = `Just tried the dinner wheel... fate is UNHINGED! 😂 We're going to ${restaurant.name}!${mapsLine}\n\nYou gotta try this -> ${inviteUrl}`
                                         const shareData = { title: "Next Bite", text }
-                                        if (navigator.share && navigator.canShare?.(shareData)) {
-                                            try {
-                                                await navigator.share(shareData)
-                                            } catch {
-                                                try {
-                                                    await navigator.clipboard.writeText(text)
-                                                    alert("Copied to clipboard!")
-                                                } catch {
-                                                    alert("Failed to share. Please try again.")
-                                                }
-                                            }
+                                        if (
+                                            navigator.share !== undefined &&
+                                            navigator.canShare !== undefined &&
+                                            navigator.canShare(shareData)
+                                        ) {
+                                            void navigator.share(shareData).catch(() => {
+                                                void navigator.clipboard
+                                                    .writeText(text)
+                                                    .then(() => {
+                                                        alert("Copied to clipboard!")
+                                                    })
+                                                    .catch(() => {
+                                                        alert("Failed to share. Please try again.")
+                                                    })
+                                            })
                                         } else {
-                                            try {
-                                                await navigator.clipboard.writeText(text)
-                                                alert("Copied to clipboard!")
-                                            } catch {
-                                                alert("Failed to copy. Please try again.")
-                                            }
+                                            void navigator.clipboard
+                                                .writeText(text)
+                                                .then(() => {
+                                                    alert("Copied to clipboard!")
+                                                })
+                                                .catch(() => {
+                                                    alert("Failed to copy. Please try again.")
+                                                })
                                         }
                                     }}
                                     className="flex-1"

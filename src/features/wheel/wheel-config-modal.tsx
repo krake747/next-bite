@@ -18,18 +18,18 @@ export function WheelConfigModal({
     restaurants,
     defaultToManual,
     onSpin,
-}: {
+}: Readonly<{
     show: boolean
     onOpenChange: (open: boolean) => void
-    restaurants: Restaurant[]
+    restaurants: ReadonlyArray<Restaurant>
     defaultToManual?: boolean
     onSpin?: () => void
-}) {
+}>) {
     const wheel = useWheel()
     const [searchQuery, setSearchQuery] = useState("")
 
     useEffect(() => {
-        if (show && defaultToManual) {
+        if (show && defaultToManual === true) {
             wheel.setSelectionMode("manual")
         }
         if (!show) {
@@ -84,7 +84,11 @@ export function WheelConfigModal({
                                             <select
                                                 id="target-count-select"
                                                 value={wheel.targetCount}
-                                                onChange={(e) => wheel.setTargetCount(parseInt(e.currentTarget.value))}
+                                                onChange={(
+                                                    e: Readonly<{ currentTarget: Readonly<{ value: string }> }>,
+                                                ) => {
+                                                    wheel.setTargetCount(parseInt(e.currentTarget.value))
+                                                }}
                                                 className="w-full appearance-none rounded-lg border border-neutral-200 bg-white px-4 py-2.5 pr-10 text-sm text-neutral-900 focus:border-flame-pea-500 focus:outline-none dark:border-neutral-600 dark:bg-neutral-700 dark:text-white"
                                             >
                                                 {wheel.availableCountOptions.map((count) => (
@@ -116,7 +120,9 @@ export function WheelConfigModal({
                                             <input
                                                 type="checkbox"
                                                 checked={wheel.filterClosedToday}
-                                                onChange={() => wheel.toggleFilterClosedToday()}
+                                                onChange={() => {
+                                                    wheel.toggleFilterClosedToday()
+                                                }}
                                                 className="size-4 rounded border-neutral-300 text-flame-pea-700 focus:ring-flame-pea-700 dark:border-neutral-600"
                                             />
                                             <span className="text-sm text-neutral-700 dark:text-neutral-300">
@@ -151,14 +157,20 @@ export function WheelConfigModal({
                                             <input
                                                 type="text"
                                                 value={searchQuery}
-                                                onChange={(e) => setSearchQuery(e.currentTarget.value)}
+                                                onChange={(
+                                                    e: Readonly<{ currentTarget: Readonly<{ value: string }> }>,
+                                                ) => {
+                                                    setSearchQuery(e.currentTarget.value)
+                                                }}
                                                 placeholder="Search restaurants..."
                                                 aria-label="Search restaurants"
                                                 className="w-full rounded-lg border border-neutral-200 bg-white py-2 pr-3 pl-9 text-sm text-neutral-900 placeholder:text-neutral-400 focus:border-flame-pea-500 focus:outline-none dark:border-neutral-600 dark:bg-neutral-700 dark:text-white dark:placeholder:text-neutral-500"
                                             />
                                             {searchQuery && (
                                                 <button
-                                                    onClick={() => setSearchQuery("")}
+                                                    onClick={() => {
+                                                        setSearchQuery("")
+                                                    }}
                                                     className="absolute top-1/2 right-2 -translate-y-1/2 rounded-full p-1 text-neutral-400 hover:bg-neutral-100 hover:text-neutral-600 dark:text-neutral-500 dark:hover:bg-neutral-600"
                                                     aria-label="Clear search"
                                                 >
@@ -183,9 +195,9 @@ export function WheelConfigModal({
                                                         <input
                                                             type="checkbox"
                                                             checked={isSelected}
-                                                            onChange={() =>
+                                                            onChange={() => {
                                                                 wheel.toggleRestaurantSelection(restaurant._id)
-                                                            }
+                                                            }}
                                                             className="size-4 rounded border-neutral-300 text-flame-pea-700 focus:ring-flame-pea-700 dark:border-neutral-600"
                                                         />
                                                         <span
@@ -216,7 +228,7 @@ export function WheelConfigModal({
                                                 <p className="text-xs text-amber-600 dark:text-amber-400">
                                                     {wheel.selectedIds.length === 0
                                                         ? "Please select at least 1 restaurant to spin"
-                                                        : `You can add ${Number(wheel.targetCount) - wheel.selectedIds.length} more optional selections`}
+                                                        : `You can add ${wheel.targetCount - wheel.selectedIds.length} more optional selections`}
                                                 </p>
                                             )}
                                     </div>
@@ -225,7 +237,13 @@ export function WheelConfigModal({
                         </div>
 
                         <div className="mt-6 flex gap-3">
-                            <Button variant="secondary" className="flex-1" onClick={() => onOpenChange(false)}>
+                            <Button
+                                variant="secondary"
+                                className="flex-1"
+                                onClick={() => {
+                                    onOpenChange(false)
+                                }}
+                            >
                                 Cancel
                             </Button>
                             <Button

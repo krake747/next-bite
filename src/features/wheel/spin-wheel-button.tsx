@@ -1,11 +1,10 @@
 import Play from "lucide-react/icons/play"
-import { type ComponentProps } from "react"
 
 import { cx } from "@ui/variants"
 
 import { useWheel } from "./wheel-context"
 
-export function SpinWheelButton(props: ComponentProps<"button">) {
+export function SpinWheelButton(props: Readonly<{ className?: string }>) {
     const wheel = useWheel()
 
     return (

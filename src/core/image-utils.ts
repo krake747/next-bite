@@ -17,7 +17,7 @@ type ProcessedImage = {
     height: number
 }
 
-export function validateImageFile(file: File): void {
+export function validateImageFile(file: Readonly<File>): void {
     if (!VALID_IMAGE_TYPES.includes(file.type)) {
         throw new Error(
             `Invalid file type. Must be one of: ${VALID_IMAGE_TYPES.map((t) => t.replace("image/", "")).join(", ")}`,
@@ -30,8 +30,8 @@ export function validateImageFile(file: File): void {
 }
 
 export async function processImage(
-    file: File,
-    options: { maxWidth?: number; quality?: number } = {},
+    file: Readonly<File>,
+    options: Readonly<{ maxWidth?: number; quality?: number }> = {},
 ): Promise<ProcessedImage> {
     validateImageFile(file)
 
@@ -71,8 +71,8 @@ export async function processImage(
             ctx.drawImage(img, 0, 0, width, height)
 
             canvas.toBlob(
-                (blob) => {
-                    if (!blob) {
+                (blob: Readonly<Blob> | null) => {
+                    if (blob === null) {
                         reject(new Error("Failed to create blob"))
                         return
                     }

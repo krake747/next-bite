@@ -1,9 +1,9 @@
 import UtensilsCrossed from "lucide-react/icons/utensils-crossed"
-import { useState, useEffect, type ReactNode } from "react"
+import { useState, useEffect } from "react"
 
 import { BackgroundLayers } from "./background-decoration"
 
-export function Header({ children }: { children?: ReactNode }) {
+export function Header({ children }: Readonly<{ children?: React.ReactNode | undefined }>) {
     const [scrollY, setScrollY] = useState(0)
 
     useEffect(() => {
@@ -11,7 +11,9 @@ export function Header({ children }: { children?: ReactNode }) {
             setScrollY(window.scrollY)
         }
         window.addEventListener("scroll", handleScroll, { passive: true })
-        return () => window.removeEventListener("scroll", handleScroll)
+        return () => {
+            window.removeEventListener("scroll", handleScroll)
+        }
     }, [])
 
     const parallax3 = scrollY * 0.08
@@ -138,7 +140,7 @@ export function HeaderTitle({
     children,
     className,
     ...props
-}: { children?: ReactNode; className?: string } & React.HTMLAttributes<HTMLHeadingElement>) {
+}: Readonly<{ children?: React.ReactNode | undefined; className?: string | undefined }>) {
     return (
         <h1
             className={`relative text-5xl leading-tight font-semibold tracking-tight text-neutral-900 sm:text-6xl lg:text-7xl dark:text-white ${className ?? ""}`}
@@ -164,7 +166,7 @@ export function HeaderSubtitle({
     children,
     className,
     ...props
-}: { children?: ReactNode; className?: string } & React.HTMLAttributes<HTMLParagraphElement>) {
+}: Readonly<{ children?: React.ReactNode | undefined; className?: string | undefined }>) {
     return (
         <p
             className={`mt-6 max-w-xl text-xl leading-relaxed text-neutral-600 dark:text-neutral-400 ${className ?? ""}`}
@@ -175,7 +177,7 @@ export function HeaderSubtitle({
     )
 }
 
-export function HeaderBadge({ count }: { count: number }) {
+export function HeaderBadge({ count }: Readonly<{ count: number }>) {
     return (
         <div className="mt-8 inline-flex items-center gap-3 rounded-full bg-white/80 px-1 py-1 text-sm font-semibold text-neutral-700 shadow-[0_2px_10px_rgb(0,0,0,0.08)] ring-1 ring-black/5 backdrop-blur-sm transition-shadow duration-200 hover:shadow-[0_4px_16px_rgb(0,0,0,0.12)] dark:bg-white/10 dark:text-neutral-200 dark:shadow-[0_2px_10px_rgb(0,0,0,0.3)] dark:ring-white/10 dark:hover:shadow-[0_4px_16px_rgb(0,0,0,0.4)]">
             <span className="flex h-8 w-8 items-center justify-center rounded-full bg-linear-to-br from-flame-pea-500 to-flame-pea-600 text-white shadow-inner">

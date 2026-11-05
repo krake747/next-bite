@@ -1,4 +1,4 @@
-import { createContext, useContext, type ReactNode } from "react"
+import { createContext, useContext } from "react"
 
 import { useWheelStore } from "./wheel-store"
 
@@ -6,7 +6,10 @@ export type WheelStoreType = ReturnType<typeof useWheelStore>
 
 const WheelContext = createContext<WheelStoreType | null>(null)
 
-export function WheelProvider({ store, children }: { store: WheelStoreType; children: ReactNode }) {
+export function WheelProvider({
+    store,
+    children,
+}: Readonly<{ store: WheelStoreType; children: Readonly<React.ReactNode> }>) {
     return <WheelContext.Provider value={store}>{children}</WheelContext.Provider>
 }
 

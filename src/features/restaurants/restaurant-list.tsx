@@ -8,14 +8,20 @@ import { RestaurantCard } from "./restaurant-card"
 const animatedRestaurantIds = new Set<string>()
 
 type RestaurantListProps = {
-    restaurants: Restaurant[]
-    hasFilter?: boolean
-    hasSearch?: boolean
+    restaurants: ReadonlyArray<Restaurant>
+    hasFilter?: boolean | undefined
+    hasSearch?: boolean | undefined
     onAddClick: () => void
-    sortOrder?: "added" | "name"
+    sortOrder?: "added" | "name" | undefined
 }
 
-export function RestaurantList({ restaurants, hasFilter, hasSearch, onAddClick, sortOrder }: RestaurantListProps) {
+export function RestaurantList({
+    restaurants,
+    hasFilter,
+    hasSearch,
+    onAddClick,
+    sortOrder,
+}: Readonly<RestaurantListProps>) {
     const previousSortOrder = useRef(sortOrder)
 
     useEffect(() => {
@@ -42,7 +48,7 @@ export function RestaurantList({ restaurants, hasFilter, hasSearch, onAddClick, 
     return (
         <div data-slot="restaurant-list" className="grid gap-8 md:grid-cols-2 md:gap-10">
             {restaurants.length > 0 ? (
-                restaurants.map((restaurant, index) => {
+                restaurants.map((restaurant: Restaurant, index: number) => {
                     const animationProps = getAnimationProps(restaurant, index)
                     return (
                         <RestaurantCard

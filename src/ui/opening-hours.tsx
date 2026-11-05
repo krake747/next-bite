@@ -7,20 +7,21 @@ import { isOpenNow } from "./opening-hours-utils"
 export function OpeningHours({
     openingHours,
     onClick,
-}: {
+}: Readonly<{
     openingHours: OpeningHoursData | undefined
     onClick?: () => void
-}) {
-    const openNow = openingHours ? isOpenNow(openingHours) : false
+}>) {
+    const openNow = openingHours !== undefined ? isOpenNow(openingHours) : false
 
-    if (!openingHours?.weekdayText?.length) {
+    const weekdayText = openingHours?.weekdayText
+    if (weekdayText === undefined || weekdayText.length === 0) {
         return null
     }
 
     const day = new Date().getDay()
     const todayIndex = day === 0 ? 6 : day - 1
 
-    const dayText = openingHours.weekdayText[todayIndex] ?? ""
+    const dayText = weekdayText[todayIndex] ?? ""
     const todayDayName = dayText.split(":")[0] ?? ""
     const todayHours = dayText.split(": ")[1] ?? ""
 

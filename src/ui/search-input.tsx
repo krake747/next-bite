@@ -1,18 +1,17 @@
 import Search from "lucide-react/icons/search"
 import X from "lucide-react/icons/x"
-import { type ChangeEvent } from "react"
 
 import { cx } from "@ui/variants"
 
 type SearchInputProps = {
     value: string
     onChange: (value: string) => void
-    placeholder?: string
-    className?: string
+    placeholder?: string | undefined
+    className?: string | undefined
 }
 
-export function SearchInput({ value, onChange, placeholder, className, ...rest }: SearchInputProps) {
-    const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
+export function SearchInput({ value, onChange, placeholder, className, ...rest }: Readonly<SearchInputProps>) {
+    const handleChange = (e: Readonly<{ readonly currentTarget: Readonly<{ readonly value: string }> }>) => {
         onChange(e.currentTarget.value)
     }
 
@@ -24,12 +23,12 @@ export function SearchInput({ value, onChange, placeholder, className, ...rest }
         <div className={cx("relative flex items-center", className)}>
             <Search className="pointer-events-none absolute left-0 size-4 text-neutral-400" />
             <input
-                {...rest}
                 type="text"
                 value={value}
                 onChange={handleChange}
                 placeholder={placeholder ?? "Search..."}
                 className="w-full border-b border-neutral-200 bg-transparent py-1.5 pr-6 pl-6 text-sm text-neutral-900 transition-colors placeholder:text-neutral-400 focus:border-flame-pea-500 focus:outline-none dark:border-neutral-700 dark:text-neutral-100 dark:focus:border-flame-pea-500"
+                {...rest}
             />
             {value && (
                 <button

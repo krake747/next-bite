@@ -1,7 +1,7 @@
 import { QueryClient, QueryClientProvider, useMutation, useQueryClient } from "@tanstack/react-query"
 import { ConvexClient } from "convex/browser"
-import { type FunctionReference } from "convex/server"
-import { createContext, useContext, useState, useEffect, type ReactNode } from "react"
+import { type FunctionArgs, type FunctionReference, type FunctionReturnType } from "convex/server"
+import { createContext, useContext, useState, useEffect } from "react"
 
 const ConvexContext = createContext<ConvexClient | null>(null)
 
@@ -15,27 +15,34 @@ function useConvexClient() {
     return client
 }
 
-function ConvexProvider({ client, children }: { client: ConvexClient; children: ReactNode }) {
+function ConvexProvider(props: Readonly<{ client: unknown; children: React.ReactNode }>) {
+    if (!(props.client instanceof ConvexClient)) {
+        throw new TypeError("ConvexClient not provided. Wrap with ConvexProvider.")
+    }
+    const client = props.client
     return (
         <QueryClientProvider client={queryClient}>
-            <ConvexContext.Provider value={client}>{children}</ConvexContext.Provider>
+            <ConvexContext.Provider value={client}>{props.children}</ConvexContext.Provider>
         </QueryClientProvider>
     )
 }
 
-function useConvexQuery<T>(query: FunctionReference<"query">, args?: {}): T | undefined {
+function useConvexQuery<Query extends FunctionReference<"query">>(
+    query: Query,
+    args?: FunctionArgs<Query>,
+): FunctionReturnType<Query> | undefined {
     const client = useConvexClient()
     const queryClient = useQueryClient()
     const key = JSON.stringify(args)
     const queryKey = [query, key] as const
 
-    const [data, setData] = useState<T | undefined>(() => {
-        return queryClient.getQueryData(queryKey) as T | undefined
+    const [data, setData] = useState<FunctionReturnType<Query> | undefined>(() => {
+        return queryClient.getQueryData<FunctionReturnType<Query>>(queryKey)
     })
 
     useEffect(() => {
-        const unsub = client.onUpdate(query, args ?? {}, (value: T) => {
-            queryClient.setQueryData(queryKey, value)
+        const unsub = client.onUpdate(query, { ...args }, (value) => {
+            queryClient.setQueryData<FunctionReturnType<Query>>(queryKey, value)
             setData(value)
         })
         return unsub
@@ -44,22 +51,24 @@ function useConvexQuery<T>(query: FunctionReference<"query">, args?: {}): T | un
     return data
 }
 
-function useConvexMutation<T>(mutation: FunctionReference<"mutation">) {
+function useConvexMutation<Mutation extends FunctionReference<"mutation">>(mutation: Mutation) {
     const client = useConvexClient()
 
     return useMutation({
-        mutationFn: async (args?: {}): Promise<T> => {
-            return client.mutation(mutation, args ?? {}) as Promise<T>
+        mutationFn: async (args: FunctionArgs<Mutation>) => {
+            const response = await client.mutation(mutation, args)
+            return response
         },
     })
 }
 
-function useConvexAction<T>(action: FunctionReference<"action">) {
+function useConvexAction<Action extends FunctionReference<"action">>(action: Action) {
     const client = useConvexClient()
 
     return useMutation({
-        mutationFn: async (args?: {}): Promise<T> => {
-            return client.action(action, args ?? {}) as Promise<T>
+        mutationFn: async (args: FunctionArgs<Action>) => {
+            const response = await client.action(action, args)
+            return response
         },
     })
 }

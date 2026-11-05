@@ -1,4 +1,12 @@
+import * as valibot from "valibot"
+
 import { internalMutation } from "./_generated/server"
+
+const legacyImagesSchema = valibot.union([
+    valibot.array(valibot.string()),
+    valibot.array(valibot.object({ url: valibot.string(), storageId: valibot.string() })),
+    valibot.undefined(),
+])
 
 export const convertImagesToObjects = internalMutation(async (ctx) => {
     const restaurants = await ctx.db.query("restaurants").collect()
@@ -7,18 +15,24 @@ export const convertImagesToObjects = internalMutation(async (ctx) => {
     let skipCount = 0
 
     for (const restaurant of restaurants) {
-        const images = restaurant.images as string[] | undefined
-        if (!images) {
-            continue
-        }
-
-        const hasOldFormat = typeof images[0] === "string"
-        if (!hasOldFormat) {
+        const parsed = valibot.safeParse(legacyImagesSchema, restaurant.images)
+        if (!parsed.success) {
             skipCount += 1
             continue
         }
 
-        const newImages = images.map((url) => {
+        const images = parsed.output
+        if (!images) {
+            continue
+        }
+
+        const oldUrls = images.filter((image): image is string => typeof image === "string")
+        if (oldUrls.length === 0 || oldUrls.length !== images.length) {
+            skipCount += 1
+            continue
+        }
+
+        const newImages = oldUrls.map((url) => {
             const matches = url.match(/\/storage\/([a-f0-9-]+)$/)
             const storageId = matches?.[1] ?? url
             return { url, storageId }
@@ -36,7 +50,7 @@ export const cleanupOrphanedStorage = internalMutation(async (ctx) => {
 
     const referencedStorageIds = new Set<string>()
     for (const restaurant of restaurants) {
-        const images = restaurant.images as { url: string; storageId: string }[] | undefined
+        const images = restaurant.images
         if (images) {
             for (const img of images) {
                 referencedStorageIds.add(img.storageId)

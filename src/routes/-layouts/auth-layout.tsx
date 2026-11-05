@@ -1,6 +1,5 @@
 import { Link } from "@tanstack/react-router"
 import UtensilsCrossed from "lucide-react/icons/utensils-crossed"
-import { type ReactNode } from "react"
 
 import { BackgroundLayers } from "@ui/background-decoration"
 import { BrandIcon } from "@ui/brand-icon"
@@ -11,13 +10,13 @@ export function AuthLayout({
     subtitle,
     children,
     footerLink,
-}: {
-    icon: ReactNode
-    title: ReactNode
+}: Readonly<{
+    icon: React.ReactNode
+    title: React.ReactNode
     subtitle: string
-    children: ReactNode
-    footerLink: ReactNode
-}) {
+    children: React.ReactNode
+    footerLink: React.ReactNode
+}>) {
     return (
         <div className="relative flex min-h-screen flex-col overflow-hidden bg-[#faf9f7] dark:bg-[#1a1918]">
             <BackgroundLayers />

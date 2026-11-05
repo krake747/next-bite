@@ -40,7 +40,9 @@ function WheelPage() {
                             wheel.setSelectionMode("random")
                             wheel.spin()
                         }}
-                        onBuildYourOwn={() => setShowSettings(true)}
+                        onBuildYourOwn={() => {
+                            setShowSettings(true)
+                        }}
                         isSpinning={wheel.isSpinning}
                         disabled={!wheel.hasEnoughRestaurants}
                     />
@@ -53,7 +55,9 @@ function WheelPage() {
                                     onOpenChange={setShowSettings}
                                     restaurants={safeRestaurants}
                                     defaultToManual={true}
-                                    onSpin={() => wheel.spin()}
+                                    onSpin={() => {
+                                        wheel.spin()
+                                    }}
                                 />
                                 {!showSettings && (
                                     <>
@@ -65,16 +69,18 @@ function WheelPage() {
                                             <SpinningWheel />
                                         </div>
 
-                                        {wheel.selected && (
+                                        {wheel.selected !== null && wheel.selected !== undefined && (
                                             <WinnerModal
-                                                show={!!wheel.selected}
+                                                show={wheel.selected !== null && wheel.selected !== undefined}
                                                 onOpenChange={(open) => {
                                                     if (!open) {
                                                         wheel.clearSelected()
                                                     }
                                                 }}
                                                 restaurant={wheel.selected}
-                                                onSpinAgain={() => wheel.spin()}
+                                                onSpinAgain={() => {
+                                                    wheel.spin()
+                                                }}
                                                 isSpinning={wheel.isSpinning}
                                             />
                                         )}

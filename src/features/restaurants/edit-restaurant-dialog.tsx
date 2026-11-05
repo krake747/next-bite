@@ -10,14 +10,18 @@ export function EditRestaurantDialog({
     show,
     onOpenChange,
     restaurant,
-}: {
+}: Readonly<{
     show: boolean
     onOpenChange: (open: boolean) => void
     restaurant: Restaurant
-}) {
+}>) {
     const auth = useAuth()
-    const handleSuccess = () => onOpenChange(false)
-    const handleCancel = () => onOpenChange(false)
+    const handleSuccess = () => {
+        onOpenChange(false)
+    }
+    const handleCancel = () => {
+        onOpenChange(false)
+    }
 
     return (
         <Dialog.Root open={show} onOpenChange={onOpenChange}>

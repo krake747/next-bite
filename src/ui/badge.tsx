@@ -16,11 +16,11 @@ const badge = cva({
 })
 
 type BadgeProps = VariantProps<typeof badge> & {
-    className?: string
-    children?: React.ReactNode
+    readonly className?: string
+    readonly children?: React.ReactNode
 }
 
-export function Badge({ variant, className, children }: BadgeProps) {
+export function Badge({ variant, className, children }: Readonly<BadgeProps>) {
     return (
         <span data-slot="badge" className={cx(badge({ variant }), className)}>
             {children}

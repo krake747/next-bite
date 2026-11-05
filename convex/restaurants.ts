@@ -1,9 +1,11 @@
 import { v } from "convex/values"
+import * as valibot from "valibot"
 
 import { MAX_IMAGES } from "../src/core/constants"
 import { internal } from "./_generated/api"
 import { type Id } from "./_generated/dataModel"
 import { query, mutation, action, internalQuery, internalMutation, internalAction } from "./_generated/server"
+import { openingHoursValidator, restaurantImageValidator } from "./validators"
 
 type OpeningHoursData = {
     openNow: boolean
@@ -15,9 +17,65 @@ type OpeningHoursData = {
     weekdayText: string[]
 }
 
+// Storage IDs cross the client as plain strings, so the type system cannot prove them.
+// Convex validates them at runtime inside storage.delete.
+function asStorageId(storageId: string): Id<"_storage"> {
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- single documented boundary conversion; see above
+    return storageId as unknown as Id<"_storage">
+}
+
+const googleOpeningHoursSchema = valibot.object({
+    currentOpeningHours: valibot.optional(
+        valibot.object({
+            openNow: valibot.optional(valibot.boolean()),
+            periods: valibot.optional(
+                valibot.array(
+                    valibot.object({
+                        open: valibot.optional(
+                            valibot.object({
+                                day: valibot.optional(valibot.number()),
+                                hour: valibot.optional(valibot.number()),
+                                minute: valibot.optional(valibot.number()),
+                            }),
+                        ),
+                        close: valibot.optional(
+                            valibot.object({
+                                day: valibot.optional(valibot.number()),
+                                hour: valibot.optional(valibot.number()),
+                                minute: valibot.optional(valibot.number()),
+                            }),
+                        ),
+                    }),
+                ),
+            ),
+            weekdayDescriptions: valibot.optional(valibot.array(valibot.string())),
+        }),
+    ),
+})
+
+const googlePlacesSearchSchema = valibot.object({
+    places: valibot.optional(
+        valibot.array(
+            valibot.object({
+                id: valibot.optional(valibot.string()),
+                location: valibot.optional(
+                    valibot.object({
+                        latitude: valibot.optional(valibot.number()),
+                        longitude: valibot.optional(valibot.number()),
+                    }),
+                ),
+            }),
+        ),
+    ),
+})
+
+function hasGoogleApiKey(apiKey: string | undefined): apiKey is string {
+    return apiKey !== undefined && apiKey !== ""
+}
+
 async function fetchOpeningHoursFromGoogle(placeId: string): Promise<OpeningHoursData> {
     const apiKey = process.env.GOOGLE_MAPS_API_KEY
-    if (!apiKey) {
+    if (!hasGoogleApiKey(apiKey)) {
         console.log("fetchOpeningHoursFromGoogle: No API key")
         return { openNow: true, periods: [], weekdayText: [] }
     }
@@ -37,16 +95,7 @@ async function fetchOpeningHoursFromGoogle(placeId: string): Promise<OpeningHour
             return { openNow: true, periods: [], weekdayText: [] }
         }
 
-        const data = (await response.json()) as {
-            currentOpeningHours?: {
-                openNow?: boolean
-                periods?: {
-                    open?: { day?: number; hour?: number; minute?: number }
-                    close?: { day?: number; hour?: number; minute?: number }
-                }[]
-                weekdayDescriptions?: string[]
-            }
-        }
+        const data = valibot.parse(googleOpeningHoursSchema, await response.json())
         console.log("fetchOpeningHoursFromGoogle: Result:", JSON.stringify(data.currentOpeningHours))
 
         const google = data.currentOpeningHours
@@ -57,7 +106,7 @@ async function fetchOpeningHoursFromGoogle(placeId: string): Promise<OpeningHour
         const periods: OpeningHoursData["periods"] = []
         const seenDays = new Set<number>()
 
-        for (const period of google.periods || []) {
+        for (const period of google.periods ?? []) {
             const day = period.open?.day
             if (day === undefined || seenDays.has(day)) {
                 continue
@@ -79,7 +128,7 @@ async function fetchOpeningHoursFromGoogle(placeId: string): Promise<OpeningHour
         return {
             openNow: google.openNow ?? true,
             periods,
-            weekdayText: google.weekdayDescriptions || [],
+            weekdayText: google.weekdayDescriptions ?? [],
         }
     } catch (err) {
         console.log("fetchOpeningHoursFromGoogle: Catch error:", err)
@@ -96,12 +145,12 @@ export const _patchRestaurant = internalMutation({
     args: {
         id: v.id("restaurants"),
         placeId: v.optional(v.string()),
-        openingHours: v.optional(v.any()),
+        openingHours: v.optional(openingHoursValidator),
         lat: v.optional(v.number()),
         lng: v.optional(v.number()),
     },
     handler: async (ctx, { id, placeId, openingHours, lat, lng }) => {
-        ctx.db.patch(id, {
+        await ctx.db.patch(id, {
             ...(placeId !== undefined ? { placeId } : {}),
             ...(openingHours !== undefined ? { openingHours } : {}),
             ...(lat !== undefined ? { lat } : {}),
@@ -111,7 +160,20 @@ export const _patchRestaurant = internalMutation({
 })
 
 export const _insertRestaurant = internalMutation({
-    args: v.any(),
+    args: {
+        name: v.string(),
+        cuisine: v.string(),
+        location: v.string(),
+        addedBy: v.string(),
+        lat: v.optional(v.number()),
+        lng: v.optional(v.number()),
+        notes: v.optional(v.string()),
+        link: v.optional(v.string()),
+        rating: v.optional(v.number()),
+        images: v.optional(v.array(restaurantImageValidator)),
+        placeId: v.optional(v.string()),
+        openingHours: v.optional(openingHoursValidator),
+    },
     handler: async (ctx, args) => ctx.db.insert("restaurants", args),
 })
 
@@ -123,7 +185,7 @@ type GooglePlaceResult = {
 
 async function lookupPlaceIdFromGoogle(name: string, location: string): Promise<GooglePlaceResult> {
     const apiKey = process.env.GOOGLE_MAPS_API_KEY
-    if (!apiKey) {
+    if (!hasGoogleApiKey(apiKey)) {
         console.log("lookupPlaceIdFromGoogle: No API key")
         return { placeId: null, lat: null, lng: null }
     }
@@ -148,12 +210,7 @@ async function lookupPlaceIdFromGoogle(name: string, location: string): Promise<
             return { placeId: null, lat: null, lng: null }
         }
 
-        const data = (await response.json()) as {
-            places?: {
-                id?: string
-                location?: { latitude?: number; longitude?: number }
-            }[]
-        }
+        const data = valibot.parse(googlePlacesSearchSchema, await response.json())
         console.log("lookupPlaceIdFromGoogle: Result:", JSON.stringify(data))
 
         const place = data.places?.[0]
@@ -181,21 +238,9 @@ export const add = mutation({
         link: v.optional(v.string()),
         addedBy: v.string(),
         rating: v.optional(v.number()),
-        images: v.optional(v.array(v.object({ url: v.string(), storageId: v.string() }))),
+        images: v.optional(v.array(restaurantImageValidator)),
         placeId: v.optional(v.string()),
-        openingHours: v.optional(
-            v.object({
-                openNow: v.boolean(),
-                periods: v.array(
-                    v.object({
-                        day: v.number(),
-                        openTime: v.string(),
-                        closeTime: v.string(),
-                    }),
-                ),
-                weekdayText: v.array(v.string()),
-            }),
-        ),
+        openingHours: v.optional(openingHoursValidator),
     },
     handler: async (ctx, args) => {
         const { images, placeId, ...rest } = args
@@ -240,7 +285,7 @@ export const addWithOpeningHours = action({
         link: v.optional(v.string()),
         addedBy: v.string(),
         rating: v.optional(v.number()),
-        images: v.optional(v.array(v.object({ url: v.string(), storageId: v.string() }))),
+        images: v.optional(v.array(restaurantImageValidator)),
     },
     handler: async (ctx, args): Promise<Id<"restaurants">> => {
         const { images, lat, lng, ...rest } = args
@@ -253,16 +298,18 @@ export const addWithOpeningHours = action({
         console.log("addWithOpeningHours: Google result:", JSON.stringify(google))
 
         let openingHours: OpeningHoursData | undefined
-        if (google.placeId) {
+        if (google.placeId !== null && google.placeId !== "") {
             openingHours = await fetchOpeningHoursFromGoogle(google.placeId)
         }
 
+        const restaurantLat = google.lat ?? lat
+        const restaurantLng = google.lng ?? lng
         const restaurantData = {
             ...rest,
             ...(images !== undefined ? { images } : {}),
-            placeId: google.placeId ?? undefined,
-            lat: google.lat ?? lat ?? undefined,
-            lng: google.lng ?? lng ?? undefined,
+            ...(google.placeId !== null ? { placeId: google.placeId } : {}),
+            ...(restaurantLat !== undefined ? { lat: restaurantLat } : {}),
+            ...(restaurantLng !== undefined ? { lng: restaurantLng } : {}),
             ...(openingHours !== undefined ? { openingHours } : {}),
         }
 
@@ -282,21 +329,9 @@ export const update = mutation({
         link: v.optional(v.string()),
         addedBy: v.optional(v.string()),
         rating: v.optional(v.number()),
-        images: v.optional(v.array(v.object({ url: v.string(), storageId: v.string() }))),
+        images: v.optional(v.array(restaurantImageValidator)),
         placeId: v.optional(v.string()),
-        openingHours: v.optional(
-            v.object({
-                openNow: v.boolean(),
-                periods: v.array(
-                    v.object({
-                        day: v.number(),
-                        openTime: v.string(),
-                        closeTime: v.string(),
-                    }),
-                ),
-                weekdayText: v.array(v.string()),
-            }),
-        ),
+        openingHours: v.optional(openingHoursValidator),
     },
     handler: async (ctx, args) => {
         const { id, images, ...updates } = args
@@ -327,7 +362,7 @@ export const remove = mutation({
         const images = restaurant.images ?? []
         for (const img of images) {
             try {
-                await ctx.storage.delete(img.storageId as Id<"_storage">)
+                await ctx.storage.delete(asStorageId(img.storageId))
             } catch {}
         }
 
@@ -347,7 +382,7 @@ export const deleteImage = mutation({
             throw new Error("Restaurant not found")
         }
 
-        await ctx.storage.delete(args.storageId as Id<"_storage">)
+        await ctx.storage.delete(asStorageId(args.storageId))
 
         const currentImages = restaurant.images ?? []
         const updatedImages = currentImages.filter((img) => img.url !== args.imageUrl)
@@ -360,7 +395,7 @@ export const deleteImage = mutation({
 
 export const cleanupStorage = mutation({
     args: {
-        restaurantId: v.id("restaurants"),
+        restaurantId: v.optional(v.id("restaurants")),
         storageId: v.string(),
     },
     handler: async (ctx, args) => {
@@ -369,12 +404,16 @@ export const cleanupStorage = mutation({
             throw new Error("Unauthorized: authentication required")
         }
 
+        await ctx.storage.delete(asStorageId(args.storageId))
+
+        if (args.restaurantId === undefined) {
+            return
+        }
+
         const restaurant = await ctx.db.get(args.restaurantId)
         if (!restaurant) {
             throw new Error("Restaurant not found")
         }
-
-        await ctx.storage.delete(args.storageId as Id<"_storage">)
 
         const currentImages = restaurant.images ?? []
         const updatedImages = currentImages.filter((img) => img.storageId !== args.storageId)
@@ -393,7 +432,7 @@ export const refreshOpeningHours = action({
             throw new Error("Restaurant not found")
         }
 
-        if (!restaurant.placeId) {
+        if (restaurant.placeId === undefined || restaurant.placeId === "") {
             throw new Error("No placeId to refresh")
         }
 
@@ -422,7 +461,7 @@ export const lookupPlaceIdAndHours = action({
         const google = await lookupPlaceIdFromGoogle(restaurant.name, restaurant.location)
         console.log("lookupPlaceIdAndHours: Google result:", JSON.stringify(google))
 
-        if (!google.placeId) {
+        if (google.placeId === null || google.placeId === "") {
             console.log("lookupPlaceIdAndHours: No placeId found, returning")
             return
         }
@@ -440,10 +479,10 @@ export const lookupPlaceIdAndHours = action({
             openingHours,
         }
         if (google.lat !== null) {
-            patchArgs.lat = google.lat as number
+            patchArgs.lat = google.lat
         }
         if (google.lng !== null) {
-            patchArgs.lng = google.lng as number
+            patchArgs.lng = google.lng
         }
         await ctx.runMutation(internal.restaurants._patchRestaurant, patchArgs)
         console.log("lookupPlaceIdAndHours: Done!")
@@ -452,20 +491,10 @@ export const lookupPlaceIdAndHours = action({
 
 export const getPlaceOpeningHours = internalAction({
     args: { placeId: v.string() },
-    returns: v.object({
-        openNow: v.boolean(),
-        periods: v.array(
-            v.object({
-                day: v.number(),
-                openTime: v.string(),
-                closeTime: v.string(),
-            }),
-        ),
-        weekdayText: v.array(v.string()),
-    }),
+    returns: openingHoursValidator,
     handler: async (_ctx, { placeId }) => {
         const apiKey = process.env.GOOGLE_MAPS_API_KEY
-        if (!apiKey) {
+        if (!hasGoogleApiKey(apiKey)) {
             throw new Error("GOOGLE_MAPS_API_KEY not configured")
         }
 
@@ -481,13 +510,38 @@ export const getPlaceOpeningHours = internalAction({
             throw new Error(`Google Places API error: ${response.status} ${errorText}`)
         }
 
-        const data = (await response.json()) as { currentOpeningHours?: OpeningHoursData }
-        return (
-            data.currentOpeningHours || {
+        const data = valibot.parse(googleOpeningHoursSchema, await response.json())
+        const google = data.currentOpeningHours
+        if (!google) {
+            return {
                 openNow: true,
                 periods: [],
                 weekdayText: [],
             }
-        )
+        }
+
+        const periods: OpeningHoursData["periods"] = []
+        for (const period of google.periods ?? []) {
+            const day = period.open?.day
+            if (day === undefined) {
+                continue
+            }
+
+            const openH = period.open?.hour ?? 0
+            const openM = period.open?.minute ?? 0
+            const closeH = period.close?.hour ?? 0
+            const closeM = period.close?.minute ?? 0
+            periods.push({
+                day,
+                openTime: `${openH.toString().padStart(2, "0")}:${openM.toString().padStart(2, "0")}`,
+                closeTime: `${closeH.toString().padStart(2, "0")}:${closeM.toString().padStart(2, "0")}`,
+            })
+        }
+
+        return {
+            openNow: google.openNow ?? true,
+            periods,
+            weekdayText: google.weekdayDescriptions ?? [],
+        }
     },
 })

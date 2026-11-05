@@ -5,14 +5,16 @@ function parseTimeToMinutes(time: string): number {
     return parseInt(hours ?? "0", 10) * 60 + parseInt(minutes ?? "0", 10)
 }
 
-export function isOpenNow(openingHours: OpeningHours): boolean {
+export function isOpenNow(openingHours: Readonly<OpeningHours>): boolean {
     if (openingHours.openNow !== undefined) {
         return openingHours.openNow
     }
     const now = new Date()
     const day = now.getDay()
     const currentTime = now.getHours() * 60 + now.getMinutes()
-    const period = openingHours.periods?.find((p) => p.day === day)
+    const period = openingHours.periods?.find(
+        (p: Readonly<{ day: number; openTime: string; closeTime: string }>) => p.day === day,
+    )
     if (!period) {
         return false
     }

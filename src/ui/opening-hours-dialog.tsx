@@ -11,16 +11,20 @@ export function OpeningHoursDialog({
     onOpenChange,
     openingHours,
     restaurantName,
-}: {
+}: Readonly<{
     show: boolean
     onOpenChange: (open: boolean) => void
     openingHours: OpeningHours | undefined
     restaurantName: string
-}) {
-    const openNow = openingHours ? isOpenNow(openingHours) : false
+}>) {
+    const openNow = openingHours !== undefined ? isOpenNow(openingHours) : false
 
     const weekdayText = openingHours?.weekdayText
-    const fullWeek = weekdayText ? [...weekdayText.slice(1), ...(weekdayText[0] ? [weekdayText[0]] : [])] : []
+    const firstDay = weekdayText?.[0]
+    const fullWeek =
+        weekdayText !== undefined && weekdayText.length > 0
+            ? [...weekdayText.slice(1), ...(firstDay !== undefined && firstDay !== "" ? [firstDay] : [])]
+            : []
 
     const dayOfWeek = new Date().getDay()
     const todayIndex = dayOfWeek === 0 ? 6 : dayOfWeek - 1
@@ -77,7 +81,9 @@ export function OpeningHoursDialog({
 
                         <button
                             type="button"
-                            onClick={() => onOpenChange(false)}
+                            onClick={() => {
+                                onOpenChange(false)
+                            }}
                             className="absolute top-4 right-4 flex size-8 items-center justify-center rounded-full text-neutral-400 transition-colors hover:bg-neutral-100 hover:text-neutral-600 dark:hover:bg-neutral-800 dark:hover:text-neutral-300"
                         >
                             <X className="size-4" />

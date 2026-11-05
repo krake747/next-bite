@@ -3,20 +3,20 @@ import { useReducer } from "react"
 import { authClient } from "./auth-client"
 
 type User = {
-    id: string
-    email: string
-    name?: string | null | undefined
-    image?: string | null | undefined
+    readonly id: string
+    readonly email: string
+    readonly name?: string | null | undefined
+    readonly image?: string | null | undefined
 }
 
 type SessionUser = {
-    id: string
-    email: string
-    name?: string | null | undefined
-    image?: string | null | undefined
+    readonly id: string
+    readonly email: string
+    readonly name?: string | null | undefined
+    readonly image?: string | null | undefined
 }
 
-function mapSessionUserToUserPayload(user: SessionUser): User {
+function mapSessionUserToUserPayload(user: Readonly<SessionUser>): User {
     return {
         id: user.id,
         email: user.email,
@@ -32,13 +32,13 @@ function isValidUser(value: unknown): value is User {
         typeof value === "object" &&
         value !== null &&
         "id" in value &&
-        typeof (value as Record<string, unknown>).id === "string" &&
+        typeof value.id === "string" &&
         "email" in value &&
-        typeof (value as Record<string, unknown>).email === "string"
+        typeof value.email === "string"
     )
 }
 
-function saveSessionToStorage(user: User): void {
+function saveSessionToStorage(user: Readonly<User>): void {
     try {
         localStorage.setItem(SESSION_KEY, JSON.stringify(user))
     } catch {
@@ -49,7 +49,7 @@ function saveSessionToStorage(user: User): void {
 function getSessionFromStorage(): User | null {
     try {
         const stored = localStorage.getItem(SESSION_KEY)
-        if (!stored) {
+        if (stored === null || stored === "") {
             return null
         }
         const parsed = JSON.parse(stored) as unknown
@@ -68,19 +68,19 @@ function clearSessionFromStorage(): void {
 }
 
 type AuthState = {
-    isAuthenticated: boolean
-    isLoading: boolean
-    user: User | null
-    error: string | null
+    readonly isAuthenticated: boolean
+    readonly isLoading: boolean
+    readonly user: User | null
+    readonly error: string | null
 }
 
 type AuthAction =
-    | { type: "SET_LOADING"; isLoading: boolean }
-    | { type: "SET_USER"; user: User }
-    | { type: "CLEAR_USER" }
-    | { type: "SET_ERROR"; error: string | null }
+    | { readonly type: "SET_LOADING"; readonly isLoading: boolean }
+    | { readonly type: "SET_USER"; readonly user: User }
+    | { readonly type: "CLEAR_USER" }
+    | { readonly type: "SET_ERROR"; readonly error: string | null }
 
-function authReducer(state: AuthState, action: AuthAction): AuthState {
+function authReducer(state: Readonly<AuthState>, action: Readonly<AuthAction>): AuthState {
     switch (action.type) {
         case "SET_LOADING":
             return { ...state, isLoading: action.isLoading }
@@ -90,6 +90,10 @@ function authReducer(state: AuthState, action: AuthAction): AuthState {
             return { ...state, user: null, isAuthenticated: false }
         case "SET_ERROR":
             return { ...state, error: action.error }
+        default: {
+            const _exhaustive: never = action
+            return _exhaustive
+        }
     }
 }
 
@@ -101,7 +105,7 @@ function useAuthStore() {
         error: null,
     })
 
-    const saveUser = (userData: User) => {
+    const saveUser = (userData: Readonly<User>) => {
         dispatch({ type: "SET_USER", user: userData })
         saveSessionToStorage(userData)
     }
@@ -128,7 +132,7 @@ function useAuthStore() {
                 throw new Error(result.error.message)
             }
 
-            if (result.data?.user) {
+            if (result.data?.user !== undefined && result.data?.user !== null) {
                 saveUser(mapSessionUserToUserPayload(result.data.user))
             } else {
                 clearUser()
@@ -157,13 +161,13 @@ function useAuthStore() {
                 throw new Error(message)
             }
 
-            if (result.data?.user) {
+            if (result.data?.user !== undefined && result.data?.user !== null) {
                 saveUser(mapSessionUserToUserPayload(result.data.user))
             } else {
                 throw new Error("No user returned: email verification required")
             }
         } catch (err) {
-            if (!state.error) {
+            if (state.error === null || state.error === "") {
                 const message = err instanceof Error ? err.message : "Sign in failed"
                 dispatch({ type: "SET_ERROR", error: message })
             }
@@ -186,13 +190,13 @@ function useAuthStore() {
                 throw new Error(message)
             }
 
-            if (result.data?.user) {
+            if (result.data?.user !== undefined && result.data?.user !== null) {
                 saveUser(mapSessionUserToUserPayload(result.data.user))
             } else {
                 throw new Error("No user returned: email verification required")
             }
         } catch (err) {
-            if (!state.error) {
+            if (state.error === null || state.error === "") {
                 const message = err instanceof Error ? err.message : "Sign up failed"
                 dispatch({ type: "SET_ERROR", error: message })
             }

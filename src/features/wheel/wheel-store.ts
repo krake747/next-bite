@@ -14,31 +14,31 @@ const WHEEL_CONFIG = {
 type SelectionMode = "random" | "manual"
 
 type WheelState = {
-    rotation: number
-    spinStart: number | null
-    selected: Restaurant | null
-    selectionMode: SelectionMode
-    targetCount: number
-    selectedIds: string[]
-    filterClosedToday: boolean
-    restaurants: Restaurant[]
-    displaySegments: Restaurant[]
+    readonly rotation: number
+    readonly spinStart: number | null
+    readonly selected: Restaurant | null
+    readonly selectionMode: SelectionMode
+    readonly targetCount: number
+    readonly selectedIds: ReadonlyArray<string>
+    readonly filterClosedToday: boolean
+    readonly restaurants: ReadonlyArray<Restaurant>
+    readonly displaySegments: ReadonlyArray<Restaurant>
 }
 
 type WheelActions = {
-    spin: () => void
-    setSelectionMode: (mode: SelectionMode) => void
-    setTargetCount: (count: number) => void
-    toggleRestaurantSelection: (id: string) => void
-    clearSelected: () => void
-    toggleFilterClosedToday: () => void
-    setSelected: (id: string | null) => void
-    setRestaurants: (restaurants: Restaurant[]) => void
+    readonly spin: () => void
+    readonly setSelectionMode: (mode: SelectionMode) => void
+    readonly setTargetCount: (count: number) => void
+    readonly toggleRestaurantSelection: (id: string) => void
+    readonly clearSelected: () => void
+    readonly toggleFilterClosedToday: () => void
+    readonly setSelected: (id: string | null) => void
+    readonly setRestaurants: (restaurants: ReadonlyArray<Restaurant>) => void
 }
 
 type WheelStore = WheelState & WheelActions
 
-function computeSegments(state: WheelState): Restaurant[] {
+function computeSegments(state: WheelState): ReadonlyArray<Restaurant> {
     const r = state.restaurants
     const totalCount = r.length
     const validTarget = Math.min(state.targetCount, totalCount)
@@ -53,17 +53,17 @@ function computeSegments(state: WheelState): Restaurant[] {
     return shuffled.slice(0, validTarget)
 }
 
-function restaurantsFingerprint(r: Restaurant[]): string {
+function restaurantsFingerprint(r: ReadonlyArray<Restaurant>): string {
     if (r.length === 0) {
         return "empty"
     }
-    return `${r.length}:${r[0]!._id}:${r[r.length - 1]!._id}`
+    return `${r.length}:${String(r[0]!._id)}:${String(r[r.length - 1]!._id)}`
 }
 
-function createWheelStore(restaurants: Restaurant[]) {
+function createWheelStore(restaurants: ReadonlyArray<Restaurant>) {
     const totalCount = restaurants.length
     const validTarget = Math.min(4, totalCount)
-    const initial: Restaurant[] =
+    const initial: ReadonlyArray<Restaurant> =
         validTarget < 1 ? [] : [...restaurants].toSorted(() => Math.random() - 0.5).slice(0, validTarget)
 
     return create<WheelStore>()(
@@ -75,7 +75,7 @@ function createWheelStore(restaurants: Restaurant[]) {
             targetCount: 4,
             selectedIds: [],
             filterClosedToday: false,
-            restaurants,
+            restaurants: [...restaurants],
             displaySegments: initial,
 
             spin: () => {
@@ -103,73 +103,97 @@ function createWheelStore(restaurants: Restaurant[]) {
                 const randomAngle = Math.random() * 360
                 const totalRotation = Math.round(spins) * 360 + randomAngle
 
-                set((s) => {
-                    s.displaySegments = segments
-                    s.selected = null
-                    s.spinStart = Date.now()
-                    s.rotation += totalRotation
+                set({
+                    displaySegments: segments,
+                    selected: null,
+                    spinStart: Date.now(),
+                    rotation: state.rotation + totalRotation,
                 })
             },
 
-            setSelectionMode: (mode) =>
-                set((s) => {
-                    s.selectionMode = mode
-                    if (mode === "random") {
-                        s.selectedIds = []
-                    }
-                    s.selected = null
-                    s.spinStart = null
-                    s.displaySegments = computeSegments(s)
-                }),
+            setSelectionMode: (mode) => {
+                const current = get()
+                const nextSelectedIds = mode === "random" ? [] : [...current.selectedIds]
+                const nextSegments = computeSegments({
+                    ...current,
+                    selectionMode: mode,
+                    selectedIds: nextSelectedIds,
+                })
+                set({
+                    selectionMode: mode,
+                    selectedIds: nextSelectedIds,
+                    selected: null,
+                    spinStart: null,
+                    displaySegments: nextSegments,
+                })
+            },
 
-            setTargetCount: (count) =>
-                set((s) => {
-                    s.targetCount = count
-                    if (s.selectedIds.length > count) {
-                        s.selectedIds = s.selectedIds.slice(0, count)
-                    }
-                    s.selected = null
-                    s.spinStart = null
-                    s.displaySegments = computeSegments(s)
-                }),
+            setTargetCount: (count) => {
+                const current = get()
+                const nextSelectedIds =
+                    current.selectedIds.length > count ? current.selectedIds.slice(0, count) : [...current.selectedIds]
+                const nextSegments = computeSegments({
+                    ...current,
+                    targetCount: count,
+                    selectedIds: nextSelectedIds,
+                })
+                set({
+                    targetCount: count,
+                    selectedIds: nextSelectedIds,
+                    selected: null,
+                    spinStart: null,
+                    displaySegments: nextSegments,
+                })
+            },
 
-            toggleRestaurantSelection: (id) =>
-                set((s) => {
-                    const idx = s.selectedIds.indexOf(id)
-                    if (idx > -1) {
-                        s.selectedIds.splice(idx, 1)
-                    } else if (s.selectedIds.length < s.targetCount) {
-                        s.selectedIds.push(id)
-                    }
-                    s.selected = null
-                    s.spinStart = null
-                    s.displaySegments = computeSegments(s)
-                }),
+            toggleRestaurantSelection: (id) => {
+                const current = get()
+                const idx = current.selectedIds.indexOf(id)
+                let nextSelectedIds: string[]
+                if (idx > -1) {
+                    nextSelectedIds = current.selectedIds.filter((_, i) => i !== idx)
+                } else if (current.selectedIds.length < current.targetCount) {
+                    nextSelectedIds = [...current.selectedIds, id]
+                } else {
+                    nextSelectedIds = [...current.selectedIds]
+                }
+                const nextSegments = computeSegments({ ...current, selectedIds: nextSelectedIds })
+                set({
+                    selectedIds: nextSelectedIds,
+                    selected: null,
+                    spinStart: null,
+                    displaySegments: nextSegments,
+                })
+            },
 
-            clearSelected: () =>
-                set((s) => {
-                    s.selected = null
-                }),
+            clearSelected: () => {
+                set({ selected: null })
+            },
 
-            toggleFilterClosedToday: () =>
-                set((s) => {
-                    s.filterClosedToday = !s.filterClosedToday
-                }),
+            toggleFilterClosedToday: () => {
+                const current = get()
+                set({ filterClosedToday: !current.filterClosedToday })
+            },
 
-            setSelected: (id: string | null) =>
-                set((s) => {
-                    s.selected = id ? (s.restaurants.find((r) => r._id === id) ?? null) : null
-                }),
+            setSelected: (id: string | null) => {
+                const current = get()
+                const nextSelected =
+                    id !== null && id !== "" ? (current.restaurants.find((r) => r._id === id) ?? null) : null
+                set({ selected: nextSelected })
+            },
 
-            setRestaurants: (incoming: Restaurant[]) =>
-                set((s) => {
-                    const prev = restaurantsFingerprint(s.restaurants)
-                    s.restaurants = incoming
-                    const next = restaurantsFingerprint(s.restaurants)
-                    if (prev !== next) {
-                        s.displaySegments = computeSegments(s)
-                    }
-                }),
+            setRestaurants: (incoming: ReadonlyArray<Restaurant>) => {
+                const current = get()
+                const prev = restaurantsFingerprint(current.restaurants)
+                const nextRestaurants = [...incoming]
+                const next = restaurantsFingerprint(nextRestaurants)
+                if (prev !== next) {
+                    const nextSegments = computeSegments({ ...current, restaurants: nextRestaurants })
+                    set({ restaurants: nextRestaurants, displaySegments: nextSegments })
+                } else {
+                    set({ restaurants: nextRestaurants })
+                }
+            },
         })),
     )
 }
@@ -180,7 +204,7 @@ function useElapsed(active: boolean, start: number | null) {
     useEffect(() => {
         if (!active) {
             setElapsed(0)
-            return
+            return () => {}
         }
         let raf: number
         const tick = () => {
@@ -188,13 +212,15 @@ function useElapsed(active: boolean, start: number | null) {
             raf = requestAnimationFrame(tick)
         }
         raf = requestAnimationFrame(tick)
-        return () => cancelAnimationFrame(raf)
+        return () => {
+            cancelAnimationFrame(raf)
+        }
     }, [active, start])
 
     return elapsed
 }
 
-export function useWheelStore(restaurants: Restaurant[]) {
+export function useWheelStore(restaurants: ReadonlyArray<Restaurant>) {
     const storeRef = useRef(createWheelStore(restaurants))
     const store = storeRef.current
 

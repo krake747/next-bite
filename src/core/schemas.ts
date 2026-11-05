@@ -17,3 +17,14 @@ export const RestaurantSchema = v.object({
 })
 
 export type RestaurantOutput = v.InferOutput<typeof RestaurantSchema>
+
+const imageRecordSchema = v.object({
+    url: v.pipe(v.string(), v.minLength(1)),
+    storageId: v.pipe(v.string(), v.minLength(1)),
+})
+
+export type ImageRecord = v.InferOutput<typeof imageRecordSchema>
+
+export function parseImageRecord(value: unknown): ImageRecord {
+    return v.parse(imageRecordSchema, value)
+}

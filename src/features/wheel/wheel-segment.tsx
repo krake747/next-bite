@@ -48,7 +48,7 @@ function getContrastColor(bgColor: string): string {
     return luminance > 0.5 ? "#000000" : "#ffffff"
 }
 
-export function WheelSegment({ restaurant, idx }: { restaurant: Restaurant; idx: number }) {
+export function WheelSegment({ restaurant, idx }: Readonly<{ restaurant: Restaurant; idx: number }>) {
     const wheel = useWheel()
     const { radius, center } = WHEEL_CONFIG_CONSTANTS
 

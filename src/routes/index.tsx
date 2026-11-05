@@ -3,7 +3,7 @@ import LoaderPinwheel from "lucide-react/icons/loader-pinwheel"
 import Plus from "lucide-react/icons/plus"
 import { useState } from "react"
 
-import { useRestaurants, useAuth } from "@core/hooks"
+import { useRestaurants, useAuth, type Restaurant } from "@core/hooks"
 import { useFilterState } from "@core/use-filter"
 import { FriendsFilter } from "@features/friends-filter"
 import { FriendsFilterSkeleton } from "@features/friends-filter"
@@ -20,6 +20,30 @@ export const Route = createFileRoute("/")({
     component: Home,
 })
 
+function filterRestaurants(
+    restaurants: ReadonlyArray<Restaurant>,
+    filter: string | null,
+    search: string,
+    sortOrder: "added" | "name",
+): Restaurant[] {
+    let filteredResult = [...restaurants]
+
+    if (filter !== null && filter !== "") {
+        filteredResult = filteredResult.filter((r) => r.addedBy === filter)
+    }
+
+    const searchTerm = search.trim().toLowerCase()
+    if (searchTerm !== "") {
+        filteredResult = filteredResult.filter((r) => r.name.toLowerCase().includes(searchTerm))
+    }
+
+    if (sortOrder === "name") {
+        filteredResult = filteredResult.toSorted((a, b) => a.name.localeCompare(b.name))
+    }
+
+    return filteredResult
+}
+
 function Home() {
     const navigate = useNavigate()
     const auth = useAuth()
@@ -32,22 +56,20 @@ function Home() {
     const filterState = useFilterState()
     const [sortOrder, setSortOrder] = useState<"added" | "name">("added")
 
-    let filteredResult = restaurantListState
+    const filteredRestaurants = filterRestaurants(
+        restaurantListState,
+        filterState.filter,
+        filterState.search,
+        sortOrder,
+    )
 
-    if (filterState.filter) {
-        filteredResult = filteredResult.filter((r) => r.addedBy === filterState.filter)
+    const goToWheel = () => {
+        void navigate({ from: Route.fullPath, to: "/wheel", viewTransition: true })
     }
 
-    const searchTerm = filterState.search.trim().toLowerCase()
-    if (searchTerm) {
-        filteredResult = filteredResult.filter((r) => r.name.toLowerCase().includes(searchTerm))
+    const goToLogin = () => {
+        void navigate({ to: "/login", from: Route.fullPath, viewTransition: true })
     }
-
-    if (sortOrder === "name") {
-        filteredResult = [...filteredResult].toSorted((a, b) => a.name.localeCompare(b.name))
-    }
-
-    const filteredRestaurants = filteredResult
 
     return (
         <PageLayout>
@@ -74,33 +96,33 @@ function Home() {
                         <div className="pt-4">
                             <FriendsFilter
                                 filter={filterState.filter}
-                                handleFilter={(name) => filterState.setFilter(name)}
+                                handleFilter={(name) => {
+                                    filterState.setFilter(name)
+                                }}
                                 search={filterState.search}
-                                handleSearch={(value) => filterState.setSearch(value)}
+                                handleSearch={(value) => {
+                                    filterState.setSearch(value)
+                                }}
                                 sortOrder={sortOrder}
                                 onSortChange={setSortOrder}
                             >
                                 <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row">
-                                    <Button
-                                        onClick={() =>
-                                            navigate({ from: Route.fullPath, to: "/wheel", viewTransition: true })
-                                        }
-                                    >
+                                    <Button onClick={goToWheel}>
                                         <LoaderPinwheel className="size-4 transition-transform duration-200 group-hover:rotate-90" />
                                         Spin the wheel
                                     </Button>
                                     {auth.isAuthenticated ? (
-                                        <Button variant="secondary" onClick={() => setShowAddDialog(true)}>
+                                        <Button
+                                            variant="secondary"
+                                            onClick={() => {
+                                                setShowAddDialog(true)
+                                            }}
+                                        >
                                             <Plus className="size-4 transition-transform duration-200 group-hover:rotate-90" />
                                             Add Restaurant
                                         </Button>
                                     ) : (
-                                        <Button
-                                            variant="secondary"
-                                            onClick={() =>
-                                                navigate({ to: "/login", from: Route.fullPath, viewTransition: true })
-                                            }
-                                        >
+                                        <Button variant="secondary" onClick={goToLogin}>
                                             <Plus
                                                 className="size-4 transition-transform duration-200 group-hover:rotate-90"
                                                 aria-hidden="true"
@@ -113,9 +135,11 @@ function Home() {
                         </div>
                         <RestaurantList
                             restaurants={filteredRestaurants}
-                            hasFilter={!!filterState.filter}
-                            hasSearch={!!filterState.search}
-                            onAddClick={() => setShowAddDialog(true)}
+                            hasFilter={filterState.filter !== null && filterState.filter !== ""}
+                            hasSearch={filterState.search !== ""}
+                            onAddClick={() => {
+                                setShowAddDialog(true)
+                            }}
                             sortOrder={sortOrder}
                         />
                     </>

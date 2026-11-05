@@ -8,11 +8,14 @@ const envSchema = v.object({
     VITE_GOOGLE_MAPS_API_KEY: v.pipe(v.string(), v.minLength(1)),
 })
 
-export function parseEnv(values: Record<string, unknown>) {
+export function parseEnv(values: Readonly<Record<string, unknown>>) {
     const result = v.safeParse(envSchema, values)
     if (!result.success) {
-        const issues = result.issues.map((issue) => `\t${v.getDotPath(issue) ?? "env"}: ${issue.message}`)
-        throw new Error(`Invalid environment variables:\n${issues.join("\n")}`, { cause: result.issues })
+        const lines: string[] = []
+        for (const issue of result.issues) {
+            lines.push(`\t${v.getDotPath(issue) ?? "env"}: ${issue.message}`)
+        }
+        throw new Error(`Invalid environment variables:\n${lines.join("\n")}`, { cause: result.issues })
     }
 
     return result.output

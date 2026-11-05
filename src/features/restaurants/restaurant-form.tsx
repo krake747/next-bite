@@ -1,4 +1,4 @@
-import { useForm, Field, Form, reset, setInput } from "@formisch/react"
+import { useForm, Field, Form, reset, setInput, useField } from "@formisch/react"
 import { useState } from "react"
 
 import {
@@ -20,13 +20,25 @@ export type RestaurantFormProps =
     | { mode: "add"; onSuccess: () => void; onCancel: () => void }
     | { mode: "edit"; restaurant: Restaurant; onSuccess: () => void; onCancel: () => void }
 
-export function RestaurantForm(props: RestaurantFormProps) {
+type StripUndefined<T extends Record<string, unknown>> = {
+    [K in keyof T as undefined extends T[K] ? K : never]+?: Exclude<T[K], undefined>
+} & {
+    [K in keyof T as undefined extends T[K] ? never : K]: T[K]
+}
+
+function stripUndefined<T extends Record<string, unknown>>(output: T): StripUndefined<T> {
+    const stripped = Object.fromEntries(Object.entries(output).filter(([, field]) => field !== undefined))
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- entries are filtered to defined values, matching the type
+    return stripped as StripUndefined<T>
+}
+
+export function RestaurantForm(props: Readonly<RestaurantFormProps>) {
     const addRestaurantWithHours = useAddRestaurantWithHours()
     const updateRestaurant = useUpdateRestaurant()
     const friends = useFriends()
     const cleanupStorage = useCleanupStorage()
 
-    const initialImages = props.mode === "edit" ? (props.restaurant.images ?? []) : []
+    const initialImages = props.mode === "edit" ? [...(props.restaurant.images ?? [])] : []
     const [images, setImages] = useState<ImageRecord[]>(initialImages)
     const [pendingRemovedStorageIds, setPendingRemovedStorageIds] = useState<string[]>([])
 
@@ -48,8 +60,15 @@ export function RestaurantForm(props: RestaurantFormProps) {
               }
             : {}),
     })
+    const nameField = useField(form, { path: ["name"] })
+    const cuisineField = useField(form, { path: ["cuisine"] })
+    const locationField = useField(form, { path: ["location"] })
+    const notesField = useField(form, { path: ["notes"] })
+    const linkField = useField(form, { path: ["link"] })
+    const addedByField = useField(form, { path: ["addedBy"] })
+    const ratingField = useField(form, { path: ["rating"] })
 
-    const cleanupStorageIds = async (storageIds: string[]) => {
+    const cleanupStorageIds = async (storageIds: ReadonlyArray<string>) => {
         for (const storageId of storageIds) {
             try {
                 await cleanupStorage.mutateAsync({ storageId })
@@ -83,14 +102,14 @@ export function RestaurantForm(props: RestaurantFormProps) {
         }
     }
 
-    const handleSubmit = async (output: RestaurantOutput) => {
+    const handleSubmit = async (output: Readonly<Omit<RestaurantOutput, "images">>) => {
         try {
             if (props.mode === "add") {
-                await addRestaurantWithHours.mutateAsync({ ...output, images })
+                await addRestaurantWithHours.mutateAsync({ ...stripUndefined(output), images })
                 await cleanupStorageIds(pendingRemovedStorageIds)
                 setPendingRemovedStorageIds([])
             } else {
-                await updateRestaurant.mutateAsync({ id: props.restaurant._id, ...output, images })
+                await updateRestaurant.mutateAsync({ id: props.restaurant._id, ...stripUndefined(output), images })
             }
             reset(form)
             setImages([])
@@ -104,37 +123,37 @@ export function RestaurantForm(props: RestaurantFormProps) {
         <Form of={form} onSubmit={handleSubmit} className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
                 <Field of={form} path={["name"]}>
-                    {(field) => (
-                        <FieldWrapper errors={field.errors}>
+                    {() => (
+                        <FieldWrapper errors={nameField.errors}>
                             <Input
-                                {...field.props}
-                                input={field.input}
-                                errors={field.errors}
+                                input={nameField.input}
+                                errors={nameField.errors}
                                 label="Restaurant name"
                                 placeholder="The fancy burger place"
+                                {...nameField.props}
                             />
                         </FieldWrapper>
                     )}
                 </Field>
                 <Field of={form} path={["cuisine"]}>
-                    {(field) => (
-                        <FieldWrapper errors={field.errors}>
+                    {() => (
+                        <FieldWrapper errors={cuisineField.errors}>
                             <Input
-                                {...field.props}
-                                input={field.input}
-                                errors={field.errors}
+                                input={cuisineField.input}
+                                errors={cuisineField.errors}
                                 label="Cuisine"
                                 placeholder="Burgers, Italian, etc."
+                                {...cuisineField.props}
                             />
                         </FieldWrapper>
                     )}
                 </Field>
             </div>
             <Field of={form} path={["location"]}>
-                {(field) => (
-                    <FieldWrapper errors={field.errors}>
+                {() => (
+                    <FieldWrapper errors={locationField.errors}>
                         <PlacesAutocomplete
-                            value={field.input ?? ""}
+                            value={locationField.input ?? ""}
                             onChange={handleLocationChange}
                             label="Location"
                             placeholder="Search for a restaurant..."
@@ -143,40 +162,45 @@ export function RestaurantForm(props: RestaurantFormProps) {
                 )}
             </Field>
             <Field of={form} path={["notes"]}>
-                {(field) => (
-                    <FieldWrapper errors={field.errors}>
+                {() => (
+                    <FieldWrapper errors={notesField.errors}>
                         <Textarea
-                            {...field.props}
-                            input={field.input}
-                            errors={field.errors}
+                            input={notesField.input}
+                            errors={notesField.errors}
                             label="Notes"
                             placeholder="What to order..."
                             rows={3}
+                            {...notesField.props}
                         />
                     </FieldWrapper>
                 )}
             </Field>
             <div className="grid grid-cols-2 gap-4">
                 <Field of={form} path={["link"]}>
-                    {(field) => (
-                        <FieldWrapper errors={field.errors}>
+                    {() => (
+                        <FieldWrapper errors={linkField.errors}>
                             <Input
-                                {...field.props}
-                                input={field.input}
-                                errors={field.errors}
+                                input={linkField.input}
+                                errors={linkField.errors}
                                 type="url"
                                 label="Menu link"
                                 placeholder="https://menu.com/..."
+                                {...linkField.props}
                             />
                         </FieldWrapper>
                     )}
                 </Field>
                 <Field of={form} path={["addedBy"]}>
-                    {(field) => (
-                        <FieldWrapper errors={field.errors}>
-                            <Select {...field.props} input={field.input} errors={field.errors} label="Added by">
+                    {() => (
+                        <FieldWrapper errors={addedByField.errors}>
+                            <Select
+                                input={addedByField.input}
+                                errors={addedByField.errors}
+                                label="Added by"
+                                {...addedByField.props}
+                            >
                                 <option value="">Select friend</option>
-                                {friends?.map((f) => (
+                                {friends?.map((f: Readonly<{ name: string }>) => (
                                     <option key={f.name} value={f.name}>
                                         {f.name}
                                     </option>
@@ -188,15 +212,22 @@ export function RestaurantForm(props: RestaurantFormProps) {
             </div>
             {props.mode === "edit" && (
                 <Field of={form} path={["rating"]}>
-                    {(field) => (
-                        <FieldWrapper errors={field.errors}>
+                    {() => (
+                        <FieldWrapper errors={ratingField.errors}>
                             <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300">
                                 Rating
                             </label>
                             <div className="mt-2">
                                 <EmojiRating
-                                    rating={typeof field.input === "number" && field.input >= 1 ? field.input : null}
-                                    onRate={(rating) => setInput(form, { path: ["rating"], input: rating })}
+                                    rating={
+                                        typeof ratingField.input === "number" && ratingField.input >= 1
+                                            ? ratingField.input
+                                            : null
+                                    }
+                                    onRate={(rating) => {
+                                        setInput(form, { path: ["rating"], input: rating })
+                                    }}
+                                    {...addedByField.props}
                                 />
                             </div>
                         </FieldWrapper>
@@ -205,14 +236,26 @@ export function RestaurantForm(props: RestaurantFormProps) {
             )}
             <ImageUpload
                 images={images}
-                onImagesChange={setImages}
+                onImagesChange={(updated) => {
+                    setImages([...updated])
+                }}
                 maxImages={5}
                 {...(props.mode === "edit"
                     ? { restaurantId: props.restaurant._id }
-                    : { onRemove: (storageId) => setPendingRemovedStorageIds((prev) => [...prev, storageId]) })}
+                    : {
+                          onRemove: (storageId: string) => {
+                              setPendingRemovedStorageIds((prev: ReadonlyArray<string>) => [...prev, storageId])
+                          },
+                      })}
             />
             <div className="flex justify-end gap-2 pt-2">
-                <Button type="button" variant="secondary" onClick={handleClose}>
+                <Button
+                    type="button"
+                    variant="secondary"
+                    onClick={() => {
+                        void handleClose()
+                    }}
+                >
                     Cancel
                 </Button>
                 <Button type="submit">{props.mode === "add" ? "Add Restaurant" : "Save Changes"}</Button>

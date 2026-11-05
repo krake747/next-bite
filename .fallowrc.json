@@ -13,7 +13,7 @@
         "unused-file": "warn",
         "boundary-violation": "error"
     },
-    "ignoreDependencies": ["@fontsource-variable/*"],
+    "ignoreDependencies": ["@fontsource-variable/*", "@types/google.maps"],
     "ignoreFindings": ["cloudflare.config.ts"],
     "boundaries": {
         "zones": [

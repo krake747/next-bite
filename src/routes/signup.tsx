@@ -1,4 +1,4 @@
-import { useForm, Field, Form } from "@formisch/react"
+import { useForm, Field, Form, useField } from "@formisch/react"
 import { createFileRoute, useNavigate } from "@tanstack/react-router"
 import UserIcon from "lucide-react/icons/user"
 import { useState } from "react"
@@ -39,8 +39,12 @@ function SignupPage() {
     const [passwordError, setPasswordError] = useState<string | null>(null)
 
     const form = useForm({ schema: SignupSchema })
+    const nameField = useField(form, { path: ["name"] })
+    const emailField = useField(form, { path: ["email"] })
+    const passwordField = useField(form, { path: ["password"] })
+    const confirmPasswordField = useField(form, { path: ["confirmPassword"] })
 
-    const handleSubmit = async (output: SignupInput) => {
+    const handleSubmit = async (output: Readonly<SignupInput>) => {
         setPasswordError(null)
 
         if (output.password !== output.confirmPassword) {
@@ -50,7 +54,7 @@ function SignupPage() {
 
         try {
             await auth.signUpWithPassword(output.name, output.email, output.password)
-            navigate({ to: redirectTo ?? "/", replace: true, from: Route.fullPath })
+            void navigate({ to: redirectTo ?? "/", replace: true, from: Route.fullPath })
         } catch {
             return
         }
@@ -59,6 +63,8 @@ function SignupPage() {
     if (auth.isLoading) {
         return <LoadingPlaceholder />
     }
+
+    const bannerError = [passwordError, auth.error].find((part) => part !== null && part !== "")
 
     return (
         <AuthLayout
@@ -94,61 +100,61 @@ function SignupPage() {
                 </p>
             }
         >
-            {(auth.error || passwordError) && <ErrorBanner>{passwordError || auth.error}</ErrorBanner>}
+            {bannerError !== undefined && <ErrorBanner>{bannerError}</ErrorBanner>}
 
             <Form of={form} onSubmit={handleSubmit} className="space-y-4">
                 <Field of={form} path={["name"]}>
-                    {(field) => (
-                        <FieldWrapper errors={field.errors}>
+                    {() => (
+                        <FieldWrapper errors={nameField.errors}>
                             <Input
-                                {...field.props}
-                                input={field.input}
-                                errors={field.errors}
+                                input={nameField.input}
+                                errors={nameField.errors}
                                 type="text"
                                 label="Name"
                                 placeholder="Your name"
+                                {...nameField.props}
                             />
                         </FieldWrapper>
                     )}
                 </Field>
                 <Field of={form} path={["email"]}>
-                    {(field) => (
-                        <FieldWrapper errors={field.errors}>
+                    {() => (
+                        <FieldWrapper errors={emailField.errors}>
                             <Input
-                                {...field.props}
-                                input={field.input}
-                                errors={field.errors}
+                                input={emailField.input}
+                                errors={emailField.errors}
                                 type="email"
                                 label="Email"
                                 placeholder="you@example.com"
+                                {...emailField.props}
                             />
                         </FieldWrapper>
                     )}
                 </Field>
                 <Field of={form} path={["password"]}>
-                    {(field) => (
-                        <FieldWrapper errors={field.errors}>
+                    {() => (
+                        <FieldWrapper errors={passwordField.errors}>
                             <Input
-                                {...field.props}
-                                input={field.input}
-                                errors={field.errors}
+                                input={passwordField.input}
+                                errors={passwordField.errors}
                                 type="password"
                                 label="Password"
                                 placeholder="••••••••"
+                                {...passwordField.props}
                             />
                         </FieldWrapper>
                     )}
                 </Field>
                 <Field of={form} path={["confirmPassword"]}>
-                    {(field) => (
-                        <FieldWrapper errors={field.errors}>
+                    {() => (
+                        <FieldWrapper errors={confirmPasswordField.errors}>
                             <Input
-                                {...field.props}
-                                input={field.input}
-                                errors={field.errors}
+                                input={confirmPasswordField.input}
+                                errors={confirmPasswordField.errors}
                                 type="password"
                                 label="Confirm password"
                                 placeholder="••••••••"
+                                {...confirmPasswordField.props}
                             />
                         </FieldWrapper>
                     )}

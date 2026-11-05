@@ -4,8 +4,8 @@ export function useFilterState(initial: string | null = null) {
     const [filter, setFilter] = useState<string | null>(initial)
     const [search, setSearch] = useState("")
 
-    const filtered = <T>(items: T[], getName: (item: T) => string): T[] => {
-        let result = filter ? items.filter((x) => getName(x) === filter) : items
+    const filtered = <T>(items: ReadonlyArray<T>, getName: (item: Readonly<T>) => string): T[] => {
+        let result = filter !== null && filter !== "" ? items.filter((x) => getName(x) === filter) : [...items]
         const searchTerm = search.trim().toLowerCase()
         if (searchTerm) {
             result = result.filter((x) => getName(x).toLowerCase().includes(searchTerm))

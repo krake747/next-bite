@@ -13,15 +13,41 @@ const DEFAULT_ZOOM = 1
 const MAX_ZOOM = 4
 
 type ImageGalleryModalProps = {
-    images: string[]
+    images: ReadonlyArray<string>
     show: boolean
     onOpenChange: (open: boolean) => void
-    initialIndex?: number
+    initialIndex?: number | undefined
 }
 
 type PanState = { x: number; y: number }
 
-export function ImageGalleryModal(props: ImageGalleryModalProps) {
+type TouchListLike = Readonly<{
+    readonly length: number
+    readonly [index: number]: Readonly<{ readonly clientX: number; readonly clientY: number }>
+}>
+
+type TouchStateEvent = Readonly<{
+    readonly touches: TouchListLike
+    readonly preventDefault: () => void
+}>
+
+type PointerStateEvent = Readonly<{
+    readonly preventDefault: () => void
+    readonly pointerId: number
+    readonly clientX: number
+    readonly clientY: number
+}>
+
+type WheelStateEvent = Readonly<{
+    readonly preventDefault: () => void
+    readonly deltaY: number
+}>
+
+type KeyStateEvent = Readonly<{
+    readonly key: string
+}>
+
+export function ImageGalleryModal(props: Readonly<ImageGalleryModalProps>) {
     const [currentIndex, setCurrentIndex] = useState(props.initialIndex ?? 0)
     const [lightboxOpen, setLightboxOpen] = useState(false)
     const [zoom, setZoom] = useState(1)
@@ -43,7 +69,7 @@ export function ImageGalleryModal(props: ImageGalleryModalProps) {
         setCurrentIndex(props.initialIndex ?? 0)
     }, [props.initialIndex])
 
-    const getTouchDistance = (touches: React.TouchList) => {
+    const getTouchDistance = (touches: TouchListLike) => {
         if (touches.length < 2) {
             return 0
         }
@@ -57,7 +83,7 @@ export function ImageGalleryModal(props: ImageGalleryModalProps) {
         return Math.sqrt(dx * dx + dy * dy)
     }
 
-    const handleTouchStart = (e: React.TouchEvent) => {
+    const handleTouchStart = (e: TouchStateEvent) => {
         if (e.touches.length === 2) {
             e.preventDefault()
             initialPinchDistance.current = getTouchDistance(e.touches)
@@ -65,8 +91,14 @@ export function ImageGalleryModal(props: ImageGalleryModalProps) {
         }
     }
 
-    const handleTouchMove = (e: React.TouchEvent) => {
-        if (e.touches.length === 2 && initialPinchDistance.current && initialPinchZoom.current) {
+    const handleTouchMove = (e: TouchStateEvent) => {
+        if (
+            e.touches.length === 2 &&
+            initialPinchDistance.current !== undefined &&
+            initialPinchDistance.current !== 0 &&
+            initialPinchZoom.current !== undefined &&
+            initialPinchZoom.current !== 0
+        ) {
             e.preventDefault()
             const currentDistance = getTouchDistance(e.touches)
             const scale = currentDistance / initialPinchDistance.current
@@ -86,12 +118,12 @@ export function ImageGalleryModal(props: ImageGalleryModalProps) {
     useEffect(() => {
         const container = imageContainerRef.current
         if (!container) {
-            return
+            return () => {}
         }
 
         let ptrRef: { x: number; y: number } | null = null
 
-        const onPointerDown = (e: PointerEvent) => {
+        const onPointerDown = (e: PointerStateEvent) => {
             if (zoom <= DEFAULT_ZOOM) {
                 return
             }
@@ -102,7 +134,7 @@ export function ImageGalleryModal(props: ImageGalleryModalProps) {
             setIsPanning(true)
         }
 
-        const onPointerMove = (e: PointerEvent) => {
+        const onPointerMove = (e: PointerStateEvent) => {
             if (!ptrRef) {
                 return
             }
@@ -189,10 +221,12 @@ export function ImageGalleryModal(props: ImageGalleryModalProps) {
             setIsFullscreen(!!document.fullscreenElement)
         }
         document.addEventListener("fullscreenchange", handleFullscreenChange)
-        return () => document.removeEventListener("fullscreenchange", handleFullscreenChange)
+        return () => {
+            document.removeEventListener("fullscreenchange", handleFullscreenChange)
+        }
     }, [])
 
-    const handleWheel = (e: React.WheelEvent) => {
+    const handleWheel = (e: WheelStateEvent) => {
         e.preventDefault()
         if (e.deltaY < 0) {
             handleZoomIn()
@@ -222,7 +256,7 @@ export function ImageGalleryModal(props: ImageGalleryModalProps) {
         resetZoom()
     }
 
-    const handleKeyDown = (e: React.KeyboardEvent) => {
+    const handleKeyDown = (e: KeyStateEvent) => {
         if (e.key === "ArrowLeft") {
             const newIndex = currentIndex === 0 ? props.images.length - 1 : currentIndex - 1
             setCurrentIndex(newIndex)
@@ -258,7 +292,9 @@ export function ImageGalleryModal(props: ImageGalleryModalProps) {
                             </Dialog.Title>
                             <button
                                 type="button"
-                                onClick={() => props.onOpenChange(false)}
+                                onClick={() => {
+                                    props.onOpenChange(false)
+                                }}
                                 className="rounded-full p-2 text-white hover:bg-white/20"
                                 aria-label="Close gallery"
                             >
@@ -317,10 +353,14 @@ export function ImageGalleryModal(props: ImageGalleryModalProps) {
                                     onZoomIn={handleZoomIn}
                                     onZoomOut={handleZoomOut}
                                     onRotate={handleRotate}
-                                    onToggleFullscreen={toggleFullscreen}
+                                    onToggleFullscreen={() => {
+                                        void toggleFullscreen()
+                                    }}
                                     onReset={resetZoom}
                                     isFullscreen={isFullscreen}
-                                    onBackToGrid={() => setLightboxOpen(false)}
+                                    onBackToGrid={() => {
+                                        setLightboxOpen(false)
+                                    }}
                                 />
                             </>
                         )}

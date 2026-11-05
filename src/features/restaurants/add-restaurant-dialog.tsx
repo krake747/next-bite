@@ -6,11 +6,18 @@ import { useAuth } from "@core/hooks"
 
 import { RestaurantForm } from "./restaurant-form"
 
-export function AddRestaurantDialog({ show, onOpenChange }: { show: boolean; onOpenChange: (open: boolean) => void }) {
+export function AddRestaurantDialog({
+    show,
+    onOpenChange,
+}: Readonly<{ show: boolean; onOpenChange: (open: boolean) => void }>) {
     const auth = useAuth()
 
-    const handleSuccess = () => onOpenChange(false)
-    const handleCancel = () => onOpenChange(false)
+    const handleSuccess = () => {
+        onOpenChange(false)
+    }
+    const handleCancel = () => {
+        onOpenChange(false)
+    }
 
     return (
         <Dialog.Root open={show} onOpenChange={onOpenChange}>

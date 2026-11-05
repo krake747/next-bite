@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect, type ReactNode } from "react"
+import { createContext, useContext, useState, useEffect } from "react"
 
 const ThemeKey = "next-bite-theme"
 
@@ -16,7 +16,7 @@ function isValidTheme(value: string | null): value is Theme {
     return value === "light" || value === "dark"
 }
 
-export function ThemeProvider({ children }: { children: ReactNode }) {
+export function ThemeProvider({ children }: Readonly<{ children: React.ReactNode }>) {
     const [theme, setTheme] = useState<Theme>(() => {
         const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches
         const stored = localStorage.getItem(ThemeKey)

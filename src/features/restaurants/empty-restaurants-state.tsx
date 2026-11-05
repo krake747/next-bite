@@ -11,15 +11,15 @@ export function EmptyRestaurantsState({
     hasFilter,
     hasSearch,
     onAddClick,
-}: {
-    hasFilter?: boolean
-    hasSearch?: boolean
-    onAddClick?: () => void
-}) {
+}: Readonly<{
+    hasFilter?: boolean | undefined
+    hasSearch?: boolean | undefined
+    onAddClick?: (() => void) | undefined
+}>) {
     const navigate = useNavigate()
     const auth = useAuth()
 
-    const isSearching = hasFilter || hasSearch
+    const isSearching = hasFilter === true || hasSearch === true
 
     return (
         <div className="col-span-full flex flex-col items-center justify-center py-16 text-center">
@@ -61,7 +61,12 @@ export function EmptyRestaurantsState({
                         Add your first restaurant
                     </Button>
                 ) : (
-                    <Button variant="secondary" onClick={() => navigate({ to: "/login", viewTransition: true })}>
+                    <Button
+                        variant="secondary"
+                        onClick={() => {
+                            void navigate({ to: "/login", viewTransition: true })
+                        }}
+                    >
                         <Sparkles className="size-4" />
                         Sign in to add restaurants
                     </Button>

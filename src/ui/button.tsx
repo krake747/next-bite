@@ -1,5 +1,4 @@
 import { Button as BaseButton } from "@base-ui/react/button"
-import { type ComponentProps } from "react"
 
 import { cva, type VariantProps } from "@ui/variants"
 
@@ -24,19 +23,18 @@ const button = cva({
     },
 })
 
-type ButtonProps = ComponentProps<typeof BaseButton> & VariantProps<typeof button>
+type ButtonProps = VariantProps<typeof button> & {
+    readonly type?: "button" | "submit" | "reset" | undefined
+    readonly onClick?: (() => void) | undefined
+    readonly disabled?: boolean | undefined
+    readonly nativeButton?: boolean | undefined
+    readonly className?: string | undefined
+    readonly children?: React.ReactNode | undefined
+}
 
-export function Button({ variant, size, className, children, ...rest }: ButtonProps) {
+export function Button({ variant, size, className, children, ...rest }: Readonly<ButtonProps>) {
     return (
-        <BaseButton
-            data-slot="button"
-            {...rest}
-            className={
-                typeof className === "function"
-                    ? (state) => button({ variant, size, class: className(state) })
-                    : button({ variant, size, class: className })
-            }
-        >
+        <BaseButton data-slot="button" className={button({ variant, size, class: className })} {...rest}>
             {children}
         </BaseButton>
     )

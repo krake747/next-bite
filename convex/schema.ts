@@ -1,6 +1,8 @@
 import { defineSchema, defineTable } from "convex/server"
 import { v } from "convex/values"
 
+import { openingHoursValidator, restaurantImageValidator } from "./validators"
+
 export default defineSchema({
     restaurants: defineTable({
         name: v.string(),
@@ -13,21 +15,9 @@ export default defineSchema({
         addedBy: v.string(),
         rating: v.optional(v.number()),
         userId: v.optional(v.id("users")),
-        images: v.optional(v.array(v.object({ url: v.string(), storageId: v.string() }))),
+        images: v.optional(v.array(restaurantImageValidator)),
         placeId: v.optional(v.string()),
-        openingHours: v.optional(
-            v.object({
-                openNow: v.boolean(),
-                periods: v.array(
-                    v.object({
-                        day: v.number(),
-                        openTime: v.string(),
-                        closeTime: v.string(),
-                    }),
-                ),
-                weekdayText: v.array(v.string()),
-            }),
-        ),
+        openingHours: v.optional(openingHoursValidator),
     }),
     friends: defineTable({
         name: v.string(),

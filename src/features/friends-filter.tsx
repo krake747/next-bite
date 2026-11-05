@@ -1,6 +1,5 @@
 import ArrowUpDown from "lucide-react/icons/arrow-up-down"
 import Funnel from "lucide-react/icons/funnel"
-import { type ReactNode } from "react"
 
 import { useFriends } from "@core/hooks"
 import { SearchInput } from "@ui/search-input"
@@ -15,18 +14,20 @@ export function FriendsFilter({
     sortOrder,
     onSortChange,
     children,
-}: {
+}: Readonly<{
     filter: string | null
     handleFilter: (name: string | null) => void
     search: string
     handleSearch: (value: string) => void
     sortOrder: "added" | "name"
     onSortChange: (order: "added" | "name") => void
-    children: ReactNode
-}) {
+    children: React.ReactNode
+}>) {
     const friends = useFriends()
 
-    const toggleFilter = (name: string) => () => handleFilter(name === filter ? null : name)
+    const toggleFilter = (name: string) => () => {
+        handleFilter(name === filter ? null : name)
+    }
 
     return (
         <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-start">
@@ -36,14 +37,15 @@ export function FriendsFilter({
                         <Funnel
                             className={cx(
                                 "size-4",
-                                filter &&
+                                filter !== null &&
+                                    filter !== "" &&
                                     "fill-neutral-500 text-neutral-600 dark:fill-neutral-400 dark:text-neutral-300",
                             )}
                         />
                         <span className="text-xs font-medium tracking-wide uppercase">Filter</span>
                     </div>
                     <div className="h-4 w-px bg-neutral-200 dark:bg-neutral-700" />
-                    {friends?.map((friend) => (
+                    {friends?.map((friend: Readonly<{ name: string }>) => (
                         <button
                             key={friend.name}
                             type="button"
@@ -58,10 +60,12 @@ export function FriendsFilter({
                             {friend.name}
                         </button>
                     ))}
-                    {filter && (
+                    {filter !== null && filter !== "" && (
                         <button
                             type="button"
-                            onClick={() => handleFilter(null)}
+                            onClick={() => {
+                                handleFilter(null)
+                            }}
                             className="text-xs font-medium text-flame-pea-600 underline-offset-2 transition-colors hover:text-flame-pea-700 hover:underline dark:text-flame-pea-400"
                         >
                             Clear
@@ -80,7 +84,9 @@ export function FriendsFilter({
                         <ArrowUpDown className="size-3.5 text-neutral-400" />
                         <button
                             type="button"
-                            onClick={() => onSortChange(sortOrder === "added" ? "name" : "added")}
+                            onClick={() => {
+                                onSortChange(sortOrder === "added" ? "name" : "added")
+                            }}
                             className="text-xs font-medium whitespace-nowrap text-neutral-600 transition-colors hover:text-flame-pea-600 dark:text-neutral-400 dark:hover:text-flame-pea-400"
                         >
                             {sortOrder === "added" ? "Recently added" : "Name (A-Z)"}

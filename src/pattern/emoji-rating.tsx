@@ -26,13 +26,22 @@ const EMOJI_TITLES: Record<(typeof RATING_EMOJIS)[number], string> = {
 
 const RATING_COLORS = ["#b53920", "#db573d", "#eb6348", "#7d2b1f", "#f58974", "#fab5a7", "#fde7e3"] as const
 
+type FocusableButton = Readonly<{
+    readonly focus: (options: Readonly<{ readonly preventScroll: boolean }>) => void
+}>
+
+type RateClickEvent = Readonly<{
+    readonly preventDefault: () => void
+    readonly currentTarget: FocusableButton
+}>
+
 export function EmojiRating({
     rating,
     onRate,
-}: {
+}: Readonly<{
     rating: number | null
     onRate: (rating: number) => void | Promise<void>
-}) {
+}>) {
     const [hoverRating, setHoverRating] = useState<number | null>(null)
 
     const displayRating = hoverRating ?? rating
@@ -48,14 +57,19 @@ export function EmojiRating({
 
     const activeColor = displayRating !== null ? RATING_COLORS[displayRating] : "#b53920"
 
-    const handleRate = async (index: number, button: HTMLButtonElement) => {
+    const handleRate = async (index: number, button: FocusableButton) => {
         await onRate(index)
         button.focus({ preventScroll: true })
     }
 
     return (
         <div className="flex w-full flex-col items-center gap-2">
-            <div className="flex items-center gap-0.5" onMouseLeave={() => setHoverRating(null)}>
+            <div
+                className="flex items-center gap-0.5"
+                onMouseLeave={() => {
+                    setHoverRating(null)
+                }}
+            >
                 {RATING_EMOJIS.map((emoji, index) => {
                     const isActive = displayRating === index
 
@@ -63,8 +77,10 @@ export function EmojiRating({
                         <button
                             key={index}
                             type="button"
-                            onMouseEnter={() => setHoverRating(index)}
-                            onClick={(e) => {
+                            onMouseEnter={() => {
+                                setHoverRating(index)
+                            }}
+                            onClick={(e: RateClickEvent) => {
                                 e.preventDefault()
                                 void handleRate(index, e.currentTarget)
                             }}

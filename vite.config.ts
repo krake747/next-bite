@@ -70,6 +70,10 @@ export default defineConfig({
             builtin: true,
             browser: true,
         },
+        options: {
+            typeAware: true,
+            typeCheck: false,
+        },
         settings: {
             shadcn: {
                 ui: "@ui",
@@ -137,6 +141,11 @@ export default defineConfig({
             "no-array-sort": "error",
             "no-array-callback-reference": "allow",
             eqeqeq: "error",
+            "krakeflow/no-direct-env-read": "error",
+            "krakeflow/no-manual-memo": "error",
+            "krakeflow/no-test-timeout": "error",
+            "krakeflow/no-react-type-imports": "error",
+            "krakeflow/jsx-spread-last": "error",
             "shadcn/no-restyle": [
                 "error",
                 {
@@ -246,6 +255,8 @@ export default defineConfig({
                         },
                     ],
                     "typescript/consistent-type-definitions": ["error", "type"],
+                    "typescript/prefer-readonly-parameter-types": "allow",
+                    "typescript/strict-boolean-expressions": "allow",
                     "typescript/no-empty-object-type": "allow",
                     "typescript/no-non-null-assertion": "allow",
                     "typescript/no-explicit-any": "allow",
@@ -317,6 +328,28 @@ export default defineConfig({
                 },
             },
             {
+                files: ["convex/http.ts"],
+                plugins: ["typescript"],
+                rules: {
+                    "typescript/require-await": "allow",
+                },
+            },
+            {
+                files: ["src/core/env.ts"],
+                rules: {
+                    "krakeflow/no-direct-env-read": "allow",
+                },
+            },
+            {
+                files: ["lint/**"],
+                plugins: ["typescript", "import"],
+                rules: {
+                    "typescript/prefer-readonly-parameter-types": "allow",
+                    "typescript/strict-boolean-expressions": "allow",
+                    "import/no-default-export": "allow",
+                },
+            },
+            {
                 files: ["vite.config.ts", "cloudflare.config.ts"],
                 plugins: ["import"],
                 rules: {
@@ -328,6 +361,10 @@ export default defineConfig({
             {
                 name: "shadcn",
                 specifier: "@shadcn/lint",
+            },
+            {
+                name: "krakeflow",
+                specifier: "./lint/krakeflow.js",
             },
         ],
     },

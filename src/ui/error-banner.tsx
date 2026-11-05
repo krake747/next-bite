@@ -1,8 +1,10 @@
-import { type ComponentProps } from "react"
-
 import { cx } from "@ui/variants"
 
-export function ErrorBanner({ className, children, ...props }: ComponentProps<"div">) {
+export function ErrorBanner({
+    className,
+    children,
+    ...props
+}: Readonly<{ className?: string | undefined; children?: React.ReactNode | undefined }>) {
     return (
         <div
             data-slot="error-banner"

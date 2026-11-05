@@ -11,7 +11,6 @@ import SquarePen from "lucide-react/icons/square-pen"
 import Trash2 from "lucide-react/icons/trash-2"
 import Utensils from "lucide-react/icons/utensils"
 import { useState } from "react"
-import { type ComponentProps } from "react"
 
 import {
     useUpdateRestaurant,
@@ -32,7 +31,14 @@ import { OpeningHoursDialog } from "@ui/opening-hours-dialog"
 
 import { EditRestaurantDialog } from "./edit-restaurant-dialog"
 
-export function RestaurantCard({ restaurant, ...cardProps }: { restaurant: Restaurant } & ComponentProps<typeof Card>) {
+export function RestaurantCard({
+    restaurant,
+    ...cardProps
+}: Readonly<{
+    restaurant: Restaurant
+    className?: string | undefined
+    style?: Readonly<{ readonly animationDelay?: string }> | undefined
+}>) {
     const [showEdit, setShowEdit] = useState(false)
     const [showGallery, setShowGallery] = useState(false)
     const [showMap, setShowMap] = useState(false)
@@ -45,32 +51,41 @@ export function RestaurantCard({ restaurant, ...cardProps }: { restaurant: Resta
     const refreshOpeningHours = useRefreshOpeningHours()
     const lookupPlaceIdAndHours = useLookupPlaceIdAndHours()
 
-    const hasPlaceId = !!restaurant.placeId
+    const hasPlaceId = restaurant.placeId !== undefined && restaurant.placeId !== ""
 
-    const handleRefreshHours = async () => {
+    const handleRefreshHours = () => {
         setIsRefreshing(true)
-        try {
-            await refreshOpeningHours.mutateAsync({ restaurantId: restaurant._id })
-        } catch {
-        } finally {
-            setIsRefreshing(false)
-        }
+        refreshOpeningHours.mutate(
+            { restaurantId: restaurant._id },
+            {
+                onError: () => {},
+                onSettled: () => {
+                    setIsRefreshing(false)
+                },
+            },
+        )
     }
 
-    const handleFindHours = async () => {
+    const handleFindHours = () => {
         setIsRefreshing(true)
-        try {
-            await lookupPlaceIdAndHours.mutateAsync({ restaurantId: restaurant._id })
-        } catch {
-        } finally {
-            setIsRefreshing(false)
-        }
+        lookupPlaceIdAndHours.mutate(
+            { restaurantId: restaurant._id },
+            {
+                onError: () => {},
+                onSettled: () => {
+                    setIsRefreshing(false)
+                },
+            },
+        )
     }
 
-    const handleDelete = async () => {
-        try {
-            await deleteRestaurant.mutateAsync({ id: restaurant._id })
-        } catch {}
+    const handleDelete = () => {
+        deleteRestaurant.mutate(
+            { id: restaurant._id },
+            {
+                onError: () => {},
+            },
+        )
     }
 
     const hasLocation = restaurant.lat !== null && restaurant.lng !== null
@@ -81,7 +96,7 @@ export function RestaurantCard({ restaurant, ...cardProps }: { restaurant: Resta
     const hasImages = (restaurant.images?.length ?? 0) > 0
     const imageCount = restaurant.images?.length ?? 0
     const imageSrc = hasImages ? restaurant.images?.[0]?.url : undefined
-    const imageUrls = restaurant.images?.map((img) => img.url) ?? []
+    const imageUrls = restaurant.images?.map((img: Readonly<{ url: string }>) => img.url) ?? []
 
     const handleRate = async (rating: number) => {
         await updateRestaurant.mutateAsync({ id: restaurant._id, rating })
@@ -111,7 +126,9 @@ export function RestaurantCard({ restaurant, ...cardProps }: { restaurant: Resta
                 <RestaurantCardContent
                     restaurant={restaurant}
                     hasLocation={hasLocation}
-                    onShowHours={() => setShowHours(true)}
+                    onShowHours={() => {
+                        setShowHours(true)
+                    }}
                 />
                 <RestaurantCardNotes notes={restaurant.notes} />
                 {hasLocation && location && (
@@ -157,7 +174,7 @@ function RestaurantCardImage({
     hasPlaceId,
     handleRefreshHours,
     handleFindHours,
-}: {
+}: Readonly<{
     restaurant: Restaurant
     hasImages: boolean
     imageSrc: string | undefined
@@ -170,7 +187,7 @@ function RestaurantCardImage({
     hasPlaceId: boolean
     handleRefreshHours: () => void
     handleFindHours: () => void
-}) {
+}>) {
     return (
         <div className="relative aspect-2/1 w-full overflow-hidden">
             {hasImages ? (
@@ -231,7 +248,9 @@ function RestaurantCardImage({
                     )}
                     <button
                         type="button"
-                        onClick={() => setShowEdit(true)}
+                        onClick={() => {
+                            setShowEdit(true)
+                        }}
                         aria-label="Edit restaurant"
                         className="flex h-7 w-7 items-center justify-center rounded-full bg-white/90 text-neutral-600 shadow-md backdrop-blur-sm transition-all duration-200 hover:bg-white hover:text-neutral-900 hover:shadow-lg"
                         title="Edit restaurant"
@@ -240,7 +259,9 @@ function RestaurantCardImage({
                     </button>
                     <button
                         type="button"
-                        onClick={() => setShowDeleteConfirm(true)}
+                        onClick={() => {
+                            setShowDeleteConfirm(true)
+                        }}
                         aria-label="Delete restaurant"
                         className="flex h-7 w-7 items-center justify-center rounded-full bg-white/90 text-red-600 shadow-md backdrop-blur-sm transition-all duration-200 hover:bg-red-50 hover:text-red-700 hover:shadow-lg"
                         title="Delete restaurant"
@@ -254,7 +275,9 @@ function RestaurantCardImage({
                 <div className="absolute right-3 bottom-3">
                     <button
                         type="button"
-                        onClick={() => setShowGallery(true)}
+                        onClick={() => {
+                            setShowGallery(true)
+                        }}
                         className="flex items-center gap-1.5 rounded-full bg-white/95 px-2.5 py-1 text-xs font-medium text-neutral-900 shadow-lg backdrop-blur-md transition-colors duration-200 hover:bg-white"
                     >
                         <Images className="size-3.5" />
@@ -270,11 +293,11 @@ function RestaurantCardContent({
     restaurant,
     hasLocation,
     onShowHours,
-}: {
+}: Readonly<{
     restaurant: Restaurant
     hasLocation: boolean
     onShowHours: () => void
-}) {
+}>) {
     return (
         <div className="flex flex-col gap-4 p-5 md:gap-3 md:p-4">
             <div className="flex flex-col gap-1">
@@ -285,7 +308,7 @@ function RestaurantCardContent({
                     >
                         {restaurant.name}
                     </h3>
-                    {restaurant.link && (
+                    {restaurant.link !== undefined && restaurant.link !== "" && (
                         <a
                             href={restaurant.link}
                             target="_blank"
@@ -332,8 +355,8 @@ function RestaurantCardContent({
     )
 }
 
-function RestaurantCardNotes({ notes }: { notes: string | null | undefined }) {
-    if (!notes) {
+function RestaurantCardNotes({ notes }: Readonly<{ notes: string | null | undefined }>) {
+    if (notes === null || notes === undefined || notes === "") {
         return null
     }
     return (
@@ -365,18 +388,20 @@ function RestaurantCardMap({
     location,
     directionsUrl,
     restaurant,
-}: {
+}: Readonly<{
     showMap: boolean
     setShowMap: (show: boolean) => void
-    location: { lat: number; lng: number }
+    location: Readonly<{ readonly lat: number; readonly lng: number }>
     directionsUrl: string
     restaurant: Restaurant
-}) {
+}>) {
     return (
         <div className="px-5 md:px-4">
             <button
                 type="button"
-                onClick={() => setShowMap(!showMap)}
+                onClick={() => {
+                    setShowMap(!showMap)
+                }}
                 className="group/trigger flex w-full items-center justify-between rounded-xl border border-transparent px-3 py-2.5 text-sm text-neutral-600 transition-all duration-200 hover:border-neutral-200 hover:bg-neutral-50 dark:text-neutral-400 dark:hover:border-white/8 dark:hover:bg-white/3"
             >
                 <div className="flex items-center gap-3">
@@ -425,10 +450,10 @@ function RestaurantCardMap({
 function RestaurantCardRating({
     rating,
     onRate,
-}: {
+}: Readonly<{
     rating: number | null
     onRate: (rating: number) => void | Promise<void>
-}) {
+}>) {
     return (
         <div className="px-5 py-2 md:px-4 md:py-2">
             <EmojiRating rating={rating} onRate={onRate} />
@@ -441,12 +466,12 @@ function DeleteConfirmDialog({
     onOpenChange,
     onConfirm,
     restaurantName,
-}: {
+}: Readonly<{
     show: boolean
     onOpenChange: (open: boolean) => void
     onConfirm: () => void
     restaurantName: string
-}) {
+}>) {
     return (
         <Dialog.Root open={show} onOpenChange={onOpenChange}>
             <Dialog.Portal>

@@ -1,12 +1,16 @@
-import { type ComponentProps } from "react"
-
 import { cx } from "@ui/variants"
 
-export function Card({ className, ...props }: ComponentProps<"div">) {
+type CardStyle = {
+    readonly animationDelay?: string | undefined
+}
+
+export function Card({
+    className,
+    ...props
+}: Readonly<{ className?: string | undefined; style?: CardStyle | undefined }>) {
     return (
         <div
             data-slot="card"
-            {...props}
             className={cx(
                 "group relative flex flex-col overflow-hidden rounded-2xl bg-white",
                 "shadow-[0_1px_2px_rgba(0,0,0,0.02),0_4px_8px_rgba(0,0,0,0.03),0_8px_16px_rgba(0,0,0,0.02)]",
@@ -15,6 +19,7 @@ export function Card({ className, ...props }: ComponentProps<"div">) {
                 "dark:hover:border-white/12 dark:hover:shadow-[0_8px_24px_rgba(0,0,0,0.4)]",
                 className,
             )}
+            {...props}
         />
     )
 }

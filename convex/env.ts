@@ -2,7 +2,7 @@
 
 export function getValidatedConvexSiteUrl(): string {
     const url = process.env.CONVEX_SITE_URL
-    if (!url) {
+    if (url === undefined || url === "") {
         throw new Error("CONVEX_SITE_URL environment variable is not set")
     }
     return url

@@ -3,9 +3,10 @@ import { type Doc } from "../../convex/_generated/dataModel"
 import { useAuth } from "./auth-provider"
 import { useConvexQuery, useConvexMutation, useConvexAction } from "./convex-client.tsx"
 import { env } from "./env"
+import { parseImageRecord, type ImageRecord } from "./schemas"
 
-export const useRestaurants = () => useConvexQuery<Restaurant[]>(api.restaurants.get)
-export const useFriends = () => useConvexQuery<Friend[]>(api.friends.get)
+export const useRestaurants = () => useConvexQuery(api.restaurants.get)
+export const useFriends = () => useConvexQuery(api.friends.get)
 
 export const useAddRestaurantWithHours = () => useConvexAction(api.restaurants.addWithOpeningHours)
 export const useUpdateRestaurant = () => useConvexMutation(api.restaurants.update)
@@ -16,23 +17,20 @@ export const useCleanupStorage = () => useConvexMutation(api.restaurants.cleanup
 export const useRefreshOpeningHours = () => useConvexAction(api.restaurants.refreshOpeningHours)
 export const useLookupPlaceIdAndHours = () => useConvexAction(api.restaurants.lookupPlaceIdAndHours)
 
-export type ImageRecord = {
-    url: string
-    storageId: string
-}
-
 export type OpeningHours = {
-    openNow: boolean
-    periods: {
-        day: number
-        openTime: string
-        closeTime: string
-    }[]
-    weekdayText: string[]
+    readonly openNow: boolean
+    readonly periods: ReadonlyArray<
+        Readonly<{
+            readonly day: number
+            readonly openTime: string
+            readonly closeTime: string
+        }>
+    >
+    readonly weekdayText: ReadonlyArray<string>
 }
 
 export function useUploadImage() {
-    return async (file: File): Promise<ImageRecord> => {
+    return async (file: Readonly<File>): Promise<ImageRecord> => {
         const uploadUrl = `${env.VITE_CONVEX_SITE_URL}/upload`
 
         const response = await fetch(uploadUrl, {
@@ -46,13 +44,12 @@ export function useUploadImage() {
             throw new Error(`Upload failed: ${response.status} ${errorText}`)
         }
 
-        const result = (await response.json()) as ImageRecord
+        const result = parseImageRecord(await response.json())
         return { url: result.url, storageId: result.storageId }
     }
 }
 
 export { useAuth }
+export type { ImageRecord }
 
 export type Restaurant = Doc<"restaurants">
-
-type Friend = Doc<"friends">

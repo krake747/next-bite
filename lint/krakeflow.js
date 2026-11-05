@@ -1,0 +1,159 @@
+import { definePlugin, defineRule } from "vite-plus/lint/plugins"
+
+const noReactTypeImports = defineRule({
+    meta: {
+        type: "problem",
+        docs: {
+            description: "Forbid type imports from react; use the global React namespace.",
+        },
+        messages: {
+            unexpected: "Type import from react. Use the global React namespace instead (React.{{name}}).",
+        },
+    },
+    create(context) {
+        return {
+            ImportDeclaration(node) {
+                if (node.source.value !== "react") {
+                    return
+                }
+                for (const specifier of node.specifiers) {
+                    const typeOnly = node.importKind === "type" || specifier.importKind === "type"
+                    if (typeOnly && specifier.local) {
+                        context.report({
+                            node: specifier,
+                            messageId: "unexpected",
+                            data: { name: specifier.local.name },
+                        })
+                    }
+                }
+            },
+        }
+    },
+})
+
+const noManualMemo = defineRule({
+    meta: {
+        type: "problem",
+        docs: {
+            description: "React Compiler memoizes automatically; do not call useMemo or useCallback.",
+        },
+        messages: {
+            unexpected:
+                "React Compiler handles memoization. Remove {{name}}, or allow krakeflow/no-manual-memo for this file in vite.config.ts when a dependency needs manual memo.",
+        },
+    },
+    create(context) {
+        return {
+            CallExpression(node) {
+                if (node.callee.type !== "Identifier") {
+                    return
+                }
+                if (node.callee.name !== "useMemo" && node.callee.name !== "useCallback") {
+                    return
+                }
+                context.report({ node, messageId: "unexpected", data: { name: node.callee.name } })
+            },
+        }
+    },
+})
+
+const noTestTimeout = defineRule({
+    meta: {
+        type: "problem",
+        docs: {
+            description: "Forbid per-file test timeouts; timeouts live in vite.config.ts test projects.",
+        },
+        messages: {
+            unexpected: "Per-file test timeout. Set the timeout on the tier project in vite.config.ts instead.",
+        },
+    },
+    create(context) {
+        return {
+            CallExpression(node) {
+                if (node.callee.type !== "MemberExpression" || node.callee.computed) {
+                    return
+                }
+                if (node.callee.object.type !== "Identifier" || node.callee.object.name !== "vi") {
+                    return
+                }
+                if (node.callee.property.type !== "Identifier" || node.callee.property.name !== "setConfig") {
+                    return
+                }
+                const setsTimeout = node.arguments.some(
+                    (argument) =>
+                        argument.type === "ObjectExpression" &&
+                        argument.properties.some(
+                            (property) =>
+                                property.type === "Property" &&
+                                ((property.key.type === "Identifier" && property.key.name === "testTimeout") ||
+                                    (property.key.type === "Literal" && property.key.value === "testTimeout")),
+                        ),
+                )
+                if (setsTimeout) {
+                    context.report({ node, messageId: "unexpected" })
+                }
+            },
+        }
+    },
+})
+
+const noDirectEnvRead = defineRule({
+    meta: {
+        type: "problem",
+        docs: {
+            description: "Read VITE_* only through src/core/env.ts; never import.meta.env directly.",
+        },
+        messages: {
+            unexpected: "Direct import.meta.env read. Import env from @core/env instead.",
+        },
+    },
+    create(context) {
+        return {
+            MemberExpression(node) {
+                if (node.object.type !== "MetaProperty") {
+                    return
+                }
+                if (node.object.meta.name !== "import" || node.object.property.name !== "meta") {
+                    return
+                }
+                if (node.property.type !== "Identifier" || node.property.name !== "env") {
+                    return
+                }
+                context.report({ node, messageId: "unexpected" })
+            },
+        }
+    },
+})
+
+const jsxSpreadLast = defineRule({
+    meta: {
+        type: "problem",
+        docs: {
+            description: "Keep JSX spread attributes last so consumer props override.",
+        },
+        messages: {
+            unexpected: "JSX spread is not last. Move {...props} after explicit props.",
+        },
+    },
+    create(context) {
+        return {
+            JSXOpeningElement(node) {
+                const spread = node.attributes.findIndex((attribute) => attribute.type === "JSXSpreadAttribute")
+                if (spread !== -1 && spread !== node.attributes.length - 1) {
+                    context.report({ node: node.attributes[spread], messageId: "unexpected" })
+                }
+            },
+        }
+    },
+})
+
+export default definePlugin({
+    meta: { name: "krakeflow" },
+    rules: {
+        "no-react-type-imports": noReactTypeImports,
+        "no-manual-memo": noManualMemo,
+        "no-test-timeout": noTestTimeout,
+        "no-direct-env-read": noDirectEnvRead,
+        "jsx-spread-last": jsxSpreadLast,
+    },
+})
