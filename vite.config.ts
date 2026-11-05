@@ -141,11 +141,11 @@ export default defineConfig({
             "no-array-sort": "error",
             "no-array-callback-reference": "allow",
             eqeqeq: "error",
-            "krakeflow/no-direct-env-read": "error",
-            "krakeflow/no-manual-memo": "error",
-            "krakeflow/no-test-timeout": "error",
-            "krakeflow/no-react-type-imports": "error",
-            "krakeflow/jsx-spread-last": "error",
+            "nextbite/no-direct-env-read": "error",
+            "nextbite/no-manual-memo": "error",
+            "nextbite/no-test-timeout": "error",
+            "nextbite/no-react-type-imports": "error",
+            "nextbite/jsx-spread-last": "error",
             "shadcn/no-restyle": [
                 "error",
                 {
@@ -337,7 +337,7 @@ export default defineConfig({
             {
                 files: ["src/core/env.ts"],
                 rules: {
-                    "krakeflow/no-direct-env-read": "allow",
+                    "nextbite/no-direct-env-read": "allow",
                 },
             },
             {
@@ -363,8 +363,8 @@ export default defineConfig({
                 specifier: "@shadcn/lint",
             },
             {
-                name: "krakeflow",
-                specifier: "./lint/krakeflow.js",
+                name: "nextbite",
+                specifier: "./lint/nextbite.js",
             },
         ],
     },

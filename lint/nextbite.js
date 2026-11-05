@@ -39,7 +39,7 @@ const noManualMemo = defineRule({
         },
         messages: {
             unexpected:
-                "React Compiler handles memoization. Remove {{name}}, or allow krakeflow/no-manual-memo for this file in vite.config.ts when a dependency needs manual memo.",
+                "React Compiler handles memoization. Remove {{name}}, or allow nextbite/no-manual-memo for this file in vite.config.ts when a dependency needs manual memo.",
         },
     },
     create(context) {
@@ -148,7 +148,7 @@ const jsxSpreadLast = defineRule({
 })
 
 export default definePlugin({
-    meta: { name: "krakeflow" },
+    meta: { name: "nextbite" },
     rules: {
         "no-react-type-imports": noReactTypeImports,
         "no-manual-memo": noManualMemo,
