@@ -1,9 +1,9 @@
 import { type GenericDatabaseReader } from "convex/server"
 import { v } from "convex/values"
 
-import { type DataModel } from "./_generated/dataModel"
-import { type Doc, type Id } from "./_generated/dataModel"
+import { type DataModel, type Doc } from "./_generated/dataModel"
 import { mutation, query } from "./_generated/server"
+import { requireMembership } from "./groups"
 import { requireUserId } from "./helpers"
 import { requireOwnedRestaurant } from "./restaurants"
 import { shareTargetValidator } from "./validators"
@@ -47,24 +47,6 @@ async function requireTargetUser(ctx: { db: GenericDatabaseReader<DataModel> }, 
         .unique()
     if (!profile) {
         throw new Error("User not found")
-    }
-}
-
-async function requireMembership(
-    ctx: { db: GenericDatabaseReader<DataModel> },
-    groupId: Id<"groups">,
-    userId: string,
-): Promise<void> {
-    const group = await ctx.db.get(groupId)
-    if (!group) {
-        throw new Error("Group not found")
-    }
-    const membership = await ctx.db
-        .query("groupMembers")
-        .withIndex("by_group_user", (q) => q.eq("groupId", groupId).eq("userId", userId))
-        .unique()
-    if (!membership) {
-        throw new Error("Unauthorized: group membership required")
     }
 }
 
@@ -115,7 +97,7 @@ export const shareWithGroup = mutation({
     handler: async (ctx, args) => {
         const userId = await requireUserId(ctx)
         const restaurant = await requireOwnedRestaurant(ctx, args.restaurantId)
-        await requireMembership(ctx, args.groupId, userId)
+        await requireMembership(ctx.db, args.groupId, userId)
         const target: ShareTarget = { kind: "group", groupId: args.groupId }
         const existing = await ctx.db
             .query("restaurantShares")

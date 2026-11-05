@@ -79,6 +79,19 @@ describe("sharing and social gating", () => {
         )
     })
 
+    it("rejects anonymous and non-owner enrichment actions", async () => {
+        const t = setup()
+        await registerUser(t, "anna", "anna@example.com")
+        await registerUser(t, "ben", "ben@example.com")
+        const restaurantId = await createRestaurant(t, "anna")
+
+        await expect(t.action(api.restaurants.lookupPlaceIdAndHours, { restaurantId })).rejects.toThrow("Unauthorized")
+        await expect(asUser(t, "ben").action(api.restaurants.lookupPlaceIdAndHours, { restaurantId })).rejects.toThrow(
+            "only the owner",
+        )
+        await expect(t.action(api.restaurants.refreshOpeningHours, { restaurantId })).rejects.toThrow("Unauthorized")
+    })
+
     it("accepts group invitations idempotently", async () => {
         const t = setup()
         await registerUser(t, "anna", "anna@example.com")

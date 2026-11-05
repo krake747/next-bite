@@ -519,9 +519,13 @@ export const cleanupStorage = mutation({
 export const refreshOpeningHours = action({
     args: { restaurantId: v.id("restaurants") },
     handler: async (ctx, { restaurantId }) => {
+        const userId = await requireUserId(ctx)
         const restaurant = await ctx.runQuery(internal.restaurants._getRestaurantById, { id: restaurantId })
         if (!restaurant) {
             throw new Error("Restaurant not found")
+        }
+        if (restaurant.ownerId !== userId) {
+            throw new Error("Unauthorized: only the owner can change this restaurant")
         }
 
         const placeId = restaurant.address.enrichment?.placeId
@@ -541,10 +545,14 @@ export const lookupPlaceIdAndHours = action({
     args: { restaurantId: v.id("restaurants") },
     handler: async (ctx, { restaurantId }) => {
         console.log("lookupPlaceIdAndHours: Starting for restaurantId:", restaurantId)
+        const userId = await requireUserId(ctx)
         const restaurant = await ctx.runQuery(internal.restaurants._getRestaurantById, { id: restaurantId })
         if (!restaurant) {
             console.log("lookupPlaceIdAndHours: Restaurant not found")
             throw new Error("Restaurant not found")
+        }
+        if (restaurant.ownerId !== userId) {
+            throw new Error("Unauthorized: only the owner can change this restaurant")
         }
 
         console.log("lookupPlaceIdAndHours: Restaurant:", restaurant.name, restaurant.address.label)
