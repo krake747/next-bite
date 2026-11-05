@@ -15,7 +15,7 @@ import {
     useLookupPlaceIdAndHours,
     type Restaurant,
 } from "@core/hooks"
-import { emptySocial, type RestaurantSocial } from "@core/social"
+import { emptySocialSummary, type RestaurantSocial, type RestaurantSocialSummary } from "@core/social"
 import { EmojiRating } from "@pattern/emoji-rating"
 import { Button } from "@ui/button"
 import { Card } from "@ui/card"
@@ -35,7 +35,7 @@ export function RestaurantCard({
     ...cardProps
 }: Readonly<{
     restaurant: Restaurant
-    social?: RestaurantSocial | undefined
+    social?: RestaurantSocial | RestaurantSocialSummary | undefined
     onToggleWant?: (() => void) | undefined
     detailsHref?: string | undefined
     className?: string | undefined
@@ -96,7 +96,7 @@ export function RestaurantCard({
 
     const photos = (restaurant.images ?? []).map((img) => ({ url: img.url }))
 
-    const active = social ?? emptySocial
+    const active = social ?? emptySocialSummary
     const handleToggleWant = onToggleWant ?? (() => {})
 
     const handleRate = async (rating: number) => {

@@ -1,7 +1,7 @@
 import { useEffect, useRef } from "react"
 
 import { type Restaurant } from "@core/hooks"
-import { type RestaurantSocial } from "@core/social"
+import { type RestaurantSocial, type RestaurantSocialSummary } from "@core/social"
 
 import { EmptyRestaurantsState } from "./empty-restaurants-state"
 import { RestaurantCard } from "./restaurant-card"
@@ -14,7 +14,7 @@ type RestaurantListProps = {
     hasSearch?: boolean | undefined
     onAddClick: () => void
     sortOrder?: "added" | "name" | undefined
-    socialFor?: ((restaurant: Restaurant) => RestaurantSocial) | undefined
+    socialFor?: ((restaurant: Restaurant) => RestaurantSocial | RestaurantSocialSummary) | undefined
     onToggleWant?: ((restaurant: Restaurant) => void) | undefined
     detailsHrefFor?: ((restaurant: Restaurant) => string) | undefined
 }

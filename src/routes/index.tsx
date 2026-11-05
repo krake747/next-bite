@@ -5,14 +5,13 @@ import { useState } from "react"
 
 import { useRestaurants, useAuth, type Restaurant } from "@core/hooks"
 import {
-    emptySocial,
+    emptySocialSummary,
     feedTextFor,
     orderFeedByRecency,
-    summarizeSocial,
-    useSocialSnapshot,
+    useSocialSummaries,
     useToggleInterest,
     useToggleLike,
-    type RestaurantSocial,
+    type RestaurantSocialSummary,
 } from "@core/social"
 import { useFilterState } from "@core/use-filter"
 import { FriendsFilter } from "@features/friends-filter"
@@ -55,14 +54,13 @@ function filterRestaurants(
     return filteredResult
 }
 
-function useSocialActions() {
+function useSocialActions(restaurants: ReadonlyArray<Restaurant> | undefined) {
     const navigate = useNavigate()
     const auth = useAuth()
-    const snapshot = useSocialSnapshot()
+    const summaries = useSocialSummaries(restaurants === undefined ? [] : restaurants.map((r) => r._id))
     const toggleInterest = useToggleInterest()
     const toggleLike = useToggleLike()
 
-    const userId = auth.user?.id ?? null
     const displayName = auth.user?.name ?? auth.user?.email ?? "Someone"
 
     const goToLogin = () => {
@@ -77,8 +75,8 @@ function useSocialActions() {
         })
     }
 
-    const socialFor = (restaurant: Restaurant): RestaurantSocial =>
-        snapshot === undefined ? emptySocial : summarizeSocial(restaurant._id, snapshot, userId)
+    const socialFor = (restaurant: Restaurant): RestaurantSocialSummary =>
+        summaries?.get(restaurant._id) ?? emptySocialSummary
 
     const toggleWantFor = (restaurant: Restaurant) => () => {
         if (!auth.isAuthenticated) {
@@ -96,7 +94,7 @@ function useSocialActions() {
         toggleLike.mutate({ restaurantId: restaurant._id, displayName })
     }
 
-    return { auth, snapshot, socialFor, toggleWantFor, toggleLikeFor, goToDetail, goToLogin, displayName }
+    return { auth, summaries, socialFor, toggleWantFor, toggleLikeFor, goToDetail, goToLogin, displayName }
 }
 
 type SocialActions = ReturnType<typeof useSocialActions>
@@ -129,7 +127,7 @@ function HomeFeed({
                             liked: social.liked,
                             likeCount: social.likeCount,
                             onToggleLike: actions.toggleLikeFor(restaurant),
-                            commentCount: social.comments.length,
+                            commentCount: social.commentCount,
                             onComment: () => {
                                 actions.goToDetail(restaurant)
                             },
@@ -233,8 +231,8 @@ function HomeActions({ onAddClick }: Readonly<{ onAddClick: () => void }>) {
 }
 
 function Home() {
-    const actions = useSocialActions()
     const restaurants = useRestaurants()
+    const actions = useSocialActions(restaurants)
     const [showAddDialog, setShowAddDialog] = useState(false)
     const [sortOrder, setSortOrder] = useState<"added" | "name">("added")
 

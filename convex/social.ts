@@ -35,6 +35,72 @@ export const listComments = query({
     handler: async (ctx) => ctx.db.query("comments").collect(),
 })
 
+export const getForRestaurant = query({
+    args: {
+        restaurantId: v.id("restaurants"),
+    },
+    handler: async (ctx, args) => {
+        const [interests, likes, comments] = await Promise.all([
+            ctx.db
+                .query("interests")
+                .withIndex("by_restaurant", (q) => q.eq("restaurantId", args.restaurantId))
+                .collect(),
+            ctx.db
+                .query("likes")
+                .withIndex("by_restaurant", (q) => q.eq("restaurantId", args.restaurantId))
+                .collect(),
+            ctx.db
+                .query("comments")
+                .withIndex("by_restaurant", (q) => q.eq("restaurantId", args.restaurantId))
+                .collect(),
+        ])
+        return { interests, likes, comments }
+    },
+})
+
+export const getSummaries = query({
+    args: {
+        restaurantIds: v.array(v.id("restaurants")),
+    },
+    handler: async (ctx, args) => {
+        if (args.restaurantIds.length > 100) {
+            throw new Error("Too many restaurants requested")
+        }
+        const identity = await ctx.auth.getUserIdentity()
+        const userId = identity?.subject ?? null
+        return Promise.all(
+            args.restaurantIds.map(async (restaurantId) => {
+                const [interests, likes, comments] = await Promise.all([
+                    ctx.db
+                        .query("interests")
+                        .withIndex("by_restaurant", (q) => q.eq("restaurantId", restaurantId))
+                        .collect(),
+                    ctx.db
+                        .query("likes")
+                        .withIndex("by_restaurant", (q) => q.eq("restaurantId", restaurantId))
+                        .collect(),
+                    ctx.db
+                        .query("comments")
+                        .withIndex("by_restaurant", (q) => q.eq("restaurantId", restaurantId))
+                        .collect(),
+                ])
+                const wants = interests.filter((interest) => interest.status === "want")
+                const beens = interests.filter((interest) => interest.status === "been")
+                return {
+                    restaurantId,
+                    wantCount: wants.length,
+                    beenCount: beens.length,
+                    likeCount: likes.length,
+                    commentCount: comments.length,
+                    wanted: userId === null ? false : wants.some((interest) => interest.userId === userId),
+                    liked: userId === null ? false : likes.some((like) => like.userId === userId),
+                    interestedNames: interests.slice(0, 5).map((interest) => interest.displayName),
+                }
+            }),
+        )
+    },
+})
+
 export const toggleInterest = mutation({
     args: {
         restaurantId: v.id("restaurants"),
@@ -43,6 +109,10 @@ export const toggleInterest = mutation({
     },
     handler: async (ctx, args) => {
         const userId = await requireUserId(ctx)
+        const restaurant = await ctx.db.get(args.restaurantId)
+        if (!restaurant) {
+            throw new Error("Restaurant not found")
+        }
         const name = cleanDisplayName(args.displayName)
         const existing = await ctx.db
             .query("interests")
@@ -73,6 +143,10 @@ export const toggleLike = mutation({
     },
     handler: async (ctx, args) => {
         const userId = await requireUserId(ctx)
+        const restaurant = await ctx.db.get(args.restaurantId)
+        if (!restaurant) {
+            throw new Error("Restaurant not found")
+        }
         const name = cleanDisplayName(args.displayName)
         const existing = await ctx.db
             .query("likes")
@@ -99,6 +173,10 @@ export const addComment = mutation({
     },
     handler: async (ctx, args) => {
         const userId = await requireUserId(ctx)
+        const restaurant = await ctx.db.get(args.restaurantId)
+        if (!restaurant) {
+            throw new Error("Restaurant not found")
+        }
         const name = cleanDisplayName(args.displayName)
         const text = args.text.trim().slice(0, 500)
         if (text === "") {

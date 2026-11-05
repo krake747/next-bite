@@ -24,6 +24,16 @@ function asStorageId(storageId: string): Id<"_storage"> {
     return storageId as unknown as Id<"_storage">
 }
 
+async function requireUserId(ctx: {
+    auth: { getUserIdentity: () => Promise<{ subject: string } | null> }
+}): Promise<string> {
+    const identity = await ctx.auth.getUserIdentity()
+    if (!identity) {
+        throw new Error("Unauthorized: authentication required")
+    }
+    return identity.subject
+}
+
 const googleOpeningHoursSchema = valibot.object({
     currentOpeningHours: valibot.optional(
         valibot.object({
@@ -243,6 +253,7 @@ export const add = mutation({
         openingHours: v.optional(openingHoursValidator),
     },
     handler: async (ctx, args) => {
+        await requireUserId(ctx)
         const { images, placeId, ...rest } = args
 
         if (images && images.length > MAX_IMAGES) {
@@ -334,6 +345,7 @@ export const update = mutation({
         openingHours: v.optional(openingHoursValidator),
     },
     handler: async (ctx, args) => {
+        await requireUserId(ctx)
         const { id, images, ...updates } = args
 
         if (images && images.length > MAX_IMAGES) {
@@ -354,6 +366,7 @@ export const remove = mutation({
         id: v.id("restaurants"),
     },
     handler: async (ctx, args) => {
+        await requireUserId(ctx)
         const restaurant = await ctx.db.get(args.id)
         if (!restaurant) {
             throw new Error("Restaurant not found")
@@ -377,6 +390,7 @@ export const deleteImage = mutation({
         storageId: v.string(),
     },
     handler: async (ctx, args) => {
+        await requireUserId(ctx)
         const restaurant = await ctx.db.get(args.restaurantId)
         if (!restaurant) {
             throw new Error("Restaurant not found")

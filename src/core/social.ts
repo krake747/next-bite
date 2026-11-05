@@ -1,4 +1,5 @@
 import { api } from "../../convex/_generated/api"
+import { type Id } from "../../convex/_generated/dataModel"
 import { useConvexMutation, useConvexQuery } from "./convex-client.tsx"
 
 export type InterestInput = {
@@ -37,6 +38,26 @@ export type RestaurantSocial = {
     readonly liked: boolean
     readonly comments: ReadonlyArray<CommentInput>
     readonly interestedNames: ReadonlyArray<string>
+}
+
+export type RestaurantSocialSummary = {
+    readonly wantCount: number
+    readonly beenCount: number
+    readonly wanted: boolean
+    readonly likeCount: number
+    readonly liked: boolean
+    readonly commentCount: number
+    readonly interestedNames: ReadonlyArray<string>
+}
+
+export const emptySocialSummary: RestaurantSocialSummary = {
+    wantCount: 0,
+    beenCount: 0,
+    wanted: false,
+    likeCount: 0,
+    liked: false,
+    commentCount: 0,
+    interestedNames: [],
 }
 
 export const emptySocial: RestaurantSocial = {
@@ -91,6 +112,27 @@ export function useSocialSnapshot(): SocialSnapshot | undefined {
         return undefined
     }
     return { interests, likes, comments }
+}
+
+export function useSocialSummaries(
+    restaurantIds: ReadonlyArray<Id<"restaurants">>,
+): ReadonlyMap<string, RestaurantSocialSummary> | undefined {
+    const summaries = useConvexQuery(api.social.getSummaries, { restaurantIds: [...restaurantIds] })
+    if (summaries === undefined) {
+        return undefined
+    }
+    return new Map(summaries.map((summary) => [summary.restaurantId, summary]))
+}
+
+export function useSocialForRestaurant(
+    restaurantId: Id<"restaurants">,
+    userId: string | null,
+): RestaurantSocial | undefined {
+    const snapshot = useConvexQuery(api.social.getForRestaurant, { restaurantId })
+    if (snapshot === undefined) {
+        return undefined
+    }
+    return summarizeSocial(restaurantId, snapshot, userId)
 }
 
 export const useToggleInterest = () => useConvexMutation(api.social.toggleInterest)

@@ -4,10 +4,9 @@ import { useState } from "react"
 import { useRestaurants, useAuth, type Restaurant } from "@core/hooks"
 import {
     emptySocial,
-    summarizeSocial,
     useAddComment,
     useDeleteComment,
-    useSocialSnapshot,
+    useSocialForRestaurant,
     useToggleInterest,
     useToggleLike,
     type RestaurantSocial,
@@ -187,7 +186,10 @@ function RestaurantDetail() {
     const navigate = useNavigate()
     const auth = useAuth()
     const restaurants = useRestaurants()
-    const snapshot = useSocialSnapshot()
+    const userId = auth.user?.id ?? null
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- single documented boundary conversion from router param
+    const restaurantConvexId = restaurantId as unknown as Id<"restaurants">
+    const restaurantSocial = useSocialForRestaurant(restaurantConvexId, userId)
     const toggleInterest = useToggleInterest()
     const toggleLike = useToggleLike()
     const [showHours, setShowHours] = useState(false)
@@ -202,9 +204,8 @@ function RestaurantDetail() {
         return <DetailNotFound />
     }
 
-    const userId = auth.user?.id ?? null
     const displayName = auth.user?.name ?? auth.user?.email ?? "Someone"
-    const social = snapshot === undefined ? emptySocial : summarizeSocial(restaurant._id, snapshot, userId)
+    const social = restaurantSocial ?? emptySocial
     const photos = (restaurant.images ?? []).map((img) => ({ url: img.url }))
 
     const goToLogin = () => {
