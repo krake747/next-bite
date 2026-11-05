@@ -25,10 +25,6 @@ export const inviteTargetValidator = v.union(
     v.object({ kind: v.literal("group"), groupId: v.id("groups") }),
 )
 
-export const collectionScopeValidator = v.object({
-    kind: v.literal("group"),
-    groupId: v.id("groups"),
-})
 export const openingHoursValidator = v.object({
     openState: v.union(v.literal("open"), v.literal("closed"), v.literal("unknown")),
     periods: v.array(

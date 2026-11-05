@@ -2,7 +2,6 @@ import { defineSchema, defineTable } from "convex/server"
 import { v } from "convex/values"
 
 import {
-    collectionScopeValidator,
     enrichmentValidator,
     imageObjectValidator,
     inviteTargetValidator,
@@ -55,9 +54,6 @@ export default defineSchema({
         text: v.string(),
         createdAt: v.number(),
     }).index("by_restaurant", ["restaurantId"]),
-    friends: defineTable({
-        name: v.string(),
-    }),
     profiles: defineTable({
         authUserId: v.string(),
         name: v.string(),
@@ -100,9 +96,11 @@ export default defineSchema({
         ownerId: v.string(),
         name: v.string(),
         description: v.string(),
-        scope: v.optional(collectionScopeValidator),
+        groupId: v.optional(v.id("groups")),
         createdAt: v.number(),
-    }).index("by_owner", ["ownerId"]),
+    })
+        .index("by_owner", ["ownerId"])
+        .index("by_group", ["groupId"]),
     collectionItems: defineTable({
         collectionId: v.id("collections"),
         restaurantId: v.id("restaurants"),

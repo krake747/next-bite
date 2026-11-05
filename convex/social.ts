@@ -1,15 +1,21 @@
+import { type GenericMutationCtx } from "convex/server"
 import { v } from "convex/values"
 
-import { type Doc, type Id } from "./_generated/dataModel"
+import { type DataModel, type Doc, type Id } from "./_generated/dataModel"
 import { mutation, query } from "./_generated/server"
 import { authComponent } from "./auth"
 import { requireUserId } from "./helpers"
+import { isRestaurantVisibleTo } from "./shares"
 
 async function serverDisplayName(ctx: Parameters<typeof authComponent.getAuthUser>[0]): Promise<string> {
-    const user = await authComponent.getAuthUser(ctx)
-    const raw = user.name ?? user.email ?? "Someone"
-    const trimmed = raw.trim().slice(0, 60)
-    return trimmed === "" ? "Someone" : trimmed
+    try {
+        const user = await authComponent.getAuthUser(ctx)
+        const raw = user.name ?? user.email ?? "Someone"
+        const trimmed = raw.trim().slice(0, 60)
+        return trimmed === "" ? "Someone" : trimmed
+    } catch {
+        return "Someone"
+    }
 }
 
 async function requireRestaurant(
@@ -17,11 +23,26 @@ async function requireRestaurant(
         db: { get: (id: Id<"restaurants">) => Promise<Doc<"restaurants"> | null> }
     },
     restaurantId: Id<"restaurants">,
-): Promise<void> {
+): Promise<Doc<"restaurants">> {
     const restaurant = await ctx.db.get(restaurantId)
     if (!restaurant) {
         throw new Error("Restaurant not found")
     }
+    return restaurant
+}
+
+async function requireVisibleRestaurant(
+    ctx: GenericMutationCtx<DataModel>,
+    restaurantId: Id<"restaurants">,
+): Promise<{ userId: string; name: string }> {
+    const userId = await requireUserId(ctx)
+    const restaurant = await requireRestaurant(ctx, restaurantId)
+    const visible = await isRestaurantVisibleTo(ctx.db, userId, restaurant)
+    if (!visible) {
+        throw new Error("Unauthorized: restaurant is not shared with you")
+    }
+    const name = await serverDisplayName(ctx)
+    return { userId, name }
 }
 
 export const getForRestaurant = query({
@@ -96,9 +117,7 @@ export const toggleInterest = mutation({
         status: v.union(v.literal("want"), v.literal("been")),
     },
     handler: async (ctx, args) => {
-        const userId = await requireUserId(ctx)
-        await requireRestaurant(ctx, args.restaurantId)
-        const name = await serverDisplayName(ctx)
+        const { userId, name } = await requireVisibleRestaurant(ctx, args.restaurantId)
         const existing = await ctx.db
             .query("interests")
             .withIndex("by_user_restaurant", (q) => q.eq("userId", userId).eq("restaurantId", args.restaurantId))
@@ -126,9 +145,7 @@ export const toggleLike = mutation({
         restaurantId: v.id("restaurants"),
     },
     handler: async (ctx, args) => {
-        const userId = await requireUserId(ctx)
-        await requireRestaurant(ctx, args.restaurantId)
-        const name = await serverDisplayName(ctx)
+        const { userId, name } = await requireVisibleRestaurant(ctx, args.restaurantId)
         const existing = await ctx.db
             .query("likes")
             .withIndex("by_user_restaurant", (q) => q.eq("userId", userId).eq("restaurantId", args.restaurantId))
@@ -152,9 +169,7 @@ export const addComment = mutation({
         text: v.string(),
     },
     handler: async (ctx, args) => {
-        const userId = await requireUserId(ctx)
-        await requireRestaurant(ctx, args.restaurantId)
-        const name = await serverDisplayName(ctx)
+        const { userId, name } = await requireVisibleRestaurant(ctx, args.restaurantId)
         const text = args.text.trim().slice(0, 500)
         if (text === "") {
             throw new Error("Comment text is required")

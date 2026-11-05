@@ -165,7 +165,7 @@ type AuthCtx = {
     auth: { getUserIdentity: () => Promise<{ subject: string } | null> }
 }
 
-async function requireOwnedRestaurant(
+export async function requireOwnedRestaurant(
     ctx: AuthCtx & { db: DbGet },
     id: Id<"restaurants">,
 ): Promise<Doc<"restaurants">> {

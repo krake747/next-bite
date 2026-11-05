@@ -6,7 +6,7 @@ import { env } from "./env"
 import { parseImageRecord, type ImageRecord } from "./schemas"
 
 export const useRestaurants = () => useConvexQuery(api.restaurants.get)
-export const useFriends = () => useConvexQuery(api.friends.get)
+export const useFriends = () => useConvexQuery(api.friendships.listFriends)
 
 export const useAddRestaurantWithHours = () => useConvexAction(api.restaurants.addWithOpeningHours)
 export const useUpdateRestaurant = () => useConvexMutation(api.restaurants.update)
