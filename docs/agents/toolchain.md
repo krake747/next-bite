@@ -84,7 +84,7 @@ deploying; never print secret values.
 
 ## Release
 
-Releases ship from `main` via the manual `release.yaml` workflow (`workflow_dispatch` with
+Releases ship from `main` via the manual `release.yml` workflow (`workflow_dispatch` with
 `patch`/`minor`/`major` plus a dry-run flag). It gates on PR CI, builds, deploys with `cf`, then
 tags and publishes a GitHub Release. See ADR-0009.
 

@@ -1,7 +1,7 @@
 # Manual release pipeline with semver tags
 
 Releases ship from `main` through a manual `workflow_dispatch` pipeline
-(`.github/workflows/release.yaml`). Dispatching with `patch`, `minor`, or `major` computes the next
+(`.github/workflows/release.yml`). Dispatching with `patch`, `minor`, or `major` computes the next
 `vX.Y.Z` tag from the latest tag, waits for PR CI green on the dispatched SHA, builds, deploys the
 Worker with `cf`, then pushes the tag and publishes a GitHub Release. A dry run builds and dry-runs
 the deploy without tagging or releasing.

@@ -1,4 +1,4 @@
-name: Build Next Bite web app
+name: Main gate
 
 on:
   push:
@@ -6,7 +6,7 @@ on:
 
 jobs:
   build:
-    name: Build app
+    name: Full local gate
     runs-on: ubuntu-latest
 
     steps:

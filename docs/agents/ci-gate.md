@@ -23,7 +23,7 @@ file holds the rest.
 
 - Never push with `--no-verify` (or any other hook skip). The local gate is the PR gate.
 - Cloud CI runs on pull requests against `main` (see `.github/workflows/pr.yml`) and on push to
-  `main` (see `.github/workflows/main.yml`). Releases ship from `main` via the manual `release.yaml`
+  `main` (see `.github/workflows/main.yml`). Releases ship from `main` via the manual `release.yml`
   workflow.
 - Run `pnpm check` before every push. Lefthook `pre-push` runs the same gate. `pnpm check:full`
   (gate plus `check:arch` plus `build`) is the definition of done; agents run `pnpm check:arch`
