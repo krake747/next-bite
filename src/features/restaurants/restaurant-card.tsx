@@ -123,7 +123,7 @@ export function RestaurantCard({
                                         onClick={handleRefreshHours}
                                         disabled={isRefreshing}
                                         aria-label="Refresh hours"
-                                        className="flex h-7 w-7 items-center justify-center rounded-full bg-surface/90 text-stone-600 shadow-md backdrop-blur-sm transition-all duration-200 hover:bg-surface hover:text-stone-900 hover:shadow-lg disabled:opacity-50"
+                                        className="flex size-7 items-center justify-center rounded-full bg-surface/90 text-stone-600 shadow-md backdrop-blur-sm transition-all duration-200 hover:bg-surface hover:text-stone-900 hover:shadow-lg disabled:opacity-50"
                                         title="Refresh hours"
                                     >
                                         <RotateCcw className="size-3.5" aria-hidden="true" />
@@ -134,7 +134,7 @@ export function RestaurantCard({
                                         onClick={handleFindHours}
                                         disabled={isRefreshing}
                                         aria-label="Find hours"
-                                        className="flex h-7 w-7 items-center justify-center rounded-full bg-surface/90 text-stone-600 shadow-md backdrop-blur-sm transition-all duration-200 hover:bg-surface hover:text-stone-900 hover:shadow-lg disabled:opacity-50"
+                                        className="flex size-7 items-center justify-center rounded-full bg-surface/90 text-stone-600 shadow-md backdrop-blur-sm transition-all duration-200 hover:bg-surface hover:text-stone-900 hover:shadow-lg disabled:opacity-50"
                                         title="Find hours"
                                     >
                                         <Search className="size-3.5" aria-hidden="true" />
@@ -146,7 +146,7 @@ export function RestaurantCard({
                                         setShowEdit(true)
                                     }}
                                     aria-label="Edit restaurant"
-                                    className="flex h-7 w-7 items-center justify-center rounded-full bg-surface/90 text-stone-600 shadow-md backdrop-blur-sm transition-all duration-200 hover:bg-surface hover:text-stone-900 hover:shadow-lg"
+                                    className="flex size-7 items-center justify-center rounded-full bg-surface/90 text-stone-600 shadow-md backdrop-blur-sm transition-all duration-200 hover:bg-surface hover:text-stone-900 hover:shadow-lg"
                                     title="Edit restaurant"
                                 >
                                     <SquarePen className="size-3.5" aria-hidden="true" />
@@ -157,7 +157,7 @@ export function RestaurantCard({
                                         setShowDeleteConfirm(true)
                                     }}
                                     aria-label="Delete restaurant"
-                                    className="flex h-7 w-7 items-center justify-center rounded-full bg-surface/90 text-destructive shadow-md backdrop-blur-sm transition-all duration-200 hover:bg-destructive/10 hover:shadow-lg"
+                                    className="flex size-7 items-center justify-center rounded-full bg-surface/90 text-destructive shadow-md backdrop-blur-sm transition-all duration-200 hover:bg-destructive/10 hover:shadow-lg"
                                     title="Delete restaurant"
                                 >
                                     <Trash2 className="size-3.5" aria-hidden="true" />

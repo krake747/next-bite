@@ -57,7 +57,7 @@ export function HeaderTitle({
                 {children}
                 <div className="absolute -bottom-2 left-0 h-2 w-full overflow-hidden">
                     <div
-                        className="h-full w-full origin-left bg-size-[100%_100%]"
+                        className="size-full origin-left bg-size-[100%_100%]"
                         style={{
                             backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 8' preserveAspectRatio='none'%3E%3Cpath d='M0 6 Q25 0 50 6 T100 6' fill='none' stroke='oklch(0.692%200.158%2033.75)' stroke-width='3' stroke-linecap='round'/%3E%3C/svg%3E")`,
                         }}
@@ -83,7 +83,7 @@ export function HeaderSubtitle({
 export function HeaderBadge({ count }: Readonly<{ count: number }>) {
     return (
         <div className="mt-8 inline-flex items-center gap-3 rounded-full bg-surface/80 py-1 pr-4 pl-1 text-sm font-semibold text-stone-700 shadow-card ring-1 ring-border backdrop-blur-sm">
-            <span className="flex h-8 w-8 items-center justify-center rounded-full bg-linear-to-br from-tomato-500 to-tomato-600 text-white tabular-nums shadow-inner">
+            <span className="flex size-8 items-center justify-center rounded-full bg-linear-to-br from-tomato-500 to-tomato-600 text-white tabular-nums shadow-inner">
                 {count}
             </span>
             <span>places to try</span>

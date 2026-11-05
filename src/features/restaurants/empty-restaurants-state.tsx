@@ -24,15 +24,15 @@ export function EmptyRestaurantsState({
     return (
         <div className="col-span-full flex flex-col items-center justify-center py-16 text-center">
             <div className="relative mb-6">
-                <div className="flex h-20 w-20 items-center justify-center rounded-full bg-linear-to-br from-tomato-100 to-tomato-200">
+                <div className="flex size-20 items-center justify-center rounded-full bg-linear-to-br from-tomato-100 to-tomato-200">
                     {isSearching ? (
-                        <SearchX className="h-8 w-8 text-tomato-600" />
+                        <SearchX className="size-8 text-tomato-600" />
                     ) : (
-                        <Utensils className="h-8 w-8 text-tomato-600" />
+                        <Utensils className="size-8 text-tomato-600" />
                     )}
                 </div>
-                <div className="absolute -top-1 -right-1 h-3 w-3 rounded-full bg-tomato-400/60" />
-                <div className="absolute -bottom-1 -left-1 h-2 w-2 rounded-full bg-mango-400/60" />
+                <div className="absolute -top-1 -right-1 size-3 rounded-full bg-tomato-400/60" />
+                <div className="absolute -bottom-1 -left-1 size-2 rounded-full bg-mango-400/60" />
             </div>
 
             <h3 className="mb-2 font-display text-xl font-semibold text-balance text-stone-900">

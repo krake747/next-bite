@@ -238,7 +238,7 @@ function ImagePreview({
 }>) {
     return (
         <div className="group relative aspect-square overflow-hidden rounded-lg bg-stone-100">
-            <img src={imageUrl} alt={`Image ${index + 1}`} className="h-full w-full object-cover" loading="lazy" />
+            <img src={imageUrl} alt={`Image ${index + 1}`} className="size-full object-cover" loading="lazy" />
 
             {!disabled && (
                 <button
