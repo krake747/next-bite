@@ -7,7 +7,11 @@ type CardStyle = {
 export function Card({
     className,
     ...props
-}: Readonly<{ className?: string | undefined; style?: CardStyle | undefined }>) {
+}: Readonly<{
+    className?: string | undefined
+    style?: CardStyle | undefined
+    children?: React.ReactNode | undefined
+}>) {
     return (
         <div
             data-slot="card"

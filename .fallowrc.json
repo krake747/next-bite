@@ -23,6 +23,7 @@
             { "name": "features", "patterns": ["src/features/*.ts", "src/features/*.tsx"] },
             { "name": "features-restaurants", "patterns": ["src/features/restaurants/**"] },
             { "name": "features-social", "patterns": ["src/features/social/**"] },
+            { "name": "features-groups", "patterns": ["src/features/groups/**"] },
             { "name": "features-wheel", "patterns": ["src/features/wheel/**"] },
             { "name": "routes", "patterns": ["src/routes/**"] },
             { "name": "convex", "patterns": ["convex/**"] }
@@ -32,8 +33,12 @@
             { "from": "ui", "allow": ["core", "ui"] },
             { "from": "pattern", "allow": ["core", "ui", "pattern", "convex"] },
             { "from": "features", "allow": ["core", "ui", "pattern", "features", "convex"] },
-            { "from": "features-restaurants", "allow": ["core", "ui", "pattern", "features", "convex"] },
+            {
+                "from": "features-restaurants",
+                "allow": ["core", "ui", "pattern", "features", "features-social", "convex"]
+            },
             { "from": "features-social", "allow": ["core", "ui", "pattern", "features", "convex"] },
+            { "from": "features-groups", "allow": ["core", "ui", "pattern", "features", "features-social", "convex"] },
             { "from": "features-wheel", "allow": ["core", "ui", "pattern", "features", "convex"] },
             {
                 "from": "routes",
@@ -44,6 +49,7 @@
                     "features",
                     "features-restaurants",
                     "features-social",
+                    "features-groups",
                     "features-wheel",
                     "convex",
                     "routes"
