@@ -7,9 +7,10 @@ export const cleanupOrphanedStorage = internalMutation(async (ctx) => {
     const referencedStorageIds = new Set<string>()
     for (const restaurant of restaurants) {
         for (const img of restaurant.images) {
-            if (img.storageId !== "") {
-                referencedStorageIds.add(img.storageId)
+            if (typeof img === "string" || img.storageId === "") {
+                continue
             }
+            referencedStorageIds.add(img.storageId)
         }
     }
 

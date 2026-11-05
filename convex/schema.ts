@@ -16,8 +16,9 @@ const socialFields = {
 }
 
 export default defineSchema({
-    // TEMPORARY BACKFILL STEP 1: these fields are optional only until
-    // migrate:backfillLegacyRestaurants has run. Re-tighten right after.
+    // TEMPORARY BACKFILL STEP 1: legacy fields are tolerated only until
+    // migrate:backfillLegacyRestaurants has run. Re-tighten right after:
+    // drop the legacy block below and restore required fields.
     restaurants: defineTable({
         ownerId: v.optional(v.string()),
         ownerName: v.optional(v.string()),
@@ -36,9 +37,26 @@ export default defineSchema({
             }),
         ),
         rating: v.optional(v.number()),
-        images: v.array(restaurantImageValidator),
+        images: v.array(v.union(v.string(), restaurantImageValidator)),
         visibility: v.optional(v.union(v.literal("private"), v.literal("shared"))),
         createdAt: v.optional(v.number()),
+        // Legacy flat shape (pre-address/owner schema). Remove on re-tighten.
+        addedBy: v.optional(v.string()),
+        location: v.optional(v.string()),
+        lat: v.optional(v.number()),
+        lng: v.optional(v.number()),
+        placeId: v.optional(v.string()),
+        link: v.optional(v.string()),
+        notes: v.optional(v.string()),
+        openingHours: v.optional(
+            v.object({
+                openNow: v.optional(v.boolean()),
+                periods: v.optional(
+                    v.array(v.object({ day: v.number(), openTime: v.string(), closeTime: v.string() })),
+                ),
+                weekdayText: v.optional(v.array(v.string())),
+            }),
+        ),
     }).index("by_owner", ["ownerId"]),
     interests: defineTable({
         ...socialFields,
