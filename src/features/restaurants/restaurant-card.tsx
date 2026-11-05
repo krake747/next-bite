@@ -41,11 +41,9 @@ export function RestaurantCard({
         detailsHref?: string | undefined
     } & React.ComponentProps<typeof Card>
 >) {
-    const [showEdit, setShowEdit] = useState(false)
+    const [dialog, setDialog] = useState<null | "edit" | "hours" | "delete">(null)
     const [showMap, setShowMap] = useState(false)
-    const [showHours, setShowHours] = useState(false)
     const [isRefreshing, setIsRefreshing] = useState(false)
-    const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
     const updateRestaurant = useUpdateRestaurant()
     const deleteRestaurant = useDeleteRestaurant()
     const auth = useAuth()
@@ -89,10 +87,11 @@ export function RestaurantCard({
         )
     }
 
-    const hasLocation = restaurant.lat !== null && restaurant.lng !== null
-    const location: { lat: number; lng: number } | null = hasLocation
-        ? { lat: restaurant.lat!, lng: restaurant.lng! }
-        : null
+    const location =
+        typeof restaurant.lat === "number" && typeof restaurant.lng === "number"
+            ? { lat: restaurant.lat, lng: restaurant.lng }
+            : null
+    const hasLocation = location !== null
 
     const photos = (restaurant.images ?? []).map((img) => ({ url: img.url }))
 
@@ -103,9 +102,11 @@ export function RestaurantCard({
         await updateRestaurant.mutateAsync({ id: restaurant._id, rating })
     }
 
-    const directionsUrl = location
-        ? `https://www.google.com/maps/dir/?api=1&destination=${location.lat},${location.lng}`
-        : undefined
+    const handleDialogOpenChange = (open: boolean) => {
+        if (!open) {
+            setDialog(null)
+        }
+    }
 
     return (
         <>
@@ -143,7 +144,7 @@ export function RestaurantCard({
                                 <button
                                     type="button"
                                     onClick={() => {
-                                        setShowEdit(true)
+                                        setDialog("edit")
                                     }}
                                     aria-label="Edit restaurant"
                                     className="flex size-7 items-center justify-center rounded-full bg-surface/90 text-stone-600 shadow-md backdrop-blur-sm transition-all duration-200 hover:bg-surface hover:text-stone-900 hover:shadow-lg"
@@ -154,7 +155,7 @@ export function RestaurantCard({
                                 <button
                                     type="button"
                                     onClick={() => {
-                                        setShowDeleteConfirm(true)
+                                        setDialog("delete")
                                     }}
                                     aria-label="Delete restaurant"
                                     className="flex size-7 items-center justify-center rounded-full bg-surface/90 text-destructive shadow-md backdrop-blur-sm transition-all duration-200 hover:bg-destructive/10 hover:shadow-lg"
@@ -176,7 +177,7 @@ export function RestaurantCard({
                     hasLocation={hasLocation}
                     openingHours={restaurant.openingHours}
                     onShowHours={() => {
-                        setShowHours(true)
+                        setDialog("hours")
                     }}
                     detailsHref={detailsHref}
                 />
@@ -188,28 +189,31 @@ export function RestaurantCard({
                         onToggleWant={handleToggleWant}
                     />
                 </div>
-                {hasLocation && location && (
+                {hasLocation && (
                     <RestaurantCardMap
                         showMap={showMap}
                         setShowMap={setShowMap}
                         location={location}
-                        directionsUrl={directionsUrl!}
                         restaurant={restaurant}
                     />
                 )}
                 <RestaurantCardRating rating={restaurant.rating ?? null} onRate={handleRate} />
             </Card>
 
-            <EditRestaurantDialog show={showEdit} onOpenChange={setShowEdit} restaurant={restaurant} />
+            <EditRestaurantDialog
+                show={dialog === "edit"}
+                onOpenChange={handleDialogOpenChange}
+                restaurant={restaurant}
+            />
             <OpeningHoursDialog
-                show={showHours}
-                onOpenChange={setShowHours}
+                show={dialog === "hours"}
+                onOpenChange={handleDialogOpenChange}
                 openingHours={restaurant.openingHours}
                 restaurantName={restaurant.name}
             />
             <DeleteConfirmDialog
-                show={showDeleteConfirm}
-                onOpenChange={setShowDeleteConfirm}
+                show={dialog === "delete"}
+                onOpenChange={handleDialogOpenChange}
                 onConfirm={handleDelete}
                 restaurantName={restaurant.name}
             />
@@ -242,15 +246,14 @@ function RestaurantCardMap({
     showMap,
     setShowMap,
     location,
-    directionsUrl,
     restaurant,
 }: Readonly<{
     showMap: boolean
     setShowMap: (show: boolean) => void
     location: Readonly<{ readonly lat: number; readonly lng: number }>
-    directionsUrl: string
     restaurant: Restaurant
 }>) {
+    const directionsUrl = `https://www.google.com/maps/dir/?api=1&destination=${location.lat},${location.lng}`
     return (
         <div className="px-5 md:px-4">
             <button
