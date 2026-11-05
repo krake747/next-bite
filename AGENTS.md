@@ -3,7 +3,7 @@
 ## Tech stack
 
 - React 19, TypeScript, Tailwind CSS v4, Vite+ (`vp`) toolchain
-- TanStack Router (file-based routing), TanStack Query (server state)
+- TanStack Start (SSR shell on Workers) + Router (file-based routing), TanStack Query (server state)
 - Convex (backend: realtime DB, auth, file storage)
 - Base UI (headless primitives)
 - Vitest in tiers (pure, unit, browser, integration)

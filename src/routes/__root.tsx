@@ -1,29 +1,45 @@
-import { HeadContent, Outlet, createRootRoute } from "@tanstack/react-router"
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
+import { HeadContent, Outlet, Scripts, createRootRouteWithContext } from "@tanstack/react-router"
 import { APIProvider } from "@vis.gl/react-google-maps"
-import { Suspense } from "react"
+import { StrictMode, Suspense } from "react"
 
 import { AuthProvider } from "@core/auth-provider"
 import { env } from "@core/env"
 import { LoadingPlaceholder } from "@ui/loading"
 import { ThemeProvider } from "@ui/theme-context"
 
-export const Route = createRootRoute({
+type RouterContext = {
+    queryClient: QueryClient
+}
+
+export const Route = createRootRouteWithContext<RouterContext>()({
     component: RootComponent,
 })
 
 function RootComponent() {
+    const { queryClient } = Route.useRouteContext()
+
     return (
-        <>
-            <HeadContent />
-            <APIProvider apiKey={env.VITE_GOOGLE_MAPS_API_KEY} libraries={["places", "marker"]}>
-                <AuthProvider>
-                    <ThemeProvider>
-                        <Suspense fallback={<LoadingPlaceholder />}>
-                            <Outlet />
-                        </Suspense>
-                    </ThemeProvider>
-                </AuthProvider>
-            </APIProvider>
-        </>
+        <html lang="en" suppressHydrationWarning>
+            <head>
+                <HeadContent />
+            </head>
+            <body>
+                <StrictMode>
+                    <QueryClientProvider client={queryClient}>
+                        <APIProvider apiKey={env.VITE_GOOGLE_MAPS_API_KEY} libraries={["places", "marker"]}>
+                            <AuthProvider>
+                                <ThemeProvider>
+                                    <Suspense fallback={<LoadingPlaceholder />}>
+                                        <Outlet />
+                                    </Suspense>
+                                </ThemeProvider>
+                            </AuthProvider>
+                        </APIProvider>
+                    </QueryClientProvider>
+                </StrictMode>
+                <Scripts />
+            </body>
+        </html>
     )
 }

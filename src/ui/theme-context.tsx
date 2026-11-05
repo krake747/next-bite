@@ -17,13 +17,15 @@ function isValidTheme(value: string | null): value is Theme {
 }
 
 export function ThemeProvider({ children }: Readonly<{ children: React.ReactNode }>) {
-    const [theme, setTheme] = useState<Theme>(() => {
+    const [theme, setTheme] = useState<Theme>("light")
+
+    useEffect(() => {
         const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches
         const stored = localStorage.getItem(ThemeKey)
         const initial = isValidTheme(stored) ? stored : prefersDark ? "dark" : "light"
+        setTheme(initial)
         document.documentElement.classList.toggle("dark", initial === "dark")
-        return initial
-    })
+    }, [])
 
     useEffect(() => {
         document.documentElement.classList.toggle("dark", theme === "dark")

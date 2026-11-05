@@ -23,3 +23,4 @@ Long-lived explanations of this project's architecture and technical decisions.
 - [0007](adr/0007-react-compiler-owns-memoization.md): React Compiler owns memoization.
 - [0008](adr/0008-cloudflare-workers-assets.md): Cloudflare Workers static assets via the cf CLI.
 - [0009](adr/0009-manual-release-pipeline.md): manual release pipeline with semver tags.
+- [0010](adr/0010-tanstack-start-shell.md): TanStack Start shell with SSR off.

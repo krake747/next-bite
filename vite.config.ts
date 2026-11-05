@@ -2,7 +2,7 @@ import path from "node:path"
 
 import { cloudflare } from "@cloudflare/vite-plugin"
 import tailwindcss from "@tailwindcss/vite"
-import { tanstackRouter } from "@tanstack/router-plugin/vite"
+import { tanstackStart } from "@tanstack/react-start/plugin/vite"
 import { default as react } from "@vitejs/plugin-react"
 import { defineConfig, lazyPlugins } from "vite-plus"
 
@@ -321,7 +321,7 @@ export default defineConfig({
                 },
             },
             {
-                files: ["src/index.tsx"],
+                files: ["src/router.tsx"],
                 plugins: ["typescript"],
                 rules: {
                     "typescript/consistent-type-definitions": "allow",
@@ -346,6 +346,13 @@ export default defineConfig({
                 rules: {
                     "typescript/prefer-readonly-parameter-types": "allow",
                     "typescript/strict-boolean-expressions": "allow",
+                    "import/no-default-export": "allow",
+                },
+            },
+            {
+                files: ["src/server.ts"],
+                plugins: ["import"],
+                rules: {
                     "import/no-default-export": "allow",
                 },
             },
@@ -384,9 +391,13 @@ export default defineConfig({
     },
     plugins: lazyPlugins(() => [
         ...(process.env["VITEST"] === "true" ? [] : [cloudflare()]),
-        tanstackRouter({
-            target: "react",
-            autoCodeSplitting: true,
+        tanstackStart({
+            prerender: {
+                enabled: false,
+            },
+            router: {
+                routeFileIgnorePattern: "\\.spec\\.(ts|tsx)$",
+            },
         }),
         react({ compiler: { target: "19" } }),
         tailwindcss(),
