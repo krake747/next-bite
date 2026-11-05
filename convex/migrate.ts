@@ -32,7 +32,9 @@ type LegacyRestaurantDoc = {
     readonly images?: unknown
     readonly addedBy?: unknown
     readonly address?: unknown
+    readonly details?: unknown
     readonly ownerId?: unknown
+    readonly ownerName?: unknown
     readonly visibility?: unknown
     readonly createdAt?: unknown
 }
@@ -60,13 +62,19 @@ function normalizeImages(value: unknown): { url: string; storageId: string }[] {
     return images
 }
 
-function normalizeOpeningHours(value: unknown):
-    | {
-          openState: "open" | "closed" | "unknown"
-          periods: { day: number; openTime: string; closeTime: string }[]
-          weekdayText: string[]
-      }
-    | undefined {
+type OpeningHoursShape = {
+    openState: "open" | "closed" | "unknown"
+    periods: { day: number; openTime: string; closeTime: string }[]
+    weekdayText: string[]
+}
+
+type EnrichmentShape = {
+    placeId?: string
+    coords?: { lat: number; lng: number }
+    openingHours?: OpeningHoursShape
+}
+
+function normalizeOpeningHours(value: unknown): OpeningHoursShape | undefined {
     if (!isRecord(value)) {
         return undefined
     }
@@ -105,6 +113,94 @@ function isMigratedShape(doc: LegacyRestaurantDoc): boolean {
     )
 }
 
+const LEGACY_KEYS = ["addedBy", "location", "lat", "lng", "placeId", "link", "notes", "openingHours"] as const
+
+function hasLegacyExtras(legacy: LegacyRestaurantDoc): boolean {
+    return LEGACY_KEYS.some((key) => legacy[key] !== undefined)
+}
+
+function isValidPeriod(value: unknown): value is { day: number; openTime: string; closeTime: string } {
+    return (
+        isRecord(value) &&
+        typeof value.day === "number" &&
+        typeof value.openTime === "string" &&
+        typeof value.closeTime === "string"
+    )
+}
+
+function resolveOpeningHours(legacy: LegacyRestaurantDoc, existing: unknown): OpeningHoursShape | undefined {
+    if (isRecord(existing)) {
+        const openState = existing.openState
+        if (openState === "open" || openState === "closed" || openState === "unknown") {
+            const periods = Array.isArray(existing.periods) ? existing.periods.filter(isValidPeriod) : []
+            const weekdayText = Array.isArray(existing.weekdayText)
+                ? existing.weekdayText.filter((text): text is string => typeof text === "string")
+                : []
+            return { openState, periods, weekdayText }
+        }
+    }
+    return normalizeOpeningHours(legacy.openingHours)
+}
+
+function resolveCoords(legacy: LegacyRestaurantDoc, existing: unknown): { lat: number; lng: number } | undefined {
+    const existingCoords = isRecord(existing) ? existing.coords : undefined
+    const lat =
+        (isRecord(existingCoords) && typeof existingCoords.lat === "number" ? existingCoords.lat : undefined) ??
+        (typeof legacy.lat === "number" ? legacy.lat : undefined)
+    const lng =
+        (isRecord(existingCoords) && typeof existingCoords.lng === "number" ? existingCoords.lng : undefined) ??
+        (typeof legacy.lng === "number" ? legacy.lng : undefined)
+    if (lat === undefined || lng === undefined) {
+        return undefined
+    }
+    return { lat, lng }
+}
+
+function resolveEnrichment(legacy: LegacyRestaurantDoc): EnrichmentShape | undefined {
+    const existing = isRecord(legacy.address) ? legacy.address.enrichment : undefined
+    const placeId =
+        (isRecord(existing) ? asNonEmptyString(existing.placeId) : undefined) ?? asNonEmptyString(legacy.placeId)
+    const coords = resolveCoords(legacy, existing)
+    const openingHours = resolveOpeningHours(legacy, existing)
+    if (placeId === undefined && coords === undefined && openingHours === undefined) {
+        return undefined
+    }
+    return {
+        ...(placeId !== undefined ? { placeId } : {}),
+        ...(coords !== undefined ? { coords } : {}),
+        ...(openingHours !== undefined ? { openingHours } : {}),
+    }
+}
+
+function resolveDetails(legacy: LegacyRestaurantDoc): { notes?: string; link?: string } | undefined {
+    const existing = isRecord(legacy.details) ? legacy.details : undefined
+    const notes = (isRecord(existing) ? asNonEmptyString(existing.notes) : undefined) ?? asNonEmptyString(legacy.notes)
+    const link = (isRecord(existing) ? asNonEmptyString(existing.link) : undefined) ?? asNonEmptyString(legacy.link)
+    if (notes === undefined && link === undefined) {
+        return undefined
+    }
+    return {
+        ...(notes !== undefined ? { notes } : {}),
+        ...(link !== undefined ? { link } : {}),
+    }
+}
+
+function resolveOwnerId(
+    profiles: ReadonlyArray<Doc<"profiles">>,
+    addedBy: string | undefined,
+    existingOwnerId: unknown,
+): string {
+    if (typeof existingOwnerId === "string" && existingOwnerId !== "") {
+        return existingOwnerId
+    }
+    const profile =
+        addedBy !== undefined
+            ? profiles.find((candidate) => candidate.name.trim().toLowerCase() === addedBy.toLowerCase())
+            : undefined
+    const owner = profile ?? (profiles.length === 1 && profiles[0] !== undefined ? profiles[0] : undefined)
+    return owner?.authUserId ?? ""
+}
+
 async function migrateLegacyDoc(
     ctx: MutationCtx,
     doc: Doc<"restaurants">,
@@ -112,57 +208,37 @@ async function migrateLegacyDoc(
 ): Promise<{ migrated: boolean; ownerId: string }> {
     // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- legacy docs predate the schema by definition
     const legacy = doc as unknown as LegacyRestaurantDoc
-    if (isMigratedShape(legacy)) {
+    if (isMigratedShape(legacy) && !hasLegacyExtras(legacy)) {
         return { migrated: false, ownerId: "" }
     }
 
-    const label = asNonEmptyString(legacy.location) ?? "Unknown location"
-    const lat = typeof legacy.lat === "number" ? legacy.lat : undefined
-    const lng = typeof legacy.lng === "number" ? legacy.lng : undefined
-    const placeId = asNonEmptyString(legacy.placeId)
-    const openingHours = normalizeOpeningHours(legacy.openingHours)
-    const enrichment =
-        placeId !== undefined || (lat !== undefined && lng !== undefined) || openingHours !== undefined
-            ? {
-                  ...(placeId !== undefined ? { placeId } : {}),
-                  ...(lat !== undefined && lng !== undefined ? { coords: { lat, lng } } : {}),
-                  ...(openingHours !== undefined ? { openingHours } : {}),
-              }
-            : undefined
+    const label =
+        (isRecord(legacy.address) ? asNonEmptyString(legacy.address.label) : undefined) ??
+        asNonEmptyString(legacy.location) ??
+        "Unknown location"
+    const enrichment = resolveEnrichment(legacy)
 
     const addedBy = asNonEmptyString(legacy.addedBy)
-    const profile =
-        addedBy !== undefined
-            ? profiles.find((candidate) => candidate.name.trim().toLowerCase() === addedBy.toLowerCase())
-            : undefined
-    const owner = profile ?? (profiles.length === 1 && profiles[0] !== undefined ? profiles[0] : undefined)
-    const ownerId = owner?.authUserId ?? ""
+    const ownerId = resolveOwnerId(profiles, addedBy, legacy.ownerId)
 
-    const notes = asNonEmptyString(legacy.notes)
-    const link = asNonEmptyString(legacy.link)
+    const details = resolveDetails(legacy)
     const rating = typeof legacy.rating === "number" ? legacy.rating : undefined
+    const createdAt = typeof legacy.createdAt === "number" ? legacy.createdAt : Date.now()
 
     await ctx.db.replace(doc._id, {
         ownerId,
-        ownerName: formatDisplayName(addedBy),
+        ownerName: asNonEmptyString(legacy.ownerName) ?? formatDisplayName(addedBy),
         name: asNonEmptyString(legacy.name) ?? "Untitled",
         cuisine: asNonEmptyString(legacy.cuisine) ?? "Unknown",
         address: {
             label,
             ...(enrichment !== undefined ? { enrichment } : {}),
         },
-        ...(notes !== undefined || link !== undefined
-            ? {
-                  details: {
-                      ...(notes !== undefined ? { notes } : {}),
-                      ...(link !== undefined ? { link } : {}),
-                  },
-              }
-            : {}),
+        ...(details !== undefined ? { details } : {}),
         ...(rating !== undefined ? { rating } : {}),
         images: normalizeImages(legacy.images),
-        visibility: "private",
-        createdAt: Date.now(),
+        visibility: legacy.visibility === "shared" ? "shared" : "private",
+        createdAt,
     })
     return { migrated: true, ownerId }
 }

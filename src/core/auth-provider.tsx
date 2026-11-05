@@ -30,9 +30,14 @@ function AuthProvider({ children }: Readonly<{ children: React.ReactNode }>) {
         return {
             client,
             authed: {
-                setAuth: (fetchToken: AuthTokenFetcher) => client.setAuth(fetchToken),
+                setAuth: (fetchToken: AuthTokenFetcher) => {
+                    client.setAuth(fetchToken)
+                },
                 clearAuth: () => {
-                    client.setAuth(async () => null)
+                    client.setAuth(async () => {
+                        await Promise.resolve()
+                        return null
+                    })
                 },
             },
         }
