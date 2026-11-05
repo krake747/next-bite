@@ -24,7 +24,6 @@
             { "name": "features-restaurants", "patterns": ["src/features/restaurants/**"] },
             { "name": "features-social", "patterns": ["src/features/social/**"] },
             { "name": "features-groups", "patterns": ["src/features/groups/**"] },
-            { "name": "features-wheel", "patterns": ["src/features/wheel/**"] },
             { "name": "routes", "patterns": ["src/routes/**"] },
             { "name": "convex", "patterns": ["convex/**"] }
         ],
@@ -39,7 +38,6 @@
             },
             { "from": "features-social", "allow": ["core", "ui", "pattern", "features", "convex"] },
             { "from": "features-groups", "allow": ["core", "ui", "pattern", "features", "features-social", "convex"] },
-            { "from": "features-wheel", "allow": ["core", "ui", "pattern", "features", "convex"] },
             {
                 "from": "routes",
                 "allow": [
@@ -50,7 +48,6 @@
                     "features-restaurants",
                     "features-social",
                     "features-groups",
-                    "features-wheel",
                     "convex",
                     "routes"
                 ]

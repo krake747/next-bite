@@ -14,7 +14,6 @@ import { Route as SplatRouteImport } from './routes/$'
 import { Route as DesignSystemRouteImport } from './routes/design-system'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as SignupRouteImport } from './routes/signup'
-import { Route as WheelRouteImport } from './routes/wheel'
 import { Route as RestaurantsRestaurantIdRouteImport } from './routes/restaurants.$restaurantId'
 
 const IndexRoute = IndexRouteImport.update({
@@ -42,11 +41,6 @@ const SignupRoute = SignupRouteImport.update({
   path: '/signup',
   getParentRoute: () => rootRouteImport,
 } as any)
-const WheelRoute = WheelRouteImport.update({
-  id: '/wheel',
-  path: '/wheel',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const RestaurantsRestaurantIdRoute = RestaurantsRestaurantIdRouteImport.update({
   id: '/restaurants/$restaurantId',
   path: '/restaurants/$restaurantId',
@@ -59,7 +53,6 @@ export interface FileRoutesByFullPath {
   '/design-system': typeof DesignSystemRoute
   '/login': typeof LoginRoute
   '/signup': typeof SignupRoute
-  '/wheel': typeof WheelRoute
   '/restaurants/$restaurantId': typeof RestaurantsRestaurantIdRoute
 }
 export interface FileRoutesByTo {
@@ -68,7 +61,6 @@ export interface FileRoutesByTo {
   '/design-system': typeof DesignSystemRoute
   '/login': typeof LoginRoute
   '/signup': typeof SignupRoute
-  '/wheel': typeof WheelRoute
   '/restaurants/$restaurantId': typeof RestaurantsRestaurantIdRoute
 }
 export interface FileRoutesById {
@@ -78,7 +70,6 @@ export interface FileRoutesById {
   '/design-system': typeof DesignSystemRoute
   '/login': typeof LoginRoute
   '/signup': typeof SignupRoute
-  '/wheel': typeof WheelRoute
   '/restaurants/$restaurantId': typeof RestaurantsRestaurantIdRoute
 }
 export interface FileRouteTypes {
@@ -89,7 +80,6 @@ export interface FileRouteTypes {
     | '/design-system'
     | '/login'
     | '/signup'
-    | '/wheel'
     | '/restaurants/$restaurantId'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -98,7 +88,6 @@ export interface FileRouteTypes {
     | '/design-system'
     | '/login'
     | '/signup'
-    | '/wheel'
     | '/restaurants/$restaurantId'
   id:
     | '__root__'
@@ -107,7 +96,6 @@ export interface FileRouteTypes {
     | '/design-system'
     | '/login'
     | '/signup'
-    | '/wheel'
     | '/restaurants/$restaurantId'
   fileRoutesById: FileRoutesById
 }
@@ -117,7 +105,6 @@ export interface RootRouteChildren {
   DesignSystemRoute: typeof DesignSystemRoute
   LoginRoute: typeof LoginRoute
   SignupRoute: typeof SignupRoute
-  WheelRoute: typeof WheelRoute
   RestaurantsRestaurantIdRoute: typeof RestaurantsRestaurantIdRoute
 }
 
@@ -158,13 +145,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SignupRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/wheel': {
-      id: '/wheel'
-      path: '/wheel'
-      fullPath: '/wheel'
-      preLoaderRoute: typeof WheelRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/restaurants/$restaurantId': {
       id: '/restaurants/$restaurantId'
       path: '/restaurants/$restaurantId'
@@ -181,7 +161,6 @@ const rootRouteChildren: RootRouteChildren = {
   DesignSystemRoute: DesignSystemRoute,
   LoginRoute: LoginRoute,
   SignupRoute: SignupRoute,
-  WheelRoute: WheelRoute,
   RestaurantsRestaurantIdRoute: RestaurantsRestaurantIdRoute,
 }
 export const routeTree = rootRouteImport

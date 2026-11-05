@@ -1,5 +1,4 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router"
-import LoaderPinwheel from "lucide-react/icons/loader-pinwheel"
 import Plus from "lucide-react/icons/plus"
 import { useState } from "react"
 
@@ -61,8 +60,6 @@ function useSocialActions(restaurants: ReadonlyArray<Restaurant> | undefined) {
     const toggleInterest = useToggleInterest()
     const toggleLike = useToggleLike()
 
-    const displayName = auth.user?.name ?? auth.user?.email ?? "Someone"
-
     const goToLogin = () => {
         void navigate({ to: "/login", viewTransition: true })
     }
@@ -83,7 +80,7 @@ function useSocialActions(restaurants: ReadonlyArray<Restaurant> | undefined) {
             goToLogin()
             return
         }
-        toggleInterest.mutate({ restaurantId: restaurant._id, status: "want", displayName })
+        toggleInterest.mutate({ restaurantId: restaurant._id, status: "want" })
     }
 
     const toggleLikeFor = (restaurant: Restaurant) => () => {
@@ -91,10 +88,10 @@ function useSocialActions(restaurants: ReadonlyArray<Restaurant> | undefined) {
             goToLogin()
             return
         }
-        toggleLike.mutate({ restaurantId: restaurant._id, displayName })
+        toggleLike.mutate({ restaurantId: restaurant._id })
     }
 
-    return { auth, summaries, socialFor, toggleWantFor, toggleLikeFor, goToDetail, goToLogin, displayName }
+    return { auth, summaries, socialFor, toggleWantFor, toggleLikeFor, goToDetail, goToLogin }
 }
 
 type SocialActions = ReturnType<typeof useSocialActions>
@@ -199,14 +196,6 @@ function HomeActions({ onAddClick }: Readonly<{ onAddClick: () => void }>) {
     const auth = useAuth()
     return (
         <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row">
-            <Button
-                onClick={() => {
-                    void navigate({ to: "/wheel", viewTransition: true })
-                }}
-            >
-                <LoaderPinwheel className="size-4 transition-transform duration-200 group-hover:rotate-90" />
-                Spin the wheel
-            </Button>
             {auth.isAuthenticated ? (
                 <Button variant="secondary" onClick={onAddClick}>
                     <Plus className="size-4 transition-transform duration-200 group-hover:rotate-90" />

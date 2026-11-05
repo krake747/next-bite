@@ -65,7 +65,6 @@ const panel = cva({
         },
         tone: {
             default: "",
-            celebration: "animate-winner-modal shadow-2xl",
         },
     },
     defaultVariants: {
