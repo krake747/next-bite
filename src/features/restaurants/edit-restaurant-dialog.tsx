@@ -44,7 +44,11 @@ export function EditRestaurantDialog({
                     ) : (
                         <div className="space-y-4 py-8 text-center">
                             <p className="text-stone-600">Please sign in to edit restaurants.</p>
-                            <Button render={<Link to="/login" viewTransition />} className="w-full">
+                            <Button
+                                render={<Link to="/login" viewTransition />}
+                                className="w-full"
+                                nativeButton={false}
+                            >
                                 Sign In
                             </Button>
                         </div>

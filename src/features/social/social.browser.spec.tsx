@@ -25,6 +25,11 @@ describe("AvatarGroup", () => {
         expect(screen.getByText("+2")).toBeInTheDocument()
         expect(screen.getByRole("group", { name: /Alex.*2 more/ })).toBeInTheDocument()
     })
+
+    it("renders members that share a name", () => {
+        render(<AvatarGroup members={[{ name: "Alex" }, { name: "Alex" }]} />)
+        expect(screen.getAllByLabelText("Alex")).toHaveLength(2)
+    })
 })
 
 describe("FriendPresence", () => {

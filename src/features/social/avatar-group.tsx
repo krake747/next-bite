@@ -29,7 +29,7 @@ export function AvatarGroup({
         <div className={cx("flex items-center", className)} role="group" aria-label={label}>
             {visible.map((member, index) => (
                 <Avatar
-                    key={member.name}
+                    key={`${member.name}-${index}`}
                     name={member.name}
                     src={member.src}
                     size="sm"

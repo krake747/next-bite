@@ -39,8 +39,8 @@ const fallbackText = cva({
     },
 })
 
-function initials(name: string): string {
-    const parts = name.trim().split(/\s+/)
+function initials(name: string | undefined): string {
+    const parts = (name ?? "").trim().split(/\s+/)
     const first = parts[0]?.[0] ?? ""
     const last = parts.length > 1 ? (parts[parts.length - 1]?.[0] ?? "") : ""
     const result = `${first}${last}`.toUpperCase()
