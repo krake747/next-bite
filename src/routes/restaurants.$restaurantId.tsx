@@ -120,13 +120,11 @@ function DetailComments({
     restaurant,
     social,
     isAuthenticated,
-    displayName,
     currentUser,
 }: Readonly<{
     restaurant: Restaurant
     social: RestaurantSocial
     isAuthenticated: boolean
-    displayName: string
     currentUser: string | undefined
 }>) {
     const addComment = useAddComment()
@@ -144,7 +142,7 @@ function DetailComments({
                 onAdd={
                     isAuthenticated
                         ? (text) => {
-                              addComment.mutate({ restaurantId: restaurant._id, text, displayName })
+                              addComment.mutate({ restaurantId: restaurant._id, text })
                           }
                         : undefined
                 }
@@ -204,7 +202,6 @@ function RestaurantDetail() {
         return <DetailNotFound />
     }
 
-    const displayName = auth.user?.name ?? auth.user?.email ?? "Someone"
     const social = restaurantSocial ?? emptySocial
     const photos = (restaurant.images ?? []).map((img) => ({ url: img.url }))
 
@@ -217,7 +214,7 @@ function RestaurantDetail() {
             goToLogin()
             return
         }
-        toggleInterest.mutate({ restaurantId: restaurant._id, status: "want", displayName })
+        toggleInterest.mutate({ restaurantId: restaurant._id, status: "want" })
     }
 
     const handleToggleLike = () => {
@@ -225,7 +222,7 @@ function RestaurantDetail() {
             goToLogin()
             return
         }
-        toggleLike.mutate({ restaurantId: restaurant._id, displayName })
+        toggleLike.mutate({ restaurantId: restaurant._id })
     }
 
     return (
@@ -248,7 +245,6 @@ function RestaurantDetail() {
                         restaurant={restaurant}
                         social={social}
                         isAuthenticated={auth.isAuthenticated}
-                        displayName={displayName}
                         currentUser={auth.user?.name ?? auth.user?.email ?? undefined}
                     />
                 </div>

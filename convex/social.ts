@@ -1,6 +1,7 @@
 import { v } from "convex/values"
 
 import { mutation, query } from "./_generated/server"
+import { authComponent } from "./auth"
 
 async function requireUserId(ctx: {
     auth: { getUserIdentity: () => Promise<{ subject: string } | null> }
@@ -12,28 +13,12 @@ async function requireUserId(ctx: {
     return identity.subject
 }
 
-function cleanDisplayName(displayName: string): string {
-    const trimmed = displayName.trim().slice(0, 60)
-    if (trimmed === "") {
-        throw new Error("Display name is required")
-    }
-    return trimmed
+async function serverDisplayName(ctx: Parameters<typeof authComponent.getAuthUser>[0]): Promise<string> {
+    const user = await authComponent.getAuthUser(ctx)
+    const raw = user.name ?? user.email ?? "Someone"
+    const trimmed = raw.trim().slice(0, 60)
+    return trimmed === "" ? "Someone" : trimmed
 }
-
-export const listInterests = query({
-    args: {},
-    handler: async (ctx) => ctx.db.query("interests").collect(),
-})
-
-export const listLikes = query({
-    args: {},
-    handler: async (ctx) => ctx.db.query("likes").collect(),
-})
-
-export const listComments = query({
-    args: {},
-    handler: async (ctx) => ctx.db.query("comments").collect(),
-})
 
 export const getForRestaurant = query({
     args: {
@@ -105,7 +90,6 @@ export const toggleInterest = mutation({
     args: {
         restaurantId: v.id("restaurants"),
         status: v.union(v.literal("want"), v.literal("been")),
-        displayName: v.string(),
     },
     handler: async (ctx, args) => {
         const userId = await requireUserId(ctx)
@@ -113,7 +97,7 @@ export const toggleInterest = mutation({
         if (!restaurant) {
             throw new Error("Restaurant not found")
         }
-        const name = cleanDisplayName(args.displayName)
+        const name = await serverDisplayName(ctx)
         const existing = await ctx.db
             .query("interests")
             .withIndex("by_user_restaurant", (q) => q.eq("userId", userId).eq("restaurantId", args.restaurantId))
@@ -139,7 +123,6 @@ export const toggleInterest = mutation({
 export const toggleLike = mutation({
     args: {
         restaurantId: v.id("restaurants"),
-        displayName: v.string(),
     },
     handler: async (ctx, args) => {
         const userId = await requireUserId(ctx)
@@ -147,7 +130,7 @@ export const toggleLike = mutation({
         if (!restaurant) {
             throw new Error("Restaurant not found")
         }
-        const name = cleanDisplayName(args.displayName)
+        const name = await serverDisplayName(ctx)
         const existing = await ctx.db
             .query("likes")
             .withIndex("by_user_restaurant", (q) => q.eq("userId", userId).eq("restaurantId", args.restaurantId))
@@ -169,7 +152,6 @@ export const addComment = mutation({
     args: {
         restaurantId: v.id("restaurants"),
         text: v.string(),
-        displayName: v.string(),
     },
     handler: async (ctx, args) => {
         const userId = await requireUserId(ctx)
@@ -177,7 +159,7 @@ export const addComment = mutation({
         if (!restaurant) {
             throw new Error("Restaurant not found")
         }
-        const name = cleanDisplayName(args.displayName)
+        const name = await serverDisplayName(ctx)
         const text = args.text.trim().slice(0, 500)
         if (text === "") {
             throw new Error("Comment text is required")

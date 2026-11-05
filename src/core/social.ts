@@ -104,16 +104,6 @@ export function feedTextFor(name: string, notes: string | undefined | null): str
     return trimmed === "" ? `Added ${name}.` : trimmed
 }
 
-export function useSocialSnapshot(): SocialSnapshot | undefined {
-    const interests = useConvexQuery(api.social.listInterests)
-    const likes = useConvexQuery(api.social.listLikes)
-    const comments = useConvexQuery(api.social.listComments)
-    if (interests === undefined || likes === undefined || comments === undefined) {
-        return undefined
-    }
-    return { interests, likes, comments }
-}
-
 export function useSocialSummaries(
     restaurantIds: ReadonlyArray<Id<"restaurants">>,
 ): ReadonlyMap<string, RestaurantSocialSummary> | undefined {
