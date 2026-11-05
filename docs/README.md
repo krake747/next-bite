@@ -28,3 +28,4 @@ Long-lived explanations of this project's architecture and technical decisions.
   Butter).
 - [0012](adr/0012-core-ui-standardization.md): core UI standardization (eleven primitives, one
   contract).
+- [0013](adr/0013-social-components-presentational.md): social components, presentational only.

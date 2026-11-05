@@ -22,6 +22,7 @@
             { "name": "pattern", "patterns": ["src/pattern/**"] },
             { "name": "features", "patterns": ["src/features/*.ts", "src/features/*.tsx"] },
             { "name": "features-restaurants", "patterns": ["src/features/restaurants/**"] },
+            { "name": "features-social", "patterns": ["src/features/social/**"] },
             { "name": "features-wheel", "patterns": ["src/features/wheel/**"] },
             { "name": "routes", "patterns": ["src/routes/**"] },
             { "name": "convex", "patterns": ["convex/**"] }
@@ -32,6 +33,7 @@
             { "from": "pattern", "allow": ["core", "ui", "pattern", "convex"] },
             { "from": "features", "allow": ["core", "ui", "pattern", "features", "convex"] },
             { "from": "features-restaurants", "allow": ["core", "ui", "pattern", "features", "convex"] },
+            { "from": "features-social", "allow": ["core", "ui", "pattern", "features", "convex"] },
             { "from": "features-wheel", "allow": ["core", "ui", "pattern", "features", "convex"] },
             {
                 "from": "routes",
@@ -41,6 +43,7 @@
                     "pattern",
                     "features",
                     "features-restaurants",
+                    "features-social",
                     "features-wheel",
                     "convex",
                     "routes"

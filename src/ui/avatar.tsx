@@ -12,9 +12,14 @@ const avatar = cva({
             lg: "size-12",
             xl: "size-16",
         },
+        ring: {
+            none: "",
+            surface: "ring-2 ring-surface",
+        },
     },
     defaultVariants: {
         size: "sm",
+        ring: "none",
     },
 })
 
@@ -50,9 +55,9 @@ type AvatarProps = VariantProps<typeof avatar> &
         className?: string | undefined
     }>
 
-export function Avatar({ src, name, size, presence, className }: AvatarProps) {
+export function Avatar({ src, name, size, ring, presence, className }: AvatarProps) {
     return (
-        <BaseAvatar.Root data-slot="avatar" className={cx(avatar({ size }), className)}>
+        <BaseAvatar.Root data-slot="avatar" className={cx(avatar({ size, ring }), className)}>
             <BaseAvatar.Image src={src} alt={name} className="size-full rounded-full object-cover" />
             <BaseAvatar.Fallback
                 aria-label={name}
