@@ -48,31 +48,57 @@ function Section({ title, body, children }: Readonly<{ title: string; body: stri
 const palette: ReadonlyArray<{ name: string; swatches: ReadonlyArray<{ label: string; className: string }> }> = [
     {
         name: "Tomato",
-        swatches: [50, 100, 200, 300, 400, 500, 600, 700, 800, 900].map((step) => ({
-            label: `${step}`,
-            className: `bg-tomato-${step}`,
-        })),
+        swatches: [
+            { label: "50", className: "bg-tomato-50" },
+            { label: "100", className: "bg-tomato-100" },
+            { label: "200", className: "bg-tomato-200" },
+            { label: "300", className: "bg-tomato-300" },
+            { label: "400", className: "bg-tomato-400" },
+            { label: "500", className: "bg-tomato-500" },
+            { label: "600", className: "bg-tomato-600" },
+            { label: "700", className: "bg-tomato-700" },
+            { label: "800", className: "bg-tomato-800" },
+            { label: "900", className: "bg-tomato-900" },
+        ],
     },
     {
         name: "Stone",
-        swatches: [50, 100, 200, 300, 400, 500, 600, 700, 800, 900].map((step) => ({
-            label: `${step}`,
-            className: `bg-stone-${step}`,
-        })),
+        swatches: [
+            { label: "50", className: "bg-stone-50" },
+            { label: "100", className: "bg-stone-100" },
+            { label: "200", className: "bg-stone-200" },
+            { label: "300", className: "bg-stone-300" },
+            { label: "400", className: "bg-stone-400" },
+            { label: "500", className: "bg-stone-500" },
+            { label: "600", className: "bg-stone-600" },
+            { label: "700", className: "bg-stone-700" },
+            { label: "800", className: "bg-stone-800" },
+            { label: "900", className: "bg-stone-900" },
+        ],
     },
     {
         name: "Mango",
-        swatches: [50, 100, 200, 300, 400, 500, 600].map((step) => ({
-            label: `${step}`,
-            className: `bg-mango-${step}`,
-        })),
+        swatches: [
+            { label: "50", className: "bg-mango-50" },
+            { label: "100", className: "bg-mango-100" },
+            { label: "200", className: "bg-mango-200" },
+            { label: "300", className: "bg-mango-300" },
+            { label: "400", className: "bg-mango-400" },
+            { label: "500", className: "bg-mango-500" },
+            { label: "600", className: "bg-mango-600" },
+        ],
     },
     {
         name: "Basil",
-        swatches: [50, 100, 200, 300, 400, 500, 600].map((step) => ({
-            label: `${step}`,
-            className: `bg-basil-${step}`,
-        })),
+        swatches: [
+            { label: "50", className: "bg-basil-50" },
+            { label: "100", className: "bg-basil-100" },
+            { label: "200", className: "bg-basil-200" },
+            { label: "300", className: "bg-basil-300" },
+            { label: "400", className: "bg-basil-400" },
+            { label: "500", className: "bg-basil-500" },
+            { label: "600", className: "bg-basil-600" },
+        ],
     },
 ]
 
