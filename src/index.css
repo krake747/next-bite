@@ -2,65 +2,65 @@
 
 @theme inline {
     /* Tomato */
-    --color-tomato-50: #fff1ed;
-    --color-tomato-100: #ffe0d7;
-    --color-tomato-200: #ffc2b1;
-    --color-tomato-300: #f99b83;
-    --color-tomato-400: #ed7257;
-    --color-tomato-500: #e34e36;
-    --color-tomato-600: #cc3d2a;
-    --color-tomato-700: #a72f22;
-    --color-tomato-800: #85291f;
-    --color-tomato-900: #6c251e;
+    --color-tomato-50: oklch(0.968 0.0161 36.53);
+    --color-tomato-100: oklch(0.9298 0.0366 36.77);
+    --color-tomato-200: oklch(0.8647 0.0744 36.13);
+    --color-tomato-300: oklch(0.7799 0.1184 35.1);
+    --color-tomato-400: oklch(0.692 0.158 33.75);
+    --color-tomato-500: oklch(0.6257 0.1892 31.74);
+    --color-tomato-600: oklch(0.5679 0.1829 30.85);
+    --color-tomato-700: oklch(0.4882 0.1585 29.95);
+    --color-tomato-800: oklch(0.4204 0.1278 29.61);
+    --color-tomato-900: oklch(0.3704 0.1029 28.63);
 
     /* Mango */
-    --color-mango-50: #fffbeb;
-    --color-mango-100: #fff4cc;
-    --color-mango-200: #fbe9a7;
-    --color-mango-300: #f5d77e;
-    --color-mango-400: #ebc35a;
-    --color-mango-500: #d9a83c;
-    --color-mango-600: #b98a2d;
+    --color-mango-50: oklch(0.9869 0.0214 95.28);
+    --color-mango-100: oklch(0.9658 0.0531 94.43);
+    --color-mango-200: oklch(0.9333 0.0859 94.68);
+    --color-mango-300: oklch(0.8857 0.1138 91.33);
+    --color-mango-400: oklch(0.8323 0.1308 88.37);
+    --color-mango-500: oklch(0.7581 0.1339 83.45);
+    --color-mango-600: oklch(0.6628 0.1203 80.44);
 
     /* Basil */
-    --color-basil-50: #f1f5ec;
-    --color-basil-100: #e4ebdd;
-    --color-basil-200: #cbd9bd;
-    --color-basil-300: #afc39b;
-    --color-basil-400: #91aa7c;
-    --color-basil-500: #7a9f76;
-    --color-basil-600: #607653;
+    --color-basil-50: oklch(0.9646 0.0126 126.37);
+    --color-basil-100: oklch(0.9309 0.0201 128.7);
+    --color-basil-200: oklch(0.8671 0.0407 129);
+    --color-basil-300: oklch(0.7913 0.0591 129.33);
+    --color-basil-400: oklch(0.7067 0.0704 131.21);
+    --color-basil-500: oklch(0.6638 0.0722 142.24);
+    --color-basil-600: oklch(0.5383 0.0588 134.2);
 
     /* Plum */
-    --color-plum: #8b5cf6;
+    --color-plum: oklch(0.6056 0.2189 292.72);
 
     /* Stone neutrals */
-    --color-stone-50: #fffdf8;
-    --color-stone-100: #fff8ee;
-    --color-stone-200: #f3ecdd;
-    --color-stone-300: #e6ddce;
-    --color-stone-400: #c8bdad;
-    --color-stone-500: #a39888;
-    --color-stone-600: #817668;
-    --color-stone-700: #62594e;
-    --color-stone-800: #403930;
-    --color-stone-900: #29251f;
+    --color-stone-50: oklch(0.9942 0.0069 88.64);
+    --color-stone-100: oklch(0.9818 0.0152 77.07);
+    --color-stone-200: oklch(0.9445 0.0213 85.94);
+    --color-stone-300: oklch(0.9006 0.0224 80.68);
+    --color-stone-400: oklch(0.803 0.0253 77.42);
+    --color-stone-500: oklch(0.6847 0.0263 77.37);
+    --color-stone-600: oklch(0.5718 0.0249 73.9);
+    --color-stone-700: oklch(0.4693 0.0209 72.82);
+    --color-stone-800: oklch(0.3489 0.018 74.08);
+    --color-stone-900: oklch(0.2668 0.0123 78.07);
 
     /* Semantic colors */
     --color-background: var(--color-stone-100);
-    --color-surface: #ffffff;
+    --color-surface: oklch(1 0 0);
     --color-surface-muted: var(--color-stone-200);
     --color-surface-accent: var(--color-mango-100);
     --color-foreground: var(--color-stone-900);
     --color-muted-foreground: var(--color-stone-600);
     --color-primary: var(--color-tomato-600);
-    --color-primary-hover: var(--color-tomato-700);
-    --color-border: var(--color-stone-300);
-    --color-border-strong: var(--color-stone-400);
+    --color-primary-hover: color-mix(in oklch, var(--color-tomato-600) 85%, black);
+    --color-border: color-mix(in oklch, var(--color-stone-900) 10%, transparent);
+    --color-border-strong: color-mix(in oklch, var(--color-stone-900) 20%, transparent);
     --color-success: var(--color-basil-600);
     --color-warning: var(--color-mango-600);
-    --color-destructive: #b8322b;
-    --color-info: #547b9b;
+    --color-destructive: oklch(0.5223 0.172 27.78);
+    --color-info: oklch(0.5668 0.0663 244.09);
     --color-ring: var(--color-tomato-600);
 
     /* Typography */
@@ -74,40 +74,23 @@
     --radius-dialog: 1.25rem;
 
     /* Shadows */
-    --shadow-card: 0 2px 12px rgb(41 37 31 / 0.06);
-    --shadow-popover: 0 8px 30px rgb(41 37 31 / 0.12);
-    --shadow-dialog: 0 16px 48px rgb(41 37 31 / 0.16);
+    --shadow-card:
+        0 1px 2px oklch(0.2668 0.0123 78.07 / 0.05), 0 2px 8px oklch(0.2668 0.0123 78.07 / 0.05),
+        0 4px 16px oklch(0.2668 0.0123 78.07 / 0.04);
+    --shadow-popover:
+        0 2px 4px oklch(0.2668 0.0123 78.07 / 0.06), 0 8px 24px oklch(0.2668 0.0123 78.07 / 0.08),
+        0 16px 40px oklch(0.2668 0.0123 78.07 / 0.06);
+    --shadow-dialog:
+        0 4px 8px oklch(0.2668 0.0123 78.07 / 0.08), 0 12px 32px oklch(0.2668 0.0123 78.07 / 0.1),
+        0 24px 64px oklch(0.2668 0.0123 78.07 / 0.08);
 
     /* Tailwind's ease-initial → CSS default ease */
     /* Subtle visual transitions (hover, opacity, color) */
     --ease: cubic-bezier(0.25, 0.1, 0.25, 1);
 
-    /* Tailwind's ease-in → cubic-bezier(0.4, 0, 1, 1) */
-    /* Avoid ease-in for user-triggered entry animations (feels less responsive) */
-    --ease-in-quad: cubic-bezier(0.55, 0.085, 0.68, 0.53);
-    --ease-in-cubic: cubic-bezier(0.55, 0.055, 0.675, 0.19);
-    --ease-in-quart: cubic-bezier(0.895, 0.03, 0.685, 0.22);
-    --ease-in-quint: cubic-bezier(0.755, 0.05, 0.855, 0.06);
-    --ease-in-expo: cubic-bezier(0.95, 0.05, 0.795, 0.035);
-    --ease-in-circ: cubic-bezier(0.6, 0.04, 0.98, 0.335);
-
     /* Tailwind's ease-out → cubic-bezier(0, 0, 0.2, 1) */
     /* Default easing. Use for most enter/exit UI animations */
     --ease-out-quad: cubic-bezier(0.25, 0.46, 0.45, 0.94);
-    --ease-out-cubic: cubic-bezier(0.215, 0.61, 0.355, 1);
-    --ease-out-quart: cubic-bezier(0.165, 0.84, 0.44, 1);
-    --ease-out-quint: cubic-bezier(0.23, 1, 0.32, 1);
-    --ease-out-expo: cubic-bezier(0.19, 1, 0.22, 1);
-    --ease-out-circ: cubic-bezier(0.075, 0.82, 0.165, 1);
-
-    /* Tailwind's ease-in-out → cubic-bezier(0.4, 0, 0.2, 1) */
-    /* Ease-in-out: accelerates then decelerates, ideal for visible elements that move or morph naturally on screen */
-    --ease-in-out-quad: cubic-bezier(0.455, 0.03, 0.515, 0.955);
-    --ease-in-out-cubic: cubic-bezier(0.645, 0.045, 0.355, 1);
-    --ease-in-out-quart: cubic-bezier(0.77, 0, 0.175, 1);
-    --ease-in-out-quint: cubic-bezier(0.86, 0, 0.07, 1);
-    --ease-in-out-expo: cubic-bezier(1, 0, 0, 1);
-    --ease-in-out-circ: cubic-bezier(0.785, 0.135, 0.15, 0.86);
 }
 
 @layer base {
@@ -122,16 +105,6 @@
 
     body {
         @apply bg-background text-foreground;
-    }
-
-    /* Hide scrollbar */
-    ::-webkit-scrollbar {
-        display: none;
-    }
-
-    html {
-        -ms-overflow-style: none;
-        scrollbar-width: none;
     }
 }
 

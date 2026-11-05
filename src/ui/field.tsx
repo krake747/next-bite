@@ -2,6 +2,7 @@ import { Select as BaseSelect } from "@base-ui/react/select"
 import { type FieldElementProps } from "@formisch/react"
 import Check from "lucide-react/icons/check"
 import ChevronDown from "lucide-react/icons/chevron-down"
+import CircleAlert from "lucide-react/icons/circle-alert"
 import { useEffect, useId, useRef } from "react"
 import * as v from "valibot"
 
@@ -18,13 +19,13 @@ const refCallbackSchema = v.custom<FieldElementProps["ref"]>(
 )
 
 const controlClass =
-    "w-full rounded-control border border-stone-200 bg-surface px-3 py-2.5 text-stone-900 placeholder:text-stone-400 focus:border-ring focus:ring-1 focus:ring-ring focus:outline-none disabled:cursor-not-allowed disabled:opacity-60"
+    "w-full rounded-control border border-border bg-surface px-3 py-2.5 text-stone-900 transition-colors duration-150 placeholder:text-stone-400 hover:border-border-strong focus:border-ring focus:ring-1 focus:ring-ring focus:outline-none disabled:cursor-not-allowed disabled:bg-surface-muted disabled:text-muted-foreground"
 
 const labelClass = "block text-sm font-medium text-stone-700"
 
 export function FieldWrapper({ errors, children }: Readonly<{ errors: unknown; children: React.ReactNode }>) {
     return (
-        <div className="space-y-1.5">
+        <div className="flex flex-col gap-1.5">
             {children}
             <FieldErrors errors={errors} />
         </div>
@@ -48,12 +49,14 @@ function hasErrors(errors: Readonly<[string, ...string[]]> | null): boolean {
 
 export function Input(props: Readonly<InputProps>) {
     const fallbackId = useId()
+    const errorId = useId()
     const { input, errors, type, placeholder, label, id, onChange, ref, ...inputProps } = props
     const handleChange = v.parse(changeHandlerSchema, onChange)
     const inputRef = v.parse(refCallbackSchema, ref)
     const inputId = id ?? fallbackId
+    const invalid = hasErrors(errors)
     return (
-        <div className="space-y-1.5">
+        <div className="flex flex-col gap-1.5">
             {label !== undefined && label !== "" && (
                 <label htmlFor={inputId} className={labelClass}>
                     {label}
@@ -66,13 +69,15 @@ export function Input(props: Readonly<InputProps>) {
                 value={input ?? ""}
                 type={type ?? "text"}
                 placeholder={placeholder ?? ""}
-                aria-invalid={hasErrors(errors)}
+                aria-invalid={invalid}
+                aria-describedby={invalid ? errorId : undefined}
                 className={cx(
                     controlClass,
-                    hasErrors(errors) && "border-destructive focus:border-destructive focus:ring-destructive",
+                    invalid && "border-destructive focus:border-destructive focus:ring-destructive",
                 )}
                 {...inputProps}
             />
+            <FieldErrors errors={errors} id={errorId} />
         </div>
     )
 }
@@ -90,12 +95,14 @@ type TextareaProps = Omit<FieldElementProps, "onChange" | "ref"> & {
 
 export function Textarea(props: Readonly<TextareaProps>) {
     const fallbackId = useId()
+    const errorId = useId()
     const { input, errors, placeholder, rows, label, id, onChange, ref, ...textareaProps } = props
     const handleChange = v.parse(changeHandlerSchema, onChange)
     const textareaRef = v.parse(refCallbackSchema, ref)
     const textareaId = id ?? fallbackId
+    const invalid = hasErrors(errors)
     return (
-        <div className="space-y-1.5">
+        <div className="flex flex-col gap-1.5">
             {label !== undefined && label !== "" && (
                 <label htmlFor={textareaId} className={labelClass}>
                     {label}
@@ -108,13 +115,15 @@ export function Textarea(props: Readonly<TextareaProps>) {
                 value={input ?? ""}
                 placeholder={placeholder ?? ""}
                 rows={rows ?? 3}
-                aria-invalid={hasErrors(errors)}
+                aria-invalid={invalid}
+                aria-describedby={invalid ? errorId : undefined}
                 className={cx(
                     controlClass,
-                    hasErrors(errors) && "border-destructive focus:border-destructive focus:ring-destructive",
+                    invalid && "border-destructive focus:border-destructive focus:ring-destructive",
                 )}
                 {...textareaProps}
             />
+            <FieldErrors errors={errors} id={errorId} />
         </div>
     )
 }
@@ -137,6 +146,7 @@ type SelectProps = Omit<FieldElementProps, "onChange" | "ref"> & {
 export function Select(props: Readonly<SelectProps>) {
     const fallbackId = useId()
     const labelId = useId()
+    const errorId = useId()
     const { input, errors, options, label, id, onChange, ref, ...selectProps } = props
     const handleChange = v.parse(changeHandlerSchema, onChange)
     const selectRef = v.parse(refCallbackSchema, ref)
@@ -154,7 +164,7 @@ export function Select(props: Readonly<SelectProps>) {
     }, [value])
 
     return (
-        <div className="space-y-1.5">
+        <div className="flex flex-col gap-1.5">
             {label !== undefined && label !== "" && (
                 <label id={labelId} htmlFor={selectId} className={labelClass}>
                     {label}
@@ -174,6 +184,7 @@ export function Select(props: Readonly<SelectProps>) {
                     id={selectId}
                     aria-labelledby={label !== undefined && label !== "" ? labelId : undefined}
                     aria-invalid={invalid}
+                    aria-describedby={invalid ? errorId : undefined}
                     className={cx(
                         controlClass,
                         "flex items-center justify-between gap-2 text-left",
@@ -188,7 +199,7 @@ export function Select(props: Readonly<SelectProps>) {
                 </BaseSelect.Trigger>
                 <BaseSelect.Portal>
                     <BaseSelect.Positioner sideOffset={4}>
-                        <BaseSelect.Popup className="z-50 max-h-64 overflow-y-auto rounded-lg border border-border bg-surface py-1 shadow-popover outline-none">
+                        <BaseSelect.Popup className="z-50 max-h-64 overflow-y-auto rounded-panel border border-border bg-surface py-1 shadow-popover outline-none">
                             <BaseSelect.List>
                                 {options.map((item) => (
                                     <BaseSelect.Item
@@ -225,11 +236,17 @@ export function Select(props: Readonly<SelectProps>) {
                     ))}
                 </select>
             </BaseSelect.Root>
+            <FieldErrors errors={errors} id={errorId} />
         </div>
     )
 }
 
-function FieldErrors({ errors }: Readonly<{ errors: unknown }>) {
+function FieldErrors({ errors, id }: Readonly<{ errors: unknown; id?: string | undefined }>) {
     const message = Array.isArray(errors) && typeof errors[0] === "string" ? errors[0] : null
-    return message !== null && message !== "" ? <div className="text-sm text-destructive">{message}</div> : null
+    return message !== null && message !== "" ? (
+        <div id={id} role="alert" className="flex items-center gap-1.5 text-sm text-destructive">
+            <CircleAlert className="size-4 shrink-0" aria-hidden="true" />
+            <span>{message}</span>
+        </div>
+    ) : null
 }

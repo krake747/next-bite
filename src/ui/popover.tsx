@@ -7,7 +7,7 @@ export function Popover({ children }: Readonly<{ children?: React.ReactNode | un
 }
 
 const trigger = cva({
-    base: "inline-flex cursor-pointer items-center justify-center transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring",
+    base: "inline-flex cursor-pointer items-center justify-center transition-colors duration-150 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring",
     variants: {
         tone: {
             plain: "rounded-control",
@@ -49,7 +49,7 @@ export function PopoverPanel({ className, children, side, align, sideOffset }: P
                 <BasePopover.Popup
                     data-slot="popover-panel"
                     className={cx(
-                        "z-50 rounded-lg border border-border bg-surface py-2 shadow-popover outline-none",
+                        "z-50 rounded-panel border border-border bg-surface py-2 shadow-popover outline-none",
                         className,
                     )}
                 >

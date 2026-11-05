@@ -1,3 +1,5 @@
+import CircleAlert from "lucide-react/icons/circle-alert"
+
 import { cx } from "@ui/variants"
 
 export function ErrorBanner({
@@ -8,10 +10,15 @@ export function ErrorBanner({
     return (
         <div
             data-slot="error-banner"
-            className={cx("mb-4 rounded-lg bg-destructive/10 p-3 text-sm text-destructive backdrop-blur-sm", className)}
+            role="alert"
+            className={cx(
+                "mb-4 flex items-center gap-2 rounded-control border border-destructive/20 bg-destructive/10 p-3 text-sm text-destructive",
+                className,
+            )}
             {...props}
         >
-            {children}
+            <CircleAlert className="size-4 shrink-0" aria-hidden="true" />
+            <span>{children}</span>
         </div>
     )
 }

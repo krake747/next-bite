@@ -4,12 +4,13 @@ import LoaderCircle from "lucide-react/icons/loader-circle"
 import { cva, type VariantProps } from "@ui/variants"
 
 const button = cva({
-    base: "group inline-flex cursor-pointer items-center justify-center font-semibold focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring active:scale-[0.97] disabled:cursor-not-allowed disabled:opacity-60",
+    base: "group inline-flex cursor-pointer items-center justify-center font-semibold transition-colors duration-150 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring active:scale-[0.97] disabled:cursor-not-allowed disabled:bg-surface-muted disabled:text-muted-foreground disabled:shadow-none",
     variants: {
         variant: {
-            primary: "bg-tomato-700 text-white shadow-xs hover:bg-tomato-600",
-            secondary: "bg-surface text-stone-900 shadow-xs inset-ring inset-ring-stone-300 hover:bg-stone-50",
-            outline: "border border-border bg-surface text-stone-700 shadow-xs hover:bg-stone-50",
+            primary: "bg-primary text-white shadow-xs hover:bg-primary-hover",
+            secondary:
+                "bg-surface-muted text-stone-900 shadow-xs inset-ring inset-ring-border-strong hover:bg-stone-200",
+            outline: "border border-border bg-transparent text-stone-600 hover:bg-stone-100 hover:text-stone-900",
             ghost: "text-stone-600 hover:bg-stone-100 hover:text-stone-900",
             destructive: "bg-destructive text-white shadow-xs hover:bg-destructive/90",
         },

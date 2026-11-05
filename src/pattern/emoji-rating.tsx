@@ -24,7 +24,15 @@ const EMOJI_TITLES: Record<(typeof RATING_EMOJIS)[number], string> = {
     "🍆": "The food was horny and now so am I",
 }
 
-const RATING_COLORS = ["#b53920", "#db573d", "#eb6348", "#7d2b1f", "#f58974", "#fab5a7", "#fde7e3"] as const
+const RATING_COLORS = [
+    "oklch(0.5234 0.1645 33.24)",
+    "oklch(0.6248 0.171 33.01)",
+    "oklch(0.6662 0.1742 33.01)",
+    "oklch(0.4088 0.1165 30.94)",
+    "oklch(0.7427 0.1359 32.07)",
+    "oklch(0.8339 0.0834 31.75)",
+    "oklch(0.9446 0.0248 29.93)",
+] as const
 
 type FocusableButton = Readonly<{
     readonly focus: (options: Readonly<{ readonly preventScroll: boolean }>) => void
@@ -55,7 +63,7 @@ export function EmojiRating({
         return emoji !== undefined ? EMOJI_TITLES[emoji] : ""
     })()
 
-    const activeColor = displayRating !== null ? RATING_COLORS[displayRating] : "#b53920"
+    const activeColor = displayRating !== null ? RATING_COLORS[displayRating] : "oklch(0.5234 0.1645 33.24)"
 
     const handleRate = async (index: number, button: FocusableButton) => {
         await onRate(index)
@@ -86,9 +94,9 @@ export function EmojiRating({
                             }}
                             aria-label={EMOJI_LABELS[index]}
                             className={cx(
-                                "flex size-8 items-center justify-center text-lg transition-all duration-200 focus:outline-none sm:size-9 sm:text-xl",
+                                "flex min-h-11 min-w-11 cursor-pointer items-center justify-center rounded-control text-lg transition-transform duration-150 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring sm:size-9 sm:text-xl",
                                 isActive ? "scale-110" : "hover:scale-105",
-                                isActive ? "opacity-100" : "opacity-40 grayscale hover:opacity-70 hover:grayscale-50",
+                                isActive ? "opacity-100" : "opacity-40 grayscale hover:opacity-70",
                             )}
                             style={isActive ? { color: activeColor } : undefined}
                         >
@@ -97,7 +105,7 @@ export function EmojiRating({
                     )
                 })}
             </div>
-            <p className="max-w-full text-center text-sm leading-snug font-medium text-tomato-700 italic transition-colors duration-200">
+            <p className="max-w-full text-center text-sm leading-snug font-medium text-balance text-tomato-700 italic transition-colors duration-150">
                 {selectedTitle}
             </p>
         </div>

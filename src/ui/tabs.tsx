@@ -29,7 +29,7 @@ export function TabsList({
     return (
         <BaseTabs.List
             data-slot="tabs-list"
-            className={cx("inline-flex items-center gap-1 rounded-lg bg-stone-100 p-1", className)}
+            className={cx("inline-flex items-center gap-1 rounded-control bg-stone-100 p-1", className)}
         >
             {children}
         </BaseTabs.List>
@@ -53,10 +53,10 @@ export function TabsTab({
             disabled={disabled}
             data-slot="tabs-tab"
             className={cx(
-                "cursor-pointer rounded-md px-3 py-1.5 text-sm font-medium text-stone-600 transition-colors",
+                "cursor-pointer rounded-md px-3 py-1.5 text-sm font-medium text-stone-600 transition-colors duration-150",
                 "hover:text-stone-900 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring",
                 "data-active:bg-surface data-active:text-stone-900 data-active:shadow-xs",
-                "disabled:cursor-not-allowed disabled:opacity-60",
+                "disabled:cursor-not-allowed disabled:bg-transparent disabled:text-muted-foreground",
                 className,
             )}
         >

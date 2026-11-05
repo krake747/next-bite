@@ -44,7 +44,7 @@ export function OpeningHoursDialog({
                         <Badge variant={openNow ? "success" : "neutral"}>{openNow ? "Open now" : "Closed"}</Badge>
                     </div>
 
-                    <div className="space-y-2">
+                    <div className="flex flex-col gap-2">
                         {fullWeek.map((dayText, index) => {
                             const parts = dayText.split(": ")
                             const day = parts[0] ?? ""
@@ -53,7 +53,7 @@ export function OpeningHoursDialog({
                             return (
                                 <div
                                     key={day}
-                                    className={`flex items-center justify-between border-b border-stone-100 py-1.5 text-sm ${isToday ? "font-medium" : ""}`}
+                                    className={`flex items-center justify-between gap-2 border-b border-border py-1.5 text-sm ${isToday ? "font-medium" : ""}`}
                                 >
                                     <span className={isToday ? "text-stone-900" : "text-stone-600"}>
                                         {isToday ? "Today" : day}

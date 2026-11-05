@@ -23,9 +23,9 @@ const backdrop = cva({
             fullscreen: "",
         },
         tone: {
-            dim: "bg-black/50 backdrop-blur-sm",
-            deep: "bg-stone-900/80 backdrop-blur-sm duration-200",
-            dark: "bg-black/90",
+            dim: "bg-stone-900/50 backdrop-blur-sm transition-opacity duration-150",
+            deep: "bg-stone-900/80 backdrop-blur-sm transition-opacity duration-150",
+            dark: "bg-stone-900/90 transition-opacity duration-150",
         },
     },
     defaultVariants: {
@@ -134,7 +134,7 @@ export function DialogDescription({
 }
 
 const closeButton = cva({
-    base: "absolute top-4 right-4 flex size-8 items-center justify-center rounded-full text-stone-400 transition-colors hover:bg-stone-100 hover:text-stone-600",
+    base: "absolute top-4 right-4 flex min-h-11 min-w-11 items-center justify-center rounded-full text-stone-400 transition-colors duration-150 hover:bg-stone-100 hover:text-stone-600 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring",
     variants: {
         tone: {
             default: "",

@@ -16,8 +16,8 @@ export function Card({
         <div
             data-slot="card"
             className={cx(
-                "group relative flex flex-col overflow-hidden rounded-2xl border border-border bg-surface",
-                "shadow-card transition-shadow duration-300",
+                "group relative flex flex-col overflow-hidden rounded-card border border-border bg-surface",
+                "shadow-card transition-shadow duration-150",
                 className,
             )}
             {...props}

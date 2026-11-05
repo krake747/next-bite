@@ -292,14 +292,12 @@ export function LoadingPlaceholder() {
         <div className="relative flex min-h-screen flex-col overflow-hidden bg-background">
             <BackgroundLayers />
             <div className="relative z-10 flex flex-1 items-center justify-center">
-                <div className="flex flex-col items-center justify-center space-y-6">
+                <div className="flex flex-col items-center justify-center gap-6">
                     <BrandIcon>
                         <LoaderPinwheel className="size-7 animate-spin" aria-hidden="true" />
                     </BrandIcon>
 
-                    <p className="text-lg text-stone-600" style={{ fontFamily: "var(--font-body)" }}>
-                        {verb}...
-                    </p>
+                    <p className="font-sans text-lg text-stone-600">{verb}…</p>
                 </div>
             </div>
         </div>
