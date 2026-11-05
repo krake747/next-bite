@@ -74,13 +74,13 @@ function hasGoogleApiKey(apiKey: string | undefined): apiKey is string {
     return apiKey !== undefined && apiKey !== ""
 }
 
-async function fetchOpeningHoursFromGoogle(placeId: string): Promise<OpeningHoursData> {
-    const apiKey = process.env.GOOGLE_MAPS_API_KEY
-    if (!hasGoogleApiKey(apiKey)) {
-        console.log("fetchOpeningHoursFromGoogle: No API key")
-        return { openNow: true, periods: [], weekdayText: [] }
-    }
+type GoogleOpeningHours = NonNullable<valibot.InferOutput<typeof googleOpeningHoursSchema>["currentOpeningHours"]>
 
+function openFallback(): OpeningHoursData {
+    return { openNow: true, periods: [], weekdayText: [] }
+}
+
+async function fetchCurrentOpeningHours(placeId: string, apiKey: string): Promise<GoogleOpeningHours | null> {
     try {
         console.log("fetchOpeningHoursFromGoogle: Fetching for placeId:", placeId)
         const response = await fetch(`https://places.googleapis.com/v1/places/${placeId}?fields=currentOpeningHours`, {
@@ -93,48 +93,58 @@ async function fetchOpeningHoursFromGoogle(placeId: string): Promise<OpeningHour
         if (!response.ok) {
             const errorText = await response.text()
             console.log("fetchOpeningHoursFromGoogle: API error:", response.status, errorText)
-            return { openNow: true, periods: [], weekdayText: [] }
+            return null
         }
 
         const data = valibot.parse(googleOpeningHoursSchema, await response.json())
         console.log("fetchOpeningHoursFromGoogle: Result:", JSON.stringify(data.currentOpeningHours))
-
-        const google = data.currentOpeningHours
-        if (!google) {
-            return { openNow: true, periods: [], weekdayText: [] }
-        }
-
-        const periods: OpeningHoursData["periods"] = []
-        const seenDays = new Set<number>()
-
-        for (const period of google.periods ?? []) {
-            const day = period.open?.day
-            if (day === undefined || seenDays.has(day)) {
-                continue
-            }
-
-            const openH = period.open?.hour ?? 0
-            const openM = period.open?.minute ?? 0
-            const closeH = period.close?.hour ?? 0
-            const closeM = period.close?.minute ?? 0
-
-            periods.push({
-                day,
-                openTime: `${openH.toString().padStart(2, "0")}:${openM.toString().padStart(2, "0")}`,
-                closeTime: `${closeH.toString().padStart(2, "0")}:${closeM.toString().padStart(2, "0")}`,
-            })
-            seenDays.add(day)
-        }
-
-        return {
-            openNow: google.openNow ?? true,
-            periods,
-            weekdayText: google.weekdayDescriptions ?? [],
-        }
+        return data.currentOpeningHours ?? null
     } catch (err) {
         console.log("fetchOpeningHoursFromGoogle: Catch error:", err)
-        return { openNow: true, periods: [], weekdayText: [] }
+        return null
     }
+}
+
+function formatTimeOfDay(hour: number | undefined, minute: number | undefined): string {
+    return `${(hour ?? 0).toString().padStart(2, "0")}:${(minute ?? 0).toString().padStart(2, "0")}`
+}
+
+function toOpeningHoursData(google: GoogleOpeningHours): OpeningHoursData {
+    const periods: OpeningHoursData["periods"] = []
+    const seenDays = new Set<number>()
+
+    for (const period of google.periods ?? []) {
+        const day = period.open?.day
+        if (day === undefined || seenDays.has(day)) {
+            continue
+        }
+        periods.push({
+            day,
+            openTime: formatTimeOfDay(period.open?.hour, period.open?.minute),
+            closeTime: formatTimeOfDay(period.close?.hour, period.close?.minute),
+        })
+        seenDays.add(day)
+    }
+
+    return {
+        openNow: google.openNow ?? true,
+        periods,
+        weekdayText: google.weekdayDescriptions ?? [],
+    }
+}
+
+async function fetchOpeningHoursFromGoogle(placeId: string): Promise<OpeningHoursData> {
+    const apiKey = process.env.GOOGLE_MAPS_API_KEY
+    if (!hasGoogleApiKey(apiKey)) {
+        console.log("fetchOpeningHoursFromGoogle: No API key")
+        return openFallback()
+    }
+
+    const google = await fetchCurrentOpeningHours(placeId, apiKey)
+    if (!google) {
+        return openFallback()
+    }
+    return toOpeningHoursData(google)
 }
 
 export const _getRestaurantById = internalQuery({
