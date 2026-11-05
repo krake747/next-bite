@@ -14,6 +14,8 @@ export const useFriends = () => {
     return useConvexQuery(api.friendships.listFriends, undefined, { skip: !isAuthenticated })
 }
 
+export const useLandingStats = () => useConvexQuery(api.landing.getStats)
+
 export type AuthMethods = {
     readonly password: boolean
     readonly google: boolean
