@@ -62,6 +62,7 @@ export function ImageGalleryModal(props: Readonly<ImageGalleryModalProps>) {
     const initialPinchZoom = useRef<number | undefined>(undefined)
     const startPan = useRef({ x: 0, y: 0 })
     const suppressClickAfterPanRef = useRef(false)
+    const lastPointerRef = useRef<PanState | null>(null)
 
     const PAN_THRESHOLD = 5
 
@@ -122,25 +123,24 @@ export function ImageGalleryModal(props: Readonly<ImageGalleryModalProps>) {
             return () => {}
         }
 
-        let ptrRef: { x: number; y: number } | null = null
-
         const onPointerDown = (e: PointerStateEvent) => {
             if (zoom <= DEFAULT_ZOOM) {
                 return
             }
             e.preventDefault()
             container.setPointerCapture(e.pointerId)
-            ptrRef = { x: e.clientX, y: e.clientY }
+            lastPointerRef.current = { x: e.clientX, y: e.clientY }
             startPan.current = { x: e.clientX - pan.x, y: e.clientY - pan.y }
             setIsPanning(true)
         }
 
         const onPointerMove = (e: PointerStateEvent) => {
-            if (!ptrRef) {
+            const lastPointer = lastPointerRef.current
+            if (!lastPointer) {
                 return
             }
-            const dx = Math.abs(e.clientX - ptrRef.x)
-            const dy = Math.abs(e.clientY - ptrRef.y)
+            const dx = Math.abs(e.clientX - lastPointer.x)
+            const dy = Math.abs(e.clientY - lastPointer.y)
             if (dx > PAN_THRESHOLD || dy > PAN_THRESHOLD) {
                 suppressClickAfterPanRef.current = true
             }
@@ -148,7 +148,7 @@ export function ImageGalleryModal(props: Readonly<ImageGalleryModalProps>) {
         }
 
         const onPointerUp = () => {
-            ptrRef = null
+            lastPointerRef.current = null
             setIsPanning(false)
             queueMicrotask(() => {
                 suppressClickAfterPanRef.current = false
