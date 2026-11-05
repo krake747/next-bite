@@ -1,6 +1,6 @@
 import { Avatar as BaseAvatar } from "@base-ui/react/avatar"
 
-import { cva, cx, type VariantProps } from "@ui/variants"
+import { cva, cx, type VariantProps } from "@ui/cva.config"
 
 const avatar = cva({
     base: "relative inline-flex shrink-0 items-center justify-center overflow-visible rounded-full",

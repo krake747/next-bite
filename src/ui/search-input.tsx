@@ -2,7 +2,8 @@ import Search from "lucide-react/icons/search"
 import X from "lucide-react/icons/x"
 import { useId, useState } from "react"
 
-import { cx, focusRing } from "@ui/variants"
+import { cx } from "@ui/cva.config"
+import { focusRing } from "@ui/variants"
 
 type SearchInputProps = {
     value?: string | undefined

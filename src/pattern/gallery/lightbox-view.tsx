@@ -1,5 +1,5 @@
 import { LazyImage } from "@pattern/lazy-image"
-import { cx } from "@ui/variants"
+import { cx } from "@ui/cva.config"
 
 import { useGalleryViewer } from "./gallery-viewer"
 import { NavigationArrow } from "./navigation-arrow"

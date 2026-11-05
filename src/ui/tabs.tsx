@@ -1,6 +1,7 @@
 import { Tabs as BaseTabs } from "@base-ui/react/tabs"
 
-import { cx, focusRing } from "@ui/variants"
+import { cx } from "@ui/cva.config"
+import { focusRing } from "@ui/variants"
 
 type TabsValue = string | number
 

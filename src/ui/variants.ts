@@ -1,8 +1,5 @@
 import { cva } from "@ui/cva.config"
 
-export { cva, cx } from "@ui/cva.config"
-export type { VariantProps } from "@ui/cva.config"
-
 export const focusRing = cva({
     base: "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring",
 })

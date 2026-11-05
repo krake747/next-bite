@@ -6,7 +6,7 @@ import { useState, useRef } from "react"
 import { type Id } from "@convex/_generated/dataModel"
 import { useUploadImage, useDeleteImage, type ImageRecord } from "@core/hooks"
 import { processImage, formatFileSize, MAX_IMAGES, MAX_FILE_SIZE } from "@core/image-utils"
-import { cx } from "@ui/variants"
+import { cx } from "@ui/cva.config"
 
 type FileListLike = Readonly<{
     readonly length: number

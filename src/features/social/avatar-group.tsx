@@ -1,5 +1,5 @@
 import { Avatar } from "@ui/avatar"
-import { cx } from "@ui/variants"
+import { cx } from "@ui/cva.config"
 
 export type AvatarMember = {
     readonly name: string

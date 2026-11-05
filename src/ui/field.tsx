@@ -6,7 +6,8 @@ import CircleAlert from "lucide-react/icons/circle-alert"
 import { useEffect, useId, useRef } from "react"
 import * as v from "valibot"
 
-import { control, cx, fieldLabel } from "@ui/variants"
+import { cx } from "@ui/cva.config"
+import { control, fieldLabel } from "@ui/variants"
 
 const changeHandlerSchema = v.custom<FieldElementProps["onChange"]>(
     (value) => typeof value === "function",

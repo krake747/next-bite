@@ -1,7 +1,8 @@
 import { Button as BaseButton } from "@base-ui/react/button"
 import LoaderCircle from "lucide-react/icons/loader-circle"
 
-import { cva, focusRing, type VariantProps } from "@ui/variants"
+import { cva, type VariantProps } from "@ui/cva.config"
+import { focusRing } from "@ui/variants"
 
 export const button = cva({
     base: "group inline-flex cursor-pointer items-center justify-center font-semibold transition-colors duration-150 active:scale-[0.97] disabled:cursor-not-allowed disabled:bg-surface-muted disabled:text-muted-foreground disabled:shadow-none",

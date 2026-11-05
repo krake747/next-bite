@@ -1,6 +1,7 @@
 import { useState } from "react"
 
-import { cx, focusRing } from "@ui/variants"
+import { cx } from "@ui/cva.config"
+import { focusRing } from "@ui/variants"
 
 const RATING_EMOJIS = ["🚑", "💩", "🤡", "😐", "😏", "😍", "🍆"] as const
 

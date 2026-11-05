@@ -1,7 +1,8 @@
 import { Dialog as BaseDialog } from "@base-ui/react/dialog"
 import X from "lucide-react/icons/x"
 
-import { cva, cx, focusRing, type VariantProps } from "@ui/variants"
+import { cva, cx, type VariantProps } from "@ui/cva.config"
+import { focusRing } from "@ui/variants"
 
 export function Dialog({
     show,

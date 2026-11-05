@@ -1,6 +1,7 @@
 import Bookmark from "lucide-react/icons/bookmark"
 
-import { cx, focusRing } from "@ui/variants"
+import { cx } from "@ui/cva.config"
+import { focusRing } from "@ui/variants"
 
 export function RestaurantInterestButton({
     wanted,

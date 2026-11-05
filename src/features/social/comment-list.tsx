@@ -2,7 +2,8 @@ import Trash2 from "lucide-react/icons/trash-2"
 import { useState } from "react"
 
 import { Button } from "@ui/button"
-import { control, cx } from "@ui/variants"
+import { cx } from "@ui/cva.config"
+import { control } from "@ui/variants"
 
 import { AvatarGroup } from "./avatar-group"
 

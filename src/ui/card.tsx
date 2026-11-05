@@ -1,4 +1,4 @@
-import { cx } from "@ui/variants"
+import { cx } from "@ui/cva.config"
 
 export function Card({
     className,

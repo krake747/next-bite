@@ -1,7 +1,7 @@
 import ChevronLeft from "lucide-react/icons/chevron-left"
 import ChevronRight from "lucide-react/icons/chevron-right"
 
-import { cx } from "@ui/variants"
+import { cx } from "@ui/cva.config"
 
 export function NavigationArrow({
     direction,

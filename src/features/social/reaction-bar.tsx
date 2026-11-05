@@ -2,7 +2,7 @@ import Bookmark from "lucide-react/icons/bookmark"
 import Heart from "lucide-react/icons/heart"
 import MessageCircle from "lucide-react/icons/message-circle"
 
-import { cx } from "@ui/variants"
+import { cx } from "@ui/cva.config"
 
 type ReactionButtonProps = Readonly<{
     pressed: boolean

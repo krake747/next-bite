@@ -5,8 +5,9 @@ import Utensils from "lucide-react/icons/utensils"
 
 import { type OpeningHours } from "@core/hooks"
 import { SocialMetadata } from "@features/social/social-metadata"
+import { cx } from "@ui/cva.config"
 import { OpeningHours as OpeningHoursSummary } from "@ui/opening-hours"
-import { cx, focusRing } from "@ui/variants"
+import { focusRing } from "@ui/variants"
 
 export function RestaurantHeader({
     name,

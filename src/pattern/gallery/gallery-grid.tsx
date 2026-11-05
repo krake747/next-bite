@@ -1,5 +1,5 @@
 import { LazyImage } from "@pattern/lazy-image"
-import { cx } from "@ui/variants"
+import { cx } from "@ui/cva.config"
 
 export function GalleryGrid({
     images,

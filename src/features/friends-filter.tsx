@@ -2,9 +2,9 @@ import ArrowUpDown from "lucide-react/icons/arrow-up-down"
 import Funnel from "lucide-react/icons/funnel"
 
 import { useFriends } from "@core/hooks"
+import { cx } from "@ui/cva.config"
 import { SearchInput } from "@ui/search-input"
 import { Skeleton } from "@ui/skeleton"
-import { cx } from "@ui/variants"
 
 export function FriendsFilter({
     filter,

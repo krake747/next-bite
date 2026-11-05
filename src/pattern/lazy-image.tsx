@@ -1,6 +1,6 @@
 import { useState } from "react"
 
-import { cx } from "@ui/variants"
+import { cx } from "@ui/cva.config"
 
 const MAX_LOADED_IMAGES = 100
 

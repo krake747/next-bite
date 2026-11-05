@@ -1,7 +1,8 @@
 import { useMapsLibrary } from "@vis.gl/react-google-maps"
 import { useRef, useState, useEffect, useId } from "react"
 
-import { control, cx, fieldLabel } from "@ui/variants"
+import { cx } from "@ui/cva.config"
+import { control, fieldLabel } from "@ui/variants"
 
 type PlacesAutocompleteProps = {
     value: string

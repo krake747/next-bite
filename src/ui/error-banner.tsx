@@ -1,6 +1,6 @@
 import CircleAlert from "lucide-react/icons/circle-alert"
 
-import { cx } from "@ui/variants"
+import { cx } from "@ui/cva.config"
 
 export function ErrorBanner({
     className,

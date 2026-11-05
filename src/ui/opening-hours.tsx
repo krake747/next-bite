@@ -1,7 +1,8 @@
 import Clock from "lucide-react/icons/clock"
 
 import { type OpeningHours as OpeningHoursData } from "@core/hooks"
-import { cx, focusRing } from "@ui/variants"
+import { cx } from "@ui/cva.config"
+import { focusRing } from "@ui/variants"
 
 import { isOpenNow } from "./opening-hours-utils"
 

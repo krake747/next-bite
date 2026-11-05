@@ -1,6 +1,7 @@
 import { Link } from "@tanstack/react-router"
 
-import { cx, focusRing } from "@ui/variants"
+import { cx } from "@ui/cva.config"
+import { focusRing } from "@ui/variants"
 
 type TextLinkProps = {
     readonly to: string

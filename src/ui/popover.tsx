@@ -1,6 +1,7 @@
 import { Popover as BasePopover } from "@base-ui/react/popover"
 
-import { cva, cx, focusRing, type VariantProps } from "@ui/variants"
+import { cva, cx, type VariantProps } from "@ui/cva.config"
+import { focusRing } from "@ui/variants"
 
 export function Popover({ children }: Readonly<{ children?: React.ReactNode | undefined }>) {
     return <BasePopover.Root>{children}</BasePopover.Root>
