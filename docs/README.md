@@ -14,6 +14,8 @@ Long-lived explanations of this project's architecture and technical decisions.
   changing an established area; when a change conflicts with a recorded decision, surface the
   conflict instead of silently overriding it.
 - Data model: [migrations](../migrations.md).
+- Technical foundation: [tech](tech.md). Points at owners for stack, layers, rendering, data, auth,
+  storage, email, AI, testing, plus the dependency audit.
 
 ## ADRs
 
@@ -35,3 +37,8 @@ Long-lived explanations of this project's architecture and technical decisions.
 - [0014](adr/0014-restaurant-group-components.md): restaurant and group components, presentational.
 - [0015](adr/0015-application-experience.md): application experience (feed, detail, social backend).
 - [0016](adr/0016-design-system-docs.md): design-system documentation and distribution.
+- [0017](adr/0017-tanstack-db-collections.md): TanStack DB collections over Convex.
+- [0018](adr/0018-auth-methods-invitation-flow.md): Google OAuth, email OTP, invitation-first flow.
+- [0019](adr/0019-convex-file-storage.md): Convex File Storage for images.
+- [0020](adr/0020-mailgun-eu-email.md): Mailgun EU transactional email.
+- [0021](adr/0021-tanstack-ai-extension.md): TanStack AI as optional extension.
