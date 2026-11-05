@@ -6,21 +6,19 @@ import UtensilsCrossed from "lucide-react/icons/utensils-crossed"
 
 import { useAuth } from "@core/hooks"
 
-import { ThemeToggle } from "./theme-toggle"
-
 export function TopBar() {
     return (
         <div
             data-slot="top-bar"
-            className="sticky top-0 z-40 w-full border-b border-neutral-200/60 bg-[#faf9f7]/80 backdrop-blur-md dark:border-white/10 dark:bg-[#1a1918]/80"
+            className="sticky top-0 z-40 w-full border-b border-stone-200/60 bg-background/80 backdrop-blur-md"
         >
             <div className="mx-auto flex h-14 w-full max-w-350 items-center justify-between px-4 sm:px-6 lg:px-12">
                 <Link
                     to="/"
                     viewTransition
-                    className="flex items-center gap-2 text-neutral-900 transition-colors duration-150 ease hover:text-flame-pea-600 dark:text-neutral-100 dark:hover:text-flame-pea-400"
+                    className="flex items-center gap-2 text-stone-900 transition-colors duration-150 ease hover:text-tomato-600"
                 >
-                    <div className="flex size-8 items-center justify-center rounded-lg bg-flame-pea-100 text-flame-pea-600 dark:bg-flame-pea-900/50 dark:text-flame-pea-400">
+                    <div className="flex size-8 items-center justify-center rounded-lg bg-tomato-100 text-tomato-600">
                         <UtensilsCrossed className="size-4" />
                     </div>
                     <span className="text-lg font-semibold" style={{ fontFamily: "var(--font-display)" }}>
@@ -29,7 +27,6 @@ export function TopBar() {
                 </Link>
 
                 <div className="flex items-center gap-3">
-                    <ThemeToggle />
                     <AuthButton />
                 </div>
             </div>
@@ -45,7 +42,7 @@ function AuthButton() {
             <Link
                 to="/login"
                 viewTransition
-                className="inline-flex cursor-pointer items-center justify-center rounded-md bg-flame-pea-700 px-3 py-1.5 text-sm font-semibold text-white shadow-xs hover:bg-flame-pea-600 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-flame-pea-700 active:scale-[0.97] dark:bg-flame-pea-800 dark:text-white dark:shadow-none dark:hover:bg-flame-pea-700 dark:focus-visible:outline-flame-pea-50"
+                className="inline-flex cursor-pointer items-center justify-center rounded-md bg-tomato-700 px-3 py-1.5 text-sm font-semibold text-white shadow-xs hover:bg-tomato-600 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-tomato-700 active:scale-[0.97]"
             >
                 Sign In
             </Link>
@@ -56,7 +53,7 @@ function AuthButton() {
         <Popover.Root>
             <Popover.Trigger
                 aria-label="Open account menu"
-                className="flex size-8 items-center justify-center rounded-full bg-flame-pea-100 text-flame-pea-600 transition-colors duration-150 ease hover:bg-flame-pea-200 dark:bg-flame-pea-900 dark:text-flame-pea-400 dark:hover:bg-flame-pea-800"
+                className="flex size-8 items-center justify-center rounded-full bg-tomato-100 text-tomato-600 transition-colors duration-150 ease hover:bg-tomato-200"
             >
                 {auth.user?.image !== undefined && auth.user?.image !== null && auth.user.image !== "" ? (
                     <img
@@ -70,18 +67,16 @@ function AuthButton() {
             </Popover.Trigger>
             <Popover.Portal>
                 <Popover.Positioner>
-                    <Popover.Popup className="z-50 mt-2 w-56 rounded-lg border border-neutral-200 bg-white py-2 shadow-lg dark:border-neutral-700 dark:bg-neutral-800">
-                        <div className="border-b border-neutral-200 px-4 py-2 dark:border-neutral-700">
-                            <p className="text-sm font-medium text-neutral-900 dark:text-white">
-                                {auth.user?.name ?? "User"}
-                            </p>
-                            <p className="text-xs text-neutral-500 dark:text-neutral-400">{auth.user?.email}</p>
+                    <Popover.Popup className="z-50 mt-2 w-56 rounded-lg border border-stone-200 bg-surface py-2 shadow-lg">
+                        <div className="border-b border-stone-200 px-4 py-2">
+                            <p className="text-sm font-medium text-stone-900">{auth.user?.name ?? "User"}</p>
+                            <p className="text-xs text-stone-500">{auth.user?.email}</p>
                         </div>
                         <button
                             onClick={() => {
                                 void auth.signOut()
                             }}
-                            className="flex w-full cursor-pointer items-center gap-2 px-4 py-2 text-sm text-neutral-700 hover:bg-neutral-100 focus:bg-neutral-100 dark:text-neutral-300 dark:hover:bg-neutral-700 dark:focus:bg-neutral-700"
+                            className="flex w-full cursor-pointer items-center gap-2 px-4 py-2 text-sm text-stone-700 hover:bg-stone-100 focus:bg-stone-100"
                         >
                             <LogOut className="size-4" aria-hidden="true" />
                             Sign Out

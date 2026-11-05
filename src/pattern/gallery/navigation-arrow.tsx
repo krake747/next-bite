@@ -19,7 +19,7 @@ export function NavigationArrow({
             onClick={onClick}
             disabled={disabled}
             className={cx(
-                "absolute z-10 rounded-full bg-white/20 p-3 text-white backdrop-blur-sm transition-colors duration-150 ease hover:bg-white/30",
+                "absolute z-10 rounded-full bg-surface/20 p-3 text-white backdrop-blur-sm transition-colors duration-150 ease hover:bg-surface/30",
                 isPrev ? "left-4" : "right-4",
                 hidden === true && "hidden",
             )}

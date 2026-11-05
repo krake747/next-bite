@@ -55,7 +55,7 @@ function LoginPage() {
             icon={<UtensilsCrossed className="size-8" />}
             title={
                 <h2
-                    className="relative text-4xl font-semibold tracking-tight text-neutral-900 sm:text-5xl dark:text-white"
+                    className="relative text-4xl font-semibold tracking-tight text-stone-900 sm:text-5xl"
                     style={{ fontFamily: "var(--font-display)" }}
                 >
                     Welcome back
@@ -69,14 +69,14 @@ function LoginPage() {
                             fill="none"
                             stroke="currentColor"
                             strokeWidth="2"
-                            className="text-flame-pea-500 dark:text-flame-pea-400"
+                            className="text-tomato-500"
                         />
                     </svg>
                 </h2>
             }
             subtitle="Sign in to continue to your next bite"
             footerLink={
-                <p className="text-sm text-neutral-600 dark:text-neutral-400">
+                <p className="text-sm text-stone-600">
                     Do not have an account?{" "}
                     <TextLink to="/signup" viewTransition>
                         Sign up

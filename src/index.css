@@ -1,19 +1,82 @@
 @import "tailwindcss";
 
-@custom-variant dark (&:is(.dark *));
-
 @theme inline {
-    --color-flame-pea-50: #fef4f2;
-    --color-flame-pea-100: #fde7e3;
-    --color-flame-pea-200: #fdd3cb;
-    --color-flame-pea-300: #fab5a7;
-    --color-flame-pea-400: #f58974;
-    --color-flame-pea-500: #eb6348;
-    --color-flame-pea-600: #db573d;
-    --color-flame-pea-700: #b53920;
-    --color-flame-pea-800: #96321e;
-    --color-flame-pea-900: #7d2e1f;
-    --color-flame-pea-950: #44140b;
+    /* Tomato */
+    --color-tomato-50: #fff1ed;
+    --color-tomato-100: #ffe0d7;
+    --color-tomato-200: #ffc2b1;
+    --color-tomato-300: #f99b83;
+    --color-tomato-400: #ed7257;
+    --color-tomato-500: #e34e36;
+    --color-tomato-600: #cc3d2a;
+    --color-tomato-700: #a72f22;
+    --color-tomato-800: #85291f;
+    --color-tomato-900: #6c251e;
+
+    /* Mango */
+    --color-mango-50: #fffbeb;
+    --color-mango-100: #fff4cc;
+    --color-mango-200: #fbe9a7;
+    --color-mango-300: #f5d77e;
+    --color-mango-400: #ebc35a;
+    --color-mango-500: #d9a83c;
+    --color-mango-600: #b98a2d;
+
+    /* Basil */
+    --color-basil-50: #f1f5ec;
+    --color-basil-100: #e4ebdd;
+    --color-basil-200: #cbd9bd;
+    --color-basil-300: #afc39b;
+    --color-basil-400: #91aa7c;
+    --color-basil-500: #7a9f76;
+    --color-basil-600: #607653;
+
+    /* Plum */
+    --color-plum: #8b5cf6;
+
+    /* Stone neutrals */
+    --color-stone-50: #fffdf8;
+    --color-stone-100: #fff8ee;
+    --color-stone-200: #f3ecdd;
+    --color-stone-300: #e6ddce;
+    --color-stone-400: #c8bdad;
+    --color-stone-500: #a39888;
+    --color-stone-600: #817668;
+    --color-stone-700: #62594e;
+    --color-stone-800: #403930;
+    --color-stone-900: #29251f;
+
+    /* Semantic colors */
+    --color-background: var(--color-stone-100);
+    --color-surface: #ffffff;
+    --color-surface-muted: var(--color-stone-200);
+    --color-surface-accent: var(--color-mango-100);
+    --color-foreground: var(--color-stone-900);
+    --color-muted-foreground: var(--color-stone-600);
+    --color-primary: var(--color-tomato-600);
+    --color-primary-hover: var(--color-tomato-700);
+    --color-border: var(--color-stone-300);
+    --color-border-strong: var(--color-stone-400);
+    --color-success: var(--color-basil-600);
+    --color-warning: var(--color-mango-600);
+    --color-destructive: #b8322b;
+    --color-info: #547b9b;
+    --color-ring: var(--color-tomato-600);
+
+    /* Typography */
+    --font-sans: "DM Sans Variable", system-ui, sans-serif;
+    --font-display: "Bricolage Grotesque Variable", system-ui, sans-serif;
+
+    /* Radius */
+    --radius-control: 0.625rem;
+    --radius-panel: 0.875rem;
+    --radius-card: 1rem;
+    --radius-dialog: 1.25rem;
+
+    /* Shadows */
+    --shadow-card: 0 2px 12px rgb(41 37 31 / 0.06);
+    --shadow-popover: 0 8px 30px rgb(41 37 31 / 0.12);
+    --shadow-dialog: 0 16px 48px rgb(41 37 31 / 0.16);
 
     /* Tailwind's ease-initial → CSS default ease */
     /* Subtle visual transitions (hover, opacity, color) */
@@ -49,11 +112,8 @@
 
 @layer base {
     :root {
-        --font-display: "Fraunces Variable", georgia, serif;
-        --font-body: "Manrope Variable", system-ui, sans-serif;
-
-        font-family: "Manrope Variable", system-ui, sans-serif;
-        color-scheme: light dark;
+        font-family: "DM Sans Variable", system-ui, sans-serif;
+        color-scheme: light;
         font-synthesis: none;
         text-rendering: optimizelegibility;
         -webkit-font-smoothing: antialiased;
@@ -61,13 +121,7 @@
     }
 
     body {
-        @apply text-neutral-900;
-        background-color: #faf9f7;
-    }
-
-    .dark body {
-        @apply text-neutral-100;
-        background-color: #1a1918;
+        @apply bg-background text-foreground;
     }
 
     /* Hide scrollbar */

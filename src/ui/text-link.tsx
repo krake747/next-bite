@@ -13,10 +13,7 @@ export function TextLink({ className, viewTransition = false, ...props }: Readon
     return (
         <Link
             data-slot="text-link"
-            className={cx(
-                "font-semibold text-flame-pea-600 transition-colors hover:text-flame-pea-500 dark:text-flame-pea-400 dark:hover:text-flame-pea-300",
-                className,
-            )}
+            className={cx("font-semibold text-tomato-600 transition-colors hover:text-tomato-500", className)}
             viewTransition={viewTransition}
             {...props}
         />

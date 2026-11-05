@@ -21,20 +21,20 @@ export function SearchInput({ value, onChange, placeholder, className, ...rest }
 
     return (
         <div className={cx("relative flex items-center", className)}>
-            <Search className="pointer-events-none absolute left-0 size-4 text-neutral-400" />
+            <Search className="pointer-events-none absolute left-0 size-4 text-stone-400" />
             <input
                 type="text"
                 value={value}
                 onChange={handleChange}
                 placeholder={placeholder ?? "Search..."}
-                className="w-full border-b border-neutral-200 bg-transparent py-1.5 pr-6 pl-6 text-sm text-neutral-900 transition-colors placeholder:text-neutral-400 focus:border-flame-pea-500 focus:outline-none dark:border-neutral-700 dark:text-neutral-100 dark:focus:border-flame-pea-500"
+                className="w-full border-b border-stone-200 bg-transparent py-1.5 pr-6 pl-6 text-sm text-stone-900 transition-colors placeholder:text-stone-400 focus:border-tomato-500 focus:outline-none"
                 {...rest}
             />
             {value && (
                 <button
                     type="button"
                     onClick={clearSearch}
-                    className="absolute right-0 flex size-5 items-center justify-center rounded-full text-neutral-400 transition-colors hover:bg-neutral-100 hover:text-neutral-600 dark:hover:bg-neutral-800 dark:hover:text-neutral-300"
+                    className="absolute right-0 flex size-5 items-center justify-center rounded-full text-stone-400 transition-colors hover:bg-stone-100 hover:text-stone-600"
                     aria-label="Clear search"
                 >
                     <X className="size-3.5" />

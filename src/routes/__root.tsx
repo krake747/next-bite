@@ -6,7 +6,6 @@ import { StrictMode, Suspense } from "react"
 import { AuthProvider } from "@core/auth-provider"
 import { env } from "@core/env"
 import { LoadingPlaceholder } from "@ui/loading"
-import { ThemeProvider } from "@ui/theme-context"
 
 type RouterContext = {
     queryClient: QueryClient
@@ -29,11 +28,9 @@ function RootComponent() {
                     <QueryClientProvider client={queryClient}>
                         <APIProvider apiKey={env.VITE_GOOGLE_MAPS_API_KEY} libraries={["places", "marker"]}>
                             <AuthProvider>
-                                <ThemeProvider>
-                                    <Suspense fallback={<LoadingPlaceholder />}>
-                                        <Outlet />
-                                    </Suspense>
-                                </ThemeProvider>
+                                <Suspense fallback={<LoadingPlaceholder />}>
+                                    <Outlet />
+                                </Suspense>
                             </AuthProvider>
                         </APIProvider>
                     </QueryClientProvider>

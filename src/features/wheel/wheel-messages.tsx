@@ -69,8 +69,8 @@ function CelebrationParticles() {
 function SpotlightRing() {
     return (
         <div className="pointer-events-none absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
-            <div className="animate-ping-slow absolute -inset-8 rounded-full bg-flame-pea-500/20 blur-2xl" />
-            <div className="animate-pulse-slow absolute -inset-12 rounded-full bg-flame-pea-400/10 blur-3xl" />
+            <div className="animate-ping-slow absolute -inset-8 rounded-full bg-tomato-500/20 blur-2xl" />
+            <div className="animate-pulse-slow absolute -inset-12 rounded-full bg-tomato-400/10 blur-3xl" />
         </div>
     )
 }
@@ -78,11 +78,11 @@ function SpotlightRing() {
 export function Instructions() {
     return (
         <div className="flex items-center justify-center gap-3 text-center">
-            <div className="flex size-9 shrink-0 items-center justify-center rounded-full bg-flame-pea-100 sm:size-10 dark:bg-flame-pea-900/30">
-                <UtensilsCrossed className="size-4 text-flame-pea-600 sm:size-5 dark:text-flame-pea-400" />
+            <div className="flex size-9 shrink-0 items-center justify-center rounded-full bg-tomato-100 sm:size-10">
+                <UtensilsCrossed className="size-4 text-tomato-600 sm:size-5" />
             </div>
             <p
-                className="text-sm leading-relaxed font-medium text-neutral-700 sm:text-base dark:text-neutral-300"
+                className="text-sm leading-relaxed font-medium text-stone-700 sm:text-base"
                 style={{ fontFamily: "var(--font-body)" }}
             >
                 Press the button to give the wheel a whirl.
@@ -108,13 +108,13 @@ export function WinnerModal({
         <Dialog.Root open={show} onOpenChange={onOpenChange}>
             <Dialog.Portal>
                 <Dialog.Backdrop
-                    className="animate-in fade-in fixed inset-0 z-50 flex items-center justify-center bg-neutral-900/80 backdrop-blur-sm duration-200"
+                    className="animate-in fade-in fixed inset-0 z-50 flex items-center justify-center bg-stone-900/80 backdrop-blur-sm duration-200"
                     onClick={() => {
                         onOpenChange(false)
                     }}
                 >
                     <Dialog.Popup
-                        className="animate-winner-modal relative w-[90%] max-w-sm overflow-hidden rounded-2xl bg-white shadow-2xl outline-none dark:bg-neutral-900"
+                        className="animate-winner-modal relative w-[90%] max-w-sm overflow-hidden rounded-2xl bg-surface shadow-2xl outline-none"
                         onClick={(e: Readonly<{ stopPropagation: () => void }>) => {
                             e.stopPropagation()
                         }}
@@ -129,40 +129,40 @@ export function WinnerModal({
                                 onClick={() => {
                                     onOpenChange(false)
                                 }}
-                                className="absolute top-2 right-2 flex size-8 items-center justify-center rounded-full bg-neutral-100 text-neutral-400 transition-colors hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700"
+                                className="absolute top-2 right-2 flex size-8 items-center justify-center rounded-full bg-stone-100 text-stone-400 transition-colors hover:bg-stone-200"
                             >
                                 <X className="size-4" />
                             </button>
 
                             <div className="relative mb-4 flex justify-center">
                                 <div className="relative">
-                                    <div className="animate-winner-glow absolute inset-0 rounded-full bg-flame-pea-400/30 blur-xl" />
-                                    <div className="relative flex size-14 items-center justify-center rounded-full bg-linear-to-br from-flame-pea-500 via-flame-pea-600 to-flame-pea-800 shadow-lg ring-4 ring-flame-pea-400/20">
+                                    <div className="animate-winner-glow absolute inset-0 rounded-full bg-tomato-400/30 blur-xl" />
+                                    <div className="relative flex size-14 items-center justify-center rounded-full bg-linear-to-br from-tomato-500 via-tomato-600 to-tomato-800 shadow-lg ring-4 ring-tomato-400/20">
                                         <Sparkles className="size-7 text-white" />
                                     </div>
                                 </div>
                             </div>
 
                             <div className="relative mb-3 flex items-center justify-center gap-2">
-                                <div className="h-px w-6 bg-linear-to-r from-transparent to-flame-pea-400/50" />
-                                <div className="flex items-center gap-1 text-xs font-medium tracking-widest text-flame-pea-600 uppercase dark:text-flame-pea-400">
+                                <div className="h-px w-6 bg-linear-to-r from-transparent to-tomato-400/50" />
+                                <div className="flex items-center gap-1 text-xs font-medium tracking-widest text-tomato-600 uppercase">
                                     <Star className="size-2.5 fill-current" />
                                     Winner
                                     <Star className="size-2.5 fill-current" />
                                 </div>
-                                <div className="h-px w-6 bg-linear-to-l from-transparent to-flame-pea-400/50" />
+                                <div className="h-px w-6 bg-linear-to-l from-transparent to-tomato-400/50" />
                             </div>
 
                             <Dialog.Title className="sr-only">Winner</Dialog.Title>
 
                             <h2
-                                className="animate-title-reveal bg-linear-to-br from-neutral-900 via-neutral-800 to-neutral-900 bg-clip-text text-center text-2xl font-bold tracking-tight text-transparent dark:from-neutral-100 dark:via-neutral-200 dark:to-neutral-400"
+                                className="animate-title-reveal bg-linear-to-br from-stone-900 via-stone-800 to-stone-900 bg-clip-text text-center text-2xl font-bold tracking-tight text-transparent"
                                 style={{ fontFamily: "var(--font-display)" }}
                             >
                                 {restaurant.name}
                             </h2>
 
-                            <p className="animate-fade-in-up mt-1.5 text-center text-xs text-neutral-500 dark:text-neutral-400">
+                            <p className="animate-fade-in-up mt-1.5 text-center text-xs text-stone-500">
                                 Your next culinary adventure awaits
                             </p>
 

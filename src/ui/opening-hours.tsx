@@ -31,17 +31,15 @@ export function OpeningHours({
             onClick={onClick}
             className="flex w-full items-center gap-2 text-left transition-opacity hover:opacity-80"
         >
-            <div className="flex size-6 items-center justify-center rounded-full bg-neutral-100 dark:bg-neutral-800">
-                <Clock className="size-3.5 text-neutral-400 dark:text-neutral-500" aria-hidden="true" />
+            <div className="flex size-6 items-center justify-center rounded-full bg-stone-100">
+                <Clock className="size-3.5 text-stone-400" aria-hidden="true" />
             </div>
             <div className="flex items-center gap-2 text-sm">
-                <span
-                    className={`font-medium ${openNow ? "text-flame-pea-600 dark:text-flame-pea-400" : "text-neutral-500 dark:text-neutral-400"}`}
-                >
+                <span className={`font-medium ${openNow ? "text-tomato-600" : "text-stone-500"}`}>
                     {openNow ? "Open now" : "Closed"}
                 </span>
-                <span className="text-neutral-300 dark:text-neutral-600">·</span>
-                <span className="text-neutral-600 dark:text-neutral-300">
+                <span className="text-stone-300">·</span>
+                <span className="text-stone-600">
                     {todayDayName} {todayHours}
                 </span>
             </div>

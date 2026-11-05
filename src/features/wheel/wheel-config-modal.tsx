@@ -48,13 +48,13 @@ export function WheelConfigModal({
             <Dialog.Portal>
                 <Dialog.Backdrop className="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm" />
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-                    <Dialog.Popup className="relative max-h-[85vh] w-full max-w-lg overflow-y-auto rounded-2xl border border-neutral-200/60 bg-[#faf9f7]/95 p-6 shadow-[0_8px_30px_rgb(0,0,0,0.12)] backdrop-blur-md dark:border-white/10 dark:bg-[#1a1918]/95 dark:shadow-[0_8px_30px_rgb(0,0,0,0.4)]">
+                    <Dialog.Popup className="relative max-h-[85vh] w-full max-w-lg overflow-y-auto rounded-2xl border border-stone-200/60 bg-background/95 p-6 shadow-popover backdrop-blur-md">
                         <div className="mb-6 flex items-center gap-3">
-                            <div className="flex size-10 items-center justify-center rounded-xl bg-linear-to-br from-flame-pea-500 to-flame-pea-600 text-white dark:from-flame-pea-600 dark:to-flame-pea-700">
+                            <div className="flex size-10 items-center justify-center rounded-xl bg-linear-to-br from-tomato-500 to-tomato-600 text-white">
                                 <Sliders className="size-5" />
                             </div>
                             <Dialog.Title
-                                className="text-xl font-semibold text-neutral-900 dark:text-white"
+                                className="text-xl font-semibold text-stone-900"
                                 style={{ fontFamily: "var(--font-display)" }}
                             >
                                 Build Your Own
@@ -63,7 +63,7 @@ export function WheelConfigModal({
 
                         <div className="space-y-5">
                             {!wheel.hasEnoughRestaurants && (
-                                <div className="flex items-start gap-3 rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700 dark:bg-red-900/20 dark:text-red-400">
+                                <div className="flex items-start gap-3 rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700">
                                     <AlertCircle className="mt-0.5 size-4 shrink-0" />
                                     <span>Need at least 1 restaurant to spin. Add a restaurant first.</span>
                                 </div>
@@ -75,7 +75,7 @@ export function WheelConfigModal({
                                         <div className="flex items-center justify-between">
                                             <label
                                                 htmlFor="target-count-select"
-                                                className="block text-sm font-medium text-neutral-700 dark:text-neutral-300"
+                                                className="block text-sm font-medium text-stone-700"
                                             >
                                                 Max Number of Restaurants
                                             </label>
@@ -89,7 +89,7 @@ export function WheelConfigModal({
                                                 ) => {
                                                     wheel.setTargetCount(parseInt(e.currentTarget.value))
                                                 }}
-                                                className="w-full appearance-none rounded-lg border border-neutral-200 bg-white px-4 py-2.5 pr-10 text-sm text-neutral-900 focus:border-flame-pea-500 focus:outline-none dark:border-neutral-600 dark:bg-neutral-700 dark:text-white"
+                                                className="w-full appearance-none rounded-lg border border-stone-200 bg-surface px-4 py-2.5 pr-10 text-sm text-stone-900 focus:border-tomato-500 focus:outline-none"
                                             >
                                                 {wheel.availableCountOptions.map((count) => (
                                                     <option key={count} value={count}>
@@ -99,7 +99,7 @@ export function WheelConfigModal({
                                             </select>
                                             <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3">
                                                 <svg
-                                                    className="size-4 text-neutral-400"
+                                                    className="size-4 text-stone-400"
                                                     fill="none"
                                                     viewBox="0 0 24 24"
                                                     stroke="currentColor"
@@ -123,9 +123,9 @@ export function WheelConfigModal({
                                                 onChange={() => {
                                                     wheel.toggleFilterClosedToday()
                                                 }}
-                                                className="size-4 rounded border-neutral-300 text-flame-pea-700 focus:ring-flame-pea-700 dark:border-neutral-600"
+                                                className="size-4 rounded border-stone-300 text-tomato-700 focus:ring-tomato-700"
                                             />
-                                            <span className="text-sm text-neutral-700 dark:text-neutral-300">
+                                            <span className="text-sm text-stone-700">
                                                 Exclude closed restaurants today
                                             </span>
                                         </label>
@@ -133,17 +133,17 @@ export function WheelConfigModal({
 
                                     <div className="space-y-3">
                                         <div className="flex items-center justify-between">
-                                            <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300">
+                                            <label className="block text-sm font-medium text-stone-700">
                                                 Select Restaurants
                                             </label>
                                             <span
                                                 className={cx(
                                                     "text-xs font-medium",
                                                     wheel.selectedIds.length === wheel.targetCount
-                                                        ? "text-flame-pea-600 dark:text-flame-pea-400"
+                                                        ? "text-tomato-600"
                                                         : wheel.selectedIds.length > 0
-                                                          ? "text-flame-pea-500/70 dark:text-flame-pea-400/70"
-                                                          : "text-neutral-400 dark:text-neutral-500",
+                                                          ? "text-tomato-500/70"
+                                                          : "text-stone-400",
                                                 )}
                                             >
                                                 {wheel.selectedIds.length === wheel.targetCount
@@ -153,7 +153,7 @@ export function WheelConfigModal({
                                         </div>
 
                                         <div className="relative">
-                                            <Search className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-neutral-400" />
+                                            <Search className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-stone-400" />
                                             <input
                                                 type="text"
                                                 value={searchQuery}
@@ -164,14 +164,14 @@ export function WheelConfigModal({
                                                 }}
                                                 placeholder="Search restaurants..."
                                                 aria-label="Search restaurants"
-                                                className="w-full rounded-lg border border-neutral-200 bg-white py-2 pr-3 pl-9 text-sm text-neutral-900 placeholder:text-neutral-400 focus:border-flame-pea-500 focus:outline-none dark:border-neutral-600 dark:bg-neutral-700 dark:text-white dark:placeholder:text-neutral-500"
+                                                className="w-full rounded-lg border border-stone-200 bg-surface py-2 pr-3 pl-9 text-sm text-stone-900 placeholder:text-stone-400 focus:border-tomato-500 focus:outline-none"
                                             />
                                             {searchQuery && (
                                                 <button
                                                     onClick={() => {
                                                         setSearchQuery("")
                                                     }}
-                                                    className="absolute top-1/2 right-2 -translate-y-1/2 rounded-full p-1 text-neutral-400 hover:bg-neutral-100 hover:text-neutral-600 dark:text-neutral-500 dark:hover:bg-neutral-600"
+                                                    className="absolute top-1/2 right-2 -translate-y-1/2 rounded-full p-1 text-stone-400 hover:bg-stone-100 hover:text-stone-600"
                                                     aria-label="Clear search"
                                                 >
                                                     <X className="size-3" />
@@ -179,17 +179,15 @@ export function WheelConfigModal({
                                             )}
                                         </div>
 
-                                        <div className="max-h-52 overflow-y-auto rounded-lg border border-neutral-200 bg-white dark:border-neutral-700 dark:bg-neutral-700/50">
+                                        <div className="max-h-52 overflow-y-auto rounded-lg border border-stone-200 bg-surface">
                                             {filteredRestaurants.map((restaurant) => {
                                                 const isSelected = wheel.selectedIds.includes(restaurant._id)
                                                 return (
                                                     <label
                                                         key={restaurant._id}
                                                         className={cx(
-                                                            "flex cursor-pointer items-center gap-3 border-b border-neutral-100 px-4 py-3 transition-colors last:border-b-0 dark:border-neutral-700",
-                                                            isSelected
-                                                                ? "bg-flame-pea-50 dark:bg-flame-pea-900/20"
-                                                                : "hover:bg-neutral-50 dark:hover:bg-neutral-700/50",
+                                                            "flex cursor-pointer items-center gap-3 border-b border-stone-100 px-4 py-3 transition-colors last:border-b-0",
+                                                            isSelected ? "bg-tomato-50" : "hover:bg-stone-50",
                                                         )}
                                                     >
                                                         <input
@@ -198,14 +196,14 @@ export function WheelConfigModal({
                                                             onChange={() => {
                                                                 wheel.toggleRestaurantSelection(restaurant._id)
                                                             }}
-                                                            className="size-4 rounded border-neutral-300 text-flame-pea-700 focus:ring-flame-pea-700 dark:border-neutral-600"
+                                                            className="size-4 rounded border-stone-300 text-tomato-700 focus:ring-tomato-700"
                                                         />
                                                         <span
                                                             className={cx(
                                                                 "text-sm",
                                                                 isSelected
-                                                                    ? "font-medium text-flame-pea-700 dark:text-flame-pea-400"
-                                                                    : "text-neutral-700 dark:text-neutral-300",
+                                                                    ? "font-medium text-tomato-700"
+                                                                    : "text-stone-700",
                                                             )}
                                                         >
                                                             {restaurant.name}
@@ -216,7 +214,7 @@ export function WheelConfigModal({
                                         </div>
 
                                         {filteredRestaurants.length === 0 && (
-                                            <p className="py-4 text-center text-sm text-neutral-500 dark:text-neutral-400">
+                                            <p className="py-4 text-center text-sm text-stone-500">
                                                 No restaurants match your search
                                             </p>
                                         )}
@@ -225,7 +223,7 @@ export function WheelConfigModal({
                                             (wheel.selectedIds.length > 0 &&
                                                 wheel.selectedIds.length < wheel.targetCount)) &&
                                             filteredRestaurants.length > 0 && (
-                                                <p className="text-xs text-amber-600 dark:text-amber-400">
+                                                <p className="text-xs text-amber-600">
                                                     {wheel.selectedIds.length === 0
                                                         ? "Please select at least 1 restaurant to spin"
                                                         : `You can add ${wheel.targetCount - wheel.selectedIds.length} more optional selections`}

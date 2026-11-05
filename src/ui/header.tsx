@@ -23,18 +23,15 @@ export function Header({ children }: Readonly<{ children?: React.ReactNode | und
     const parallaxRightBottom = `translateY(${scrollY * -0.08}px)`
 
     return (
-        <header
-            data-slot="header"
-            className="relative overflow-hidden border-b border-neutral-200/60 bg-[#faf9f7] dark:border-white/10 dark:bg-[#1a1918]"
-        >
+        <header data-slot="header" className="relative overflow-hidden border-b border-stone-200/60 bg-background">
             <BackgroundLayers />
             <div
-                className="animate-float pointer-events-none absolute top-[60%] right-[30%] h-16 w-16 rounded-full bg-flame-pea-400/10 blur-[50px] will-change-transform"
+                className="animate-float pointer-events-none absolute top-[60%] right-[30%] h-16 w-16 rounded-full bg-tomato-400/10 blur-[50px] will-change-transform"
                 style={{ animationDelay: "2s", transform: `translateY(${parallax3}px)` }}
             />
 
             <div
-                className="animate-float pointer-events-none absolute top-[5%] right-[5%] h-20 w-20 rounded-full bg-flame-pea-200/12 blur-2xl will-change-transform"
+                className="animate-float pointer-events-none absolute top-[5%] right-[5%] h-20 w-20 rounded-full bg-tomato-200/12 blur-2xl will-change-transform"
                 style={{ animationDelay: "0.5s", transform: parallaxTopRight }}
             />
             <div
@@ -42,7 +39,7 @@ export function Header({ children }: Readonly<{ children?: React.ReactNode | und
                 style={{ animationDelay: "1.5s", transform: parallaxLeftMiddle }}
             />
             <div
-                className="animate-float pointer-events-none absolute bottom-[30%] left-[5%] h-40 w-40 rounded-full bg-flame-pea-500/8 blur-[100px] will-change-transform"
+                className="animate-float pointer-events-none absolute bottom-[30%] left-[5%] h-40 w-40 rounded-full bg-tomato-500/8 blur-[100px] will-change-transform"
                 style={{ animationDelay: "2.5s", transform: parallaxLeftBottom }}
             />
             <div
@@ -51,7 +48,7 @@ export function Header({ children }: Readonly<{ children?: React.ReactNode | und
             />
 
             <div
-                className="animate-float pointer-events-none absolute top-[15%] left-[35%] h-4 w-4 rounded-full bg-flame-pea-400/20 blur-[10px] will-change-transform"
+                className="animate-float pointer-events-none absolute top-[15%] left-[35%] h-4 w-4 rounded-full bg-tomato-400/20 blur-[10px] will-change-transform"
                 style={{ animationDelay: "0.8s" }}
             />
             <div
@@ -59,16 +56,16 @@ export function Header({ children }: Readonly<{ children?: React.ReactNode | und
                 style={{ animationDelay: "1.8s" }}
             />
             <div
-                className="animate-float pointer-events-none absolute top-[85%] left-[20%] h-5 w-5 rounded-full bg-flame-pea-300/18 blur-md will-change-transform"
+                className="animate-float pointer-events-none absolute top-[85%] left-[20%] h-5 w-5 rounded-full bg-tomato-300/18 blur-md will-change-transform"
                 style={{ animationDelay: "2.3s" }}
             />
             <div
-                className="animate-float pointer-events-none absolute top-[35%] right-[45%] h-2 w-2 rounded-full bg-flame-pea-500/30 blur-[6px] will-change-transform"
+                className="animate-float pointer-events-none absolute top-[35%] right-[45%] h-2 w-2 rounded-full bg-tomato-500/30 blur-[6px] will-change-transform"
                 style={{ animationDelay: "3.2s" }}
             />
 
             <div
-                className="pointer-events-none absolute inset-0 opacity-[0.015] dark:opacity-[0.02]"
+                className="pointer-events-none absolute inset-0 opacity-[0.015]"
                 style={{
                     backgroundImage: `linear-gradient(rgba(0,0,0,0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(0,0,0,0.05) 1px, transparent 1px)`,
                     backgroundSize: "60px 60px",
@@ -81,11 +78,11 @@ export function Header({ children }: Readonly<{ children?: React.ReactNode | und
 
                     <div className="hidden shrink-0 items-center justify-center sm:flex">
                         <div className="relative">
-                            <div className="absolute inset-0 rounded-full bg-flame-pea-500/20 blur-2xl" />
-                            <div className="absolute inset-0 animate-pulse rounded-full bg-flame-pea-400/10 blur-xl" />
+                            <div className="absolute inset-0 rounded-full bg-tomato-500/20 blur-2xl" />
+                            <div className="absolute inset-0 animate-pulse rounded-full bg-tomato-400/10 blur-xl" />
 
                             <div
-                                className="animate-float pointer-events-none absolute -top-8 -left-8 h-14 w-14 rounded-full bg-flame-pea-300/15 blur-[25px] will-change-transform"
+                                className="animate-float pointer-events-none absolute -top-8 -left-8 h-14 w-14 rounded-full bg-tomato-300/15 blur-[25px] will-change-transform"
                                 style={{ animationDelay: "0.3s" }}
                             />
                             <div
@@ -93,7 +90,7 @@ export function Header({ children }: Readonly<{ children?: React.ReactNode | und
                                 style={{ animationDelay: "0.7s" }}
                             />
                             <div
-                                className="animate-float pointer-events-none absolute -right-6 -bottom-6 h-16 w-16 rounded-full bg-flame-pea-400/10 blur-[30px] will-change-transform"
+                                className="animate-float pointer-events-none absolute -right-6 -bottom-6 h-16 w-16 rounded-full bg-tomato-400/10 blur-[30px] will-change-transform"
                                 style={{ animationDelay: "1.1s" }}
                             />
                             <div
@@ -102,7 +99,7 @@ export function Header({ children }: Readonly<{ children?: React.ReactNode | und
                             />
 
                             <div
-                                className="animate-float pointer-events-none absolute -top-2 left-1/2 h-2 w-2 -translate-x-1/2 rounded-full bg-flame-pea-500/30 blur-xs will-change-transform"
+                                className="animate-float pointer-events-none absolute -top-2 left-1/2 h-2 w-2 -translate-x-1/2 rounded-full bg-tomato-500/30 blur-xs will-change-transform"
                                 style={{ animationDelay: "0.5s" }}
                             />
                             <div
@@ -110,15 +107,15 @@ export function Header({ children }: Readonly<{ children?: React.ReactNode | und
                                 style={{ animationDelay: "0.9s" }}
                             />
                             <div
-                                className="animate-float pointer-events-none absolute -bottom-3 left-1/4 h-2.5 w-2.5 rounded-full bg-flame-pea-300/25 blur-[5px] will-change-transform"
+                                className="animate-float pointer-events-none absolute -bottom-3 left-1/4 h-2.5 w-2.5 rounded-full bg-tomato-300/25 blur-[5px] will-change-transform"
                                 style={{ animationDelay: "1.3s" }}
                             />
 
-                            <div className="relative flex size-20 items-center justify-center rounded-2xl bg-linear-to-br from-flame-pea-500 to-flame-pea-600 text-white shadow-[0_8px_30px_rgb(181,57,32,0.3)] transition-all duration-200 hover:shadow-[0_10px_35px_rgb(181,57,32,0.35)] dark:from-flame-pea-600 dark:to-flame-pea-700 dark:shadow-[0_8px_30px_rgb(181,57,32,0.4)] dark:hover:shadow-[0_10px_35px_rgb(181,57,32,0.45)]">
+                            <div className="relative flex size-20 items-center justify-center rounded-2xl bg-linear-to-br from-tomato-500 to-tomato-600 text-white shadow-[0_8px_30px_rgb(181,57,32,0.3)] transition-all duration-200 hover:shadow-[0_10px_35px_rgb(181,57,32,0.35)]">
                                 <UtensilsCrossed className="size-10" />
                             </div>
                             <div className="animate-float-dot-1 absolute top-0 -right-3 size-4 rounded-full bg-yellow-400" />
-                            <div className="animate-float-dot-2 absolute -bottom-2 -left-2 size-3 rounded-full bg-flame-pea-400" />
+                            <div className="animate-float-dot-2 absolute -bottom-2 -left-2 size-3 rounded-full bg-tomato-400" />
                         </div>
                     </div>
                 </div>
@@ -143,7 +140,7 @@ export function HeaderTitle({
 }: Readonly<{ children?: React.ReactNode | undefined; className?: string | undefined }>) {
     return (
         <h1
-            className={`relative text-5xl leading-tight font-semibold tracking-tight text-neutral-900 sm:text-6xl lg:text-7xl dark:text-white ${className ?? ""}`}
+            className={`relative text-5xl leading-tight font-semibold tracking-tight text-stone-900 sm:text-6xl lg:text-7xl ${className ?? ""}`}
             style={{ fontFamily: "var(--font-display)" }}
             {...props}
         >
@@ -168,10 +165,7 @@ export function HeaderSubtitle({
     ...props
 }: Readonly<{ children?: React.ReactNode | undefined; className?: string | undefined }>) {
     return (
-        <p
-            className={`mt-6 max-w-xl text-xl leading-relaxed text-neutral-600 dark:text-neutral-400 ${className ?? ""}`}
-            {...props}
-        >
+        <p className={`mt-6 max-w-xl text-xl leading-relaxed text-stone-600 ${className ?? ""}`} {...props}>
             {children}
         </p>
     )
@@ -179,8 +173,8 @@ export function HeaderSubtitle({
 
 export function HeaderBadge({ count }: Readonly<{ count: number }>) {
     return (
-        <div className="mt-8 inline-flex items-center gap-3 rounded-full bg-white/80 px-1 py-1 text-sm font-semibold text-neutral-700 shadow-[0_2px_10px_rgb(0,0,0,0.08)] ring-1 ring-black/5 backdrop-blur-sm transition-shadow duration-200 hover:shadow-[0_4px_16px_rgb(0,0,0,0.12)] dark:bg-white/10 dark:text-neutral-200 dark:shadow-[0_2px_10px_rgb(0,0,0,0.3)] dark:ring-white/10 dark:hover:shadow-[0_4px_16px_rgb(0,0,0,0.4)]">
-            <span className="flex h-8 w-8 items-center justify-center rounded-full bg-linear-to-br from-flame-pea-500 to-flame-pea-600 text-white shadow-inner">
+        <div className="mt-8 inline-flex items-center gap-3 rounded-full bg-surface/80 px-1 py-1 text-sm font-semibold text-stone-700 shadow-[0_2px_10px_rgb(0,0,0,0.08)] ring-1 ring-black/5 backdrop-blur-sm transition-shadow duration-200 hover:shadow-[0_4px_16px_rgb(0,0,0,0.12)]">
+            <span className="flex h-8 w-8 items-center justify-center rounded-full bg-linear-to-br from-tomato-500 to-tomato-600 text-white shadow-inner">
                 {count}
             </span>
             <span className="pr-3">places to try</span>

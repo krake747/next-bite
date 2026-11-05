@@ -18,10 +18,10 @@ export function AuthLayout({
     footerLink: React.ReactNode
 }>) {
     return (
-        <div className="relative flex min-h-screen flex-col overflow-hidden bg-[#faf9f7] dark:bg-[#1a1918]">
+        <div className="relative flex min-h-screen flex-col overflow-hidden bg-background">
             <BackgroundLayers />
             <div
-                className="pointer-events-none absolute inset-0 opacity-[0.015] dark:opacity-[0.02]"
+                className="pointer-events-none absolute inset-0 opacity-[0.015]"
                 style={{
                     backgroundImage: `linear-gradient(rgba(0,0,0,0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(0,0,0,0.05) 1px, transparent 1px)`,
                     backgroundSize: "60px 60px",
@@ -39,10 +39,10 @@ export function AuthLayout({
                         </div>
                     </div>
                     {title}
-                    <p className="mt-4 text-lg text-neutral-600 dark:text-neutral-400">{subtitle}</p>
+                    <p className="mt-4 text-lg text-stone-600">{subtitle}</p>
                 </div>
 
-                <div className="relative rounded-2xl border border-neutral-200/60 bg-white/80 p-6 shadow-[0_4px_20px_rgb(0,0,0,0.08)] backdrop-blur-sm dark:border-white/10 dark:bg-white/5 dark:shadow-[0_4px_20px_rgb(0,0,0,0.3)]">
+                <div className="relative rounded-2xl border border-stone-200/60 bg-surface/80 p-6 shadow-[0_4px_20px_rgb(0,0,0,0.08)] backdrop-blur-sm">
                     {children}
                 </div>
 
@@ -52,7 +52,7 @@ export function AuthLayout({
                     <Link
                         to="/"
                         viewTransition
-                        className="group inline-flex items-center gap-2 text-sm text-neutral-500 transition-colors hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-white"
+                        className="group inline-flex items-center gap-2 text-sm text-stone-500 transition-colors hover:text-stone-900"
                     >
                         <UtensilsCrossed
                             className="size-4 transition-transform group-hover:-rotate-12"

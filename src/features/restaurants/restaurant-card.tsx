@@ -201,11 +201,11 @@ function RestaurantCardImage({
                     <div className="pointer-events-none absolute inset-0 bg-linear-to-t from-black/70 via-black/20 to-transparent" />
                 </>
             ) : (
-                <div className="absolute inset-0 flex items-center justify-center bg-linear-to-br from-[#f5f4f2] to-[#ebe9e6] dark:from-[#2d2b29] dark:to-[#262523]">
+                <div className="absolute inset-0 flex items-center justify-center bg-linear-to-br from-stone-200 to-stone-300">
                     <div className="flex items-center gap-2">
-                        <Utensils className="size-5 text-neutral-400 dark:text-neutral-500" />
+                        <Utensils className="size-5 text-stone-400" />
                         <span
-                            className="text-xs tracking-wide text-neutral-500 uppercase dark:text-neutral-500"
+                            className="text-xs tracking-wide text-stone-500 uppercase"
                             style={{ fontFamily: "var(--font-body)" }}
                         >
                             {restaurant.cuisine}
@@ -229,7 +229,7 @@ function RestaurantCardImage({
                             onClick={handleRefreshHours}
                             disabled={isRefreshing}
                             aria-label="Refresh hours"
-                            className="flex h-7 w-7 items-center justify-center rounded-full bg-white/90 text-neutral-600 shadow-md backdrop-blur-sm transition-all duration-200 hover:bg-white hover:text-neutral-900 hover:shadow-lg disabled:opacity-50"
+                            className="flex h-7 w-7 items-center justify-center rounded-full bg-surface/90 text-stone-600 shadow-md backdrop-blur-sm transition-all duration-200 hover:bg-surface hover:text-stone-900 hover:shadow-lg disabled:opacity-50"
                             title="Refresh hours"
                         >
                             <RotateCcw className="size-3.5" aria-hidden="true" />
@@ -240,7 +240,7 @@ function RestaurantCardImage({
                             onClick={handleFindHours}
                             disabled={isRefreshing}
                             aria-label="Find hours"
-                            className="flex h-7 w-7 items-center justify-center rounded-full bg-white/90 text-neutral-600 shadow-md backdrop-blur-sm transition-all duration-200 hover:bg-white hover:text-neutral-900 hover:shadow-lg disabled:opacity-50"
+                            className="flex h-7 w-7 items-center justify-center rounded-full bg-surface/90 text-stone-600 shadow-md backdrop-blur-sm transition-all duration-200 hover:bg-surface hover:text-stone-900 hover:shadow-lg disabled:opacity-50"
                             title="Find hours"
                         >
                             <Search className="size-3.5" aria-hidden="true" />
@@ -252,7 +252,7 @@ function RestaurantCardImage({
                             setShowEdit(true)
                         }}
                         aria-label="Edit restaurant"
-                        className="flex h-7 w-7 items-center justify-center rounded-full bg-white/90 text-neutral-600 shadow-md backdrop-blur-sm transition-all duration-200 hover:bg-white hover:text-neutral-900 hover:shadow-lg"
+                        className="flex h-7 w-7 items-center justify-center rounded-full bg-surface/90 text-stone-600 shadow-md backdrop-blur-sm transition-all duration-200 hover:bg-surface hover:text-stone-900 hover:shadow-lg"
                         title="Edit restaurant"
                     >
                         <SquarePen className="size-3.5" aria-hidden="true" />
@@ -263,7 +263,7 @@ function RestaurantCardImage({
                             setShowDeleteConfirm(true)
                         }}
                         aria-label="Delete restaurant"
-                        className="flex h-7 w-7 items-center justify-center rounded-full bg-white/90 text-red-600 shadow-md backdrop-blur-sm transition-all duration-200 hover:bg-red-50 hover:text-red-700 hover:shadow-lg"
+                        className="flex h-7 w-7 items-center justify-center rounded-full bg-surface/90 text-red-600 shadow-md backdrop-blur-sm transition-all duration-200 hover:bg-red-50 hover:text-red-700 hover:shadow-lg"
                         title="Delete restaurant"
                     >
                         <Trash2 className="size-3.5" aria-hidden="true" />
@@ -278,7 +278,7 @@ function RestaurantCardImage({
                         onClick={() => {
                             setShowGallery(true)
                         }}
-                        className="flex items-center gap-1.5 rounded-full bg-white/95 px-2.5 py-1 text-xs font-medium text-neutral-900 shadow-lg backdrop-blur-md transition-colors duration-200 hover:bg-white"
+                        className="flex items-center gap-1.5 rounded-full bg-surface/95 px-2.5 py-1 text-xs font-medium text-stone-900 shadow-lg backdrop-blur-md transition-colors duration-200 hover:bg-surface"
                     >
                         <Images className="size-3.5" />
                         {imageCount > 1 ? <span>{imageCount} photos</span> : <span>View</span>}
@@ -303,7 +303,7 @@ function RestaurantCardContent({
             <div className="flex flex-col gap-1">
                 <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between md:gap-3">
                     <h3
-                        className="flex-1 leading-[1.1] font-semibold tracking-tight text-neutral-900 dark:text-neutral-100"
+                        className="flex-1 leading-[1.1] font-semibold tracking-tight text-stone-900"
                         style={{ fontFamily: "var(--font-display)", fontSize: "22px", fontWeight: "600" }}
                     >
                         {restaurant.name}
@@ -313,7 +313,7 @@ function RestaurantCardContent({
                             href={restaurant.link}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="flex shrink-0 items-center gap-1.5 rounded-full bg-flame-pea-50 px-3 py-1.5 text-xs font-medium text-flame-pea-700 transition-all duration-200 hover:bg-flame-pea-100 dark:bg-flame-pea-950/30 dark:text-flame-pea-400 dark:hover:bg-flame-pea-900/40"
+                            className="flex shrink-0 items-center gap-1.5 rounded-full bg-tomato-50 px-3 py-1.5 text-xs font-medium text-tomato-700 transition-all duration-200 hover:bg-tomato-100"
                             title="View menu"
                         >
                             <Utensils className="size-3.5" />
@@ -322,22 +322,22 @@ function RestaurantCardContent({
                         </a>
                     )}
                 </div>
-                <span className="text-xs text-neutral-400 dark:text-neutral-500">by {restaurant.addedBy}</span>
+                <span className="text-xs text-stone-400">by {restaurant.addedBy}</span>
             </div>
 
             {(restaurant.location || restaurant.openingHours) && (
-                <div className="flex flex-col gap-2.5 rounded-xl bg-neutral-50/60 p-3 dark:bg-neutral-800/40">
+                <div className="flex flex-col gap-2.5 rounded-xl bg-stone-50/60 p-3">
                     {restaurant.location && (
-                        <div className="flex items-center gap-2.5 text-sm text-neutral-600 dark:text-neutral-300">
-                            <div className="flex size-6 items-center justify-center rounded-full bg-neutral-100 dark:bg-neutral-700">
-                                <MapPin className="size-3.5 text-neutral-400 dark:text-neutral-500" />
+                        <div className="flex items-center gap-2.5 text-sm text-stone-600">
+                            <div className="flex size-6 items-center justify-center rounded-full bg-stone-100">
+                                <MapPin className="size-3.5 text-stone-400" />
                             </div>
                             {hasLocation ? (
                                 <a
                                     href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(restaurant.location)}`}
                                     target="_blank"
                                     rel="noopener noreferrer"
-                                    className="truncate transition-colors duration-200 hover:text-flame-pea-600 dark:hover:text-flame-pea-400"
+                                    className="truncate transition-colors duration-200 hover:text-tomato-600"
                                 >
                                     {restaurant.location}
                                 </a>
@@ -363,15 +363,15 @@ function RestaurantCardNotes({ notes }: Readonly<{ notes: string | null | undefi
         <div className="px-5 pb-2 md:px-4">
             <div className="relative">
                 <div
-                    className="absolute -top-1 left-2 font-serif text-5xl leading-none text-flame-pea-400/30 select-none dark:text-flame-pea-600/20"
+                    className="absolute -top-1 left-2 font-serif text-5xl leading-none text-tomato-400/30 select-none"
                     style={{ fontFamily: "var(--font-display)" }}
                     aria-hidden="true"
                 >
                     "
                 </div>
-                <div className="border-l-2 border-flame-pea-400/50 bg-flame-pea-50/30 py-3 pr-3 pl-5 dark:border-flame-pea-600/40 dark:bg-flame-pea-950/15">
+                <div className="border-l-2 border-tomato-400/50 bg-tomato-50/30 py-3 pr-3 pl-5">
                     <p
-                        className="text-sm leading-relaxed text-neutral-700 italic dark:text-neutral-300"
+                        className="text-sm leading-relaxed text-stone-700 italic"
                         style={{ fontFamily: "var(--font-body)" }}
                     >
                         {notes}
@@ -402,16 +402,16 @@ function RestaurantCardMap({
                 onClick={() => {
                     setShowMap(!showMap)
                 }}
-                className="group/trigger flex w-full items-center justify-between rounded-xl border border-transparent px-3 py-2.5 text-sm text-neutral-600 transition-all duration-200 hover:border-neutral-200 hover:bg-neutral-50 dark:text-neutral-400 dark:hover:border-white/8 dark:hover:bg-white/3"
+                className="group/trigger flex w-full items-center justify-between rounded-xl border border-transparent px-3 py-2.5 text-sm text-stone-600 transition-all duration-200 hover:border-stone-200 hover:bg-stone-50"
             >
                 <div className="flex items-center gap-3">
-                    <div className="flex size-7 items-center justify-center rounded-full bg-neutral-100 transition-colors duration-200 group-hover/trigger:bg-flame-pea-100 dark:bg-neutral-800 dark:group-hover/trigger:bg-flame-pea-950/40">
-                        <Navigation className="size-3.5 text-neutral-500 transition-colors duration-200 group-hover/trigger:text-flame-pea-600 dark:text-neutral-500 dark:group-hover/trigger:text-flame-pea-400" />
+                    <div className="flex size-7 items-center justify-center rounded-full bg-stone-100 transition-colors duration-200 group-hover/trigger:bg-tomato-100">
+                        <Navigation className="size-3.5 text-stone-500 transition-colors duration-200 group-hover/trigger:text-tomato-600" />
                     </div>
                     <span className="font-medium">View on Map</span>
                 </div>
                 <ChevronDown
-                    className={`size-4 text-neutral-400 transition-transform duration-300 ease-out dark:text-neutral-500 ${showMap ? "rotate-180" : ""}`}
+                    className={`size-4 text-stone-400 transition-transform duration-300 ease-out ${showMap ? "rotate-180" : ""}`}
                 />
             </button>
             {showMap && (
@@ -420,7 +420,7 @@ function RestaurantCardMap({
                         href={directionsUrl}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="mt-2 block aspect-video w-full cursor-pointer overflow-hidden rounded-xl border border-neutral-200 shadow-inner transition-shadow duration-200 hover:shadow-md dark:border-white/8"
+                        className="mt-2 block aspect-video w-full cursor-pointer overflow-hidden rounded-xl border border-stone-200 shadow-inner transition-shadow duration-200 hover:shadow-md"
                         title="Get directions"
                     >
                         <Map
@@ -438,9 +438,7 @@ function RestaurantCardMap({
                             <AdvancedMarker position={location} title={restaurant.name ?? undefined} />
                         </Map>
                     </a>
-                    <p className="mt-2 text-center text-xs text-neutral-500 dark:text-neutral-500">
-                        Click map to get directions
-                    </p>
+                    <p className="mt-2 text-center text-xs text-stone-500">Click map to get directions</p>
                 </div>
             )}
         </div>
@@ -477,17 +475,16 @@ function DeleteConfirmDialog({
             <Dialog.Portal>
                 <Dialog.Backdrop className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm" />
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-                    <Dialog.Popup className="relative w-full max-w-sm rounded-2xl border border-neutral-200/60 bg-white p-6 shadow-[0_8px_30px_rgb(0,0,0,0.12)] dark:border-white/10 dark:bg-neutral-900">
+                    <Dialog.Popup className="relative w-full max-w-sm rounded-2xl border border-stone-200/60 bg-surface p-6 shadow-popover">
                         <Dialog.Title
-                            className="text-lg font-semibold text-neutral-900 dark:text-white"
+                            className="text-lg font-semibold text-stone-900"
                             style={{ fontFamily: "var(--font-display)" }}
                         >
                             Delete restaurant
                         </Dialog.Title>
-                        <Dialog.Description className="mt-2 text-sm text-neutral-600 dark:text-neutral-400">
-                            Are you sure you want to delete{" "}
-                            <strong className="text-neutral-900 dark:text-neutral-100">{restaurantName}</strong>? This
-                            action cannot be undone.
+                        <Dialog.Description className="mt-2 text-sm text-stone-600">
+                            Are you sure you want to delete <strong className="text-stone-900">{restaurantName}</strong>
+                            ? This action cannot be undone.
                         </Dialog.Description>
                         <div className="mt-6 flex justify-end gap-2">
                             <Dialog.Close

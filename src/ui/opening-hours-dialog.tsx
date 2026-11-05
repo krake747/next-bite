@@ -34,20 +34,20 @@ export function OpeningHoursDialog({
             <Dialog.Portal>
                 <Dialog.Backdrop className="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm" />
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-                    <Dialog.Popup className="relative w-full max-w-sm overflow-y-auto rounded-2xl border border-neutral-200/60 bg-[#faf9f7]/95 p-5 shadow-[0_8px_30px_rgb(0,0,0,0.12)] backdrop-blur-md dark:border-white/10 dark:bg-[#1a1918]/95 dark:shadow-[0_8px_30px_rgb(0,0,0,0.4)]">
+                    <Dialog.Popup className="relative w-full max-w-sm overflow-y-auto rounded-2xl border border-stone-200/60 bg-background/95 p-5 shadow-popover backdrop-blur-md">
                         <Dialog.Title
-                            className="mb-4 flex items-center gap-2 text-lg font-semibold text-neutral-900 dark:text-white"
+                            className="mb-4 flex items-center gap-2 text-lg font-semibold text-stone-900"
                             style={{ fontFamily: "var(--font-display)" }}
                         >
-                            <Clock className="size-5 text-flame-pea-500" />
+                            <Clock className="size-5 text-tomato-500" />
                             Hours
                         </Dialog.Title>
 
-                        <p className="mb-4 text-sm text-neutral-500 dark:text-neutral-400">{restaurantName}</p>
+                        <p className="mb-4 text-sm text-stone-500">{restaurantName}</p>
 
                         <div className="mb-5 flex items-center gap-2">
                             <span
-                                className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${openNow ? "bg-flame-pea-100 text-flame-pea-700 dark:bg-flame-pea-950/50 dark:text-flame-pea-400" : "bg-neutral-100 text-neutral-600 dark:bg-neutral-700 dark:text-neutral-400"}`}
+                                className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${openNow ? "bg-tomato-100 text-tomato-700" : "bg-stone-100 text-stone-600"}`}
                             >
                                 {openNow ? "Open now" : "Closed"}
                             </span>
@@ -62,18 +62,12 @@ export function OpeningHoursDialog({
                                 return (
                                     <div
                                         key={day}
-                                        className={`flex items-center justify-between border-b border-neutral-100 py-1.5 text-sm dark:border-neutral-800 ${isToday ? "font-medium" : ""}`}
+                                        className={`flex items-center justify-between border-b border-stone-100 py-1.5 text-sm ${isToday ? "font-medium" : ""}`}
                                     >
-                                        <span
-                                            className={
-                                                isToday
-                                                    ? "text-neutral-900 dark:text-neutral-100"
-                                                    : "text-neutral-600 dark:text-neutral-400"
-                                            }
-                                        >
+                                        <span className={isToday ? "text-stone-900" : "text-stone-600"}>
                                             {isToday ? "Today" : day}
                                         </span>
-                                        <span className="text-neutral-600 dark:text-neutral-400">{hours}</span>
+                                        <span className="text-stone-600">{hours}</span>
                                     </div>
                                 )
                             })}
@@ -84,7 +78,7 @@ export function OpeningHoursDialog({
                             onClick={() => {
                                 onOpenChange(false)
                             }}
-                            className="absolute top-4 right-4 flex size-8 items-center justify-center rounded-full text-neutral-400 transition-colors hover:bg-neutral-100 hover:text-neutral-600 dark:hover:bg-neutral-800 dark:hover:text-neutral-300"
+                            className="absolute top-4 right-4 flex size-8 items-center justify-center rounded-full text-stone-400 transition-colors hover:bg-stone-100 hover:text-stone-600"
                         >
                             <X className="size-4" />
                             <span className="sr-only">Close</span>

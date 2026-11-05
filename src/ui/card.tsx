@@ -12,11 +12,8 @@ export function Card({
         <div
             data-slot="card"
             className={cx(
-                "group relative flex flex-col overflow-hidden rounded-2xl bg-white",
-                "shadow-[0_1px_2px_rgba(0,0,0,0.02),0_4px_8px_rgba(0,0,0,0.03),0_8px_16px_rgba(0,0,0,0.02)]",
-                "transition-shadow duration-300 hover:shadow-[0_1px_2px_rgba(0,0,0,0.02),0_8px_16px_rgba(0,0,0,0.04),0_16px_32px_rgba(0,0,0,0.03)]",
-                "dark:border dark:border-white/8 dark:bg-[#262523] dark:shadow-[0_4px_12px_rgba(0,0,0,0.3)]",
-                "dark:hover:border-white/12 dark:hover:shadow-[0_8px_24px_rgba(0,0,0,0.4)]",
+                "group relative flex flex-col overflow-hidden rounded-2xl border border-border bg-surface",
+                "shadow-card transition-shadow duration-300",
                 className,
             )}
             {...props}

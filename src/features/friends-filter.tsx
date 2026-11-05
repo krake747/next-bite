@@ -33,18 +33,16 @@ export function FriendsFilter({
         <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-start">
             <div className="flex flex-1 flex-col gap-3">
                 <div className="flex flex-wrap items-center gap-2">
-                    <div className="flex items-center gap-1.5 text-neutral-500">
+                    <div className="flex items-center gap-1.5 text-stone-500">
                         <Funnel
                             className={cx(
                                 "size-4",
-                                filter !== null &&
-                                    filter !== "" &&
-                                    "fill-neutral-500 text-neutral-600 dark:fill-neutral-400 dark:text-neutral-300",
+                                filter !== null && filter !== "" && "fill-stone-500 text-stone-600",
                             )}
                         />
                         <span className="text-xs font-medium tracking-wide uppercase">Filter</span>
                     </div>
-                    <div className="h-4 w-px bg-neutral-200 dark:bg-neutral-700" />
+                    <div className="h-4 w-px bg-stone-200" />
                     {friends?.map((friend: Readonly<{ name: string }>) => (
                         <button
                             key={friend.name}
@@ -53,8 +51,8 @@ export function FriendsFilter({
                             className={cx(
                                 "inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium transition-all",
                                 filter === friend.name
-                                    ? "bg-flame-pea-600 text-white shadow-sm dark:bg-flame-pea-500"
-                                    : "bg-neutral-100 text-neutral-600 hover:bg-neutral-200 dark:bg-neutral-800 dark:text-neutral-400 dark:hover:bg-neutral-700",
+                                    ? "bg-tomato-600 text-white shadow-sm"
+                                    : "bg-stone-100 text-stone-600 hover:bg-stone-200",
                             )}
                         >
                             {friend.name}
@@ -66,7 +64,7 @@ export function FriendsFilter({
                             onClick={() => {
                                 handleFilter(null)
                             }}
-                            className="text-xs font-medium text-flame-pea-600 underline-offset-2 transition-colors hover:text-flame-pea-700 hover:underline dark:text-flame-pea-400"
+                            className="text-xs font-medium text-tomato-600 underline-offset-2 transition-colors hover:text-tomato-700 hover:underline"
                         >
                             Clear
                         </button>
@@ -81,13 +79,13 @@ export function FriendsFilter({
                         className="w-full"
                     />
                     <div className="flex items-center gap-1.5">
-                        <ArrowUpDown className="size-3.5 text-neutral-400" />
+                        <ArrowUpDown className="size-3.5 text-stone-400" />
                         <button
                             type="button"
                             onClick={() => {
                                 onSortChange(sortOrder === "added" ? "name" : "added")
                             }}
-                            className="text-xs font-medium whitespace-nowrap text-neutral-600 transition-colors hover:text-flame-pea-600 dark:text-neutral-400 dark:hover:text-flame-pea-400"
+                            className="text-xs font-medium whitespace-nowrap text-stone-600 transition-colors hover:text-tomato-600"
                         >
                             {sortOrder === "added" ? "Recently added" : "Name (A-Z)"}
                         </button>
@@ -119,7 +117,7 @@ export function FriendsFilterSkeleton() {
                 <div className="flex max-w-md items-center gap-3">
                     <Skeleton className="h-10 w-full max-w-xs rounded-lg" />
                     <div className="flex items-center gap-1.5">
-                        <Skeleton className="h-3.5 w-3.5 rounded bg-neutral-300 dark:bg-neutral-600" />
+                        <Skeleton className="h-3.5 w-3.5 rounded bg-stone-300" />
                         <Skeleton className="h-3 w-20 rounded" />
                     </div>
                 </div>

@@ -28,13 +28,13 @@ export function EditRestaurantDialog({
             <Dialog.Portal>
                 <Dialog.Backdrop className="fixed inset-0 bg-black/50 backdrop-blur-sm" />
                 <div className="fixed inset-0 flex items-center justify-center p-4">
-                    <Dialog.Popup className="relative max-h-[85vh] w-full max-w-lg overflow-y-auto rounded-2xl border border-neutral-200/60 bg-[#faf9f7]/95 p-6 shadow-[0_8px_30px_rgb(0,0,0,0.12)] backdrop-blur-md dark:border-white/10 dark:bg-[#1a1918]/95 dark:shadow-[0_8px_30px_rgb(0,0,0,0.4)]">
+                    <Dialog.Popup className="relative max-h-[85vh] w-full max-w-lg overflow-y-auto rounded-2xl border border-stone-200/60 bg-background/95 p-6 shadow-popover backdrop-blur-md">
                         <div className="mb-6 flex items-center gap-3">
-                            <div className="flex size-10 items-center justify-center rounded-xl bg-linear-to-br from-flame-pea-500 to-flame-pea-600 text-white dark:from-flame-pea-600 dark:to-flame-pea-700">
+                            <div className="flex size-10 items-center justify-center rounded-xl bg-linear-to-br from-tomato-500 to-tomato-600 text-white">
                                 <UtensilsCrossed className="size-5" />
                             </div>
                             <Dialog.Title
-                                className="text-xl font-semibold text-neutral-900 dark:text-white"
+                                className="text-xl font-semibold text-stone-900"
                                 style={{ fontFamily: "var(--font-display)" }}
                             >
                                 Edit Restaurant
@@ -49,13 +49,11 @@ export function EditRestaurantDialog({
                             />
                         ) : (
                             <div className="space-y-4 py-8 text-center">
-                                <p className="text-neutral-600 dark:text-neutral-400">
-                                    Please sign in to edit restaurants.
-                                </p>
+                                <p className="text-stone-600">Please sign in to edit restaurants.</p>
                                 <Link
                                     to="/login"
                                     viewTransition
-                                    className="inline-flex w-full cursor-pointer items-center justify-center gap-x-1.5 rounded-md bg-flame-pea-700 px-3 py-2 text-sm font-semibold text-white shadow-xs hover:bg-flame-pea-600 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-flame-pea-700 active:scale-[0.97] dark:bg-flame-pea-800 dark:text-white dark:shadow-none dark:hover:bg-flame-pea-700 dark:focus-visible:outline-flame-pea-50"
+                                    className="inline-flex w-full cursor-pointer items-center justify-center gap-x-1.5 rounded-md bg-tomato-700 px-3 py-2 text-sm font-semibold text-white shadow-xs hover:bg-tomato-600 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-tomato-700 active:scale-[0.97]"
                                 >
                                     Sign In
                                 </Link>

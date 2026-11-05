@@ -31,7 +31,7 @@ export function ZoomControls({
                 <button
                     type="button"
                     onClick={onZoomOut}
-                    className="rounded-full bg-white/20 p-2 text-white backdrop-blur-sm transition-colors hover:bg-white/30"
+                    className="rounded-full bg-surface/20 p-2 text-white backdrop-blur-sm transition-colors hover:bg-surface/30"
                     aria-label="Zoom out"
                 >
                     <ZoomOut className="size-5" />
@@ -40,7 +40,7 @@ export function ZoomControls({
                 <button
                     type="button"
                     onClick={onZoomIn}
-                    className="rounded-full bg-white/20 p-2 text-white backdrop-blur-sm transition-colors hover:bg-white/30"
+                    className="rounded-full bg-surface/20 p-2 text-white backdrop-blur-sm transition-colors hover:bg-surface/30"
                     aria-label="Zoom in"
                 >
                     <ZoomIn className="size-5" />
@@ -51,7 +51,7 @@ export function ZoomControls({
                 <button
                     type="button"
                     onClick={onRotate}
-                    className="rounded-full bg-white/20 p-2 text-white backdrop-blur-sm transition-colors hover:bg-white/30"
+                    className="rounded-full bg-surface/20 p-2 text-white backdrop-blur-sm transition-colors hover:bg-surface/30"
                     aria-label="Rotate"
                 >
                     <RotateCcw className="size-5" />
@@ -59,7 +59,7 @@ export function ZoomControls({
                 <button
                     type="button"
                     onClick={onToggleFullscreen}
-                    className="rounded-full bg-white/20 p-2 text-white backdrop-blur-sm transition-colors hover:bg-white/30"
+                    className="rounded-full bg-surface/20 p-2 text-white backdrop-blur-sm transition-colors hover:bg-surface/30"
                     aria-label={isFullscreen ? "Exit fullscreen" : "Fullscreen"}
                 >
                     {isFullscreen ? <Minimize className="size-5" /> : <Maximize className="size-5" />}
@@ -67,7 +67,7 @@ export function ZoomControls({
                 <button
                     type="button"
                     onClick={onReset}
-                    className="rounded-full bg-white/20 px-3 py-2 text-sm text-white backdrop-blur-sm transition-colors hover:bg-white/30"
+                    className="rounded-full bg-surface/20 px-3 py-2 text-sm text-white backdrop-blur-sm transition-colors hover:bg-surface/30"
                     aria-label="Reset zoom"
                 >
                     Reset

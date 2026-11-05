@@ -43,8 +43,6 @@ export function PlacesAutocomplete({
 
         const PlaceAutocompleteElement = places.PlaceAutocompleteElement
 
-        const isDark = document.documentElement.classList.contains("dark")
-
         const autocompleteElement = new PlaceAutocompleteElement({
             includedPrimaryTypes: ["establishment"],
             locationBias: {
@@ -56,10 +54,10 @@ export function PlacesAutocomplete({
         })
 
         autocompleteElement.style.width = "100%"
-        autocompleteElement.style.colorScheme = isDark ? "dark" : "light"
+        autocompleteElement.style.colorScheme = "light"
 
         autocompleteElement.className =
-            "w-full rounded-lg border border-neutral-200 bg-white text-neutral-900 text-sm placeholder:text-neutral-400 focus:border-flame-pea-500 focus:outline-none focus:ring-1 focus:ring-flame-pea-500 dark:border-white/10 dark:bg-white/5 dark:text-white dark:placeholder:text-neutral-500 dark:focus:border-flame-pea-400 dark:focus:ring-flame-pea-400"
+            "w-full rounded-lg border border-stone-200 bg-surface text-stone-900 text-sm placeholder:text-stone-400 focus:border-tomato-500 focus:outline-none focus:ring-1 focus:ring-tomato-500"
 
         const handlePlaceSelect = (event: unknown) => {
             if (!isPlaceSelectEvent(event)) {
@@ -99,7 +97,7 @@ export function PlacesAutocomplete({
     return (
         <div className="space-y-1.5">
             {label !== undefined && label !== "" && (
-                <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300">{label}</label>
+                <label className="block text-sm font-medium text-stone-700">{label}</label>
             )}
             <div className="relative">
                 <div ref={containerRef} className={className} />
@@ -111,7 +109,7 @@ export function PlacesAutocomplete({
                         onChange={(e: Readonly<{ readonly currentTarget: Readonly<{ readonly value: string }> }>) => {
                             onChange(e.currentTarget.value)
                         }}
-                        className="absolute inset-0 z-10 w-full rounded-lg border border-neutral-200 bg-white px-3 py-2.5 text-sm text-neutral-900 placeholder:text-neutral-400 focus:border-flame-pea-500 focus:ring-1 focus:ring-flame-pea-500 focus:outline-none dark:border-white/10 dark:bg-white/5 dark:text-white dark:placeholder:text-neutral-500 dark:focus:border-flame-pea-400 dark:focus:ring-flame-pea-400"
+                        className="absolute inset-0 z-10 w-full rounded-lg border border-stone-200 bg-surface px-3 py-2.5 text-sm text-stone-900 placeholder:text-stone-400 focus:border-tomato-500 focus:ring-1 focus:ring-tomato-500 focus:outline-none"
                         data-fallback-location
                     />
                 )}

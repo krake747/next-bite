@@ -24,25 +24,22 @@ export function EmptyRestaurantsState({
     return (
         <div className="col-span-full flex flex-col items-center justify-center py-16 text-center">
             <div className="relative mb-6">
-                <div className="flex h-20 w-20 items-center justify-center rounded-full bg-linear-to-br from-flame-pea-100 to-flame-pea-200 dark:from-flame-pea-900/30 dark:to-flame-pea-800/20">
+                <div className="flex h-20 w-20 items-center justify-center rounded-full bg-linear-to-br from-tomato-100 to-tomato-200">
                     {isSearching ? (
-                        <SearchX className="h-8 w-8 text-flame-pea-600 dark:text-flame-pea-400" />
+                        <SearchX className="h-8 w-8 text-tomato-600" />
                     ) : (
-                        <Utensils className="h-8 w-8 text-flame-pea-600 dark:text-flame-pea-400" />
+                        <Utensils className="h-8 w-8 text-tomato-600" />
                     )}
                 </div>
-                <div className="absolute -top-1 -right-1 h-3 w-3 rounded-full bg-flame-pea-400/60" />
+                <div className="absolute -top-1 -right-1 h-3 w-3 rounded-full bg-tomato-400/60" />
                 <div className="absolute -bottom-1 -left-1 h-2 w-2 rounded-full bg-amber-400/60" />
             </div>
 
-            <h3
-                className="mb-2 text-xl font-semibold text-neutral-900 dark:text-neutral-100"
-                style={{ fontFamily: "var(--font-display)" }}
-            >
+            <h3 className="mb-2 text-xl font-semibold text-stone-900" style={{ fontFamily: "var(--font-display)" }}>
                 {isSearching ? "No matches found" : "The table is set, but empty"}
             </h3>
 
-            <p className="mb-6 max-w-sm text-neutral-600 dark:text-neutral-400">
+            <p className="mb-6 max-w-sm text-stone-600">
                 {isSearching ? (
                     "Try adjusting your filters or search to discover more restaurants."
                 ) : (

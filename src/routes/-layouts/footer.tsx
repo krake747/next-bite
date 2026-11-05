@@ -5,15 +5,12 @@ export function Footer() {
         <footer data-slot="footer">
             <div className="mx-auto w-full max-w-350 px-6 py-12 md:flex md:items-center md:justify-between lg:px-12">
                 <div className="flex justify-center gap-x-6 md:order-2">
-                    <a
-                        href="https://github.com/krake747/next-bite"
-                        className="text-neutral-600 hover:text-neutral-800 dark:text-neutral-400 dark:hover:text-white"
-                    >
+                    <a href="https://github.com/krake747/next-bite" className="text-stone-600 hover:text-stone-800">
                         <span className="sr-only">GitHub</span>
                         <GitHub />
                     </a>
                 </div>
-                <p className="mt-8 text-center text-sm/6 text-neutral-600 md:order-1 md:mt-0 dark:text-neutral-400">
+                <p className="mt-8 text-center text-sm/6 text-stone-600 md:order-1 md:mt-0">
                     &copy; {year} Kevin Kraemer. All rights reserved.
                 </p>
             </div>

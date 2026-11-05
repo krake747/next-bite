@@ -77,13 +77,11 @@ export function LazyImage({
             className={cx("relative overflow-hidden", aspectRatio !== undefined && aspectRatio !== "" && "w-full")}
             style={aspectRatio !== undefined && aspectRatio !== "" ? { aspectRatio } : undefined}
         >
-            {!isLoaded && !hasError && (
-                <div className="absolute inset-0 animate-pulse bg-[#e8e6e3] dark:bg-[#2d2b29]" />
-            )}
+            {!isLoaded && !hasError && <div className="absolute inset-0 animate-pulse bg-stone-200" />}
 
             {hasError && (
-                <div className="absolute inset-0 flex items-center justify-center bg-[#f5f4f2] dark:bg-[#2d2b29]">
-                    <span className="text-sm text-neutral-500">Failed to load image</span>
+                <div className="absolute inset-0 flex items-center justify-center bg-stone-100">
+                    <span className="text-sm text-stone-500">Failed to load image</span>
                 </div>
             )}
 

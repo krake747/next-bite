@@ -214,9 +214,7 @@ export function RestaurantForm(props: Readonly<RestaurantFormProps>) {
                 <Field of={form} path={["rating"]}>
                     {() => (
                         <FieldWrapper errors={ratingField.errors}>
-                            <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300">
-                                Rating
-                            </label>
+                            <label className="block text-sm font-medium text-stone-700">Rating</label>
                             <div className="mt-2">
                                 <EmojiRating
                                     rating={

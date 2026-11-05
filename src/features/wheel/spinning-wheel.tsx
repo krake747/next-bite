@@ -71,7 +71,7 @@ export function SpinningWheel() {
                 />
             </div>
 
-            <div className="relative flex items-center justify-center overflow-clip rounded-full bg-white shadow-xl dark:bg-[#1a1918]">
+            <div className="relative flex items-center justify-center overflow-clip rounded-full bg-surface shadow-xl">
                 <svg
                     width={size}
                     height={size}

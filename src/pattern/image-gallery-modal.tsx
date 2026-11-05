@@ -295,7 +295,7 @@ export function ImageGalleryModal(props: Readonly<ImageGalleryModalProps>) {
                                 onClick={() => {
                                     props.onOpenChange(false)
                                 }}
-                                className="rounded-full p-2 text-white hover:bg-white/20"
+                                className="rounded-full p-2 text-white hover:bg-surface/20"
                                 aria-label="Close gallery"
                             >
                                 <X className="size-6" />
