@@ -1,10 +1,10 @@
 import { type GenericDatabaseReader } from "convex/server"
 import { v } from "convex/values"
 
-import { type DataModel, type Doc } from "./_generated/dataModel"
-import { mutation, query } from "./_generated/server"
+import { type DataModel, type Doc, type Id } from "./_generated/dataModel"
+import { mutation, query, type MutationCtx } from "./_generated/server"
 import { requireMembership } from "./groups"
-import { requireUserId } from "./helpers"
+import { FALLBACK_GROUP_NAME, formatDisplayName, requireUserId } from "./helpers"
 import { requireOwnedRestaurant } from "./restaurants"
 import { shareTargetValidator } from "./validators"
 
@@ -60,6 +60,28 @@ function sameTarget(a: ShareTarget, b: ShareTarget): boolean {
     return false
 }
 
+async function upsertShare(
+    ctx: MutationCtx,
+    restaurantId: Id<"restaurants">,
+    sharedBy: string,
+    target: ShareTarget,
+): Promise<Id<"restaurantShares">> {
+    const existing = await ctx.db
+        .query("restaurantShares")
+        .withIndex("by_restaurant", (q) => q.eq("restaurantId", restaurantId))
+        .collect()
+    const match = existing.find((share) => sameTarget(share.target, target))
+    if (match) {
+        return match._id
+    }
+    return ctx.db.insert("restaurantShares", {
+        restaurantId,
+        sharedBy,
+        target,
+        createdAt: Date.now(),
+    })
+}
+
 export const shareWithUser = mutation({
     args: {
         restaurantId: v.id("restaurants"),
@@ -72,20 +94,7 @@ export const shareWithUser = mutation({
         }
         await requireTargetUser(ctx, args.userId)
         const target: ShareTarget = { kind: "user", userId: args.userId }
-        const existing = await ctx.db
-            .query("restaurantShares")
-            .withIndex("by_restaurant", (q) => q.eq("restaurantId", args.restaurantId))
-            .collect()
-        const match = existing.find((share) => sameTarget(share.target, target))
-        if (match) {
-            return match._id
-        }
-        return ctx.db.insert("restaurantShares", {
-            restaurantId: args.restaurantId,
-            sharedBy: restaurant.ownerId,
-            target,
-            createdAt: Date.now(),
-        })
+        return upsertShare(ctx, args.restaurantId, restaurant.ownerId, target)
     },
 })
 
@@ -99,20 +108,7 @@ export const shareWithGroup = mutation({
         const restaurant = await requireOwnedRestaurant(ctx, args.restaurantId)
         await requireMembership(ctx.db, args.groupId, userId)
         const target: ShareTarget = { kind: "group", groupId: args.groupId }
-        const existing = await ctx.db
-            .query("restaurantShares")
-            .withIndex("by_restaurant", (q) => q.eq("restaurantId", args.restaurantId))
-            .collect()
-        const match = existing.find((share) => sameTarget(share.target, target))
-        if (match) {
-            return match._id
-        }
-        return ctx.db.insert("restaurantShares", {
-            restaurantId: args.restaurantId,
-            sharedBy: restaurant.ownerId,
-            target,
-            createdAt: Date.now(),
-        })
+        return upsertShare(ctx, args.restaurantId, restaurant.ownerId, target)
     },
 })
 
@@ -154,10 +150,10 @@ export const listShares = query({
                         .query("profiles")
                         .withIndex("by_auth_user", (q) => q.eq("authUserId", target.userId))
                         .unique()
-                    return { _id: share._id, target, displayName: profile?.name ?? "Someone" }
+                    return { _id: share._id, target, displayName: formatDisplayName(profile?.name) }
                 }
                 const group = await ctx.db.get(target.groupId)
-                return { _id: share._id, target, displayName: group?.name ?? "Unknown group" }
+                return { _id: share._id, target, displayName: group?.name ?? FALLBACK_GROUP_NAME }
             }),
         )
     },

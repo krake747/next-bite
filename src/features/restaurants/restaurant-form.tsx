@@ -27,7 +27,9 @@ function stripUndefined<T extends Record<string, unknown>>(output: T): StripUnde
 export function RestaurantForm(props: Readonly<RestaurantFormProps>) {
     const addRestaurantWithHours = useAddRestaurantWithHours()
     const updateRestaurant = useUpdateRestaurant()
-    const gallery = useRestaurantImages(props.mode, props.mode === "edit" ? props.restaurant.images : [])
+    const gallery = useRestaurantImages(props.mode === "edit" ? props.restaurant.images : [], {
+        discardShouldCleanup: props.mode === "add",
+    })
 
     const form = useForm({
         schema: RestaurantSchema,

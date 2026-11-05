@@ -1,21 +1,19 @@
-import { v } from "convex/values"
+import { v, type Infer } from "convex/values"
 import * as valibot from "valibot"
 
 import { MAX_IMAGES } from "../src/core/constants"
 import { internal } from "./_generated/api"
 import { type Doc, type Id } from "./_generated/dataModel"
-import { query, mutation, action, internalQuery, internalMutation, internalAction } from "./_generated/server"
-import { requireUserId } from "./helpers"
+import { query, mutation, action, internalQuery, internalMutation } from "./_generated/server"
+import { requireUserId, FALLBACK_DISPLAY_NAME } from "./helpers"
 import { coordsValidator, enrichmentValidator, openingHoursValidator, restaurantImageValidator } from "./validators"
 
-type OpeningHoursData = {
-    openState: "open" | "closed" | "unknown"
-    periods: {
-        day: number
-        openTime: string
-        closeTime: string
-    }[]
-    weekdayText: string[]
+type OpeningHoursData = Infer<typeof openingHoursValidator>
+
+function assertImageLimit(images: ReadonlyArray<unknown>): void {
+    if (images.length > MAX_IMAGES) {
+        throw new Error(`Maximum ${MAX_IMAGES} images allowed`)
+    }
 }
 
 // Storage IDs cross the client as plain strings, so the type system cannot prove them.
@@ -192,7 +190,7 @@ export const _profileNameByAuthUser = internalQuery({
             .query("profiles")
             .withIndex("by_auth_user", (q) => q.eq("authUserId", authUserId))
             .unique()
-        return profile?.name ?? "Someone"
+        return profile?.name ?? FALLBACK_DISPLAY_NAME
     },
 })
 
@@ -282,8 +280,6 @@ async function lookupPlaceIdFromGoogle(name: string, location: string): Promise<
     }
 }
 
-const imageInput = v.object({ url: v.string(), storageId: v.string() })
-
 type Coords = {
     lat: number
     lng: number
@@ -321,6 +317,41 @@ function mergeDetails(existing: DetailsDoc, input: DetailsFields): DetailsDoc {
     })
 }
 
+type UpdateArgs = {
+    name?: string | undefined
+    cuisine?: string | undefined
+    addressLabel?: string | undefined
+    coords?: Coords | undefined
+    notes?: string | undefined
+    link?: string | undefined
+    rating?: number | undefined
+    images?: { url: string; storageId: string }[] | undefined
+    visibility?: "private" | "shared" | undefined
+}
+
+function buildRestaurantPatch(
+    restaurant: Doc<"restaurants">,
+    args: Readonly<UpdateArgs>,
+    details: DetailsDoc,
+    enrichment: EnrichmentDoc,
+): Record<string, unknown> {
+    return {
+        ...(args.name !== undefined ? { name: args.name } : {}),
+        ...(args.cuisine !== undefined ? { cuisine: args.cuisine } : {}),
+        ...(args.addressLabel !== undefined || args.coords !== undefined
+            ? {
+                  address: {
+                      label: args.addressLabel ?? restaurant.address.label,
+                      ...(enrichment !== undefined ? { enrichment } : {}),
+                  },
+              }
+            : {}),
+        ...(details !== undefined ? { details } : {}),
+        ...(args.rating !== undefined ? { rating: args.rating } : {}),
+        ...(args.images !== undefined ? { images: args.images } : {}),
+        ...(args.visibility !== undefined ? { visibility: args.visibility } : {}),
+    }
+}
 function buildEnrichment(parts: {
     placeId?: string | undefined
     coords?: Coords | undefined
@@ -367,14 +398,12 @@ export const addWithOpeningHours = action({
         notes: v.optional(v.string()),
         link: v.optional(v.string()),
         coords: v.optional(coordsValidator),
-        images: v.optional(v.array(imageInput)),
+        images: v.optional(v.array(restaurantImageValidator)),
     },
     handler: async (ctx, args): Promise<Id<"restaurants">> => {
         const userId = await requireUserId(ctx)
         const images = args.images ?? []
-        if (images.length > MAX_IMAGES) {
-            throw new Error(`Maximum ${MAX_IMAGES} images allowed`)
-        }
+        assertImageLimit(images)
 
         const google = await lookupPlaceIdFromGoogle(args.name, args.addressLabel)
         console.log("addWithOpeningHours: Google result:", JSON.stringify(google))
@@ -417,35 +446,20 @@ export const update = mutation({
         notes: v.optional(v.string()),
         link: v.optional(v.string()),
         rating: v.optional(v.number()),
-        images: v.optional(v.array(imageInput)),
+        images: v.optional(v.array(restaurantImageValidator)),
         visibility: v.optional(v.union(v.literal("private"), v.literal("shared"))),
     },
     handler: async (ctx, args) => {
         const restaurant = await requireOwnedRestaurant(ctx, args.id)
 
-        if (args.images !== undefined && args.images.length > MAX_IMAGES) {
-            throw new Error(`Maximum ${MAX_IMAGES} images allowed`)
+        if (args.images !== undefined) {
+            assertImageLimit(args.images)
         }
 
         const details = mergeDetails(restaurant.details, { notes: args.notes, link: args.link })
         const enrichment = mergeEnrichment(restaurant.address.enrichment, args.coords)
 
-        await ctx.db.patch(args.id, {
-            ...(args.name !== undefined ? { name: args.name } : {}),
-            ...(args.cuisine !== undefined ? { cuisine: args.cuisine } : {}),
-            ...(args.addressLabel !== undefined || args.coords !== undefined
-                ? {
-                      address: {
-                          label: args.addressLabel ?? restaurant.address.label,
-                          ...(enrichment !== undefined ? { enrichment } : {}),
-                      },
-                  }
-                : {}),
-            ...(details !== undefined ? { details } : {}),
-            ...(args.rating !== undefined ? { rating: args.rating } : {}),
-            ...(args.images !== undefined ? { images: args.images } : {}),
-            ...(args.visibility !== undefined ? { visibility: args.visibility } : {}),
-        })
+        await ctx.db.patch(args.id, buildRestaurantPatch(restaurant, args, details, enrichment))
     },
 })
 
@@ -459,7 +473,9 @@ export const remove = mutation({
         for (const img of restaurant.images) {
             try {
                 await ctx.storage.delete(asStorageId(img.storageId))
-            } catch {}
+            } catch (error) {
+                console.warn("Failed to delete orphaned image:", img.storageId, error)
+            }
         }
 
         await ctx.db.delete(args.id)
@@ -587,58 +603,5 @@ export const lookupPlaceIdAndHours = action({
             },
         })
         console.log("lookupPlaceIdAndHours: Done!")
-    },
-})
-
-export const getPlaceOpeningHours = internalAction({
-    args: { placeId: v.string() },
-    returns: openingHoursValidator,
-    handler: async (_ctx, { placeId }) => {
-        const apiKey = process.env.GOOGLE_MAPS_API_KEY
-        if (!hasGoogleApiKey(apiKey)) {
-            throw new Error("GOOGLE_MAPS_API_KEY not configured")
-        }
-
-        const response = await fetch(`https://places.googleapis.com/v1/places/${placeId}?fields=currentOpeningHours`, {
-            headers: {
-                "X-Goog-Api-Key": apiKey,
-                "X-Goog-FieldMask": "currentOpeningHours",
-            },
-        })
-
-        if (!response.ok) {
-            const errorText = await response.text()
-            throw new Error(`Google Places API error: ${response.status} ${errorText}`)
-        }
-
-        const data = valibot.parse(googleOpeningHoursSchema, await response.json())
-        const google = data.currentOpeningHours
-        if (!google) {
-            return openFallback()
-        }
-
-        const periods: OpeningHoursData["periods"] = []
-        for (const period of google.periods ?? []) {
-            const day = period.open?.day
-            if (day === undefined) {
-                continue
-            }
-
-            const openH = period.open?.hour ?? 0
-            const openM = period.open?.minute ?? 0
-            const closeH = period.close?.hour ?? 0
-            const closeM = period.close?.minute ?? 0
-            periods.push({
-                day,
-                openTime: `${openH.toString().padStart(2, "0")}:${openM.toString().padStart(2, "0")}`,
-                closeTime: `${closeH.toString().padStart(2, "0")}:${closeM.toString().padStart(2, "0")}`,
-            })
-        }
-
-        return {
-            openState: toOpenState(google.openNow),
-            periods,
-            weekdayText: google.weekdayDescriptions ?? [],
-        }
     },
 })

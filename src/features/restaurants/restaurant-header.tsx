@@ -3,7 +3,7 @@ import ExternalLink from "lucide-react/icons/external-link"
 import MapPin from "lucide-react/icons/map-pin"
 import Utensils from "lucide-react/icons/utensils"
 
-import { type OpeningHours } from "@core/hooks"
+import { type OpeningHours } from "@core/opening-hours"
 import { SocialMetadata } from "@features/social/social-metadata"
 import { cx } from "@ui/cva.config"
 import { OpeningHours as OpeningHoursSummary } from "@ui/opening-hours"

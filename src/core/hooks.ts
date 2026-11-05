@@ -26,18 +26,6 @@ export const useCleanupStorage = () => useConvexMutation(api.restaurants.cleanup
 export const useRefreshOpeningHours = () => useConvexAction(api.restaurants.refreshOpeningHours)
 export const useLookupPlaceIdAndHours = () => useConvexAction(api.restaurants.lookupPlaceIdAndHours)
 
-export type OpeningHours = {
-    readonly openState: "open" | "closed" | "unknown"
-    readonly periods: ReadonlyArray<
-        Readonly<{
-            readonly day: number
-            readonly openTime: string
-            readonly closeTime: string
-        }>
-    >
-    readonly weekdayText: ReadonlyArray<string>
-}
-
 export function useUploadImage() {
     return async (file: Readonly<File>): Promise<ImageRecord> => {
         const uploadUrl = `${env.VITE_CONVEX_SITE_URL}/upload`

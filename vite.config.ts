@@ -1,5 +1,3 @@
-import path from "node:path"
-
 import { cloudflare } from "@cloudflare/vite-plugin"
 import tailwindcss from "@tailwindcss/vite"
 import { tanstackStart } from "@tanstack/react-start/plugin/vite"
@@ -376,15 +374,7 @@ export default defineConfig({
         ],
     },
     resolve: {
-        alias: {
-            "lucide-react/icons": path.resolve(import.meta.dirname, "./node_modules/lucide-react/dist/esm/icons"),
-            "@ui": path.resolve(import.meta.dirname, "./src/ui"),
-            "@pattern": path.resolve(import.meta.dirname, "./src/pattern"),
-            "@core": path.resolve(import.meta.dirname, "./src/core"),
-            "@features": path.resolve(import.meta.dirname, "./src/features"),
-            "@routes": path.resolve(import.meta.dirname, "./src/routes"),
-            "@convex": path.resolve(import.meta.dirname, "./convex"),
-        },
+        tsconfigPaths: true,
     },
     build: {
         license: { fileName: "license.md" },

@@ -15,6 +15,7 @@ export function SocialButtons({ google, github }: Readonly<{ google: boolean; gi
                     className="w-full"
                     loading={auth.isLoading}
                     onClick={() => {
+                        // Auth errors already land in the auth store; swallow here to avoid an unhandled rejection.
                         void auth.signInWithSocial("google").catch(() => {})
                     }}
                 >
@@ -28,6 +29,7 @@ export function SocialButtons({ google, github }: Readonly<{ google: boolean; gi
                     className="w-full"
                     loading={auth.isLoading}
                     onClick={() => {
+                        // Auth errors already land in the auth store; swallow here to avoid an unhandled rejection.
                         void auth.signInWithSocial("github").catch(() => {})
                     }}
                 >

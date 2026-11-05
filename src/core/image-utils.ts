@@ -1,12 +1,33 @@
-import { MAX_IMAGES } from "./constants"
-
-export { MAX_IMAGES }
-
 export const MAX_FILE_SIZE = 20 * 1024 * 1024
 
 const FULL_SIZE_WIDTH = 1920
 
-const VALID_IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp", "image/gif"]
+const VALID_IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp", "image/gif"] as const
+
+export const IMAGE_ACCEPT = VALID_IMAGE_TYPES.join(",")
+
+export const IMAGE_TYPE_LABEL = VALID_IMAGE_TYPES.map((type) =>
+    type === "image/webp" ? "WebP" : type.replace("image/", "").toUpperCase(),
+).join(", ")
+
+export function isAcceptedImageType(mimeType: string): boolean {
+    return (VALID_IMAGE_TYPES as ReadonlyArray<string>).includes(mimeType)
+}
+
+export function extensionForMime(mimeType: string): string {
+    switch (mimeType) {
+        case "image/webp":
+            return ".webp"
+        case "image/png":
+            return ".png"
+        case "image/gif":
+            return ".gif"
+        default:
+            return ".jpg"
+    }
+}
+
+export const IMAGE_PROCESS_DEFAULTS = { maxWidth: FULL_SIZE_WIDTH, quality: 0.9 } as const
 
 type ProcessedImage = {
     blob: Blob
@@ -18,10 +39,8 @@ type ProcessedImage = {
 }
 
 export function validateImageFile(file: Readonly<File>): void {
-    if (!VALID_IMAGE_TYPES.includes(file.type)) {
-        throw new Error(
-            `Invalid file type. Must be one of: ${VALID_IMAGE_TYPES.map((t) => t.replace("image/", "")).join(", ")}`,
-        )
+    if (!isAcceptedImageType(file.type)) {
+        throw new Error(`Invalid file type. Must be one of: ${IMAGE_TYPE_LABEL}`)
     }
 
     if (file.size > MAX_FILE_SIZE) {
@@ -31,11 +50,11 @@ export function validateImageFile(file: Readonly<File>): void {
 
 export async function processImage(
     file: Readonly<File>,
-    options: Readonly<{ maxWidth?: number; quality?: number }> = {},
+    options: Readonly<{ maxWidth?: number | undefined; quality?: number | undefined }> = {},
 ): Promise<ProcessedImage> {
     validateImageFile(file)
 
-    const { maxWidth = FULL_SIZE_WIDTH, quality = 0.9 } = options
+    const { maxWidth = IMAGE_PROCESS_DEFAULTS.maxWidth, quality = IMAGE_PROCESS_DEFAULTS.quality } = options
 
     // GIFs are passed through without canvas processing to preserve animation
     if (file.type === "image/gif") {

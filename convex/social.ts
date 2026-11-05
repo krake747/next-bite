@@ -4,17 +4,15 @@ import { v } from "convex/values"
 import { type DataModel, type Doc, type Id } from "./_generated/dataModel"
 import { mutation, query } from "./_generated/server"
 import { authComponent } from "./auth"
-import { requireUserId } from "./helpers"
+import { FALLBACK_DISPLAY_NAME, formatDisplayName, requireUserId } from "./helpers"
 import { isRestaurantVisibleTo } from "./shares"
 
 async function serverDisplayName(ctx: Parameters<typeof authComponent.getAuthUser>[0]): Promise<string> {
     try {
         const user = await authComponent.getAuthUser(ctx)
-        const raw = user.name ?? user.email ?? "Someone"
-        const trimmed = raw.trim().slice(0, 60)
-        return trimmed === "" ? "Someone" : trimmed
+        return formatDisplayName(user.name, user.email ?? undefined)
     } catch {
-        return "Someone"
+        return FALLBACK_DISPLAY_NAME
     }
 }
 

@@ -59,6 +59,7 @@ describe("RestaurantGallery", () => {
 
     it("falls back to a cuisine placeholder without photos", () => {
         render(<RestaurantGallery photos={[]} name="Trattoria Verde" cuisine="Italian" />)
+        expect(screen.getAllByText("Italian").length).toBeGreaterThan(0)
         expect(screen.queryByRole("button", { name: /photos|View/ })).not.toBeInTheDocument()
     })
 })

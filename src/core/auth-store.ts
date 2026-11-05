@@ -115,6 +115,27 @@ function useAuthStore() {
         clearSessionFromStorage()
     }
 
+    async function runAuthStep(fallbackMessage: string, attempt: () => Promise<void>): Promise<void> {
+        dispatch({ type: "SET_LOADING", isLoading: true })
+        dispatch({ type: "SET_ERROR", error: null })
+        try {
+            await attempt()
+        } catch (err) {
+            if (state.error === null || state.error === "") {
+                dispatch({ type: "SET_ERROR", error: err instanceof Error ? err.message : fallbackMessage })
+            }
+            throw err
+        } finally {
+            dispatch({ type: "SET_LOADING", isLoading: false })
+        }
+    }
+
+    function throwAuthError(message: string | undefined, fallbackMessage: string): never {
+        const resolved = message ?? fallbackMessage
+        dispatch({ type: "SET_ERROR", error: resolved })
+        throw new Error(resolved)
+    }
+
     const initializeAuth = async () => {
         dispatch({ type: "SET_LOADING", isLoading: true })
         dispatch({ type: "SET_ERROR", error: null })
@@ -153,10 +174,7 @@ function useAuthStore() {
         credentials: Readonly<{ name?: string | undefined; email: string; password: string }>,
     ) => {
         const fallbackMessage = action === "signIn" ? "Sign in failed" : "Sign up failed"
-        dispatch({ type: "SET_LOADING", isLoading: true })
-        dispatch({ type: "SET_ERROR", error: null })
-
-        try {
+        await runAuthStep(fallbackMessage, async () => {
             const result =
                 action === "signIn"
                     ? await authClient.signIn.email({ email: credentials.email, password: credentials.password })
@@ -167,9 +185,7 @@ function useAuthStore() {
                       })
 
             if (result.error) {
-                const message = result.error.message ?? fallbackMessage
-                dispatch({ type: "SET_ERROR", error: message })
-                throw new Error(message)
+                throwAuthError(result.error.message, fallbackMessage)
             }
 
             if (result.data?.user !== undefined && result.data?.user !== null) {
@@ -177,15 +193,7 @@ function useAuthStore() {
             } else {
                 throw new Error("No user returned: email verification required")
             }
-        } catch (err) {
-            if (state.error === null || state.error === "") {
-                const message = err instanceof Error ? err.message : fallbackMessage
-                dispatch({ type: "SET_ERROR", error: message })
-            }
-            throw err
-        } finally {
-            dispatch({ type: "SET_LOADING", isLoading: false })
-        }
+        })
     }
 
     const signInWithPassword = async (email: string, password: string) => {
@@ -197,74 +205,35 @@ function useAuthStore() {
     }
 
     const signInWithSocial = async (provider: "google" | "github") => {
-        dispatch({ type: "SET_LOADING", isLoading: true })
-        dispatch({ type: "SET_ERROR", error: null })
-
-        try {
+        await runAuthStep("Social sign in failed", async () => {
             const result = await authClient.signIn.social({ provider, callbackURL: "/" })
             if (result.error) {
-                const message = result.error.message ?? "Social sign in failed"
-                dispatch({ type: "SET_ERROR", error: message })
-                throw new Error(message)
+                throwAuthError(result.error.message, "Social sign in failed")
             }
-        } catch (err) {
-            if (state.error === null || state.error === "") {
-                const message = err instanceof Error ? err.message : "Social sign in failed"
-                dispatch({ type: "SET_ERROR", error: message })
-            }
-            throw err
-        } finally {
-            dispatch({ type: "SET_LOADING", isLoading: false })
-        }
+        })
     }
 
     const requestOtp = async (email: string) => {
-        dispatch({ type: "SET_LOADING", isLoading: true })
-        dispatch({ type: "SET_ERROR", error: null })
-
-        try {
+        await runAuthStep("Could not send code", async () => {
             const result = await authClient.emailOtp.sendVerificationOtp({ email, type: "sign-in" })
             if (result.error) {
-                const message = result.error.message ?? "Could not send code"
-                dispatch({ type: "SET_ERROR", error: message })
-                throw new Error(message)
+                throwAuthError(result.error.message, "Could not send code")
             }
-        } catch (err) {
-            if (state.error === null || state.error === "") {
-                const message = err instanceof Error ? err.message : "Could not send code"
-                dispatch({ type: "SET_ERROR", error: message })
-            }
-            throw err
-        } finally {
-            dispatch({ type: "SET_LOADING", isLoading: false })
-        }
+        })
     }
 
     const verifyOtp = async (email: string, otp: string) => {
-        dispatch({ type: "SET_LOADING", isLoading: true })
-        dispatch({ type: "SET_ERROR", error: null })
-
-        try {
+        await runAuthStep("Invalid code", async () => {
             const result = await authClient.signIn.emailOtp({ email, otp })
             if (result.error) {
-                const message = result.error.message ?? "Invalid code"
-                dispatch({ type: "SET_ERROR", error: message })
-                throw new Error(message)
+                throwAuthError(result.error.message, "Invalid code")
             }
             if (result.data?.user !== undefined && result.data?.user !== null) {
                 saveUser(mapSessionUserToUserPayload(result.data.user))
             } else {
                 throw new Error("No user returned: email verification required")
             }
-        } catch (err) {
-            if (state.error === null || state.error === "") {
-                const message = err instanceof Error ? err.message : "Invalid code"
-                dispatch({ type: "SET_ERROR", error: message })
-            }
-            throw err
-        } finally {
-            dispatch({ type: "SET_LOADING", isLoading: false })
-        }
+        })
     }
 
     const signOut = async () => {

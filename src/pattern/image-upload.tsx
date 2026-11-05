@@ -4,8 +4,17 @@ import X from "lucide-react/icons/x"
 import { useState, useRef } from "react"
 
 import { type Id } from "@convex/_generated/dataModel"
+import { MAX_IMAGES } from "@core/constants"
 import { useUploadImage, useDeleteImage, type ImageRecord } from "@core/hooks"
-import { processImage, formatFileSize, MAX_IMAGES, MAX_FILE_SIZE } from "@core/image-utils"
+import {
+    extensionForMime,
+    formatFileSize,
+    isAcceptedImageType,
+    processImage,
+    MAX_FILE_SIZE,
+    IMAGE_ACCEPT,
+    IMAGE_TYPE_LABEL,
+} from "@core/image-utils"
 import { cx } from "@ui/cva.config"
 
 type FileListLike = Readonly<{
@@ -47,7 +56,7 @@ export function ImageUpload(props: Readonly<ImageUploadProps>) {
     const fileInputRef = useRef<HTMLInputElement>(null)
 
     const handleFiles = async (files: FileListLike) => {
-        const fileArray = Array.from(files).filter((f) => f.type.startsWith("image/"))
+        const fileArray = Array.from(files).filter((f) => isAcceptedImageType(f.type))
         const remainingSlots = maxImages - props.images.length
         const filesToProcess = fileArray.slice(0, remainingSlots)
         if (filesToProcess.length === 0) {
@@ -61,19 +70,8 @@ export function ImageUpload(props: Readonly<ImageUploadProps>) {
 
         try {
             for (const file of filesToProcess) {
-                if (file.size > MAX_FILE_SIZE) {
-                    throw new Error(`${file.name} is too large. Maximum size is ${formatFileSize(MAX_FILE_SIZE)}`)
-                }
-
-                const processed = await processImage(file, { maxWidth: 1920, quality: 0.9 })
-                const extension =
-                    processed.blob.type === "image/webp"
-                        ? ".webp"
-                        : processed.blob.type === "image/png"
-                          ? ".png"
-                          : processed.blob.type === "image/gif"
-                            ? ".gif"
-                            : ".jpg"
+                const processed = await processImage(file)
+                const extension = extensionForMime(processed.blob.type)
                 const baseName = file.name.replace(/\.[^.]+$/, "")
                 const processedFileName = baseName + extension
                 const processedFile = new File([processed.blob], processedFileName, { type: processed.blob.type })
@@ -185,7 +183,7 @@ export function ImageUpload(props: Readonly<ImageUploadProps>) {
                         ref={fileInputRef}
                         type="file"
                         multiple
-                        accept="image/jpeg,image/png,image/webp,image/gif"
+                        accept={IMAGE_ACCEPT}
                         className="hidden"
                         onChange={handleFileInputChange}
                     />
@@ -212,7 +210,7 @@ export function ImageUpload(props: Readonly<ImageUploadProps>) {
                             {isDragging ? "Drop images here" : "Click or drag & drop to upload images"}
                         </span>
                         <span className="mt-1 text-xs text-stone-600">
-                            JPEG, PNG, WebP, GIF up to {formatFileSize(MAX_FILE_SIZE)}
+                            {IMAGE_TYPE_LABEL} up to {formatFileSize(MAX_FILE_SIZE)}
                         </span>
                     </div>
                 </>

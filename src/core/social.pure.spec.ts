@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest"
 
-import { emptySocial, feedTextFor, orderFeedByRecency, summarizeSocial, type SocialSnapshot } from "./social"
+import { feedTextFor, orderFeedByRecency, summarizeSocial, type SocialSnapshot } from "./social"
 
 const snapshot: SocialSnapshot = {
     interests: [
@@ -27,7 +27,15 @@ describe("summarizeSocial", () => {
     })
 
     it("isolates restaurants and treats guests as non-participants", () => {
-        expect(summarizeSocial("bbb", snapshot, null)).toEqual(emptySocial)
+        expect(summarizeSocial("bbb", snapshot, null)).toEqual({
+            wantCount: 0,
+            beenCount: 0,
+            wanted: false,
+            likeCount: 0,
+            liked: false,
+            comments: [],
+            interestedNames: [],
+        })
     })
 
     it("marks others as non-participants", () => {

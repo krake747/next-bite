@@ -3,13 +3,8 @@ import { v } from "convex/values"
 import { type Doc } from "./_generated/dataModel"
 import { mutation, query } from "./_generated/server"
 import { authComponent } from "./auth"
-import { requireUserId } from "./helpers"
+import { formatDisplayName, requireUserId } from "./helpers"
 import { imageObjectValidator } from "./validators"
-
-function formatDisplayName(raw: string): string {
-    const trimmed = raw.trim().slice(0, 60)
-    return trimmed === "" ? "Someone" : trimmed
-}
 
 type AuthUserRecord = {
     name?: string | null | undefined

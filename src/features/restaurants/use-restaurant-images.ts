@@ -2,7 +2,10 @@ import { useState } from "react"
 
 import { useCleanupStorage, type ImageRecord } from "@core/hooks"
 
-export function useRestaurantImages(mode: "add" | "edit", initialImages: ReadonlyArray<ImageRecord>) {
+export function useRestaurantImages(
+    initialImages: ReadonlyArray<ImageRecord>,
+    options: Readonly<{ discardShouldCleanup: boolean }>,
+) {
     const cleanupStorage = useCleanupStorage()
     const [images, setImages] = useState<ImageRecord[]>([...initialImages])
     const [pendingRemovedStorageIds, setPendingRemovedStorageIds] = useState<string[]>([])
@@ -11,12 +14,14 @@ export function useRestaurantImages(mode: "add" | "edit", initialImages: Readonl
         for (const storageId of storageIds) {
             try {
                 await cleanupStorage.mutateAsync({ storageId })
-            } catch {}
+            } catch (error) {
+                console.warn("Failed to cleanup orphaned upload:", storageId, error)
+            }
         }
     }
 
     const discardChanges = async () => {
-        if (mode === "add") {
+        if (options.discardShouldCleanup) {
             await cleanupStorageIds(images.map((img) => img.storageId))
             await cleanupStorageIds(pendingRemovedStorageIds)
             setPendingRemovedStorageIds([])

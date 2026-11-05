@@ -3,8 +3,8 @@ import { describe, it, expect } from "vitest"
 import { validateImageFile, formatFileSize, MAX_FILE_SIZE } from "./image-utils"
 
 describe("validateImageFile", () => {
-    it("accepts valid image types", () => {
-        const file = new File([""], "photo.jpg", { type: "image/jpeg" })
+    it.each(["image/jpeg", "image/png", "image/webp", "image/gif"])("accepts %s", (type) => {
+        const file = new File([""], "photo", { type })
         expect(() => {
             validateImageFile(file)
         }).not.toThrow()

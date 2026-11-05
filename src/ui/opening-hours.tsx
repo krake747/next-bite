@@ -1,10 +1,14 @@
 import Clock from "lucide-react/icons/clock"
 
-import { type OpeningHours as OpeningHoursData } from "@core/hooks"
+import {
+    isOpenNow,
+    openStatusLabel,
+    parseDayText,
+    todayText,
+    type OpeningHours as OpeningHoursData,
+} from "@core/opening-hours"
 import { cx } from "@ui/cva.config"
 import { focusRing } from "@ui/variants"
-
-import { isOpenNow } from "./opening-hours-utils"
 
 export function OpeningHours({
     openingHours,
@@ -13,19 +17,14 @@ export function OpeningHours({
     openingHours: OpeningHoursData | undefined
     onClick?: () => void
 }>) {
-    const openNow = openingHours !== undefined ? isOpenNow(openingHours) : false
+    const openNow = isOpenNow(openingHours)
 
-    const weekdayText = openingHours?.weekdayText
-    if (weekdayText === undefined || weekdayText.length === 0) {
+    const dayText = todayText(openingHours)
+    if (dayText === "") {
         return null
     }
 
-    const day = new Date().getDay()
-    const todayIndex = day === 0 ? 6 : day - 1
-
-    const dayText = weekdayText[todayIndex] ?? ""
-    const todayDayName = dayText.split(":")[0] ?? ""
-    const todayHours = dayText.split(": ")[1] ?? ""
+    const { day: todayDayName, hours: todayHours } = parseDayText(dayText)
 
     return (
         <button
@@ -41,7 +40,7 @@ export function OpeningHours({
             </div>
             <div className="flex items-center gap-2 text-sm">
                 <span className={`font-medium ${openNow ? "text-tomato-600" : "text-stone-600"}`}>
-                    {openNow ? "Open now" : "Closed"}
+                    {openStatusLabel(openingHours)}
                 </span>
                 <span className="text-stone-300">·</span>
                 <span className="text-stone-600">

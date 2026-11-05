@@ -50,24 +50,25 @@ export type RestaurantSocialSummary = {
     readonly interestedNames: ReadonlyArray<string>
 }
 
-export const emptySocialSummary: RestaurantSocialSummary = {
+const baseCounts = {
     wantCount: 0,
     beenCount: 0,
     wanted: false,
     likeCount: 0,
     liked: false,
-    commentCount: 0,
     interestedNames: [],
+} as const
+
+export const emptySocialSummary: RestaurantSocialSummary = {
+    ...baseCounts,
+    interestedNames: [...baseCounts.interestedNames],
+    commentCount: 0,
 }
 
 export const emptySocial: RestaurantSocial = {
-    wantCount: 0,
-    beenCount: 0,
-    wanted: false,
-    likeCount: 0,
-    liked: false,
+    ...baseCounts,
+    interestedNames: [...baseCounts.interestedNames],
     comments: [],
-    interestedNames: [],
 }
 
 export function summarizeSocial(

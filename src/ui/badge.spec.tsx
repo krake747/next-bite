@@ -11,14 +11,22 @@ describe("Badge", () => {
 
     it("renders with neutral variant by default", () => {
         render(<Badge>Default</Badge>)
-        expect(screen.getByText("Default")).toBeInTheDocument()
+        const badge = screen.getByText("Default")
+        expect(badge).toBeInTheDocument()
+        expect(badge.className).toMatch(/stone|neutral|secondary/i)
     })
 
     it("renders interest states with accessible labels", () => {
-        render(<Badge variant="brand">Want to try</Badge>)
-        expect(screen.getByText("Want to try")).toBeInTheDocument()
+        const { unmount } = render(<Badge variant="brand">Want to try</Badge>)
+        const want = screen.getByText("Want to try")
+        expect(want).toBeInTheDocument()
+        expect(want.className).not.toBe("")
+        unmount()
         render(<Badge variant="success">Been there</Badge>)
-        expect(screen.getByText("Been there")).toBeInTheDocument()
+        const been = screen.getByText("Been there")
+        expect(been).toBeInTheDocument()
+        expect(been.className).not.toBe("")
+        expect(been.className).not.toBe(want.className)
     })
 
     it("applies custom className", () => {

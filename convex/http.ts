@@ -5,20 +5,17 @@ import { authComponent, createAuth } from "./auth"
 
 const http = httpRouter()
 
-// CORS headers for the upload endpoint
 const corsHeaders = {
     "Access-Control-Allow-Origin": "*",
     "Access-Control-Allow-Methods": "POST, OPTIONS",
     "Access-Control-Allow-Headers": "Content-Type",
 }
 
-const MAX_UPLOAD_BYTES = 20 * 1024 * 1024 // 20MB
+const MAX_UPLOAD_BYTES = 20 * 1024 * 1024
 const ALLOWED_CONTENT_TYPES = ["image/jpeg", "image/png", "image/webp", "image/gif"]
 
-// Register all Better Auth routes with CORS support
 authComponent.registerRoutes(http, createAuth, { cors: true })
 
-// Simple file upload endpoint for testing
 http.route({
     path: "/upload",
     method: "POST",
@@ -28,7 +25,6 @@ http.route({
             const blob = await request.blob()
             console.log("Blob received, size:", blob.size, "type:", blob.type)
 
-            // Validate content type
             if (!blob.type || !ALLOWED_CONTENT_TYPES.includes(blob.type)) {
                 console.log("Validation failed: invalid content type", blob.type)
                 return new Response(
@@ -45,7 +41,6 @@ http.route({
                 )
             }
 
-            // Validate size
             if (blob.size > MAX_UPLOAD_BYTES) {
                 console.log("Validation failed: file too large", blob.size)
                 return new Response(
@@ -61,11 +56,7 @@ http.route({
             }
 
             const storageId = await ctx.storage.store(blob)
-            console.log("Stored successfully, storageId:", storageId)
-
-            // Verify the file was stored by trying to get a URL
             const url = await ctx.storage.getUrl(storageId)
-            console.log("Generated URL:", url)
 
             return new Response(JSON.stringify({ storageId, url }), {
                 status: 200,
@@ -87,7 +78,6 @@ http.route({
     }),
 })
 
-// Handle OPTIONS preflight request
 http.route({
     path: "/upload",
     method: "OPTIONS",
