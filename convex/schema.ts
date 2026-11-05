@@ -1,7 +1,14 @@
 import { defineSchema, defineTable } from "convex/server"
 import { v } from "convex/values"
 
-import { openingHoursValidator, restaurantImageValidator } from "./validators"
+import {
+    collectionScopeValidator,
+    imageObjectValidator,
+    inviteTargetValidator,
+    openingHoursValidator,
+    restaurantImageValidator,
+    shareTargetValidator,
+} from "./validators"
 
 const socialFields = {
     restaurantId: v.id("restaurants"),
@@ -46,5 +53,67 @@ export default defineSchema({
     friends: defineTable({
         name: v.string(),
     }),
+    profiles: defineTable({
+        authUserId: v.string(),
+        name: v.string(),
+        email: v.string(),
+        avatar: v.optional(imageObjectValidator),
+        createdAt: v.number(),
+    }).index("by_auth_user", ["authUserId"]),
+    friendships: defineTable({
+        ownerId: v.string(),
+        friendAuthUserId: v.string(),
+        status: v.union(v.literal("pending"), v.literal("accepted")),
+        createdAt: v.number(),
+    })
+        .index("by_owner", ["ownerId"])
+        .index("by_owner_friend", ["ownerId", "friendAuthUserId"]),
+    groups: defineTable({
+        ownerId: v.string(),
+        name: v.string(),
+        image: v.optional(imageObjectValidator),
+        createdAt: v.number(),
+    }).index("by_owner", ["ownerId"]),
+    groupMembers: defineTable({
+        groupId: v.id("groups"),
+        userId: v.string(),
+        role: v.union(v.literal("admin"), v.literal("member")),
+        joinedAt: v.number(),
+    })
+        .index("by_group", ["groupId"])
+        .index("by_user", ["userId"])
+        .index("by_group_user", ["groupId", "userId"]),
+    restaurantShares: defineTable({
+        restaurantId: v.id("restaurants"),
+        sharedBy: v.string(),
+        target: shareTargetValidator,
+        createdAt: v.number(),
+    })
+        .index("by_restaurant", ["restaurantId"])
+        .index("by_sharer", ["sharedBy"]),
+    collections: defineTable({
+        ownerId: v.string(),
+        name: v.string(),
+        description: v.string(),
+        scope: v.optional(collectionScopeValidator),
+        createdAt: v.number(),
+    }).index("by_owner", ["ownerId"]),
+    collectionItems: defineTable({
+        collectionId: v.id("collections"),
+        restaurantId: v.id("restaurants"),
+        addedBy: v.string(),
+        addedAt: v.number(),
+    })
+        .index("by_collection", ["collectionId"])
+        .index("by_restaurant", ["restaurantId"]),
+    invitations: defineTable({
+        token: v.string(),
+        target: inviteTargetValidator,
+        invitedEmail: v.optional(v.string()),
+        invitedBy: v.string(),
+        status: v.union(v.literal("pending"), v.literal("accepted"), v.literal("expired")),
+        expiresAt: v.number(),
+        createdAt: v.number(),
+    }).index("by_token", ["token"]),
     // Better Auth tables will be added by the convex component
 })
