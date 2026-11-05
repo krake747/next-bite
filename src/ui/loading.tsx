@@ -1,5 +1,5 @@
 import LoaderPinwheel from "lucide-react/icons/loader-pinwheel"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 
 import { BackgroundLayers } from "./background-decoration"
 import { BrandIcon } from "./brand-icon"
@@ -282,11 +282,15 @@ const LoadingVerbs = [
 ] as const
 
 function randomVerb() {
-    return LoadingVerbs[Math.floor(Math.random() * LoadingVerbs.length)]
+    return LoadingVerbs[Math.floor(Math.random() * LoadingVerbs.length)] ?? "Loading"
 }
 
 export function LoadingPlaceholder() {
-    const [verb] = useState(randomVerb)
+    const [verb, setVerb] = useState<string>(LoadingVerbs[0] ?? "Loading")
+
+    useEffect(() => {
+        setVerb(randomVerb())
+    }, [])
 
     return (
         <div className="relative flex min-h-screen flex-col overflow-hidden bg-background">

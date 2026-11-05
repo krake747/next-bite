@@ -115,7 +115,7 @@ function HomeFeed({
                         text={feedTextFor(restaurant.name, restaurant.details?.notes)}
                         restaurantName={restaurant.name}
                         restaurantCuisine={restaurant.cuisine}
-                        photoUrls={restaurant.images.map((img) => img.url)}
+                        photoUrls={(Array.isArray(restaurant.images) ? restaurant.images : []).map((img) => img.url)}
                         ownerName={restaurant.ownerName}
                         wantCount={social.wantCount}
                         beenCount={social.beenCount}
