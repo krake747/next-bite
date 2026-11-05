@@ -267,7 +267,7 @@ function RestaurantCardMap({
                     <span className="font-medium">View on Map</span>
                 </div>
                 <ChevronDown
-                    className={`size-4 text-stone-400 transition-transform duration-300 ease-out ${showMap ? "rotate-180" : ""}`}
+                    className={`size-4 text-stone-400 transition-transform duration-300 ease-out-quad ${showMap ? "rotate-180" : ""}`}
                 />
             </button>
             {showMap && (

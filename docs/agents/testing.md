@@ -1,5 +1,7 @@
 # Testing
 
+Owned values live in `sources-of-truth.md`; this file holds tiers and examples only.
+
 ## Test types
 
 Tiers are picked by filename suffix. `pnpm test` runs them all; scope with `pnpm test:pure`,

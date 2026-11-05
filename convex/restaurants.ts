@@ -5,7 +5,8 @@ import { MAX_IMAGES } from "../src/core/constants"
 import { internal } from "./_generated/api"
 import { type Id } from "./_generated/dataModel"
 import { query, mutation, action, internalQuery, internalMutation, internalAction } from "./_generated/server"
-import { openingHoursValidator, restaurantImageValidator } from "./validators"
+import { requireUserId } from "./helpers"
+import { openingHoursValidator, restaurantArgs, restaurantImageValidator } from "./validators"
 
 type OpeningHoursData = {
     openNow: boolean
@@ -22,16 +23,6 @@ type OpeningHoursData = {
 function asStorageId(storageId: string): Id<"_storage"> {
     // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- single documented boundary conversion; see above
     return storageId as unknown as Id<"_storage">
-}
-
-async function requireUserId(ctx: {
-    auth: { getUserIdentity: () => Promise<{ subject: string } | null> }
-}): Promise<string> {
-    const identity = await ctx.auth.getUserIdentity()
-    if (!identity) {
-        throw new Error("Unauthorized: authentication required")
-    }
-    return identity.subject
 }
 
 const googleOpeningHoursSchema = valibot.object({
@@ -171,16 +162,7 @@ export const _patchRestaurant = internalMutation({
 
 export const _insertRestaurant = internalMutation({
     args: {
-        name: v.string(),
-        cuisine: v.string(),
-        location: v.string(),
-        addedBy: v.string(),
-        lat: v.optional(v.number()),
-        lng: v.optional(v.number()),
-        notes: v.optional(v.string()),
-        link: v.optional(v.string()),
-        rating: v.optional(v.number()),
-        images: v.optional(v.array(restaurantImageValidator)),
+        ...restaurantArgs,
         placeId: v.optional(v.string()),
         openingHours: v.optional(openingHoursValidator),
     },
@@ -239,16 +221,7 @@ export const get = query(async (ctx) => ctx.db.query("restaurants").collect())
 
 export const add = mutation({
     args: {
-        name: v.string(),
-        cuisine: v.string(),
-        location: v.string(),
-        lat: v.optional(v.number()),
-        lng: v.optional(v.number()),
-        notes: v.optional(v.string()),
-        link: v.optional(v.string()),
-        addedBy: v.string(),
-        rating: v.optional(v.number()),
-        images: v.optional(v.array(restaurantImageValidator)),
+        ...restaurantArgs,
         placeId: v.optional(v.string()),
         openingHours: v.optional(openingHoursValidator),
     },
@@ -287,16 +260,7 @@ export const add = mutation({
 
 export const addWithOpeningHours = action({
     args: {
-        name: v.string(),
-        cuisine: v.string(),
-        location: v.string(),
-        lat: v.optional(v.number()),
-        lng: v.optional(v.number()),
-        notes: v.optional(v.string()),
-        link: v.optional(v.string()),
-        addedBy: v.string(),
-        rating: v.optional(v.number()),
-        images: v.optional(v.array(restaurantImageValidator)),
+        ...restaurantArgs,
     },
     handler: async (ctx, args): Promise<Id<"restaurants">> => {
         const { images, lat, lng, ...rest } = args

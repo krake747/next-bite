@@ -1,107 +1,61 @@
-# Agent Guidelines
+# Next Bite Agent
 
-## Tech stack
+Use this file as a routing layer into the repo docs.
 
-- React 19, TypeScript, Tailwind CSS v4, Vite+ (`vp`) toolchain
-- TanStack Start (SSR shell on Workers) + Router (file-based routing), TanStack Query (server state)
-- Convex (backend: realtime DB, auth, file storage)
-- Base UI (headless primitives)
-- Vitest in tiers (pure, unit, browser, integration)
-- `vp` (lint + format)
-- fallow (layer boundary enforcement, unused code detection)
+- This project is a restaurant recommendation web app. Stack details live in `package.json`: React,
+  TypeScript, Tailwind CSS, and TanStack. Convex owns the backend, Base UI owns headless primitives,
+  `vp` (Vite+) owns the toolchain, Vitest owns testing in tiers, fallow owns layer boundaries.
+- The following are safe to run without asking: `pnpm fmt`, `pnpm fmt:check`, `pnpm lint` on files
+  you touched, `pnpm lint:ts`, `pnpm test` scoped to files you changed, and `pnpm fallow audit`.
+  Run, fix, and rerun them without per-step approval. Ask before `pnpm deploy`,
+  `pnpm convex:deploy`, or any secrets change.
+- Shared non-negotiables (prod ownership, commits, prose, simplicity, ADRs, docs): see
+  `docs/agents/non-negotiables.md`.
+- Commit shape: `type(scope): subject`. Types in use: `feat`, `fix`, `refactor`, `docs`, `chore`,
+  `test`. Enforced by `.commitlintrc.json`.
+- Default branch is `main`. Base worktrees on `origin/main`, target PRs at `main`, diff against
+  `origin/main`.
+- Branch names follow `docs/agents/agent-contract.md`: `<type>/NNN-short-slug`.
+- When working on Convex code, always read `convex/_generated/ai/guidelines.md` first. It overrides
+  training-data defaults.
+- Layers live in `src/` plus `convex/`, owned by `.fallowrc.json`. Shared utilities in `core/`,
+  low-level components in `ui/`, composable patterns in `pattern/`, feature areas in `features/`,
+  pages in `routes/`, backend in `convex/`. Read the owner for exact zones and import rules.
 
-## Style
+## Read on demand
 
-- Use `pnpm` as the package manager. Never `npm` or `yarn`.
-- We develop on WSL within Windows.
-- Types over interfaces. Never cast types; fix at source instead.
-- Read env only through `src/core/env.ts`. Never read `import.meta.env` at a call site.
-- React Compiler owns memoization. Do not add `useMemo`, `useCallback`, or `React.memo`.
-- Do not add comments unless explicitly asked.
-- When comments are needed, do not use em dashes. Use periods, commas, or colons instead.
-- Follow existing patterns in the codebase for component structure, file naming, and module
-  organization.
-- When in planning mode and something is unclear, ask questions one at a time (like a quiz). Wait
-  for each answer before asking the next question. Only after all questions are answered and you
-  have no remaining uncertainties, present the final plan.
+Load the documents below on demand for the task at hand. Treat their instructions as mandatory.
 
-## Design system
+- Shared non-negotiables: `docs/agents/non-negotiables.md`.
+- Documentation hygiene and CI gate: `docs/agents/ci-gate.md`.
+- GitHub work: `docs/agents/issue-tracker.md`.
+- Ticket shape: `docs/agents/ticket-anatomy.md` plus one file in `docs/agents/templates/`.
+- Placement and levels: `docs/agents/tracker-map.md`.
+- Labels: `docs/agents/triage-labels.md`.
+- Contract, close, and status: `docs/agents/agent-contract.md`.
+- Worktrees and stacked PRs: `docs/agents/worktrees.md` and `docs/agents/stacked-prs.md`.
+- Terms or ADR questions: `docs/agents/domain.md` plus `GLOSSARY.md`.
+- Behavior proof from routes or specs: `docs/agents/verify.md`.
+- Shell and toolchain: `docs/agents/toolchain.md`.
+- Tests by tier: `docs/agents/testing.md`.
+- Owned values and pointers: `docs/agents/sources-of-truth.md`.
+- Contributor setup and workflow: `CONTRIBUTING.md`.
+- Load only docs your task needs.
 
-The visual identity is Tomato and Butter on Stone neutrals, light only. Bricolage Grotesque for
-display, DM Sans for interface. The living inventory lives at `/design-system` and renders the real
-components; `registry.json` distributes source when asked.
+## Rules and their enforcers
 
-- Use semantic Tailwind tokens (`bg-background`, `text-muted-foreground`, `border-border`,
-  `bg-primary`, `text-destructive`). Never scatter raw hex values in components.
-- Use Base UI for accessible interactive primitives. Never adopt a second component implementation
-  alongside one. Compose Base UI primitives into styled application components.
-- Use CVA for reusable component variants. Reuse components from `src/ui`. Keep domain-specific
-  components in feature directories. Prefer composition over duplicated implementations.
-- Wrappers own their color, typography, spacing, and motion (`shadcn/no-restyle` enforced). Call
-  sites may only pass layout classes and must use variants for the rest.
-- Do not introduce dark mode or `.dark` styles.
-- Interest is Tomato for Want to try and Basil for Been there, always with a text label. Never
-  communicate state through colour alone.
+Each rule names what fails when it breaks. A rule enforced only by this file is a judgment call;
+when one repeats, move it up to a type, lint, or test in the same change.
 
-## Layers
-
-Code lives in `src/` under these zones (enforced by fallow boundary rules):
-
-| Zone        | Purpose                                                        | May import from                             |
-| ----------- | -------------------------------------------------------------- | ------------------------------------------- |
-| `core/`     | Shared utilities, types, Zod schemas, hooks with no UI         | core, convex, ui                            |
-| `ui/`       | Base UI wrappers, low-level components                         | core, ui                                    |
-| `pattern/`  | Composable patterns (cards, empty states, top bars)            | core, ui, pattern, convex                   |
-| `features/` | Feature-specific logic, one zone per area (restaurants, wheel) | core, ui, pattern, features, convex         |
-| `routes/`   | File-based TanStack Router pages                               | core, ui, pattern, features, convex, routes |
-| `convex/`   | Backend (schema, queries, mutations, actions)                  | convex, core                                |
-
-## Verification chain
-
-Run `pnpm check:full` before considering work done. It runs these gates in order (stop at first
-failure):
-
-```
-pnpm fmt:check     # formatting
-pnpm lint          # lint
-pnpm lint:ts       # TypeScript type-checking
-pnpm build         # production build
-pnpm fallow audit  # layer boundaries + unused code
-pnpm test          # Vitest (all tiers)
-```
-
-## Agent skills
-
-### Issue tracker
-
-Issues are tracked in GitHub Issues (krake747/next-bite), MCP first with the `gh` CLI as fallback.
-See `docs/agents/issue-tracker.md`.
-
-### Triage labels
-
-The five canonical triage roles use the default label names. See `docs/agents/triage-labels.md`.
-
-### Domain docs
-
-Single-context layout: `GLOSSARY.md` at repo root, ADRs under `docs/adr/`. See
-`docs/agents/domain.md`.
-
-### Testing
-
-Vitest in tiers (pure, unit, browser, integration). See `docs/agents/testing.md`.
-
-### Toolchain
-
-Build, lint, and test commands. See `docs/agents/toolchain.md`.
-
-<!-- convex-ai-start -->
-
-This project uses [Convex](https://convex.dev) as its backend.
-
-When working on Convex code, **always read `convex/_generated/ai/guidelines.md` first** for
-important guidelines on how to correctly use Convex APIs and patterns. The file contains rules that
-override what you may have learned about Convex from training data.
-
-Convex agent skills for common tasks can be installed by running `npx convex ai-files install`.
-
-<!-- convex-ai-end -->
+| Rule                                                                                     | Enforced by                                                                                |
+| ---------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------ |
+| Env reads only through `src/core/env.ts`                                                 | Judgment only; ADR-0006 binds                                                              |
+| React Compiler owns memoization; no `useMemo`, `useCallback`, `React.memo`               | Judgment only; ADR-0007 binds                                                              |
+| Semantic Tailwind tokens only; no raw hex in components; light-only, no `.dark` styles   | Judgment only; ADR-0011 binds                                                              |
+| Base UI primitives only; CVA variants; wrappers own styling, call sites pass layout only | `shadcn/no-restyle` lint                                                                   |
+| Layer imports stay inside `.fallowrc.json` zones                                         | `pnpm fallow audit` (boundary-violation errors)                                            |
+| Commit shape `type(scope): subject`                                                      | lefthook `commit-msg` (`pnpm commitlint`)                                                  |
+| Never `git push --no-verify`; local gate is the PR gate                                  | Judgment only; lefthook `pre-push` runs `pnpm check`                                       |
+| Agents run `pnpm check:arch` before pushing structural changes                           | Judgment only; structural means moving files, new modules, shapes, or imports across zones |
+| Types over interfaces; never cast types, fix at source                                   | `pnpm lint:ts` plus review                                                                 |
+| No em dashes in prose                                                                    | Judgment only; see `non-negotiables.md`                                                    |

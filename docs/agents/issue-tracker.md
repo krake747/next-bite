@@ -1,5 +1,8 @@
 # Issue tracker: GitHub
 
+Read this when you create, read, or close a GitHub issue. It names the repo plus when to load shape,
+placement, flow, and label docs.
+
 Issues and specs for this repo live as GitHub issues in `krake747/next-bite`.
 
 ## Tooling: MCP first, `gh` fallback
@@ -13,7 +16,7 @@ must print `krake747/next-bite`. Never file into another repo.
 ## Conventions (`gh` fallback)
 
 - **Create an issue**: `gh issue create --title "..." --body "..."`. Use a heredoc for multi-line
-  bodies.
+  bodies. Body shape follows `ticket-anatomy.md`; load only the template you need from `templates/`.
 - **Read an issue**: `gh issue view <number> --json number,title,body,labels,comments`.
 - **List issues**: `gh issue list --state open --json number,title,body,labels,comments` with
   `--label` and `--state` filters.
@@ -26,15 +29,35 @@ must print `krake747/next-bite`. Never file into another repo.
 - **Apply / remove labels**: `gh issue edit <number> --add-label "..."` / `--remove-label "..."`.
   Label vocabulary lives in `triage-labels.md`.
 - **Close**: post the explanation with `gh issue comment <number> --body "..."`, then
-  `gh issue close <number>`.
+  `gh issue close <number>`. Close rules live in `agent-contract.md`.
+
+## Comment and update style
+
+Owner house style: open with one or two plain sentences, then bullet points for the evidence. Short
+lines, one idea each, no filler. Prefer plain verbs, one instruction per sentence, about twenty
+words max. If a rule makes a sentence worse, leave the sentence alone.
+
+## Write specs in parents
+
+Long-form context lives in the parent issue body per `ticket-anatomy.md`. Durable technical
+decisions live in `docs/adr/`, never in the issue. One fact lives in one place. Link across.
+
+Domicile rule: repo docs own files, commands, schemas, env names, and code rules. Issues own product
+why and what. Link across.
+
+## Read cheaply
+
+Audit with `gh issue list` plus `--json` fields. Reserve `gh issue view` for tickets you will edit.
 
 ## Pull requests as a triage surface
 
-**PRs as a request surface: no.** _(Set to `yes` if this repo treats external PRs as feature
-requests; `/triage` reads this flag.)_
+**PRs as a request surface: yes.** This repo is open source; external PRs are feature requests and
+bug reports. Triage them through the same labels and states as issues.
 
-When set to `yes`, GitHub PRs are triaged through the same labels and states as issues, using the
-`gh` CLI for PR operations.
+- Confirm the PR targets `main` and passes the PR gate (`.github/workflows/pr.yml`).
+- Apply role, type, and area labels per `triage-labels.md`.
+- Link the PR to its issue with `Fixes #<n>` (closes on merge), `Refs #<n>`, or `Part of #<n>`.
+- Request changes or close with an explanation comment; never close silently.
 
 ## When a skill says "publish to the issue tracker"
 

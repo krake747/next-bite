@@ -1,23 +1,27 @@
 import { v } from "convex/values"
 
+import { type Doc, type Id } from "./_generated/dataModel"
 import { mutation, query } from "./_generated/server"
 import { authComponent } from "./auth"
-
-async function requireUserId(ctx: {
-    auth: { getUserIdentity: () => Promise<{ subject: string } | null> }
-}): Promise<string> {
-    const identity = await ctx.auth.getUserIdentity()
-    if (!identity) {
-        throw new Error("Unauthorized: authentication required")
-    }
-    return identity.subject
-}
+import { requireUserId } from "./helpers"
 
 async function serverDisplayName(ctx: Parameters<typeof authComponent.getAuthUser>[0]): Promise<string> {
     const user = await authComponent.getAuthUser(ctx)
     const raw = user.name ?? user.email ?? "Someone"
     const trimmed = raw.trim().slice(0, 60)
     return trimmed === "" ? "Someone" : trimmed
+}
+
+async function requireRestaurant(
+    ctx: {
+        db: { get: (id: Id<"restaurants">) => Promise<Doc<"restaurants"> | null> }
+    },
+    restaurantId: Id<"restaurants">,
+): Promise<void> {
+    const restaurant = await ctx.db.get(restaurantId)
+    if (!restaurant) {
+        throw new Error("Restaurant not found")
+    }
 }
 
 export const getForRestaurant = query({
@@ -93,10 +97,7 @@ export const toggleInterest = mutation({
     },
     handler: async (ctx, args) => {
         const userId = await requireUserId(ctx)
-        const restaurant = await ctx.db.get(args.restaurantId)
-        if (!restaurant) {
-            throw new Error("Restaurant not found")
-        }
+        await requireRestaurant(ctx, args.restaurantId)
         const name = await serverDisplayName(ctx)
         const existing = await ctx.db
             .query("interests")
@@ -126,10 +127,7 @@ export const toggleLike = mutation({
     },
     handler: async (ctx, args) => {
         const userId = await requireUserId(ctx)
-        const restaurant = await ctx.db.get(args.restaurantId)
-        if (!restaurant) {
-            throw new Error("Restaurant not found")
-        }
+        await requireRestaurant(ctx, args.restaurantId)
         const name = await serverDisplayName(ctx)
         const existing = await ctx.db
             .query("likes")
@@ -155,10 +153,7 @@ export const addComment = mutation({
     },
     handler: async (ctx, args) => {
         const userId = await requireUserId(ctx)
-        const restaurant = await ctx.db.get(args.restaurantId)
-        if (!restaurant) {
-            throw new Error("Restaurant not found")
-        }
+        await requireRestaurant(ctx, args.restaurantId)
         const name = await serverDisplayName(ctx)
         const text = args.text.trim().slice(0, 500)
         if (text === "") {

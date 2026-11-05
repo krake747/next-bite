@@ -92,7 +92,7 @@ export function LazyImage({
                     loading={loading ?? "lazy"}
                     decoding={decoding ?? "async"}
                     className={cx(
-                        "size-full object-cover transition-opacity duration-200 ease-out",
+                        "size-full object-cover transition-opacity duration-200 ease-out-quad",
                         isLoaded ? "opacity-100" : "opacity-0",
                         className,
                     )}

@@ -67,7 +67,6 @@ export function ImageGalleryModal(props: Readonly<ImageGalleryModalProps>) {
     const PAN_THRESHOLD = 5
 
     useEffect(() => {
-        // eslint-disable-next-line react-compiler/react-compiler
         setCurrentIndex(props.initialIndex ?? 0)
     }, [props.initialIndex])
 

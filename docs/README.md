@@ -2,11 +2,14 @@
 
 Long-lived explanations of this project's architecture and technical decisions.
 
-- Start at [Next Bite](../GLOSSARY.md) for domain language. The map of glossaries lives in
-  [GLOSSARY-MAP](../GLOSSARY-MAP.md).
-- Guides: [toolchain](agents/toolchain.md) and [testing](agents/testing.md), plus agent guides for
-  the [issue tracker](agents/issue-tracker.md), [triage labels](agents/triage-labels.md), and
-  [domain layout](agents/domain.md).
+- Start at [Next Bite](../GLOSSARY.md) for domain language.
+- Agent guides: [non-negotiables](agents/non-negotiables.md), [CI gate](agents/ci-gate.md),
+  [issue tracker](agents/issue-tracker.md), [ticket anatomy](agents/ticket-anatomy.md) plus
+  [templates](agents/templates/parent.md), [tracker map](agents/tracker-map.md),
+  [triage labels](agents/triage-labels.md), [agent contract](agents/agent-contract.md),
+  [worktrees](agents/worktrees.md), [stacked PRs](agents/stacked-prs.md),
+  [domain layout](agents/domain.md), [verify](agents/verify.md), [toolchain](agents/toolchain.md),
+  [testing](agents/testing.md), and [sources of truth](agents/sources-of-truth.md).
 - Decisions: [ADRs](adr/0001-bottom-up-migration-solidjs-to-react.md). Read the catalog below before
   changing an established area; when a change conflicts with a recorded decision, surface the
   conflict instead of silently overriding it.

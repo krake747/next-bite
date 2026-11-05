@@ -20,7 +20,7 @@ export function GalleryGrid({
                             src={imageUrl}
                             alt={`Image ${index + 1}`}
                             aspectRatio="1"
-                            className="transition-transform duration-200 ease-out group-hover:scale-105"
+                            className="transition-transform duration-200 ease-out-quad group-hover:scale-105"
                         />
                     </button>
                 ))}
