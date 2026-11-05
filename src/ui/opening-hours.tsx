@@ -29,7 +29,7 @@ export function OpeningHours({
         <button
             type="button"
             onClick={onClick}
-            className="flex w-full cursor-pointer items-center gap-2 rounded-control text-left transition-opacity duration-150 hover:opacity-80 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+            className="hit-area-y-1 flex w-full cursor-pointer items-center gap-2 rounded-control text-left transition-opacity duration-150 hover:opacity-80 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
         >
             <div className="flex size-6 items-center justify-center rounded-full bg-stone-100">
                 <Clock className="size-3.5 text-stone-400" aria-hidden="true" />

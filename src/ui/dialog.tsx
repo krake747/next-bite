@@ -134,7 +134,7 @@ export function DialogDescription({
 }
 
 const closeButton = cva({
-    base: "absolute top-4 right-4 flex min-h-11 min-w-11 items-center justify-center rounded-full text-stone-400 transition-colors duration-150 hover:bg-stone-100 hover:text-stone-600 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring",
+    base: "hit-area-2 absolute top-4 right-4 flex size-8 items-center justify-center rounded-full text-stone-400 transition-colors duration-150 hover:bg-stone-100 hover:text-stone-600 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring",
     variants: {
         tone: {
             default: "",

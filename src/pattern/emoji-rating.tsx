@@ -94,7 +94,7 @@ export function EmojiRating({
                             }}
                             aria-label={EMOJI_LABELS[index]}
                             className={cx(
-                                "flex min-h-11 min-w-11 cursor-pointer items-center justify-center rounded-control text-lg transition-transform duration-150 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring sm:size-9 sm:text-xl",
+                                "hit-area-2 flex size-8 cursor-pointer items-center justify-center rounded-control text-lg transition-transform duration-150 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring sm:size-9 sm:text-xl",
                                 isActive ? "scale-110" : "hover:scale-105",
                                 isActive ? "opacity-100" : "opacity-40 grayscale hover:opacity-70",
                             )}

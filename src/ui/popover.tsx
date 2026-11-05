@@ -7,7 +7,7 @@ export function Popover({ children }: Readonly<{ children?: React.ReactNode | un
 }
 
 const trigger = cva({
-    base: "inline-flex cursor-pointer items-center justify-center transition-colors duration-150 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring",
+    base: "hit-area-2 inline-flex cursor-pointer items-center justify-center transition-colors duration-150 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring",
     variants: {
         tone: {
             plain: "rounded-control",
