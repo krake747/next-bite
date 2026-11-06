@@ -10,14 +10,34 @@ function otpSubject(type: OtpType): string {
     return "Your Nextbite sign-in code"
 }
 
+function isPresent(value: string | undefined): boolean {
+    return value !== undefined && value.trim() !== ""
+}
+
+export function hasMailgunConfig(): boolean {
+    return isPresent(process.env.MAILGUN_API_KEY) && isPresent(process.env.MAILGUN_DOMAIN)
+}
+
+// Explicit opt-in only. Missing mail configuration fails closed everywhere else, including
+// preview and production, even when the OTP flag is on.
+export function isMailDevFallback(): boolean {
+    return process.env.MAILGUN_DEV_FALLBACK === "true"
+}
+
 export async function sendTransactionalEmail(
     input: Readonly<{ to: string; subject: string; text: string }>,
 ): Promise<void> {
     const apiKey = process.env.MAILGUN_API_KEY
     const domain = process.env.MAILGUN_DOMAIN
-    if (apiKey === undefined || apiKey === "" || domain === undefined || domain === "") {
-        console.log(`sendTransactionalEmail (dev fallback) to=${input.to} subject=${input.subject} text=${input.text}`)
-        return
+    if (!hasMailgunConfig()) {
+        if (isMailDevFallback()) {
+            // Local development only. Log metadata, never recipient address, subject, or body:
+            // the body carries the OTP code.
+            console.log("sendTransactionalEmail skipped: explicit local dev fallback, email not sent")
+            return
+        }
+        console.warn("sendTransactionalEmail refused: mail not configured")
+        throw new Error("Email is not configured")
     }
     const body = new URLSearchParams({
         from: `Nextbite <login@${domain}>`,
@@ -34,8 +54,9 @@ export async function sendTransactionalEmail(
         body,
     })
     if (!response.ok) {
-        const errorText = await response.text()
-        throw new Error(`Mailgun error: ${response.status} ${errorText}`)
+        // Status only: provider bodies are echoed back untrusted and stay out of logs and errors.
+        console.warn(`Mailgun delivery failed with status ${response.status}`)
+        throw new Error(`Email delivery failed with status ${response.status}`)
     }
 }
 
