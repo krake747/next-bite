@@ -1,3 +1,5 @@
+import bricolageLatinUrl from "@fontsource-variable/bricolage-grotesque/files/bricolage-grotesque-latin-wght-normal.woff2?url"
+import dmSansLatinUrl from "@fontsource-variable/dm-sans/files/dm-sans-latin-wght-normal.woff2?url"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import { HeadContent, Outlet, Scripts, createRootRouteWithContext } from "@tanstack/react-router"
 import { APIProvider } from "@vis.gl/react-google-maps"
@@ -13,6 +15,24 @@ type RouterContext = {
 }
 
 export const Route = createRootRouteWithContext<RouterContext>()({
+    head: () => ({
+        links: [
+            {
+                rel: "preload",
+                href: bricolageLatinUrl,
+                as: "font",
+                type: "font/woff2",
+                crossOrigin: "anonymous",
+            },
+            {
+                rel: "preload",
+                href: dmSansLatinUrl,
+                as: "font",
+                type: "font/woff2",
+                crossOrigin: "anonymous",
+            },
+        ],
+    }),
     component: RootComponent,
 })
 

@@ -22,6 +22,7 @@ import { ActivityPost } from "@features/social/activity-post"
 import { EmptyState } from "@pattern/empty-state"
 import {
     CommunityStats,
+    CommunityStatsSkeleton,
     HowItWorks,
     LandingActions,
     LandingCloser,
@@ -267,7 +268,11 @@ function SignedOutHome() {
         <PageLayout>
             <LandingHero totalRestaurants={stats?.totalRestaurants} />
             <PageContainer>
-                {stats === undefined ? null : stats.totalRestaurants === 0 ? null : <CommunityStats stats={stats} />}
+                {stats === undefined ? (
+                    <CommunityStatsSkeleton />
+                ) : stats.totalRestaurants === 0 ? null : (
+                    <CommunityStats stats={stats} />
+                )}
                 <HowItWorks />
                 <LandingCloser />
             </PageContainer>

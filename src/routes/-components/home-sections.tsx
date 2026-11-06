@@ -4,6 +4,7 @@ import MapPin from "lucide-react/icons/map-pin"
 import Users from "lucide-react/icons/users"
 
 import { Button } from "@ui/button"
+import { Skeleton } from "@ui/skeleton"
 
 export type LandingStats = {
     readonly totalRestaurants: number
@@ -33,6 +34,28 @@ export function LandingActions() {
                 Sign In
             </Button>
         </div>
+    )
+}
+
+export function CommunityStatsSkeleton() {
+    return (
+        <section
+            aria-busy="true"
+            aria-label="Community activity"
+            className="mx-auto w-full max-w-5xl px-4 pt-12 sm:px-6 lg:px-12"
+        >
+            <div className="grid gap-4 sm:grid-cols-3">
+                {[0, 1, 2].map((index) => (
+                    <div
+                        key={index}
+                        className="rounded-card border border-border bg-surface p-6 text-center shadow-card"
+                    >
+                        <Skeleton className="mx-auto h-10 w-24" />
+                        <Skeleton className="mx-auto mt-2 h-4 w-28" />
+                    </div>
+                ))}
+            </div>
+        </section>
     )
 }
 
