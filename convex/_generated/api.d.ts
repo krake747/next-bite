@@ -22,6 +22,7 @@ import type * as migrate from "../migrate.js";
 import type * as restaurants from "../restaurants.js";
 import type * as shares from "../shares.js";
 import type * as social from "../social.js";
+import type * as uploads from "../uploads.js";
 import type * as users from "../users.js";
 import type * as validators from "../validators.js";
 
@@ -46,6 +47,7 @@ declare const fullApi: ApiFromModules<{
   restaurants: typeof restaurants;
   shares: typeof shares;
   social: typeof social;
+  uploads: typeof uploads;
   users: typeof users;
   validators: typeof validators;
 }>;

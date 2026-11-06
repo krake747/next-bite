@@ -11,3 +11,10 @@ export const authClient = createAuthClient({
     },
     plugins: [crossDomainClient(), convexClient(), emailOTPClient()],
 })
+
+async function getConvexSessionToken(): Promise<string | null> {
+    const { data } = await authClient.convex.token({ fetchOptions: { throw: false } })
+    return typeof data?.token === "string" ? data.token : null
+}
+
+export { getConvexSessionToken }

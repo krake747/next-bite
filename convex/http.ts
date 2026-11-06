@@ -1,5 +1,6 @@
 import { httpRouter } from "convex/server"
 
+import { internal } from "./_generated/api"
 import { httpAction } from "./_generated/server"
 import { authComponent, createAuth } from "./auth"
 
@@ -8,7 +9,7 @@ const http = httpRouter()
 const corsHeaders = {
     "Access-Control-Allow-Origin": "*",
     "Access-Control-Allow-Methods": "POST, OPTIONS",
-    "Access-Control-Allow-Headers": "Content-Type",
+    "Access-Control-Allow-Headers": "Content-Type, Authorization",
 }
 
 const MAX_UPLOAD_BYTES = 20 * 1024 * 1024
@@ -22,6 +23,17 @@ http.route({
     handler: httpAction(async (ctx, request) => {
         console.log("Upload request received, content-type:", request.headers.get("content-type"))
         try {
+            const identity = await ctx.auth.getUserIdentity()
+            if (!identity) {
+                return new Response(JSON.stringify({ error: "Sign in to upload photos" }), {
+                    status: 401,
+                    headers: {
+                        "Content-Type": "application/json",
+                        ...corsHeaders,
+                    },
+                })
+            }
+
             const blob = await request.blob()
             console.log("Blob received, size:", blob.size, "type:", blob.type)
 
@@ -57,6 +69,7 @@ http.route({
 
             const storageId = await ctx.storage.store(blob)
             const url = await ctx.storage.getUrl(storageId)
+            await ctx.runMutation(internal.uploads.record, { storageId, ownerId: identity.subject })
 
             return new Response(JSON.stringify({ storageId, url }), {
                 status: 200,

@@ -118,5 +118,10 @@ export default defineSchema({
         expiresAt: v.number(),
         createdAt: v.number(),
     }).index("by_token", ["token"]),
+    uploads: defineTable({
+        storageId: v.string(),
+        ownerId: v.string(),
+        createdAt: v.number(),
+    }).index("by_storage", ["storageId"]),
     // Better Auth tables will be added by the convex component
 })
