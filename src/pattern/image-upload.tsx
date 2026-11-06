@@ -165,7 +165,6 @@ export function ImageUpload(props: Readonly<ImageUploadProps>) {
                         <ImagePreview
                             key={image.storageId}
                             imageUrl={image.url}
-                            index={index}
                             onRemove={() => {
                                 void handleRemove(index, image)
                             }}
@@ -224,18 +223,16 @@ export function ImageUpload(props: Readonly<ImageUploadProps>) {
 
 function ImagePreview({
     imageUrl,
-    index,
     onRemove,
     disabled,
 }: Readonly<{
     imageUrl: string
-    index: number
     onRemove: () => void
     disabled: boolean
 }>) {
     return (
         <div className="group relative aspect-square overflow-hidden rounded-lg bg-stone-100">
-            <img src={imageUrl} alt={`Image ${index + 1}`} className="size-full object-cover" loading="lazy" />
+            <img src={imageUrl} alt="" className="size-full object-cover" loading="lazy" />
 
             {!disabled && (
                 <button
