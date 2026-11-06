@@ -88,27 +88,12 @@ export default defineSchema({
         restaurantId: v.id("restaurants"),
         sharedBy: v.string(),
         target: shareTargetValidator,
+        targetGroupId: v.optional(v.id("groups")),
         createdAt: v.number(),
     })
         .index("by_restaurant", ["restaurantId"])
-        .index("by_sharer", ["sharedBy"]),
-    collections: defineTable({
-        ownerId: v.string(),
-        name: v.string(),
-        description: v.string(),
-        groupId: v.optional(v.id("groups")),
-        createdAt: v.number(),
-    })
-        .index("by_owner", ["ownerId"])
-        .index("by_group", ["groupId"]),
-    collectionItems: defineTable({
-        collectionId: v.id("collections"),
-        restaurantId: v.id("restaurants"),
-        addedBy: v.string(),
-        addedAt: v.number(),
-    })
-        .index("by_collection", ["collectionId"])
-        .index("by_restaurant", ["restaurantId"]),
+        .index("by_sharer", ["sharedBy"])
+        .index("by_target_group", ["targetGroupId"]),
     invitations: defineTable({
         token: v.string(),
         target: inviteTargetValidator,
