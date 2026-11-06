@@ -155,7 +155,7 @@ export function DialogCloseButton({
     Omit<React.ComponentProps<"button">, "onClick" | "type" | "children">) {
     return (
         <button type="button" onClick={onClick} className={cx(closeButton({ tone }), className)} {...rest}>
-            <X className="size-4" aria-hidden="true" />
+            <X className="size-4" />
             <span className="sr-only">Close</span>
         </button>
     )
