@@ -1,6 +1,7 @@
 import { Form, reset, setInput, useForm } from "@formisch/react"
-import { useEffect, useRef } from "react"
+import { useEffect, useRef, useState } from "react"
 
+import { SyncTimeoutError } from "@core/db/restaurants"
 import { useAddRestaurantWithHours, useUpdateRestaurant, type Restaurant } from "@core/hooks"
 import { RestaurantSchema, type RestaurantOutput } from "@core/schemas"
 import { ImageUpload } from "@pattern/image-upload"
@@ -42,7 +43,19 @@ export function RestaurantForm(props: Readonly<RestaurantFormProps>) {
     const gallery = useRestaurantImages(props.mode === "edit" ? props.restaurant.images : [], {
         discardShouldCleanup: props.mode === "add",
     })
+    // One mutation identity per draft: the key is minted when the form mounts
+    // and only rotates after a committed submit, so a timed-out submit retries
+    // on the same key instead of duplicating the restaurant. A fresh mount is
+    // a new draft with a new identity.
+    const [clientMutationId, setClientMutationId] = useState(() => crypto.randomUUID())
+    const [submitOutcome, setSubmitOutcome] = useState<
+        { kind: "idle" } | { kind: "uncertain"; message: string } | { kind: "failed"; message: string }
+    >({ kind: "idle" })
+    const uncertainSubmitRef = useRef(false)
     const submittedRef = useRef(false)
+    const pendingSubmitRef = useRef(false)
+    const [isSaving, setIsSaving] = useState(false)
+    const lastOutputRef = useRef<Readonly<Omit<RestaurantOutput, "images" | "placeId">> | null>(null)
 
     const form = useForm({
         schema: RestaurantSchema,
@@ -64,10 +77,12 @@ export function RestaurantForm(props: Readonly<RestaurantFormProps>) {
 
     useEffect(() => {
         props.onDiscardReady(async () => {
-            // A submitted draft already handed its images to persisted
-            // ownership. Discarding afterwards must never remove them, no
-            // matter when the close runs relative to the submit.
-            if (submittedRef.current) {
+            // A committed submit handed its images to persisted ownership. A
+            // pending or uncertain submit may still commit with these images
+            // attached. None of those states may clean: reset the local draft
+            // and leave stored files for the backend either way.
+            if (submittedRef.current || uncertainSubmitRef.current || pendingSubmitRef.current) {
+                reset(form)
                 return
             }
             await gallery.discardChanges()
@@ -88,7 +103,13 @@ export function RestaurantForm(props: Readonly<RestaurantFormProps>) {
 
     const handleSubmit = async (output: Readonly<Omit<RestaurantOutput, "images" | "placeId">>) => {
         const { location, lat, lng, ...rest } = stripUndefined(output)
+        lastOutputRef.current = output
         const coords = lat !== undefined && lng !== undefined ? { lat, lng } : undefined
+        submittedRef.current = false
+        uncertainSubmitRef.current = false
+        pendingSubmitRef.current = true
+        setIsSaving(true)
+        setSubmitOutcome({ kind: "idle" })
         try {
             if (props.mode === "add") {
                 await addRestaurantWithHours.mutateAsync({
@@ -96,6 +117,7 @@ export function RestaurantForm(props: Readonly<RestaurantFormProps>) {
                     addressLabel: location,
                     ...(coords !== undefined ? { coords } : {}),
                     images: gallery.images,
+                    clientMutationId,
                 })
                 await gallery.completeAddSubmit()
             } else {
@@ -110,9 +132,34 @@ export function RestaurantForm(props: Readonly<RestaurantFormProps>) {
             reset(form)
             gallery.resetImages()
             submittedRef.current = true
+            pendingSubmitRef.current = false
+            setIsSaving(false)
+            setClientMutationId(crypto.randomUUID())
             props.onSuccess()
         } catch (error) {
+            pendingSubmitRef.current = false
+            setIsSaving(false)
+            if (error instanceof SyncTimeoutError) {
+                uncertainSubmitRef.current = true
+                setSubmitOutcome({
+                    kind: "uncertain",
+                    message:
+                        "Saving is taking longer than expected. It may already be saved. Retry is safe and will not create a duplicate.",
+                })
+            } else {
+                setSubmitOutcome({
+                    kind: "failed",
+                    message: error instanceof Error ? error.message : "Saving failed.",
+                })
+            }
             console.error(`Error ${props.mode === "add" ? "adding" : "updating"} restaurant:`, error)
+        }
+    }
+
+    const handleRetry = () => {
+        const output = lastOutputRef.current
+        if (output !== null) {
+            void handleSubmit(output)
         }
     }
 
@@ -142,8 +189,20 @@ export function RestaurantForm(props: Readonly<RestaurantFormProps>) {
                 >
                     Cancel
                 </Button>
-                <Button type="submit">{props.mode === "add" ? "Add Restaurant" : "Save Changes"}</Button>
+                <Button type="submit" disabled={isSaving}>
+                    {isSaving ? "Saving…" : props.mode === "add" ? "Add Restaurant" : "Save Changes"}
+                </Button>
             </div>
+            {submitOutcome.kind !== "idle" && (
+                <div role={submitOutcome.kind === "failed" ? "alert" : "status"} className="space-y-2 pt-2">
+                    <p className="text-sm text-stone-600">{submitOutcome.message}</p>
+                    {submitOutcome.kind === "uncertain" && (
+                        <Button type="button" tone="secondary" onClick={handleRetry}>
+                            Retry safely
+                        </Button>
+                    )}
+                </div>
+            )}
         </Form>
     )
 }

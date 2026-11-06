@@ -15,6 +15,7 @@ import {
     clearUserScopedQueries,
     getSessionCollections,
     resolveRestaurantIdByKey,
+    SyncTimeoutError,
     toAddArgs,
     toUpdateArgs,
     type RestaurantAddArgs,
@@ -275,6 +276,20 @@ describe("restaurant collections", () => {
         await collections.owner.preload()
 
         await expect(resolveRestaurantIdByKey(collections.owner, "user-1:ghost", 50)).rejects.toThrow("Timed out")
+    })
+
+    test("timeout errors carry a retryable code", async () => {
+        const persist = mockPersist()
+        const backend = createSeededClient()
+        const collections = getSessionCollections(backend.client, persist, SESSION)
+        await collections.owner.preload()
+
+        const error = await resolveRestaurantIdByKey(collections.owner, "user-1:ghost", 30).then(
+            () => null,
+            (failure: unknown) => failure,
+        )
+        expect(error).toBeInstanceOf(SyncTimeoutError)
+        expect(error).toMatchObject({ code: "SYNC_TIMEOUT" })
     })
 
     test("persists rapid consecutive inserts under distinct keys", async () => {

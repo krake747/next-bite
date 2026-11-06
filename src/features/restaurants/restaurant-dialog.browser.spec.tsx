@@ -5,6 +5,7 @@ import { describe, expect, test, vi } from "vitest"
 
 import { type Id } from "@convex/_generated/dataModel"
 import { ConvexProvider } from "@core/convex-client"
+import { SyncTimeoutError, type RestaurantAddArgs } from "@core/db/restaurants"
 import { createSeededClient, type MutationCall } from "@core/db/seeded-client"
 import { type ImageRecord } from "@core/hooks"
 
@@ -88,7 +89,7 @@ vi.mock("@core/auth-provider", async (importOriginal) => {
 })
 
 const mutationCalls: MutationCall[] = []
-const addMutate = vi.fn<() => Promise<unknown>>()
+const addMutate = vi.fn<(args: RestaurantAddArgs) => Promise<unknown>>()
 let submitGate: Deferred<unknown> | null = null
 
 function renderDialog(onOpenChange: (open: boolean) => void): void {
@@ -130,13 +131,10 @@ function resetUploads(): void {
         uploadCalls += 1
         return gate.promise
     }
-    addMutate.mockReset()
+    addMutate.mockClear()
     addMutate.mockImplementation(async () => {
         await Promise.resolve()
-        if (submitGate === null) {
-            throw new TypeError("Submit was not gated")
-        }
-        return submitGate.promise
+        return requiredSubmitGate().promise
     })
 }
 
@@ -154,8 +152,26 @@ async function stageOneImage(): Promise<void> {
         await Promise.resolve()
     })
     await waitFor(() => {
-        expect(document.querySelectorAll("img")).toHaveLength(1)
+        expect(document.querySelector('[data-slot="image-preview-list"]')?.childElementCount).toBe(1)
     })
+}
+
+function fillRequiredFields(): void {
+    fireEvent.change(screen.getByLabelText("Restaurant name"), { target: { value: "Trattoria" } })
+    fireEvent.change(screen.getByLabelText("Cuisine"), { target: { value: "Italian" } })
+    fireEvent.change(screen.getByLabelText("Location"), { target: { value: "Luxembourg" } })
+}
+
+function requiredAddKey(index: number): string {
+    const call = addMutate.mock.calls[index]
+    if (call === undefined) {
+        throw new TypeError("Submit attempt missing")
+    }
+    const key = call[0].clientMutationId
+    if (key === undefined) {
+        throw new TypeError("Submit attempt has no mutation key")
+    }
+    return key
 }
 
 describe("RestaurantDialog close ownership", () => {
@@ -199,10 +215,8 @@ describe("RestaurantDialog close ownership", () => {
         renderDialog(onOpenChange)
         await stageOneImage()
 
+        fillRequiredFields()
         submitGate = createDeferred<unknown>()
-        fireEvent.change(screen.getByLabelText("Restaurant name"), { target: { value: "Trattoria" } })
-        fireEvent.change(screen.getByLabelText("Cuisine"), { target: { value: "Italian" } })
-        fireEvent.change(screen.getByLabelText("Location"), { target: { value: "Luxembourg" } })
         fireEvent.click(screen.getByRole("button", { name: "Add Restaurant" }))
 
         await waitFor(() => {
@@ -218,5 +232,76 @@ describe("RestaurantDialog close ownership", () => {
         })
         expect(addMutate).toHaveBeenCalledTimes(1)
         expect(mutationCalls.filter((call) => call.fn === "restaurants:cleanupStorage")).toHaveLength(0)
+    })
+
+    test("retries a timed-out submit on the same key without duplicating", async () => {
+        resetUploads()
+        const onOpenChange = vi.fn<(open: boolean) => void>()
+        renderDialog(onOpenChange)
+        fillRequiredFields()
+        submitGate = createDeferred<unknown>()
+        fireEvent.click(screen.getByRole("button", { name: "Add Restaurant" }))
+
+        await waitFor(() => {
+            expect(addMutate).toHaveBeenCalledTimes(1)
+        })
+        await act(async () => {
+            requiredSubmitGate().reject(new SyncTimeoutError())
+            await Promise.resolve()
+        })
+
+        await waitFor(() => {
+            expect(screen.getByText(/may already be saved/)).toBeInTheDocument()
+        })
+        expect(screen.getByRole("button", { name: "Retry safely" })).toBeInTheDocument()
+
+        submitGate = createDeferred<unknown>()
+        fireEvent.click(screen.getByRole("button", { name: "Retry safely" }))
+
+        await waitFor(() => {
+            expect(addMutate).toHaveBeenCalledTimes(2)
+        })
+        expect(requiredAddKey(1)).toBe(requiredAddKey(0))
+
+        await act(async () => {
+            requiredSubmitGate().resolve(undefined)
+            await Promise.resolve()
+        })
+
+        await waitFor(() => {
+            expect(onOpenChange).toHaveBeenCalledWith(false)
+        })
+        expect(mutationCalls.filter((call) => call.fn === "restaurants:cleanupStorage")).toHaveLength(0)
+    })
+
+    test("rotates the key after a committed submit", async () => {
+        resetUploads()
+        const onOpenChange = vi.fn<(open: boolean) => void>()
+        renderDialog(onOpenChange)
+        fillRequiredFields()
+        submitGate = createDeferred<unknown>()
+        fireEvent.click(screen.getByRole("button", { name: "Add Restaurant" }))
+
+        await waitFor(() => {
+            expect(addMutate).toHaveBeenCalledTimes(1)
+        })
+        await act(async () => {
+            requiredSubmitGate().resolve(undefined)
+            await Promise.resolve()
+        })
+
+        await waitFor(() => {
+            expect(onOpenChange).toHaveBeenCalledTimes(1)
+        })
+        const firstKey = requiredAddKey(0)
+
+        fillRequiredFields()
+        submitGate = createDeferred<unknown>()
+        fireEvent.click(screen.getByRole("button", { name: "Add Restaurant" }))
+
+        await waitFor(() => {
+            expect(addMutate).toHaveBeenCalledTimes(2)
+        })
+        expect(requiredAddKey(1)).not.toBe(firstKey)
     })
 })

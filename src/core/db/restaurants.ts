@@ -208,6 +208,19 @@ export type SyncedRows = {
     values(): Iterable<RestaurantDoc>
 }
 
+// A timed-out wait is not proof of failure: the row may already exist
+// server-side (see ADR-0017). Callers distinguish this from definitive errors
+// to offer checking and retry on the same mutation key instead of minting a
+// new identity that could duplicate the row.
+export class SyncTimeoutError extends Error {
+    readonly code = "SYNC_TIMEOUT"
+
+    constructor(message = "Timed out waiting for the synced restaurant") {
+        super(message)
+        this.name = "SyncTimeoutError"
+    }
+}
+
 // Matches a synced server row to the insert that created it via the persisted client mutation
 // key. Skips the optimistic temp row itself, so callers never resolve to a fabricated id.
 export async function resolveRestaurantIdByKey(
@@ -223,7 +236,7 @@ export async function resolveRestaurantIdByKey(
             }
         }
         if (Date.now() - startedAt >= timeoutMs) {
-            throw new Error("Timed out waiting for the synced restaurant")
+            throw new SyncTimeoutError()
         }
         await new Promise((resolve) => {
             setTimeout(resolve, 50)
