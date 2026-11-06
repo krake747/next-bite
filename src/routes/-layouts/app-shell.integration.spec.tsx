@@ -43,7 +43,7 @@ async function renderAt(path: string): Promise<void> {
     await router.load()
     render(<RouterProvider router={router} />)
     await waitFor(() => {
-        expect(document.querySelector('[data-slot="app-nav"]')).toBeInTheDocument()
+        expect(document.querySelector('[data-slot="page-layout"]')).toBeInTheDocument()
     })
 }
 
@@ -69,18 +69,19 @@ describe("app shell", () => {
         expect(screen.getByRole("link", { name: "You" })).toHaveAttribute("href", "/you")
     })
 
-    it("sends signed-out visitors to login from Add", async () => {
-        const user = userEvent.setup()
+    it("hides the nav for signed-out visitors", async () => {
         await renderAt("/")
 
-        await user.click(screen.getByRole("link", { name: "Add" }))
-
-        await waitFor(() => {
-            expect(screen.getByRole("heading", { name: "Welcome back" })).toBeInTheDocument()
-        })
+        expect(document.querySelector('[data-slot="app-nav"]')).not.toBeInTheDocument()
+        const signInLinks = screen.getAllByRole("link", { name: "Sign In" })
+        expect(signInLinks.length).toBeGreaterThan(0)
+        for (const link of signInLinks) {
+            expect(link).toHaveAttribute("href", "/login")
+        }
     })
 
     it("marks the current destination", async () => {
+        signIn()
         await renderAt("/friends")
 
         expect(screen.getByRole("link", { name: "Friends" })).toHaveAttribute("aria-current", "page")
@@ -88,6 +89,7 @@ describe("app shell", () => {
     })
 
     it("navigates between destinations", async () => {
+        signIn()
         const user = userEvent.setup()
         await renderAt("/")
 
