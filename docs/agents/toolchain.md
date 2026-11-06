@@ -51,9 +51,13 @@ pnpm test:unit            # hooks and isolated UI
 pnpm test:browser         # full interaction components
 pnpm test:integration     # route-level and backend contracts
 pnpm test:watch           # Vitest watch mode
+pnpm test:e2e             # Playwright smoke (local gate, needs browsers)
 ```
 
-Tiers live in `vite.config.ts` projects. See `testing.md`.
+Tiers live in `vite.config.ts` projects. See `testing.md`. The Playwright smoke suite lives in
+`e2e/` with config in `playwright.config.ts`. Install browsers once with
+`npx playwright install chromium --only-shell`, then run `pnpm test:e2e`. It boots the dev server
+itself and stays out of the push gate and CI by design; run it on demand and before release.
 
 ## Convex
 
