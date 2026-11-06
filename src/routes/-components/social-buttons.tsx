@@ -1,5 +1,6 @@
 import { useAuth } from "@core/hooks"
-import { Button } from "@ui/button"
+
+import { PendingButton } from "./pending-button"
 
 export function SocialButtons({ google, github }: Readonly<{ google: boolean; github: boolean }>) {
     const auth = useAuth()
@@ -9,32 +10,32 @@ export function SocialButtons({ google, github }: Readonly<{ google: boolean; gi
     return (
         <div className="flex flex-col gap-2">
             {google && (
-                <Button
+                <PendingButton
                     type="button"
                     variant="secondary"
                     className="w-full"
-                    loading={auth.isLoading}
+                    pending={auth.isLoading}
                     onClick={() => {
                         // Auth errors already land in the auth store; swallow here to avoid an unhandled rejection.
                         void auth.signInWithSocial("google").catch(() => {})
                     }}
                 >
                     Continue with Google
-                </Button>
+                </PendingButton>
             )}
             {github && (
-                <Button
+                <PendingButton
                     type="button"
                     variant="secondary"
                     className="w-full"
-                    loading={auth.isLoading}
+                    pending={auth.isLoading}
                     onClick={() => {
                         // Auth errors already land in the auth store; swallow here to avoid an unhandled rejection.
                         void auth.signInWithSocial("github").catch(() => {})
                     }}
                 >
                     Continue with GitHub
-                </Button>
+                </PendingButton>
             )}
         </div>
     )

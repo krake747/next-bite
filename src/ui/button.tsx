@@ -1,5 +1,4 @@
 import { Button as BaseButton } from "@base-ui/react/button"
-import LoaderCircle from "lucide-react/icons/loader-circle"
 
 import { cva, type VariantProps } from "@ui/cva.config"
 import { focusRing } from "@ui/variants"
@@ -29,39 +28,20 @@ export const button = cva({
     },
 })
 
-type ButtonProps = VariantProps<typeof button> & {
-    readonly type?: "button" | "submit" | "reset" | undefined
-    readonly onClick?: ((event: React.MouseEvent<HTMLButtonElement>) => void) | undefined
-    readonly disabled?: boolean | undefined
-    readonly loading?: boolean | undefined
-    readonly nativeButton?: boolean | undefined
-    readonly render?: React.ReactElement | undefined
-    readonly ref?: React.Ref<HTMLButtonElement> | undefined
-    readonly className?: string | undefined
-    readonly children?: React.ReactNode | undefined
-}
+type ButtonProps = VariantProps<typeof button> &
+    React.ComponentProps<"button"> & {
+        readonly render?: React.ReactElement | undefined
+    }
 
-export function Button({
-    variant,
-    size,
-    className,
-    loading,
-    disabled,
-    type,
-    children,
-    ...rest
-}: Readonly<ButtonProps>) {
+export function Button({ variant, size, className, type, disabled, children, ...rest }: Readonly<ButtonProps>) {
     return (
         <BaseButton
             data-slot="button"
-            data-loading={loading === true ? "" : undefined}
             type={type ?? "button"}
             className={button({ variant, size, class: className })}
-            disabled={disabled === true || loading === true}
-            aria-busy={loading === true}
+            disabled={disabled}
             {...rest}
         >
-            {loading === true && <LoaderCircle className="size-4 animate-spin" />}
             {children}
         </BaseButton>
     )

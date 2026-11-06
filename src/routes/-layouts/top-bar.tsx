@@ -37,11 +37,7 @@ function AuthButton() {
     const auth = useAuth()
 
     if (!auth.isAuthenticated) {
-        return (
-            <Button render={<Link to="/login" viewTransition />} size="md" nativeButton={false}>
-                Sign In
-            </Button>
-        )
+        return <Button render={<Link to="/login" viewTransition />}>Sign In</Button>
     }
 
     return (

@@ -5,9 +5,9 @@ import * as v from "valibot"
 
 import { useAuth, useAuthMethods } from "@core/hooks"
 import { OtpForm } from "@routes/-components/otp-form"
+import { PendingButton } from "@routes/-components/pending-button"
 import { AuthDivider, SocialButtons } from "@routes/-components/social-buttons"
 import { AuthLayout } from "@routes/-layouts/auth-layout"
-import { Button } from "@ui/button"
 import { ErrorBanner } from "@ui/error-banner"
 import { FieldWrapper, Input } from "@ui/field"
 import { LoadingPlaceholder } from "@ui/loading"
@@ -116,9 +116,9 @@ function LoginPage() {
                         </FieldWrapper>
                     )}
                 </Field>
-                <Button type="submit" className="w-full" loading={auth.isLoading}>
+                <PendingButton type="submit" className="w-full" pending={auth.isLoading}>
                     Sign In
-                </Button>
+                </PendingButton>
             </Form>
             {(methods?.google === true || methods?.github === true) && (
                 <>

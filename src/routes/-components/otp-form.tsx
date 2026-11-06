@@ -3,8 +3,9 @@ import { useState } from "react"
 import * as v from "valibot"
 
 import { useAuth } from "@core/hooks"
-import { Button } from "@ui/button"
 import { FieldWrapper, Input } from "@ui/field"
+
+import { PendingButton } from "./pending-button"
 
 const OtpEmailSchema = v.object({
     email: v.pipe(v.string(), v.email()),
@@ -60,9 +61,9 @@ export function OtpForm({ onSuccess }: Readonly<{ onSuccess: () => void }>) {
                         </FieldWrapper>
                     )}
                 </Field>
-                <Button type="submit" variant="secondary" className="w-full" loading={auth.isLoading}>
+                <PendingButton type="submit" variant="secondary" className="w-full" pending={auth.isLoading}>
                     Email me a code
-                </Button>
+                </PendingButton>
             </Form>
         )
     }
@@ -94,9 +95,9 @@ export function OtpForm({ onSuccess }: Readonly<{ onSuccess: () => void }>) {
                     </FieldWrapper>
                 )}
             </Field>
-            <Button type="submit" className="w-full" loading={auth.isLoading}>
+            <PendingButton type="submit" className="w-full" pending={auth.isLoading}>
                 Verify code
-            </Button>
+            </PendingButton>
         </Form>
     )
 }

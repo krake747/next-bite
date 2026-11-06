@@ -15,6 +15,7 @@ import { PhotoGallery } from "@features/social/photo-gallery"
 import { ReactionBar } from "@features/social/reaction-bar"
 import { SocialMetadata } from "@features/social/social-metadata"
 import { AvatarGroup } from "@pattern/avatar-group"
+import { PendingButton } from "@routes/-components/pending-button"
 import { PageContainer } from "@routes/-layouts/page-container"
 import { PageLayout } from "@routes/-layouts/page-layout"
 import { Avatar } from "@ui/avatar"
@@ -232,7 +233,7 @@ function ButtonsSection() {
                     </Button>
                 ),
             )}
-            <Button loading>Loading</Button>
+            <PendingButton pending>Loading</PendingButton>
             <Button disabled>Disabled</Button>
         </Section>
     )

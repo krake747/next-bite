@@ -45,11 +45,7 @@ export function RestaurantDialog(props: RestaurantDialogProps) {
                     ) : (
                         <div className="space-y-4 py-8 text-center">
                             <p className="text-stone-600">{gateText}</p>
-                            <Button
-                                render={<Link to="/login" viewTransition />}
-                                className="w-full"
-                                nativeButton={false}
-                            >
+                            <Button render={<Link to="/login" viewTransition />} className="w-full">
                                 Sign In
                             </Button>
                         </div>

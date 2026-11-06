@@ -5,9 +5,9 @@ import { useState } from "react"
 import * as v from "valibot"
 
 import { useAuth, useAuthMethods } from "@core/hooks"
+import { PendingButton } from "@routes/-components/pending-button"
 import { AuthDivider, SocialButtons } from "@routes/-components/social-buttons"
 import { AuthLayout } from "@routes/-layouts/auth-layout"
-import { Button } from "@ui/button"
 import { ErrorBanner } from "@ui/error-banner"
 import { FieldWrapper, Input } from "@ui/field"
 import { LoadingPlaceholder } from "@ui/loading"
@@ -155,9 +155,9 @@ function SignupPage() {
                         </FieldWrapper>
                     )}
                 </Field>
-                <Button type="submit" className="w-full" loading={auth.isLoading}>
+                <PendingButton type="submit" className="w-full" pending={auth.isLoading}>
                     Create Account
-                </Button>
+                </PendingButton>
             </Form>
             {(methods?.google === true || methods?.github === true) && (
                 <>
