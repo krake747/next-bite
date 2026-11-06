@@ -27,6 +27,7 @@ Use this file as a routing layer into the repo docs.
 Load the documents below on demand for the task at hand. Treat their instructions as mandatory.
 
 - Shared non-negotiables: `docs/agents/non-negotiables.md`.
+- Coding standards for review: `CODING_STANDARDS.md`.
 - Documentation hygiene and CI gate: `docs/agents/ci-gate.md`.
 - GitHub work: `docs/agents/issue-tracker.md`.
 - Ticket shape: `docs/agents/ticket-anatomy.md` plus one file in `docs/agents/templates/`.
