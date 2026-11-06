@@ -1,4 +1,4 @@
-import { useReducer } from "react"
+import { useReducer, useRef } from "react"
 import * as v from "valibot"
 
 import { authClient } from "./auth-client"
@@ -78,6 +78,7 @@ type AuthState = {
 type AuthAction =
     | { readonly type: "SET_LOADING"; readonly isLoading: boolean }
     | { readonly type: "SET_USER"; readonly user: User }
+    | { readonly type: "SET_CACHED_USER"; readonly user: User }
     | { readonly type: "CLEAR_USER" }
     | { readonly type: "SET_ERROR"; readonly error: string | null }
 
@@ -87,6 +88,10 @@ function authReducer(state: Readonly<AuthState>, action: Readonly<AuthAction>): 
             return { ...state, isLoading: action.isLoading }
         case "SET_USER":
             return { ...state, user: action.user, isAuthenticated: true, error: null }
+        case "SET_CACHED_USER":
+            // Degraded display identity: the user sees their remembered email, but nothing
+            // treats this as a verified session. Backend authorization stays authoritative.
+            return { ...state, user: action.user, isAuthenticated: false, error: null }
         case "CLEAR_USER":
             return { ...state, user: null, isAuthenticated: false }
         case "SET_ERROR":
@@ -105,6 +110,19 @@ export function useAuthStore() {
         user: null,
         error: null,
     })
+    // Operation generation: every auth operation claims the current generation when it
+    // starts. A completion, error, or reset only lands when its generation is still
+    // current. Conflicting actions are superseded: the last starter owns pending state,
+    // errors, and loading. Sign-out bumps the generation so late bootstrap or sign-in
+    // results can never resurrect a signed-out or replaced account.
+    const generationRef = useRef(0)
+
+    const currentGeneration = (): number => generationRef.current
+
+    const claimGeneration = (): number => {
+        generationRef.current += 1
+        return generationRef.current
+    }
 
     const saveUser = (userData: Readonly<User>) => {
         dispatch({ type: "SET_USER", user: userData })
@@ -116,26 +134,36 @@ export function useAuthStore() {
         clearSessionFromStorage()
     }
 
-    async function runAuthStep(fallbackMessage: string, attempt: () => Promise<void>): Promise<void> {
+    const saveUserIfCurrent = (userData: Readonly<User>, generation: number) => {
+        if (generation === currentGeneration()) {
+            saveUser(userData)
+        }
+    }
+
+    async function runAuthStep(fallbackMessage: string, attempt: (generation: number) => Promise<void>): Promise<void> {
+        const generation = claimGeneration()
         dispatch({ type: "SET_LOADING", isLoading: true })
         dispatch({ type: "SET_ERROR", error: null })
         try {
-            await attempt()
+            await attempt(generation)
         } catch (err) {
-            dispatch({ type: "SET_ERROR", error: err instanceof Error ? err.message : fallbackMessage })
+            if (generation === currentGeneration()) {
+                dispatch({ type: "SET_ERROR", error: err instanceof Error ? err.message : fallbackMessage })
+            }
             throw err
         } finally {
-            dispatch({ type: "SET_LOADING", isLoading: false })
+            if (generation === currentGeneration()) {
+                dispatch({ type: "SET_LOADING", isLoading: false })
+            }
         }
     }
 
     function throwAuthError(message: string | undefined, fallbackMessage: string): never {
-        const resolved = message ?? fallbackMessage
-        dispatch({ type: "SET_ERROR", error: resolved })
-        throw new Error(resolved)
+        throw new Error(message ?? fallbackMessage)
     }
 
     const initializeAuth = async () => {
+        const generation = claimGeneration()
         dispatch({ type: "SET_LOADING", isLoading: true })
         dispatch({ type: "SET_ERROR", error: null })
 
@@ -144,9 +172,14 @@ export function useAuthStore() {
         try {
             const result = await authClient.getSession()
 
+            if (generation !== currentGeneration()) {
+                return
+            }
+
             if (result.error) {
                 if (cachedUser) {
-                    dispatch({ type: "SET_USER", user: cachedUser })
+                    dispatch({ type: "SET_CACHED_USER", user: cachedUser })
+                    dispatch({ type: "SET_ERROR", error: result.error.message ?? "Session lookup failed" })
                     return
                 }
                 throw new Error(result.error.message)
@@ -157,14 +190,23 @@ export function useAuthStore() {
             } else {
                 clearUser()
             }
-        } catch {
+        } catch (err) {
+            if (generation !== currentGeneration()) {
+                return
+            }
             if (cachedUser) {
-                dispatch({ type: "SET_USER", user: cachedUser })
+                dispatch({ type: "SET_CACHED_USER", user: cachedUser })
+                dispatch({
+                    type: "SET_ERROR",
+                    error: err instanceof Error ? err.message : "Session lookup failed",
+                })
             } else {
                 clearUser()
             }
         } finally {
-            dispatch({ type: "SET_LOADING", isLoading: false })
+            if (generation === currentGeneration()) {
+                dispatch({ type: "SET_LOADING", isLoading: false })
+            }
         }
     }
 
@@ -173,7 +215,7 @@ export function useAuthStore() {
         credentials: Readonly<{ name?: string | undefined; email: string; password: string }>,
     ) => {
         const fallbackMessage = action === "signIn" ? "Sign in failed" : "Sign up failed"
-        await runAuthStep(fallbackMessage, async () => {
+        await runAuthStep(fallbackMessage, async (generation) => {
             const result =
                 action === "signIn"
                     ? await authClient.signIn.email({ email: credentials.email, password: credentials.password })
@@ -188,7 +230,7 @@ export function useAuthStore() {
             }
 
             if (result.data?.user !== undefined && result.data?.user !== null) {
-                saveUser(mapSessionUserToUserPayload(result.data.user))
+                saveUserIfCurrent(mapSessionUserToUserPayload(result.data.user), generation)
             } else {
                 throw new Error("No user returned: email verification required")
             }
@@ -222,13 +264,13 @@ export function useAuthStore() {
     }
 
     const verifyOtp = async (email: string, otp: string) => {
-        await runAuthStep("Invalid code", async () => {
+        await runAuthStep("Invalid code", async (generation) => {
             const result = await authClient.signIn.emailOtp({ email, otp })
             if (result.error) {
                 throwAuthError(result.error.message, "Invalid code")
             }
             if (result.data?.user !== undefined && result.data?.user !== null) {
-                saveUser(mapSessionUserToUserPayload(result.data.user))
+                saveUserIfCurrent(mapSessionUserToUserPayload(result.data.user), generation)
             } else {
                 throw new Error("No user returned: email verification required")
             }
@@ -236,13 +278,17 @@ export function useAuthStore() {
     }
 
     const signOut = async () => {
+        const generation = claimGeneration()
+        dispatch({ type: "SET_ERROR", error: null })
         dispatch({ type: "SET_LOADING", isLoading: true })
 
         try {
             await authClient.signOut()
         } finally {
-            clearUser()
-            dispatch({ type: "SET_LOADING", isLoading: false })
+            if (generation === currentGeneration()) {
+                clearUser()
+                dispatch({ type: "SET_LOADING", isLoading: false })
+            }
         }
     }
 
