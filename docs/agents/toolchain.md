@@ -60,7 +60,9 @@ config in `playwright.config.ts`. Install browsers once with
 Worker bundle and serves it with wrangler on port 5193, so the suite proves the built SSR boundary
 rather than the dev server. Point `E2E_BASE_URL` at a dev server with `E2E_NO_SERVER=1` set when
 iterating quickly. It stays out of the push gate and CI by design; run it on demand and before
-release.
+release. Authenticated journeys run against the dev deployment, not mocks: sync backend code first
+with `npx convex dev --once`, and read backend failures with `npx convex logs --history` — the
+client surfaces only a request ID.
 
 ## Convex
 
