@@ -9,7 +9,6 @@
  */
 
 import type * as auth from "../auth.js";
-import type * as collections from "../collections.js";
 import type * as email from "../email.js";
 import type * as env from "../env.js";
 import type * as friendships from "../friendships.js";
@@ -25,6 +24,7 @@ import type * as social from "../social.js";
 import type * as uploads from "../uploads.js";
 import type * as users from "../users.js";
 import type * as validators from "../validators.js";
+import type * as visibility from "../visibility.js";
 
 import type {
   ApiFromModules,
@@ -34,7 +34,6 @@ import type {
 
 declare const fullApi: ApiFromModules<{
   auth: typeof auth;
-  collections: typeof collections;
   email: typeof email;
   env: typeof env;
   friendships: typeof friendships;
@@ -50,6 +49,7 @@ declare const fullApi: ApiFromModules<{
   uploads: typeof uploads;
   users: typeof users;
   validators: typeof validators;
+  visibility: typeof visibility;
 }>;
 
 /**

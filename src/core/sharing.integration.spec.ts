@@ -127,27 +127,21 @@ describe("sharing and social gating", () => {
         expect(benFriends).toEqual([{ authUserId: "anna", name: "anna" }])
     })
 
-    it("shares group collections only with visible restaurants", async () => {
+    it("lists a group's shared restaurants for members only", async () => {
         const t = setup()
         await registerUser(t, "anna", "anna@example.com")
         await registerUser(t, "ben", "ben@example.com")
+        await registerUser(t, "cas", "cas@example.com")
         const groupId = await asUser(t, "anna").mutation(api.groups.createGroup, { name: "Food Crew" })
         await asUser(t, "anna").mutation(api.groups.addMember, { groupId, userId: "ben" })
         const restaurantId = await createRestaurant(t, "anna")
-        const collectionId = await asUser(t, "anna").mutation(api.collections.createCollection, {
-            name: "To try",
-            description: "",
-            groupId,
-        })
-
-        await expect(
-            asUser(t, "ben").mutation(api.collections.addItem, { collectionId, restaurantId }),
-        ).rejects.toThrow("not shared with you")
+        await createRestaurant(t, "anna")
         await asUser(t, "anna").mutation(api.shares.shareWithGroup, { restaurantId, groupId })
-        const first = await asUser(t, "ben").mutation(api.collections.addItem, { collectionId, restaurantId })
-        const second = await asUser(t, "ben").mutation(api.collections.addItem, { collectionId, restaurantId })
-        expect(second).toEqual(first)
-        const items = await asUser(t, "ben").query(api.collections.listItems, { collectionId })
-        expect(items).toHaveLength(1)
+
+        const items = await asUser(t, "ben").query(api.shares.listForGroup, { groupId })
+        expect(items.map((item) => item._id)).toEqual([restaurantId])
+        await expect(asUser(t, "cas").query(api.shares.listForGroup, { groupId })).rejects.toThrow(
+            "membership required",
+        )
     })
 })

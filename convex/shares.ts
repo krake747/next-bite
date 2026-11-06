@@ -48,6 +48,7 @@ async function upsertShare(
         restaurantId,
         sharedBy,
         target,
+        ...(target.kind === "group" ? { targetGroupId: target.groupId } : {}),
         createdAt: Date.now(),
     })
 }
@@ -126,5 +127,21 @@ export const listShares = query({
                 return { _id: share._id, target, displayName: group?.name ?? FALLBACK_GROUP_NAME }
             }),
         )
+    },
+})
+
+export const listForGroup = query({
+    args: {
+        groupId: v.id("groups"),
+    },
+    handler: async (ctx, args) => {
+        const userId = await requireUserId(ctx)
+        await requireMembership(ctx.db, args.groupId, userId)
+        const shares = await ctx.db
+            .query("restaurantShares")
+            .withIndex("by_target_group", (q) => q.eq("targetGroupId", args.groupId))
+            .collect()
+        const restaurants = await Promise.all(shares.map(async (share) => ctx.db.get(share.restaurantId)))
+        return restaurants.filter((restaurant) => restaurant !== null)
     },
 })
