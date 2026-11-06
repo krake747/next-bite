@@ -31,6 +31,18 @@ vi.mock("../convex-client", async (importOriginal) => {
     return { ...original, useConvexClient: () => injectedClient }
 })
 
+// Hooks under test read the injected seeded client, so the provider-owned client never
+// serves data. Stub it to a non-connecting shape: the real client dials the test URL and
+// its async connection fatals escape as unhandled errors that fail the suite.
+vi.mock("convex/browser", () => ({
+    ConvexClient: class {
+        setAuthCalls: unknown[] = []
+        setAuth(fetchToken: unknown): void {
+            this.setAuthCalls.push(fetchToken)
+        }
+    },
+}))
+
 function injectSyncClient(syncClient: unknown): void {
     // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- test-only sync client standing in for the Convex subscription surface
     injectedClient = syncClient as ConvexClient
