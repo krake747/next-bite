@@ -1,11 +1,25 @@
 import { QueryClient } from "@tanstack/react-query"
 import { RouterProvider, createMemoryHistory, createRouter } from "@tanstack/react-router"
-import { render, screen, waitFor } from "@testing-library/react"
+import { render, screen, within, waitFor } from "@testing-library/react"
+import { type ConvexClient } from "convex/browser"
 import { describe, expect, it, vi } from "vitest"
 
-import { type Doc } from "@convex/_generated/dataModel"
+import { mockBackend } from "@core/db/mock-sync-client"
+import { type RestaurantDoc } from "@core/db/restaurants"
 
 import { routeTree } from "../routeTree.gen"
+
+let injectedClient: ConvexClient | null = null
+
+vi.mock("@core/convex-client", async (importOriginal) => {
+    const original = await importOriginal<typeof import("@core/convex-client")>()
+    return { ...original, useConvexClient: () => injectedClient }
+})
+
+function injectSyncClient(syncClient: unknown): void {
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- test-only sync client standing in for the Convex subscription surface
+    injectedClient = syncClient as ConvexClient
+}
 
 vi.mock("@core/auth-client", () => ({
     authClient: {
@@ -28,7 +42,7 @@ vi.mock("@core/auth-client", () => ({
     },
 }))
 
-function friendSpot(name: string): Doc<"restaurants"> {
+function friendRestaurant(name: string): RestaurantDoc {
     // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- test fixture shaped to the restaurant document
     return {
         _id: "r1",
@@ -41,13 +55,12 @@ function friendSpot(name: string): Doc<"restaurants"> {
         images: [],
         visibility: "shared",
         createdAt: 1000,
-    } as unknown as Doc<"restaurants">
+    } as unknown as RestaurantDoc
 }
 
-async function renderHome(feed: ReadonlyArray<Doc<"restaurants">>): Promise<void> {
+async function renderHome(feed: ReadonlyArray<RestaurantDoc>): Promise<void> {
+    injectSyncClient(mockBackend(feed).syncClient)
     const queryClient = new QueryClient()
-    queryClient.setQueryData(["restaurants.feed", "no-args"], [...feed])
-    queryClient.setQueryData(["restaurants.get", "no-args"], [])
     const router = createRouter({
         routeTree,
         history: createMemoryHistory({ initialEntries: ["/"] }),
@@ -62,9 +75,10 @@ async function renderHome(feed: ReadonlyArray<Doc<"restaurants">>): Promise<void
 
 describe("home friends feed", () => {
     it("shows a friend's discovery in latest activity", async () => {
-        await renderHome([friendSpot("Trattoria Verde")])
+        await renderHome([friendRestaurant("Trattoria Verde")])
 
-        expect(screen.getByText("Trattoria Verde")).toBeInTheDocument()
+        const activity = screen.getByLabelText("Latest activity")
+        expect(within(activity).getByText("Trattoria Verde")).toBeInTheDocument()
     })
 
     it("shows an empty state when no friend activity exists", async () => {
