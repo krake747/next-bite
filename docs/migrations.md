@@ -85,6 +85,21 @@ pnpm convex run migrate:cleanupOrphanedStorage
 The legacy string-image migration was removed with the tenant backend reshape; fresh data starts in
 the new shape.
 
+## Upload ownership quarantine
+
+Uploads created before owner records existed have blobs in storage with no row in the `uploads`
+table. They are quarantined, never trusted:
+
+- Attaching a storage ID requires a server record owned by the caller. Unrecorded IDs reject on
+  attach, so legacy blobs cannot be grafted onto restaurants.
+- Deletion paths (`deleteImage`, `cleanupStorage`) reject missing or foreign records. Restaurant
+  removal deletes only blobs with a matching owner record and leaves everything else untouched.
+- Orphan cleanup accepts only unassociated owner records. Blobs attached to a restaurant must go
+  through the restaurant-bound path.
+- Do not backfill ownership by guessing from restaurant image entries, and do not delete production
+  storage without explicit approval. If a legacy blob must be reclaimed, verify the uploader out of
+  band, record ownership, then run the normal path.
+
 ## Troubleshooting
 
 - `ctx.db.query is undefined`: Use `internalMutation` (not `action`)

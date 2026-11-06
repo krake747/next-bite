@@ -4,7 +4,7 @@ import * as valibot from "valibot"
 import { MAX_IMAGES } from "../src/core/constants"
 import { internal } from "./_generated/api"
 import { type Doc, type Id } from "./_generated/dataModel"
-import { query, mutation, action, internalQuery, internalMutation } from "./_generated/server"
+import { query, mutation, action, internalQuery, internalMutation, type MutationCtx } from "./_generated/server"
 import { requireUserId, FALLBACK_DISPLAY_NAME } from "./helpers"
 import { coordsValidator, enrichmentValidator, openingHoursValidator, restaurantImageValidator } from "./validators"
 import { isRestaurantVisibleTo } from "./visibility"
@@ -22,6 +22,43 @@ function assertImageLimit(images: ReadonlyArray<unknown>): void {
 function asStorageId(storageId: string): Id<"_storage"> {
     // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- single documented boundary conversion; see above
     return storageId as unknown as Id<"_storage">
+}
+
+type UploadRecord = { ownerId: string; restaurantId: Id<"restaurants"> | null } | null
+
+// Fail-closed ownership: a missing record and a foreign record both reject with the same
+// message so callers cannot probe which storage IDs exist.
+function requireUploadOwner(record: UploadRecord, ownerId: string): asserts record {
+    if (!record || record.ownerId !== ownerId) {
+        throw new Error("Unauthorized: storage does not belong to you")
+    }
+}
+
+// Attach requires a server ownership record matching the caller and no conflicting resource
+// association. allowId is the restaurant being written (null while adding, before it exists).
+function assertAttachable(record: UploadRecord, ownerId: string, allowId: Id<"restaurants"> | null): void {
+    requireUploadOwner(record, ownerId)
+    if (record.restaurantId !== null && record.restaurantId !== allowId) {
+        throw new Error("Storage is already attached to another restaurant")
+    }
+}
+
+// Delete one image that the restaurant document claims. Verifies the server-side ownership
+// record (never the client-written entry) and the resource association, then removes the
+// blob, its record, and the entry. Returns the surviving entries for the caller to patch.
+async function deleteAttachedImage(
+    ctx: MutationCtx,
+    restaurant: Doc<"restaurants">,
+    storageId: string,
+): Promise<Doc<"restaurants">["images"]> {
+    const record = await ctx.runQuery(internal.uploads.lookupByStorage, { storageId })
+    requireUploadOwner(record, restaurant.ownerId)
+    if (record.restaurantId !== null && record.restaurantId !== restaurant._id) {
+        throw new Error("Storage ID is not part of this restaurant")
+    }
+    await ctx.storage.delete(asStorageId(storageId))
+    await ctx.runMutation(internal.uploads.removeRecord, { storageId })
+    return restaurant.images.filter((img) => img.storageId !== storageId)
 }
 
 const googleOpeningHoursSchema = valibot.object({
@@ -455,6 +492,10 @@ export const addWithOpeningHours = action({
         const userId = await requireUserId(ctx)
         const images = args.images ?? []
         assertImageLimit(images)
+        for (const img of images) {
+            const record = await ctx.runQuery(internal.uploads.lookupByStorage, { storageId: img.storageId })
+            assertAttachable(record, userId, null)
+        }
 
         const google = await lookupPlaceIdFromGoogle(args.name, args.addressLabel)
         console.log("addWithOpeningHours: Google result:", JSON.stringify(google))
@@ -472,7 +513,7 @@ export const addWithOpeningHours = action({
         const enrichment = buildEnrichment({ placeId: google.placeId, coords, openingHours })
         const ownerName = await ctx.runQuery(internal.restaurants._profileNameByAuthUser, { authUserId: userId })
         const details = cleanDetails({ notes: args.notes, link: args.link })
-        return ctx.runMutation(internal.restaurants._insertRestaurant, {
+        const restaurantId = await ctx.runMutation(internal.restaurants._insertRestaurant, {
             ownerId: userId,
             ownerName,
             name: args.name,
@@ -484,6 +525,10 @@ export const addWithOpeningHours = action({
             ...(details !== undefined ? { details } : {}),
             images,
         })
+        for (const img of images) {
+            await ctx.runMutation(internal.uploads.attach, { storageId: img.storageId, ownerId: userId, restaurantId })
+        }
+        return restaurantId
     },
 })
 
@@ -505,6 +550,29 @@ export const update = mutation({
 
         if (args.images !== undefined) {
             assertImageLimit(args.images)
+            const previousIds = new Set(restaurant.images.map((img) => img.storageId))
+            const nextIds = new Set(args.images.map((img) => img.storageId))
+            for (const img of args.images) {
+                if (previousIds.has(img.storageId)) {
+                    continue
+                }
+                const record = await ctx.runQuery(internal.uploads.lookupByStorage, { storageId: img.storageId })
+                assertAttachable(record, restaurant.ownerId, args.id)
+            }
+            for (const img of args.images) {
+                if (!previousIds.has(img.storageId)) {
+                    await ctx.runMutation(internal.uploads.attach, {
+                        storageId: img.storageId,
+                        ownerId: restaurant.ownerId,
+                        restaurantId: args.id,
+                    })
+                }
+            }
+            for (const storageId of previousIds) {
+                if (!nextIds.has(storageId)) {
+                    await ctx.runMutation(internal.uploads.detach, { storageId, ownerId: restaurant.ownerId })
+                }
+            }
         }
 
         const details = mergeDetails(restaurant.details, { notes: args.notes, link: args.link })
@@ -521,10 +589,21 @@ export const remove = mutation({
     handler: async (ctx, args) => {
         const restaurant = await requireOwnedRestaurant(ctx, args.id)
 
+        // Fail-closed per blob: only storage with a server record owned by the restaurant owner
+        // is deleted, and never when the record associates the blob with another restaurant.
+        // Foreign, unrecorded, or elsewhere-attached blobs are left untouched (never deleted on
+        // the basis of a client-written image entry) while the restaurant document itself is
+        // removed. Rejecting the whole removal here would brick deletes of restaurants that
+        // reference legacy or orphaned images.
         for (const img of restaurant.images) {
             try {
-                const owner = await ctx.runQuery(internal.uploads.ownerByStorage, { storageId: img.storageId })
-                if (owner !== null && owner !== restaurant.ownerId) {
+                const record = await ctx.runQuery(internal.uploads.lookupByStorage, { storageId: img.storageId })
+                if (!record || record.ownerId !== restaurant.ownerId) {
+                    console.warn("Skipping storage delete with missing or foreign ownership:", img.storageId)
+                    continue
+                }
+                if (record.restaurantId !== null && record.restaurantId !== args.id) {
+                    console.warn("Skipping storage delete attached to another restaurant:", img.storageId)
                     continue
                 }
                 await ctx.storage.delete(asStorageId(img.storageId))
@@ -552,15 +631,7 @@ export const deleteImage = mutation({
             throw new Error("Storage ID is not part of this restaurant")
         }
 
-        const owner = await ctx.runQuery(internal.uploads.ownerByStorage, { storageId: args.storageId })
-        if (owner !== null && owner !== restaurant.ownerId) {
-            throw new Error("Unauthorized: storage does not belong to you")
-        }
-
-        await ctx.storage.delete(asStorageId(args.storageId))
-        await ctx.runMutation(internal.uploads.removeRecord, { storageId: args.storageId })
-
-        const updatedImages = restaurant.images.filter((img) => img.storageId !== args.storageId)
+        const updatedImages = await deleteAttachedImage(ctx, restaurant, args.storageId)
         if (updatedImages.length !== restaurant.images.length) {
             await ctx.db.patch(args.restaurantId, { images: updatedImages })
         }
@@ -579,9 +650,10 @@ export const cleanupStorage = mutation({
         }
 
         if (args.restaurantId === undefined) {
-            const owner = await ctx.runQuery(internal.uploads.ownerByStorage, { storageId: args.storageId })
-            if (owner === null || owner !== identity.subject) {
-                throw new Error("Unauthorized: storage does not belong to you")
+            const record = await ctx.runQuery(internal.uploads.lookupByStorage, { storageId: args.storageId })
+            requireUploadOwner(record, identity.subject)
+            if (record.restaurantId !== null) {
+                throw new Error("Storage is attached to a restaurant; remove it from the restaurant instead")
             }
             await ctx.storage.delete(asStorageId(args.storageId))
             await ctx.runMutation(internal.uploads.removeRecord, { storageId: args.storageId })
@@ -601,15 +673,7 @@ export const cleanupStorage = mutation({
             throw new Error("Storage ID is not part of this restaurant")
         }
 
-        const owner = await ctx.runQuery(internal.uploads.ownerByStorage, { storageId: args.storageId })
-        if (owner !== null && owner !== restaurant.ownerId) {
-            throw new Error("Unauthorized: storage does not belong to you")
-        }
-
-        await ctx.storage.delete(asStorageId(args.storageId))
-        await ctx.runMutation(internal.uploads.removeRecord, { storageId: args.storageId })
-
-        const updatedImages = restaurant.images.filter((img) => img.storageId !== args.storageId)
+        const updatedImages = await deleteAttachedImage(ctx, restaurant, args.storageId)
         if (updatedImages.length !== restaurant.images.length) {
             await ctx.db.patch(args.restaurantId, { images: updatedImages })
         }
