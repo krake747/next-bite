@@ -2,6 +2,7 @@ import Clock from "lucide-react/icons/clock"
 
 import { type OpeningHours } from "@core/opening-hours"
 import { isOpenNow, openStatusLabel, orderedWeek, parseDayText, todayIndex } from "@core/opening-hours"
+import { cx } from "@ui/cva.config"
 
 import { Badge } from "./badge"
 import { Dialog, DialogBackdrop, DialogCloseButton, DialogPanel, DialogTitle } from "./dialog"
@@ -45,7 +46,10 @@ export function OpeningHoursDialog({
                             return (
                                 <div
                                     key={day}
-                                    className={`flex items-center justify-between gap-2 border-b border-border py-1.5 text-sm ${isToday ? "font-medium" : ""}`}
+                                    className={cx(
+                                        "flex items-center justify-between gap-2 border-b border-border py-1.5 text-sm",
+                                        isToday && "font-medium",
+                                    )}
                                 >
                                     <span className={isToday ? "text-stone-900" : "text-stone-600"}>
                                         {isToday ? "Today" : day}

@@ -1,5 +1,4 @@
 import { Button as BaseButton } from "@base-ui/react/button"
-import { useRender } from "@base-ui/react/use-render"
 
 import { cva, type VariantProps } from "@ui/cva.config"
 import { focusRing } from "@ui/variants"
@@ -28,7 +27,10 @@ export const button = cva({
     },
 })
 
-type ButtonProps = VariantProps<typeof button> & useRender.ComponentProps<"button">
+type ButtonProps = VariantProps<typeof button> &
+    React.ComponentProps<"button"> & {
+        readonly render?: React.ReactElement | undefined
+    }
 
 export function Button({ variant, size, className, type, disabled, children, ...rest }: Readonly<ButtonProps>) {
     return (

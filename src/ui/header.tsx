@@ -1,10 +1,12 @@
 import UtensilsCrossed from "lucide-react/icons/utensils-crossed"
 
+import { cx } from "@ui/cva.config"
+
 import { BackgroundLayers } from "./background-decoration"
 
-export function Header({ children }: Readonly<{ children?: React.ReactNode | undefined }>) {
+export function Header({ children, ...props }: Readonly<React.ComponentProps<"header">>) {
     return (
-        <header data-slot="header" className="relative overflow-hidden border-b border-border bg-background">
+        <header data-slot="header" className="relative overflow-hidden border-b border-border bg-background" {...props}>
             <BackgroundLayers />
 
             <div
@@ -43,14 +45,13 @@ function DefaultChildren() {
     )
 }
 
-export function HeaderTitle({
-    children,
-    className,
-    ...props
-}: Readonly<{ children?: React.ReactNode | undefined; className?: string | undefined }>) {
+export function HeaderTitle({ children, className, ...props }: Readonly<React.ComponentProps<"h1">>) {
     return (
         <h1
-            className={`relative font-display text-5xl leading-tight font-semibold tracking-tight text-balance text-stone-900 sm:text-6xl lg:text-7xl ${className ?? ""}`}
+            className={cx(
+                "relative font-display text-5xl leading-tight font-semibold tracking-tight text-balance text-stone-900 sm:text-6xl lg:text-7xl",
+                className,
+            )}
             {...props}
         >
             <span className="relative inline-block">
@@ -68,13 +69,9 @@ export function HeaderTitle({
     )
 }
 
-export function HeaderSubtitle({
-    children,
-    className,
-    ...props
-}: Readonly<{ children?: React.ReactNode | undefined; className?: string | undefined }>) {
+export function HeaderSubtitle({ children, className, ...props }: Readonly<React.ComponentProps<"p">>) {
     return (
-        <p className={`mt-6 max-w-xl text-xl leading-relaxed text-pretty text-stone-600 ${className ?? ""}`} {...props}>
+        <p className={cx("mt-6 max-w-xl text-xl leading-relaxed text-pretty text-stone-600", className)} {...props}>
             {children}
         </p>
     )
