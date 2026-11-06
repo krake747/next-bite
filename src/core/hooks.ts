@@ -1,7 +1,7 @@
 import { useLiveQuery } from "@tanstack/react-db"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { type ConvexClient } from "convex/browser"
-import { useEffect, useState } from "react"
+import { useEffect, useState, useSyncExternalStore } from "react"
 
 import { api } from "@convex/_generated/api"
 import { type Doc, type Id } from "@convex/_generated/dataModel"
@@ -45,17 +45,22 @@ async function probeConvexAuth(client: ConvexClient): Promise<boolean> {
 
 const CONVEX_AUTH_TIMEOUT_MS = 10000
 
-async function settleConvexAuth(client: ConvexClient, isCancelled: () => boolean): Promise<void> {
-    const deadline = Date.now() + CONVEX_AUTH_TIMEOUT_MS
+async function settleConvexAuth(
+    client: ConvexClient,
+    isCancelled: () => boolean,
+    timeoutMs: number = CONVEX_AUTH_TIMEOUT_MS,
+): Promise<boolean> {
+    const deadline = Date.now() + timeoutMs
     while (!isCancelled()) {
         if (await probeConvexAuth(client)) {
-            return
+            return true
         }
         if (Date.now() >= deadline) {
-            return
+            return false
         }
         await sleep(500)
     }
+    return false
 }
 
 function useSessionKey(): string | null {
@@ -63,33 +68,79 @@ function useSessionKey(): string | null {
     return status.kind === "ready" ? status.userId : null
 }
 
-export type SessionStatus = { kind: "loading" } | { kind: "signed-out" } | { kind: "ready"; userId: string }
+export type SessionStatus =
+    | { readonly kind: "loading" }
+    | { readonly kind: "signed-out" }
+    | { readonly kind: "ready"; readonly userId: string }
+    | { readonly kind: "timed-out"; readonly userId: string; readonly retry: () => void }
 
-export function useSessionStatus(): SessionStatus {
+type ConvexGate = {
+    readonly userId: string | null
+    readonly outcome: "probing" | "ready" | "timed-out"
+}
+
+let gateAttempt = 0
+const gateAttemptListeners = new Set<() => void>()
+
+function subscribeGateAttempt(listener: () => void): () => void {
+    gateAttemptListeners.add(listener)
+    return () => {
+        gateAttemptListeners.delete(listener)
+    }
+}
+
+function getGateAttempt(): number {
+    return gateAttempt
+}
+
+function retrySessionGate(): void {
+    gateAttempt += 1
+    for (const listener of gateAttemptListeners) {
+        listener()
+    }
+}
+
+export function useSessionStatus(options?: Readonly<{ timeoutMs?: number }>): SessionStatus {
     const { isAuthenticated, isLoading, user } = useAuthSource()
     const client = useConvexClient()
-    const [convexReady, setConvexReady] = useState(false)
+    const gateGeneration = useSyncExternalStore(subscribeGateAttempt, getGateAttempt)
+    const [gate, setGate] = useState<ConvexGate>({ userId: null, outcome: "probing" })
     const sessionKey = !isAuthenticated || isLoading || user === null ? null : user.id
+    const timeoutMs = options?.timeoutMs ?? CONVEX_AUTH_TIMEOUT_MS
     useEffect(() => {
         let cancelled = false
         if (sessionKey === null || client === null) {
-            setConvexReady(false)
+            setGate({ userId: null, outcome: "probing" })
         } else {
-            // Past the deadline the gate opens anyway; the backend still enforces every rule.
-            void settleConvexAuth(client, () => cancelled).then(() => {
+            const owner = sessionKey
+            setGate({ userId: owner, outcome: "probing" })
+            void settleConvexAuth(client, () => cancelled, timeoutMs).then((verified) => {
                 if (!cancelled) {
-                    setConvexReady(true)
+                    setGate({ userId: owner, outcome: verified ? "ready" : "timed-out" })
                 }
             })
         }
         return () => {
             cancelled = true
         }
-    }, [sessionKey, client])
+    }, [sessionKey, client, gateGeneration, timeoutMs])
     if (sessionKey === null) {
         return isLoading ? { kind: "loading" } : { kind: "signed-out" }
     }
-    return convexReady ? { kind: "ready", userId: sessionKey } : { kind: "loading" }
+    if (gate.userId !== sessionKey) {
+        return { kind: "loading" }
+    }
+    if (gate.outcome === "ready") {
+        return { kind: "ready", userId: sessionKey }
+    }
+    if (gate.outcome === "timed-out") {
+        return {
+            kind: "timed-out",
+            userId: sessionKey,
+            retry: retrySessionGate,
+        }
+    }
+    return { kind: "loading" }
 }
 
 function useOwnerOrFeed(kind: "owner" | "feed"): ReadonlyArray<Doc<"restaurants">> | undefined {
@@ -124,7 +175,13 @@ export const useRestaurants = () => useOwnerOrFeed("owner")
 export const useFeedRestaurants = () => useOwnerOrFeed("feed")
 export const useVisibleRestaurant = (id: Id<"restaurants">) => {
     const status = useSessionStatus()
-    return useConvexQuery(api.restaurants.getById, { id }, { skip: status.kind === "loading" })
+    // Signed-out readers stay open: this query serves public restaurant detail.
+    // Timeouts stay closed until the session re-verifies.
+    return useConvexQuery(
+        api.restaurants.getById,
+        { id },
+        { skip: status.kind === "loading" || status.kind === "timed-out" },
+    )
 }
 export const useFriends = () => {
     const status = useSessionStatus()

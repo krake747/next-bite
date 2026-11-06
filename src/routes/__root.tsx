@@ -8,6 +8,7 @@ import { StrictMode, Suspense } from "react"
 import { AuthProvider } from "@core/auth-provider"
 import { env } from "@core/env"
 import { useEnsureProfile } from "@core/hooks"
+import { SessionTimeoutNotice } from "@routes/-components/session-timeout-notice"
 import { LoadingPlaceholder } from "@ui/loading"
 
 type RouterContext = {
@@ -50,6 +51,7 @@ function RootComponent() {
                         <APIProvider apiKey={env.VITE_GOOGLE_MAPS_API_KEY} libraries={["places", "marker"]}>
                             <AuthProvider>
                                 <EnsureProfile>
+                                    <SessionTimeoutNotice />
                                     <Suspense fallback={<LoadingPlaceholder />}>
                                         <Outlet />
                                     </Suspense>
