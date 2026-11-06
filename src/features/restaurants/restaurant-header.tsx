@@ -60,7 +60,7 @@ export function RestaurantHeader({
                             href={link}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="flex shrink-0 items-center gap-1.5 rounded-full bg-tomato-50 px-3 py-1.5 text-xs font-medium text-tomato-700 transition-all duration-200 hover:bg-tomato-100"
+                            className="flex shrink-0 items-center gap-1.5 rounded-full bg-tomato-50 px-3 py-1.5 text-xs font-medium text-tomato-700 transition-colors duration-200 hover:bg-tomato-100"
                             title="View menu"
                         >
                             <Utensils className="size-3.5" />

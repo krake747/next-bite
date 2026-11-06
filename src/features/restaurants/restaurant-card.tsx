@@ -255,7 +255,7 @@ function RestaurantCardMap({
                 onClick={() => {
                     setShowMap(!showMap)
                 }}
-                className="group/trigger flex w-full items-center justify-between rounded-xl border border-transparent px-3 py-2.5 text-sm text-stone-600 transition-all duration-200 hover:border-stone-200 hover:bg-stone-50"
+                className="group/trigger flex w-full items-center justify-between rounded-xl border border-transparent px-3 py-2.5 text-sm text-stone-600 transition-colors duration-200 hover:border-stone-200 hover:bg-stone-50"
             >
                 <div className="flex items-center gap-3">
                     <div className="flex size-7 items-center justify-center rounded-full bg-stone-100 transition-colors duration-200 group-hover/trigger:bg-tomato-100">

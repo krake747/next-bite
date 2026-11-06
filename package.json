@@ -12,7 +12,7 @@
         "convex:dev": "convex dev",
         "deploy": "cf deploy",
         "dev": "vp dev",
-        "doctor": "npx react-doctor@latest",
+        "doctor": "react-doctor",
         "fmt": "vp fmt --no-error-on-unmatched-pattern",
         "fmt:check": "vp fmt --check",
         "lint": "vp lint",

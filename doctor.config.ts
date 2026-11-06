@@ -22,6 +22,56 @@ export default defineConfig({
             "skills-lock.json",
             ".agents/**",
         ],
+        overrides: [
+            {
+                // Convex mutations must run sequentially (racy in Promise.all);
+                // small-N reads stay ordered and fail-closed.
+                files: ["convex/**"],
+                rules: ["react-doctor/async-await-in-loop"],
+            },
+            {
+                // Convex queries are reactive: server push heals state, no manual
+                // invalidation step exists.
+                files: ["src/core/convex-client.tsx", "src/core/hooks.ts"],
+                rules: ["react-doctor/query-mutation-missing-invalidation"],
+            },
+            {
+                // navigate() lives in event-handler closures (goToLogin/goToDetail),
+                // never in render bodies.
+                files: ["src/routes/index.tsx", "src/routes/restaurants.$restaurantId.tsx"],
+                rules: ["react-doctor/tanstack-start-no-navigate-in-render"],
+            },
+            {
+                // Sections co-export *Meta + *Demo for the registry; ui co-locates
+                // cva objects with components per shadcn pattern; core keeps key
+                // helpers beside their hooks.
+                files: [
+                    "src/routes/ds/-sections/**",
+                    "src/ui/button.tsx",
+                    "src/ui/icon-button.tsx",
+                    "src/core/convex-client.tsx",
+                ],
+                rules: ["react-doctor/only-export-components"],
+            },
+            {
+                // Auth renders a deliberate unknown-state on the server so the
+                // first client render matches hydration.
+                files: ["src/core/auth-provider.tsx"],
+                rules: ["react-doctor/no-hydration-branch-on-browser-global"],
+            },
+            {
+                // Loading verbs render deterministically for SSR, then vary
+                // post-hydration by design.
+                files: ["src/ui/loading.tsx"],
+                rules: ["react-doctor/rendering-hydration-no-flicker"],
+            },
+            {
+                // Auth-first is fail-closed; validation errors must not leak to
+                // unauthenticated callers.
+                files: ["convex/users.ts"],
+                rules: ["react-doctor/async-defer-await"],
+            },
+        ],
     },
     categories: {
         Maintainability: "warn",
