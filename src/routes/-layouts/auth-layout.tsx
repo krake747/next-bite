@@ -28,7 +28,7 @@ export function AuthLayout({
                 }}
             />
 
-            <div className="relative z-10 flex flex-1 items-center justify-center px-4 py-12">
+            <div className="relative z-10 flex flex-1 flex-col items-center justify-center px-4 py-12">
                 <div className="w-full max-w-md">
                     <div className="mb-8 text-center">
                         <div className="mx-auto mb-6 inline-flex">
@@ -42,11 +42,11 @@ export function AuthLayout({
                     <p className="mt-4 text-lg text-stone-600">{subtitle}</p>
                 </div>
 
-                <div className="relative rounded-card border border-stone-200/60 bg-surface/80 p-6 shadow-card backdrop-blur-sm">
+                <div className="relative mt-8 w-full max-w-md rounded-card border border-stone-200/60 bg-surface/80 p-6 shadow-card backdrop-blur-sm">
                     {children}
                 </div>
 
-                <div className="mt-6 text-center">{footerLink}</div>
+                <div className="mt-6 w-full max-w-md text-center">{footerLink}</div>
 
                 <div className="mt-4 text-center">
                     <Link

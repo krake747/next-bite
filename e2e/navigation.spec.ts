@@ -8,25 +8,23 @@ function collectPageErrors(page: Page): unknown[] {
     return errors
 }
 
-test("navigates Home to Friends to Groups without page errors", async ({ page }) => {
+// The primary nav renders for signed-in users only, and the Worker preview has no password
+// auth, so anonymous legs navigate directly. Signed-in nav clicks are covered by the
+// authenticated journeys on the dev server.
+test("visits Home to Friends to Groups without page errors", async ({ page }) => {
     const errors = collectPageErrors(page)
 
     await page.goto("/")
     await expect(page.getByRole("heading", { name: "Your friends have good taste" })).toBeVisible()
+    await page.waitForLoadState("networkidle")
 
-    await page.getByRole("link", { name: "Friends" }).click()
-    await expect(page).toHaveURL(/\/friends$/, { timeout: 15000 })
+    await page.goto("/friends")
     await expect(page.getByRole("heading", { name: "Friends" })).toBeVisible()
     await page.waitForLoadState("networkidle")
-    // Let the entry view transition finish: starting the next one mid-flight aborts with a
-    // page error.
-    await page.waitForTimeout(1000)
 
-    await page.getByRole("link", { name: "Groups" }).click()
-    await expect(page).toHaveURL(/\/groups$/, { timeout: 15000 })
+    await page.goto("/groups")
     await expect(page.getByRole("heading", { name: "Groups" })).toBeVisible()
     await page.waitForLoadState("networkidle")
-    await page.waitForTimeout(1000)
 
     expect(errors).toEqual([])
 })
