@@ -355,7 +355,7 @@ export default defineConfig({
                 },
             },
             {
-                files: ["vite.config.ts", "cloudflare.config.ts"],
+                files: ["vite.config.ts", "cloudflare.config.ts", "playwright.config.ts"],
                 plugins: ["import"],
                 rules: {
                     "import/no-default-export": "allow",

@@ -24,14 +24,15 @@ Tiers are picked by filename suffix. `pnpm test` runs them all; scope with `pnpm
 
 ## Commands
 
-| Command                 | What                              |
-| ----------------------- | --------------------------------- |
-| `pnpm test`             | Run all Vitest tiers              |
-| `pnpm test:pure`        | Logic with no DOM                 |
-| `pnpm test:unit`        | Hooks and isolated UI             |
-| `pnpm test:browser`     | Full interaction components       |
-| `pnpm test:integration` | Route-level and backend contracts |
-| `pnpm test:watch`       | Vitest in watch mode              |
+| Command                 | What                                                                                |
+| ----------------------- | ----------------------------------------------------------------------------------- |
+| `pnpm test`             | Run all Vitest tiers                                                                |
+| `pnpm test:pure`        | Logic with no DOM                                                                   |
+| `pnpm test:unit`        | Hooks and isolated UI                                                               |
+| `pnpm test:browser`     | Full interaction components                                                         |
+| `pnpm test:integration` | Route-level and backend contracts                                                   |
+| `pnpm test:watch`       | Vitest in watch mode                                                                |
+| `pnpm test:e2e`         | Playwright smoke in a real browser (local gate, needs browsers; see `toolchain.md`) |
 
 Run tests only for files you change. Run the full suite only when asked.
 

@@ -43,3 +43,7 @@ dist-ssr
 
 .opencode/skills/
 nextbite.md
+
+# Playwright artifacts
+playwright-report/
+test-results/
