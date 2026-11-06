@@ -7,6 +7,7 @@ import { type Doc, type Id } from "./_generated/dataModel"
 import { query, mutation, action, internalQuery, internalMutation } from "./_generated/server"
 import { requireUserId, FALLBACK_DISPLAY_NAME } from "./helpers"
 import { coordsValidator, enrichmentValidator, openingHoursValidator, restaurantImageValidator } from "./validators"
+import { isRestaurantVisibleTo } from "./visibility"
 
 type OpeningHoursData = Infer<typeof openingHoursValidator>
 
@@ -387,6 +388,24 @@ export const get = query({
             .query("restaurants")
             .withIndex("by_owner", (q) => q.eq("ownerId", userId))
             .collect()
+    },
+})
+
+export const getById = query({
+    args: {
+        id: v.id("restaurants"),
+    },
+    handler: async (ctx, args) => {
+        const identity = await ctx.auth.getUserIdentity()
+        if (!identity) {
+            return null
+        }
+        const restaurant = await ctx.db.get(args.id)
+        if (!restaurant) {
+            return null
+        }
+        const visible = await isRestaurantVisibleTo(ctx.db, identity.subject, restaurant)
+        return visible ? restaurant : null
     },
 })
 

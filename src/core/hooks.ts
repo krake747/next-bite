@@ -1,5 +1,5 @@
 import { api } from "../../convex/_generated/api"
-import { type Doc } from "../../convex/_generated/dataModel"
+import { type Doc, type Id } from "../../convex/_generated/dataModel"
 import { useAuth } from "./auth-provider"
 import { useConvexQuery, useConvexMutation, useConvexAction } from "./convex-client.tsx"
 import { env } from "./env"
@@ -9,6 +9,7 @@ export const useRestaurants = () => {
     const { isAuthenticated } = useAuth()
     return useConvexQuery(api.restaurants.get, undefined, { skip: !isAuthenticated })
 }
+export const useVisibleRestaurant = (id: Id<"restaurants">) => useConvexQuery(api.restaurants.getById, { id })
 export const useFriends = () => {
     const { isAuthenticated } = useAuth()
     return useConvexQuery(api.friendships.listFriends, undefined, { skip: !isAuthenticated })

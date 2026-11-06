@@ -13,6 +13,24 @@ type AuthStore = ReturnType<typeof useAuthStore>
 
 const AuthContext = createContext<AuthStore | null>(null)
 
+async function noopServerAuthStep(): Promise<void> {
+    await Promise.resolve()
+}
+
+const serverAuthStore: AuthStore = {
+    isAuthenticated: false,
+    isLoading: false,
+    user: null,
+    error: null,
+    initializeAuth: noopServerAuthStep,
+    signInWithPassword: noopServerAuthStep,
+    signUpWithPassword: noopServerAuthStep,
+    signInWithSocial: noopServerAuthStep,
+    requestOtp: noopServerAuthStep,
+    verifyOtp: noopServerAuthStep,
+    signOut: noopServerAuthStep,
+}
+
 function useAuth() {
     const ctx = useContext(AuthContext)
     if (!ctx) {
@@ -51,7 +69,11 @@ function AuthProvider({ children }: Readonly<{ children: React.ReactNode }>) {
         })
     }, [])
 
-    if (!isInitialized || pair === null) {
+    if (pair === null) {
+        return <AuthContext.Provider value={serverAuthStore}>{children}</AuthContext.Provider>
+    }
+
+    if (!isInitialized) {
         return <LoadingPlaceholder />
     }
 
