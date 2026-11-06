@@ -299,16 +299,22 @@ describe("restaurant collections", () => {
         expect(keys).toEqual(["user-1:rapid-1", "user-1:rapid-2"])
     })
 
-    it("scopes collections per session key", () => {
+    it("scopes synced rows per session key", async () => {
         const persist = mockPersist()
-        const backend = mockBackend([])
+        const backend = mockBackend([restaurantFixture()])
 
         const anna = getSessionCollections(backend.syncClient, persist, "anna")
-        const again = getSessionCollections(backend.syncClient, persist, "anna")
-        const ben = getSessionCollections(backend.syncClient, persist, "ben")
+        await anna.owner.preload()
+        expect(anna.owner.size).toBe(1)
 
-        expect(again.owner).toBe(anna.owner)
+        const ben = getSessionCollections(backend.syncClient, persist, "ben")
         expect(ben.owner).not.toBe(anna.owner)
+        expect(ben.owner.size).toBe(0)
+        await ben.owner.preload()
+        expect(ben.owner.size).toBe(1)
+
+        const annaAgain = getSessionCollections(backend.syncClient, persist, "anna")
+        expect(annaAgain.owner.size).toBe(0)
     })
 
     it("rolls back an optimistic insert when persistence fails", async () => {
@@ -401,10 +407,14 @@ describe("restaurant collections", () => {
         )
 
         await vi.waitFor(() => {
-            expect(result.current).not.toBeNull()
+            expect(vi.mocked(authClient.getSession)).toHaveBeenCalled()
         })
-        expect(result.current.restaurants).toBeUndefined()
+        await new Promise((resolve) => {
+            setTimeout(resolve, 50)
+        })
         expect(result.current.authed).toBe(false)
+        expect(result.current.restaurants).toBeUndefined()
+        expect(backend.subscriberCount()).toBe(0)
     })
 
     it("isolates account data across sign-out to a different account", async () => {
@@ -458,9 +468,12 @@ describe("restaurant collections", () => {
 
         const { result, unmount } = renderHook(() => useRestaurants(), { wrapper })
         await vi.waitFor(() => {
-            expect(result.current).not.toBeNull()
+            expect(vi.mocked(authClient.getSession)).toHaveBeenCalled()
         })
         // Session resolved but no convex token: no subscription, no rows.
+        await new Promise((resolve) => {
+            setTimeout(resolve, 50)
+        })
         expect(result.current).toBeUndefined()
         expect(gated.subscriberCount()).toBe(0)
         unmount()

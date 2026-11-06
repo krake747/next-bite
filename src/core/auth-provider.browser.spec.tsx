@@ -21,16 +21,16 @@ vi.mock("./auth-client", () => ({
             }
         }),
         convex: {
-            token: vi.fn<() => Promise<{ data: null }>>(async () => {
+            token: vi.fn<() => Promise<{ data: { token: string } }>>(async () => {
                 await Promise.resolve()
-                return { data: null }
+                return { data: { token: "convex-jwt-1" } }
             }),
         },
     },
 }))
 
 describe("AuthProvider", () => {
-    it("attaches the Better Auth token fetcher to the Convex client", async () => {
+    it("provides the Better Auth session token to the Convex client", async () => {
         const setAuth = vi.spyOn(ConvexClient.prototype, "setAuth").mockImplementation(() => {})
         try {
             render(
@@ -44,7 +44,9 @@ describe("AuthProvider", () => {
             await waitFor(() => {
                 expect(setAuth).toHaveBeenCalledTimes(1)
             })
-            expect(typeof setAuth.mock.calls[0]?.[0]).toBe("function")
+            const fetchToken = setAuth.mock.calls[0]?.[0]
+            expect(fetchToken).toBeTypeOf("function")
+            await expect(fetchToken?.({ forceRefreshToken: false })).resolves.toBe("convex-jwt-1")
         } finally {
             setAuth.mockRestore()
         }

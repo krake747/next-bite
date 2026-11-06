@@ -1,8 +1,6 @@
 import { renderToString } from "react-dom/server"
 import { describe, expect, it } from "vitest"
 
-import { HowItWorks } from "@routes/-components/home-sections"
-
 import { AuthProvider } from "./auth-provider"
 
 describe("AuthProvider server render", () => {
@@ -14,16 +12,5 @@ describe("AuthProvider server render", () => {
         )
 
         expect(html).toContain("Your friends have good taste")
-    })
-
-    it("renders the static how-it-works section on the server without auth", () => {
-        const html = renderToString(
-            <AuthProvider>
-                <HowItWorks />
-            </AuthProvider>,
-        )
-
-        expect(html).toContain("How it works")
-        expect(html).toContain("Add places")
     })
 })

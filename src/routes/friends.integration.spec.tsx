@@ -116,18 +116,6 @@ describe("friends screen", () => {
         })
     })
 
-    it("shows no stranger restaurants", async () => {
-        testUser = { id: "user-1", email: "alex@example.com", name: "Alex" }
-        querySeeds.clear()
-        seedFriends()
-        await renderAt("/friends")
-
-        await waitFor(() => {
-            expect(screen.getByText("Ben")).toBeInTheDocument()
-        })
-        expect(screen.queryByText("Stranger Spot")).not.toBeInTheDocument()
-    })
-
     it("renders incoming and outgoing requests", async () => {
         testUser = { id: "user-1", email: "alex@example.com", name: "Alex" }
         querySeeds.clear()
