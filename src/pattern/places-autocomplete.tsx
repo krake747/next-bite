@@ -1,5 +1,6 @@
 import { useMapsLibrary } from "@vis.gl/react-google-maps"
 import { useRef, useState, useEffect, useId } from "react"
+import * as v from "valibot"
 
 import { cx } from "@ui/cva.config"
 import { control, fieldLabel } from "@ui/variants"
@@ -23,16 +24,14 @@ const DEFAULT_LOCATION_BIAS = {
     west: 5.736,
 } as const
 
+const placeSelectEventSchema = v.object({
+    placePrediction: v.object({
+        toPlace: v.function(),
+    }),
+})
+
 function isPlaceSelectEvent(value: unknown): value is google.maps.places.PlacePredictionSelectEvent {
-    return (
-        typeof value === "object" &&
-        value !== null &&
-        "placePrediction" in value &&
-        typeof value.placePrediction === "object" &&
-        value.placePrediction !== null &&
-        "toPlace" in value.placePrediction &&
-        typeof value.placePrediction.toPlace === "function"
-    )
+    return v.is(placeSelectEventSchema, value)
 }
 
 function handlePlaceSelectEvent(event: unknown, onChange: PlacesAutocompleteProps["onChange"]): void {

@@ -1,4 +1,5 @@
 import { useReducer } from "react"
+import * as v from "valibot"
 
 import { authClient } from "./auth-client"
 
@@ -27,15 +28,15 @@ function mapSessionUserToUserPayload(user: Readonly<SessionUser>): User {
 
 const SESSION_KEY = "nb:session"
 
+const sessionUserSchema = v.object({
+    id: v.string(),
+    email: v.string(),
+    name: v.optional(v.nullable(v.string())),
+    image: v.optional(v.nullable(v.string())),
+})
+
 function isValidUser(value: unknown): value is User {
-    return (
-        typeof value === "object" &&
-        value !== null &&
-        "id" in value &&
-        typeof value.id === "string" &&
-        "email" in value &&
-        typeof value.email === "string"
-    )
+    return v.is(sessionUserSchema, value)
 }
 
 function saveSessionToStorage(user: Readonly<User>): void {
