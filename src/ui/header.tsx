@@ -21,7 +21,7 @@ export function Header({ children, ...props }: Readonly<React.ComponentProps<"he
                 <div className="flex min-h-70 items-center justify-between gap-12">
                     <div className="max-w-2xl flex-1">{children ?? <DefaultChildren />}</div>
 
-                    <div className="hidden shrink-0 items-center justify-center sm:flex">
+                    <div className="hidden shrink-0 items-center justify-center pr-1 sm:flex">
                         <div className="relative">
                             <div className="absolute inset-0 rounded-full bg-tomato-500/20 blur-2xl" />
 
