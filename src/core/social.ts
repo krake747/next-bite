@@ -113,7 +113,7 @@ export function useSocialSummaries(
     const summaries = useConvexQuery(
         api.social.getSummaries,
         { restaurantIds: [...restaurantIds] },
-        { key: "social.getSummaries", skip: !isAuthenticated },
+        { skip: !isAuthenticated },
     )
     if (summaries === undefined) {
         return undefined
@@ -126,11 +126,7 @@ export function useSocialForRestaurant(
     userId: string | null,
 ): RestaurantSocial | undefined {
     const { isAuthenticated } = useAuth()
-    const snapshot = useConvexQuery(
-        api.social.getForRestaurant,
-        { restaurantId },
-        { key: "social.getForRestaurant", skip: !isAuthenticated },
-    )
+    const snapshot = useConvexQuery(api.social.getForRestaurant, { restaurantId }, { skip: !isAuthenticated })
     if (snapshot === undefined) {
         return undefined
     }
