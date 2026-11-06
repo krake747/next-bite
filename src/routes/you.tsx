@@ -1,22 +1,216 @@
-import { createFileRoute } from "@tanstack/react-router"
+import { createFileRoute, Link } from "@tanstack/react-router"
+import { useState } from "react"
 
+import { useAuth, useMyProfile, useMyStatuses, useRestaurants, useUpdateProfile } from "@core/hooks"
+import { orderFeedByRecency } from "@core/social"
 import { PageContainer } from "@routes/-layouts/page-container"
 import { PageLayout } from "@routes/-layouts/page-layout"
+import { Button } from "@ui/button"
+import { cx } from "@ui/cva.config"
 import { Header, HeaderSubtitle, HeaderTitle } from "@ui/header"
+import { LoadingPlaceholder } from "@ui/loading"
+import { control, fieldLabel } from "@ui/variants"
+
+import { type Doc } from "../../convex/_generated/dataModel"
 
 export const Route = createFileRoute("/you")({
     head: () => ({ meta: [{ title: "You - Next Bite" }] }),
     component: YouPage,
 })
 
+type Restaurant = Doc<"restaurants">
+
+function ProfileForm({
+    email,
+    initialName,
+    heading,
+    subheading,
+}: Readonly<{ email: string; initialName: string; heading: string; subheading: string }>) {
+    const updateProfile = useUpdateProfile()
+    const [name, setName] = useState(initialName)
+    const [error, setError] = useState<string | null>(null)
+    const [saved, setSaved] = useState(false)
+
+    const handleSave = async () => {
+        setError(null)
+        setSaved(false)
+        const trimmed = name.trim()
+        if (trimmed === "") {
+            setError("Name cannot be empty")
+            return
+        }
+        try {
+            await updateProfile.mutateAsync({ name: trimmed })
+            setSaved(true)
+        } catch (err) {
+            setError(err instanceof Error ? err.message : "Could not save your profile")
+        }
+    }
+
+    return (
+        <section aria-label={heading} className="pt-6">
+            <h2 className="font-display text-2xl font-semibold text-balance text-stone-900">{heading}</h2>
+            <p className="mt-1 text-sm text-stone-600">{subheading}</p>
+            <div className="mt-3 rounded-card border border-border bg-surface p-5 shadow-card">
+                <p className="text-sm text-stone-600">{email}</p>
+                <div className="mt-3 flex flex-col gap-3 sm:flex-row sm:items-end">
+                    <div className="flex flex-1 flex-col gap-1.5">
+                        <label htmlFor="profile-name" className={fieldLabel()}>
+                            Display name
+                        </label>
+                        <input
+                            id="profile-name"
+                            value={name}
+                            onChange={(event) => {
+                                setName(event.target.value)
+                            }}
+                            maxLength={80}
+                            aria-invalid={error !== null}
+                            className={cx(control(), error !== null && "border-destructive")}
+                        />
+                        {error !== null && (
+                            <p role="alert" className="text-sm text-destructive">
+                                {error}
+                            </p>
+                        )}
+                        {saved && <p className="text-sm text-stone-600">Saved.</p>}
+                    </div>
+                    <Button type="button" disabled={updateProfile.isPending} onClick={() => void handleSave()}>
+                        Save
+                    </Button>
+                </div>
+            </div>
+        </section>
+    )
+}
+
+function ProfileSection() {
+    const auth = useAuth()
+    const profile = useMyProfile()
+
+    if (profile === undefined) {
+        return (
+            <div className="pt-6">
+                <LoadingPlaceholder />
+            </div>
+        )
+    }
+    if (profile.status === "onboarding") {
+        return (
+            <ProfileForm
+                email={auth.user?.email ?? ""}
+                initialName={auth.user?.name ?? ""}
+                heading="Complete your profile"
+                subheading="Add your name so friends recognize you."
+            />
+        )
+    }
+    return (
+        <ProfileForm
+            email={profile.profile.email}
+            initialName={profile.profile.name}
+            heading="Your profile"
+            subheading="Only you see this page."
+        />
+    )
+}
+
+function PlacesSection({
+    title,
+    restaurants,
+    emptyText,
+}: Readonly<{ title: string; restaurants: ReadonlyArray<Restaurant>; emptyText: string }>) {
+    return (
+        <section aria-label={title} className="pt-8">
+            <h2 className="font-display text-2xl font-semibold text-balance text-stone-900">
+                {title} · {restaurants.length}
+            </h2>
+            {restaurants.length === 0 ? (
+                <p className="pt-2 text-sm text-stone-600">{emptyText}</p>
+            ) : (
+                <ul className="grid gap-3 pt-4 md:grid-cols-2">
+                    {restaurants.map((restaurant) => (
+                        <li
+                            key={restaurant._id}
+                            className="rounded-card border border-border bg-surface p-4 shadow-card"
+                        >
+                            <Link
+                                to="/restaurants/$restaurantId"
+                                params={{ restaurantId: restaurant._id }}
+                                viewTransition
+                                className="font-display text-lg font-semibold text-balance text-stone-900 hover:text-tomato-700"
+                            >
+                                {restaurant.name}
+                            </Link>
+                            <p className="mt-1 text-sm text-stone-600">
+                                {restaurant.cuisine} · {restaurant.address.label}
+                            </p>
+                        </li>
+                    ))}
+                </ul>
+            )}
+        </section>
+    )
+}
+
+function YouContent() {
+    const restaurants = useRestaurants()
+    const statuses = useMyStatuses()
+
+    if (restaurants === undefined || statuses === undefined) {
+        return (
+            <div className="pt-4">
+                <LoadingPlaceholder />
+            </div>
+        )
+    }
+    const saved = orderFeedByRecency(restaurants)
+    const byStatus = new Map(statuses.map((s) => [s.restaurantId, s.status]))
+    const want = saved.filter((r) => byStatus.get(r._id) === "want")
+    const been = saved.filter((r) => byStatus.get(r._id) === "been")
+
+    return (
+        <>
+            <ProfileSection />
+            <PlacesSection
+                title="Saved"
+                restaurants={saved}
+                emptyText="Nothing saved yet. Add your first restaurant from Home."
+            />
+            <PlacesSection
+                title="Want to try"
+                restaurants={want}
+                emptyText="No wants yet. Tap Want on any restaurant to park it here."
+            />
+            <PlacesSection
+                title="Been"
+                restaurants={been}
+                emptyText="No visits yet. Mark Been on restaurants you tried."
+            />
+        </>
+    )
+}
+
 function YouPage() {
+    const auth = useAuth()
+
     return (
         <PageLayout>
             <PageContainer>
                 <Header>
                     <HeaderTitle>You</HeaderTitle>
-                    <HeaderSubtitle>Your saves, wants, and shouts. Personal stats land here next.</HeaderSubtitle>
+                    <HeaderSubtitle>Your profile, saves, wants, and visits.</HeaderSubtitle>
                 </Header>
+                {!auth.isAuthenticated ? (
+                    <p className="pt-6 text-stone-600">
+                        <Link to="/login" viewTransition className="font-medium text-tomato-700 hover:underline">
+                            Sign in
+                        </Link>{" "}
+                        to see your profile.
+                    </p>
+                ) : (
+                    <YouContent />
+                )}
             </PageContainer>
         </PageLayout>
     )

@@ -129,6 +129,18 @@ export const useFriends = () => {
     return useConvexQuery(api.friendships.listFriends, undefined, { skip: status.kind !== "ready" })
 }
 
+export const useMyProfile = () => {
+    const status = useSessionStatus()
+    return useConvexQuery(api.users.getMe, undefined, { skip: status.kind !== "ready" })
+}
+
+export const useMyStatuses = () => {
+    const status = useSessionStatus()
+    return useConvexQuery(api.social.listMyStatuses, undefined, { skip: status.kind !== "ready" })
+}
+
+export const useUpdateProfile = () => useConvexMutation(api.users.updateMe)
+
 export const useFriendDiscoveries = (friendAuthUserId: string) => {
     const status = useSessionStatus()
     return useConvexQuery(api.friendships.listDiscoveries, { friendAuthUserId }, { skip: status.kind !== "ready" })

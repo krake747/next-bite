@@ -46,9 +46,9 @@ describe("users", () => {
         await expect(t.query(api.users.getMe, {})).resolves.toEqual({ status: "onboarding" })
     })
 
-    it("updates the name and rejects empty updates and missing profiles", async () => {
+    it("updates the name and rejects empty updates", async () => {
         const t = asUser("user-4")
-        await expect(t.mutation(api.users.updateMe, {})).rejects.toThrow("Profile not found")
+        await expect(t.mutation(api.users.updateMe, {})).rejects.toThrow("Nothing to update")
         await t.mutation(api.users.ensureProfile, { email: "cas@example.com", name: "Cas" })
         await expect(t.mutation(api.users.updateMe, {})).rejects.toThrow("Nothing to update")
         const id = await t.mutation(api.users.updateMe, { name: "  Cassie  " })

@@ -66,6 +66,18 @@ export const getForRestaurant = query({
     },
 })
 
+export const listMyStatuses = query({
+    args: {},
+    handler: async (ctx) => {
+        const userId = await requireUserId(ctx)
+        const rows = await ctx.db
+            .query("interests")
+            .withIndex("by_user", (q) => q.eq("userId", userId))
+            .collect()
+        return rows.map((row) => ({ restaurantId: row.restaurantId, status: row.status }))
+    },
+})
+
 export const getSummaries = query({
     args: {
         restaurantIds: v.array(v.id("restaurants")),
