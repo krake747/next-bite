@@ -222,17 +222,11 @@ function ButtonsSection() {
                     {variantLabels[variant]}
                 </Button>
             ))}
-            {buttonSchema.size.values.map((size) =>
-                size === "icon" ? (
-                    <Button key={size} size={size} aria-label="Add">
-                        +
-                    </Button>
-                ) : (
-                    <Button key={size} size={size}>
-                        {size === "sm" ? "Small" : "Default"}
-                    </Button>
-                ),
-            )}
+            {buttonSchema.size.values.map((size) => (
+                <Button key={size} size={size}>
+                    {size === "sm" ? "Small" : "Default"}
+                </Button>
+            ))}
             <PendingButton pending>Loading</PendingButton>
             <Button disabled>Disabled</Button>
         </Section>

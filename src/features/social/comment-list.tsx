@@ -4,6 +4,7 @@ import { useState } from "react"
 import { AvatarGroup } from "@pattern/avatar-group"
 import { Button } from "@ui/button"
 import { cx } from "@ui/cva.config"
+import { IconButton } from "@ui/icon-button"
 import { control } from "@ui/variants"
 
 export type SocialComment = {
@@ -51,16 +52,15 @@ export function CommentList({
                                 <p className="text-sm leading-relaxed text-stone-800">{comment.text}</p>
                             </div>
                             {onDelete !== undefined && currentUser !== undefined && comment.author === currentUser && (
-                                <Button
-                                    variant="ghost"
-                                    size="icon"
+                                <IconButton
+                                    label={`Delete comment by ${comment.author}`}
+                                    tone="plain"
                                     onClick={() => {
                                         onDelete(comment.id)
                                     }}
-                                    aria-label={`Delete comment by ${comment.author}`}
                                 >
                                     <Trash2 className="size-4" />
-                                </Button>
+                                </IconButton>
                             )}
                         </li>
                     ))}
