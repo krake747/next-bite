@@ -16,6 +16,29 @@ test("serves the public landing heading in raw HTML", async ({ request }) => {
     expect(html).not.toContain(loadingVerb)
 })
 
+test("serves the design-system heading in raw HTML", async ({ request }) => {
+    const response = await request.get("/design-system")
+
+    expect(response.ok()).toBe(true)
+    const html = await response.text()
+    expect(html).toContain("Design system")
+    expect(html).not.toContain(loadingVerb)
+})
+
+test("serves stub headings in raw HTML", async ({ request }) => {
+    for (const [path, name] of [
+        ["/friends", "Friends"],
+        ["/groups", "Groups"],
+        ["/you", "You"],
+    ] as const) {
+        const response = await request.get(path)
+
+        expect(response.ok()).toBe(true)
+        const html = await response.text()
+        expect(html).toContain(name)
+    }
+})
+
 test("paints the public landing heading", async ({ page }) => {
     await page.goto("/")
 

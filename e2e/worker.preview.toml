@@ -1,0 +1,10 @@
+# Local preview config for the Playwright gate. Serves the production Worker bundle built by
+# `pnpm build` so the suite proves the built SSR boundary, not the dev server. Paths are
+# relative to this file. Not used for deployment; see `cloudflare.config.ts` for that.
+main = "../.cloudflare/output/v0/workers/default/bundle/index.js"
+name = "next-bite-preview"
+compatibility_date = "2026-11-03"
+
+[assets]
+directory = "../.cloudflare/output/v0/workers/default/assets"
+not_found_handling = "single-page-application"

@@ -2,7 +2,6 @@ import { ConvexClient, type AuthTokenFetcher } from "convex/browser"
 import { useState, useEffect, createContext, useContext } from "react"
 
 import { ConvexBetterAuthProvider } from "@convex-dev/better-auth/react"
-import { LoadingPlaceholder } from "@ui/loading"
 
 import { authClient } from "./auth-client"
 import { useAuthStore } from "./auth-store"
@@ -18,8 +17,11 @@ async function noopServerAuthStep(): Promise<void> {
 }
 
 const serverAuthStore: AuthStore = {
+    // Auth-unknown: the server has no session, so it renders the same loading variant as the
+    // client's first render. Matching first renders keeps hydration clean; resolved auth state
+    // arrives as a normal post-hydration update.
     isAuthenticated: false,
-    isLoading: false,
+    isLoading: true,
     user: null,
     error: null,
     initializeAuth: noopServerAuthStep,
@@ -60,21 +62,14 @@ function AuthProvider({ children }: Readonly<{ children: React.ReactNode }>) {
             },
         }
     })
-    const [isInitialized, setIsInitialized] = useState(false)
     const store = useAuthStore()
 
     useEffect(() => {
-        void store.initializeAuth().then(() => {
-            setIsInitialized(true)
-        })
+        void store.initializeAuth()
     }, [])
 
     if (pair === null) {
         return <AuthContext.Provider value={serverAuthStore}>{children}</AuthContext.Provider>
-    }
-
-    if (!isInitialized) {
-        return <LoadingPlaceholder />
     }
 
     return (
