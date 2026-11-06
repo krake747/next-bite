@@ -1,6 +1,6 @@
 import { render, screen } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
-import { describe, expect, it, vi } from "vitest"
+import { describe, expect, test, vi } from "vitest"
 
 import { AvatarGroup } from "@pattern/avatar-group"
 
@@ -21,20 +21,20 @@ const friends = [
 ]
 
 describe("AvatarGroup", () => {
-    it("shows at most four members with an overflow indicator", () => {
+    test("shows at most four members with an overflow indicator", () => {
         render(<AvatarGroup members={friends} />)
         expect(screen.getByText("+2")).toBeInTheDocument()
         expect(screen.getByRole("group", { name: /Alex.*2 more/ })).toBeInTheDocument()
     })
 
-    it("renders members that share a name", () => {
+    test("renders members that share a name", () => {
         render(<AvatarGroup members={[{ name: "Alex" }, { name: "Alex" }]} />)
         expect(screen.getAllByLabelText("Alex")).toHaveLength(2)
     })
 })
 
 describe("FriendPresence", () => {
-    it("announces active and away states to assistive technology", () => {
+    test("announces active and away states to assistive technology", () => {
         const { rerender } = render(<FriendPresence active />)
         expect(screen.getByText("Active now")).toBeInTheDocument()
         rerender(<FriendPresence active={false} />)
@@ -43,21 +43,21 @@ describe("FriendPresence", () => {
 })
 
 describe("SocialMetadata", () => {
-    it("speaks in human language, not database terms", () => {
+    test("speaks in human language, not database terms", () => {
         render(<SocialMetadata ownerName="Alex" wantCount={4} beenCount={1} />)
         expect(screen.getByText("Added by Alex")).toBeInTheDocument()
         expect(screen.getByText("4 friends want to try")).toBeInTheDocument()
         expect(screen.getByText("Visited by a friend")).toBeInTheDocument()
     })
 
-    it("renders nothing without social context", () => {
+    test("renders nothing without social context", () => {
         const { container } = render(<SocialMetadata />)
         expect(container).toBeEmptyDOMElement()
     })
 })
 
 describe("ReactionBar", () => {
-    it("toggles like and want through callbacks", async () => {
+    test("toggles like and want through callbacks", async () => {
         const user = userEvent.setup()
         const onToggleLike = vi.fn<() => void>()
         const onToggleWant = vi.fn<() => void>()
@@ -91,7 +91,7 @@ describe("CommentList", () => {
         { id: "c2", author: "Priya", text: "Going Friday!", time: "1h ago" },
     ]
 
-    it("adds a comment and lets authors delete their own", async () => {
+    test("adds a comment and lets authors delete their own", async () => {
         const user = userEvent.setup()
         const onAdd = vi.fn<(text: string) => void>()
         const onDelete = vi.fn<(id: string) => void>()
@@ -111,7 +111,7 @@ describe("CommentList", () => {
 describe("PhotoGallery", () => {
     const photos = [{ url: "https://example.com/1.jpg", author: "Alex" }, { url: "https://example.com/2.jpg" }]
 
-    it("attributes photos and opens the viewer", async () => {
+    test("attributes photos and opens the viewer", async () => {
         const user = userEvent.setup()
         render(<PhotoGallery photos={photos} />)
         expect(screen.getByText("Alex")).toBeInTheDocument()
@@ -122,7 +122,7 @@ describe("PhotoGallery", () => {
 })
 
 describe("ActivityPost", () => {
-    it("reads like a friend's discovery, not a database entry", () => {
+    test("reads like a friend's discovery, not a database entry", () => {
         render(
             <ActivityPost
                 author={{ name: "Alex" }}

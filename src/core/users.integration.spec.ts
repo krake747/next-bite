@@ -1,5 +1,5 @@
 import { convexTest, type TestConvexForDataModel } from "convex-test"
-import { describe, expect, it, vi } from "vitest"
+import { describe, expect, test, vi } from "vitest"
 
 import { api } from "@convex/_generated/api"
 import { type DataModel, type Doc } from "@convex/_generated/dataModel"
@@ -25,14 +25,14 @@ function asUser(subject: string): TestConvexForDataModel<DataModel> {
 }
 
 describe("users", () => {
-    it("creates a profile on first ensure and returns the same id on retry", async () => {
+    test("creates a profile on first ensure and returns the same id on retry", async () => {
         const t = asUser("user-1")
         const first = await t.mutation(api.users.ensureProfile, { email: "ada@example.com", name: "Ada" })
         const second = await t.mutation(api.users.ensureProfile, { email: "ada@example.com", name: "Ada" })
         expect(second).toEqual(first)
     })
 
-    it("falls back to the email when no name is given and no auth record exists", async () => {
+    test("falls back to the email when no name is given and no auth record exists", async () => {
         const t = asUser("user-2")
         const id = await t.mutation(api.users.ensureProfile, { email: "bob@example.com" })
         const me = await t.query(api.users.getMe, {})
@@ -41,12 +41,12 @@ describe("users", () => {
         expect(me.profile.name).toBe("bob@example.com")
     })
 
-    it("reports onboarding before the profile exists", async () => {
+    test("reports onboarding before the profile exists", async () => {
         const t = asUser("user-3")
         await expect(t.query(api.users.getMe, {})).resolves.toEqual({ status: "onboarding" })
     })
 
-    it("updates the name and rejects empty updates", async () => {
+    test("updates the name and rejects empty updates", async () => {
         const t = asUser("user-4")
         await expect(t.mutation(api.users.updateMe, {})).rejects.toThrow("Nothing to update")
         await t.mutation(api.users.ensureProfile, { email: "cas@example.com", name: "Cas" })
@@ -58,7 +58,7 @@ describe("users", () => {
         expect(me.profile.name).toBe("Cassie")
     })
 
-    it("rejects anonymous callers", async () => {
+    test("rejects anonymous callers", async () => {
         const t = setup()
         await expect(t.mutation(api.users.ensureProfile, { email: "anon@example.com" })).rejects.toThrow("Unauthorized")
         await expect(t.query(api.users.getMe, {})).rejects.toThrow("Unauthorized")

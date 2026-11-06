@@ -2,7 +2,7 @@ import { QueryClient } from "@tanstack/react-query"
 import { RouterProvider, createMemoryHistory, createRouter } from "@tanstack/react-router"
 import { fireEvent, render, screen, waitFor } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
-import { afterEach, describe, expect, it, vi } from "vitest"
+import { afterEach, describe, expect, test, vi } from "vitest"
 
 import { authClient } from "@core/auth-client"
 
@@ -58,7 +58,7 @@ afterEach(() => {
 })
 
 describe("app shell", () => {
-    it("shows five destinations with working links", async () => {
+    test("shows five destinations with working links", async () => {
         signIn()
         await renderAt("/")
 
@@ -69,7 +69,7 @@ describe("app shell", () => {
         expect(screen.getByRole("link", { name: "You" })).toHaveAttribute("href", "/you")
     })
 
-    it("hides the nav for signed-out visitors", async () => {
+    test("hides the nav for signed-out visitors", async () => {
         await renderAt("/")
 
         expect(document.querySelector('[data-slot="app-nav"]')).not.toBeInTheDocument()
@@ -80,7 +80,7 @@ describe("app shell", () => {
         }
     })
 
-    it("marks the current destination", async () => {
+    test("marks the current destination", async () => {
         signIn()
         await renderAt("/friends")
 
@@ -88,7 +88,7 @@ describe("app shell", () => {
         expect(screen.getByRole("link", { name: "Home" })).not.toHaveAttribute("aria-current")
     })
 
-    it("navigates between destinations", async () => {
+    test("navigates between destinations", async () => {
         signIn()
         const user = userEvent.setup()
         await renderAt("/")
@@ -100,22 +100,22 @@ describe("app shell", () => {
         })
     })
 
-    it("renders the Friends stub page", async () => {
+    test("renders the Friends stub page", async () => {
         await renderAt("/friends")
         expect(screen.getByRole("heading", { name: "Friends" })).toBeInTheDocument()
     })
 
-    it("renders the Groups stub page", async () => {
+    test("renders the Groups stub page", async () => {
         await renderAt("/groups")
         expect(screen.getByRole("heading", { name: "Groups" })).toBeInTheDocument()
     })
 
-    it("renders the You stub page", async () => {
+    test("renders the You stub page", async () => {
         await renderAt("/you")
         expect(screen.getByRole("heading", { name: "You" })).toBeInTheDocument()
     })
 
-    it("opens the add flow from the Add destination", async () => {
+    test("opens the add flow from the Add destination", async () => {
         signIn()
         await renderAt("/")
 

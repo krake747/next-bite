@@ -1,8 +1,8 @@
 import { renderHook } from "@testing-library/react"
 import { http, HttpResponse } from "msw"
-import { describe, expect, it, vi } from "vitest"
+import { describe, expect, test, vi } from "vitest"
 
-import { server } from "../vitest.setup"
+import { server } from "../vitest.msw.setup"
 import { getConvexSessionToken } from "./auth-client"
 import { useUploadImage } from "./hooks"
 
@@ -24,7 +24,7 @@ function serveUpload(captured: { auth: string | null; calls: number }): void {
 }
 
 describe("useUploadImage", () => {
-    it("sends the Convex session token as a Bearer header", async () => {
+    test("sends the Convex session token as a Bearer header", async () => {
         vi.mocked(getConvexSessionToken).mockResolvedValue("jwt-1")
         const captured = { auth: null as string | null, calls: 0 }
         serveUpload(captured)
@@ -36,7 +36,7 @@ describe("useUploadImage", () => {
         expect(captured.auth).toBe("Bearer jwt-1")
     })
 
-    it("refuses to upload without a session", async () => {
+    test("refuses to upload without a session", async () => {
         vi.mocked(getConvexSessionToken).mockResolvedValue(null)
         const captured = { auth: null as string | null, calls: 0 }
         serveUpload(captured)

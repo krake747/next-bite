@@ -1,6 +1,6 @@
 import { render, screen } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
-import { describe, expect, it, vi } from "vitest"
+import { describe, expect, test, vi } from "vitest"
 
 import { Select } from "./field"
 
@@ -34,7 +34,7 @@ function setup(input: string | undefined) {
 }
 
 describe("Select", () => {
-    it("commits the chosen option through the Formisch change handler", async () => {
+    test("commits the chosen option through the Formisch change handler", async () => {
         const user = userEvent.setup()
         const { onChange, hiddenElement } = setup("")
 
@@ -45,7 +45,7 @@ describe("Select", () => {
         expect(hiddenElement()?.value).toBe("Alex")
     })
 
-    it("shows the current value on the trigger", () => {
+    test("shows the current value on the trigger", () => {
         setup("Priya")
         expect(screen.getByRole("combobox", { name: "Added by" })).toHaveTextContent("Priya")
     })

@@ -1,5 +1,5 @@
 import { convexTest, type TestConvexForDataModel } from "convex-test"
-import { describe, expect, it, vi } from "vitest"
+import { describe, expect, test, vi } from "vitest"
 
 import { api } from "@convex/_generated/api"
 import { type DataModel, type Id } from "@convex/_generated/dataModel"
@@ -31,7 +31,7 @@ async function createRestaurant(t: TestConvexForDataModel<DataModel>, subject: s
 }
 
 describe("restaurant getById", () => {
-    it("returns the record to its owner", async () => {
+    test("returns the record to its owner", async () => {
         const t = setup()
         await registerUser(t, "anna")
         const restaurantId = await createRestaurant(t, "anna")
@@ -41,7 +41,7 @@ describe("restaurant getById", () => {
         expect(found?.name).toBe("Trattoria Verde")
     })
 
-    it("returns the record to a shared user", async () => {
+    test("returns the record to a shared user", async () => {
         const t = setup()
         await registerUser(t, "anna")
         await registerUser(t, "ben")
@@ -53,7 +53,7 @@ describe("restaurant getById", () => {
         expect(found?.name).toBe("Trattoria Verde")
     })
 
-    it("returns the record to a group member", async () => {
+    test("returns the record to a group member", async () => {
         const t = setup()
         await registerUser(t, "anna")
         await registerUser(t, "ben")
@@ -67,7 +67,7 @@ describe("restaurant getById", () => {
         expect(found?.name).toBe("Trattoria Verde")
     })
 
-    it("returns null to strangers", async () => {
+    test("returns null to strangers", async () => {
         const t = setup()
         await registerUser(t, "anna")
         await registerUser(t, "cas")
@@ -78,7 +78,7 @@ describe("restaurant getById", () => {
         expect(found).toBeNull()
     })
 
-    it("returns null without authentication", async () => {
+    test("returns null without authentication", async () => {
         const t = setup()
         await registerUser(t, "anna")
         const restaurantId = await createRestaurant(t, "anna")

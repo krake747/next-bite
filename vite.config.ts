@@ -5,6 +5,17 @@ import { default as react } from "@vitejs/plugin-react"
 import { defineConfig, lazyPlugins } from "vite-plus"
 
 // https://viteplus.dev/config/
+const domSetupFiles = ["./src/vitest.setup.ts"]
+const happyDomEnvironmentOptions = {
+    happyDOM: {
+        settings: {
+            fetch: {
+                disableSameOriginPolicy: true,
+            },
+        },
+    },
+}
+
 export default defineConfig({
     fmt: {
         printWidth: 120,
@@ -405,6 +416,8 @@ export default defineConfig({
             VITE_CONVEX_SITE_URL: "https://example.convex.site",
             VITE_GOOGLE_MAPS_API_KEY: "test-key",
         },
+        // Timeout rule: slowTestThreshold is testTimeout minus 500ms in every project, so
+        // slow warnings fire on the same margin before the timeout kills the test.
         projects: [
             {
                 test: {
@@ -412,23 +425,15 @@ export default defineConfig({
                     environment: "node",
                     include: ["src/**/*.pure.spec.{js,ts,jsx,tsx}"],
                     testTimeout: 2000,
-                    slowTestThreshold: 500,
+                    slowTestThreshold: 1500,
                 },
             },
             {
                 test: {
                     name: "unit",
                     environment: "happy-dom",
-                    environmentOptions: {
-                        happyDOM: {
-                            settings: {
-                                fetch: {
-                                    disableSameOriginPolicy: true,
-                                },
-                            },
-                        },
-                    },
-                    setupFiles: ["./src/vitest.setup.ts"],
+                    environmentOptions: happyDomEnvironmentOptions,
+                    setupFiles: domSetupFiles,
                     include: ["src/**/*.spec.{js,ts,jsx,tsx}"],
                     exclude: ["**/*.pure.spec.*", "**/*.browser.spec.*", "**/*.integration.spec.*"],
                     testTimeout: 3000,
@@ -436,41 +441,27 @@ export default defineConfig({
                 },
             },
             {
+                // happy-dom today; swap only this project's environment when the real-browser
+                // runner lands (ADR-0005). Keep include plus timeouts tier scoped.
                 test: {
                     name: "browser",
                     environment: "happy-dom",
-                    environmentOptions: {
-                        happyDOM: {
-                            settings: {
-                                fetch: {
-                                    disableSameOriginPolicy: true,
-                                },
-                            },
-                        },
-                    },
-                    setupFiles: ["./src/vitest.setup.ts"],
+                    environmentOptions: happyDomEnvironmentOptions,
+                    setupFiles: domSetupFiles,
                     include: ["src/**/*.browser.spec.{js,ts,jsx,tsx}"],
                     testTimeout: 2000,
-                    slowTestThreshold: 500,
+                    slowTestThreshold: 1500,
                 },
             },
             {
                 test: {
                     name: "integration",
                     environment: "happy-dom",
-                    environmentOptions: {
-                        happyDOM: {
-                            settings: {
-                                fetch: {
-                                    disableSameOriginPolicy: true,
-                                },
-                            },
-                        },
-                    },
-                    setupFiles: ["./src/vitest.setup.ts"],
+                    environmentOptions: happyDomEnvironmentOptions,
+                    setupFiles: domSetupFiles,
                     include: ["src/**/*.integration.spec.{js,ts,jsx,tsx}"],
                     testTimeout: 3000,
-                    slowTestThreshold: 1500,
+                    slowTestThreshold: 2500,
                 },
             },
         ],

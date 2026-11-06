@@ -1,6 +1,6 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import { fireEvent, render, screen, waitFor } from "@testing-library/react"
-import { describe, expect, it, vi } from "vitest"
+import { describe, expect, test, vi } from "vitest"
 
 import { type Id } from "@convex/_generated/dataModel"
 import { ConvexProvider } from "@core/convex-client"
@@ -73,7 +73,7 @@ function renderDialog(): void {
 }
 
 describe("share to group dialog", () => {
-    it("shares with a group through Add to group", async () => {
+    test("shares with a group through Add to group", async () => {
         querySeeds.clear()
         mutationCalls.length = 0
         querySeeds.set(seedKey("groups:listMyGroups", undefined), [
@@ -95,7 +95,7 @@ describe("share to group dialog", () => {
         })
     })
 
-    it("removes an existing group share", async () => {
+    test("removes an existing group share", async () => {
         querySeeds.clear()
         mutationCalls.length = 0
         querySeeds.set(seedKey("groups:listMyGroups", undefined), [

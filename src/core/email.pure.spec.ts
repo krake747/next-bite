@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it, vi } from "vitest"
+import { afterEach, describe, expect, test, vi } from "vitest"
 
 import { hasMailgunConfig, isMailDevFallback, sendTransactionalEmail } from "@convex/email"
 
@@ -50,7 +50,7 @@ afterEach(() => {
 })
 
 describe("mail configuration", () => {
-    it("reports missing configuration without secrets", () => {
+    test("reports missing configuration without secrets", () => {
         vi.stubEnv("MAILGUN_API_KEY", "")
         vi.stubEnv("MAILGUN_DOMAIN", "")
         vi.stubEnv("MAILGUN_DEV_FALLBACK", "")
@@ -61,7 +61,7 @@ describe("mail configuration", () => {
 })
 
 describe("sendTransactionalEmail", () => {
-    it("fails closed when mail is not configured", async () => {
+    test("fails closed when mail is not configured", async () => {
         vi.stubEnv("MAILGUN_API_KEY", "")
         vi.stubEnv("MAILGUN_DOMAIN", "")
         vi.stubEnv("MAILGUN_DEV_FALLBACK", "")
@@ -71,7 +71,7 @@ describe("sendTransactionalEmail", () => {
         expect(fetchMock).not.toHaveBeenCalled()
     })
 
-    it("uses the explicit local fallback without logging OTP content", async () => {
+    test("uses the explicit local fallback without logging OTP content", async () => {
         vi.stubEnv("MAILGUN_API_KEY", "")
         vi.stubEnv("MAILGUN_DOMAIN", "")
         vi.stubEnv("MAILGUN_DEV_FALLBACK", "true")
@@ -87,7 +87,7 @@ describe("sendTransactionalEmail", () => {
         }
     })
 
-    it("delivers through the EU API when configured", async () => {
+    test("delivers through the EU API when configured", async () => {
         vi.stubEnv("MAILGUN_API_KEY", "test-key")
         vi.stubEnv("MAILGUN_DOMAIN", "mg.example.com")
         vi.stubEnv("MAILGUN_DEV_FALLBACK", "")
@@ -109,7 +109,7 @@ describe("sendTransactionalEmail", () => {
         expect(body.get("subject")).toBe("Your code")
     })
 
-    it("fails on provider rejection without leaking the key or body", async () => {
+    test("fails on provider rejection without leaking the key or body", async () => {
         vi.stubEnv("MAILGUN_API_KEY", "test-key")
         vi.stubEnv("MAILGUN_DOMAIN", "mg.example.com")
         vi.stubEnv("MAILGUN_DEV_FALLBACK", "")

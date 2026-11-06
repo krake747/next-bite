@@ -1,10 +1,10 @@
 import { render, screen } from "@testing-library/react"
-import { describe, it, expect } from "vitest"
+import { describe, test, expect } from "vitest"
 
 import { SearchInput } from "./search-input"
 
 describe("SearchInput", () => {
-    it("marks empty state on the wrapper", () => {
+    test("marks empty state on the wrapper", () => {
         const { unmount } = render(<SearchInput defaultValue="" />)
         expect(screen.getByRole("searchbox").closest('[data-slot="search-input"]')).toHaveAttribute("data-empty", "")
         unmount()

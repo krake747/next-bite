@@ -1,10 +1,10 @@
 import { render, screen } from "@testing-library/react"
-import { describe, it, expect } from "vitest"
+import { describe, test, expect } from "vitest"
 
 import { Avatar, AvatarFallback, AvatarImage, AvatarPresence } from "./avatar"
 
 describe("Avatar", () => {
-    it("shows the fallback while the image loads", () => {
+    test("shows the fallback while the image loads", () => {
         render(
             <Avatar size="lg">
                 <AvatarImage src="https://example.com/alex.jpg" alt="Alex" />
@@ -16,7 +16,7 @@ describe("Avatar", () => {
         expect(screen.queryByAltText("Alex")).not.toBeInTheDocument()
     })
 
-    it("mounts the image right away with keepMounted", () => {
+    test("mounts the image right away with keepMounted", () => {
         render(
             <Avatar>
                 <AvatarImage keepMounted src="https://example.com/priya.jpg" alt="Priya" />

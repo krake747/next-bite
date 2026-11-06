@@ -1,5 +1,5 @@
 import { convexTest, type TestConvexForDataModel } from "convex-test"
-import { describe, expect, it, vi } from "vitest"
+import { describe, expect, test, vi } from "vitest"
 
 import { api } from "@convex/_generated/api"
 import { type DataModel, type Id } from "@convex/_generated/dataModel"
@@ -45,7 +45,7 @@ async function feedNames(t: TestConvexForDataModel<DataModel>, subject: string):
 }
 
 describe("friends feed", () => {
-    it("shows a friend's shared restaurant", async () => {
+    test("shows a friend's shared restaurant", async () => {
         const t = setup()
         await registerUser(t, "anna")
         await registerUser(t, "ben")
@@ -56,7 +56,7 @@ describe("friends feed", () => {
         expect(await feedNames(t, "ben")).toContain("Trattoria Verde")
     })
 
-    it("excludes the caller's own restaurants", async () => {
+    test("excludes the caller's own restaurants", async () => {
         const t = setup()
         await registerUser(t, "anna")
         await registerUser(t, "ben")
@@ -66,7 +66,7 @@ describe("friends feed", () => {
         expect(await feedNames(t, "ben")).not.toContain("Ben's Diner")
     })
 
-    it("excludes unshared restaurants from strangers", async () => {
+    test("excludes unshared restaurants from strangers", async () => {
         const t = setup()
         await registerUser(t, "anna")
         await registerUser(t, "ben")
@@ -77,7 +77,7 @@ describe("friends feed", () => {
         expect(await feedNames(t, "ben")).not.toContain("Cas's Cafe")
     })
 
-    it("shows a group-shared restaurant from a friend", async () => {
+    test("shows a group-shared restaurant from a friend", async () => {
         const t = setup()
         await registerUser(t, "anna")
         await registerUser(t, "ben")
@@ -92,7 +92,7 @@ describe("friends feed", () => {
         expect(await feedNames(t, "ben")).toContain("Dan's Deli")
     })
 
-    it("returns empty when nothing is shared yet", async () => {
+    test("returns empty when nothing is shared yet", async () => {
         const t = setup()
         await registerUser(t, "eve")
 

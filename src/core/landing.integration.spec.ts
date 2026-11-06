@@ -1,5 +1,5 @@
 import { convexTest, type TestConvexForDataModel } from "convex-test"
-import { describe, expect, it, vi } from "vitest"
+import { describe, expect, test, vi } from "vitest"
 
 import { api } from "@convex/_generated/api"
 import { type DataModel } from "@convex/_generated/dataModel"
@@ -19,7 +19,7 @@ function asUser(t: TestConvexForDataModel<DataModel>, subject: string): TestConv
 }
 
 describe("landing stats", () => {
-    it("serves aggregate-only stats without authentication", async () => {
+    test("serves aggregate-only stats without authentication", async () => {
         const t = setup()
         await asUser(t, "anna").mutation(api.users.ensureProfile, { email: "anna@example.com", name: "anna" })
         await asUser(t, "anna").action(api.restaurants.addWithOpeningHours, {

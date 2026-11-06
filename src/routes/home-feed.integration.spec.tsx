@@ -2,7 +2,7 @@ import { QueryClient } from "@tanstack/react-query"
 import { RouterProvider, createMemoryHistory, createRouter } from "@tanstack/react-router"
 import { render, screen, within, waitFor } from "@testing-library/react"
 import { type ConvexClient } from "convex/browser"
-import { describe, expect, it, vi } from "vitest"
+import { describe, expect, test, vi } from "vitest"
 
 import { type RestaurantDoc } from "@core/db/restaurants"
 import { createSeededClient } from "@core/db/seeded-client"
@@ -78,14 +78,14 @@ async function renderHome(feed: ReadonlyArray<RestaurantDoc>): Promise<void> {
 }
 
 describe("home friends feed", () => {
-    it("shows a friend's discovery in latest activity", async () => {
+    test("shows a friend's discovery in latest activity", async () => {
         await renderHome([friendRestaurant("Trattoria Verde")])
 
         const activity = screen.getByLabelText("Latest activity")
         expect(within(activity).getByText("Trattoria Verde")).toBeInTheDocument()
     })
 
-    it("shows an empty state when no friend activity exists", async () => {
+    test("shows an empty state when no friend activity exists", async () => {
         await renderHome([])
 
         expect(screen.getByText("No crew activity yet")).toBeInTheDocument()

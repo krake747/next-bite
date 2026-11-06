@@ -1,5 +1,5 @@
 import { convexTest, type TestConvexForDataModel } from "convex-test"
-import { describe, expect, it, vi } from "vitest"
+import { describe, expect, test, vi } from "vitest"
 
 import { api } from "@convex/_generated/api"
 import { type DataModel, type Id } from "@convex/_generated/dataModel"
@@ -31,7 +31,7 @@ async function createRestaurant(t: TestConvexForDataModel<DataModel>, subject: s
 }
 
 describe("personal profile and statuses", () => {
-    it("reports onboarding without a profile and readiness after", async () => {
+    test("reports onboarding without a profile and readiness after", async () => {
         const t = setup()
 
         expect(await asUser(t, "anna").query(api.users.getMe, {})).toEqual({ status: "onboarding" })
@@ -44,7 +44,7 @@ describe("personal profile and statuses", () => {
         })
     })
 
-    it("updates only the caller's own profile", async () => {
+    test("updates only the caller's own profile", async () => {
         const t = setup()
         await registerUser(t, "anna", "anna@example.com")
         await registerUser(t, "ben", "ben@example.com")
@@ -61,7 +61,7 @@ describe("personal profile and statuses", () => {
         })
     })
 
-    it("lists only the caller's want and been statuses", async () => {
+    test("lists only the caller's want and been statuses", async () => {
         const t = setup()
         await registerUser(t, "anna", "anna@example.com")
         await registerUser(t, "ben", "ben@example.com")

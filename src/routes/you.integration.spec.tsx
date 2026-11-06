@@ -1,7 +1,7 @@
 import { QueryClient } from "@tanstack/react-query"
 import { RouterProvider, createMemoryHistory, createRouter } from "@tanstack/react-router"
 import { fireEvent, render, screen, waitFor } from "@testing-library/react"
-import { describe, expect, it, vi } from "vitest"
+import { describe, expect, test, vi } from "vitest"
 
 import { ConvexProvider } from "@core/convex-client"
 import { type RestaurantDoc } from "@core/db/restaurants"
@@ -104,7 +104,7 @@ async function renderAt(path: string): Promise<void> {
 }
 
 describe("you screen", () => {
-    it("renders the profile with saved, want, and been counts", async () => {
+    test("renders the profile with saved, want, and been counts", async () => {
         testUser = { id: "user-1", email: "alex@example.com", name: "Alex" }
         querySeeds.clear()
         seedYou()
@@ -120,7 +120,7 @@ describe("you screen", () => {
         expect(screen.getByText("Trattoria Verde")).toBeInTheDocument()
     })
 
-    it("saves an edited display name", async () => {
+    test("saves an edited display name", async () => {
         testUser = { id: "user-1", email: "alex@example.com", name: "Alex" }
         querySeeds.clear()
         seedYou()
@@ -138,7 +138,7 @@ describe("you screen", () => {
         })
     })
 
-    it("shows the onboarding form without a profile", async () => {
+    test("shows the onboarding form without a profile", async () => {
         testUser = { id: "user-1", email: "alex@example.com", name: "Alex" }
         querySeeds.clear()
         seedQuery("users:getMe", undefined, { status: "onboarding" })
@@ -151,7 +151,7 @@ describe("you screen", () => {
         })
     })
 
-    it("shows empty states with no saves", async () => {
+    test("shows empty states with no saves", async () => {
         testUser = { id: "user-1", email: "alex@example.com", name: "Alex" }
         querySeeds.clear()
         seedQuery("users:getMe", undefined, {

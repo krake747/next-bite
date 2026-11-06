@@ -1,7 +1,7 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import { renderHook } from "@testing-library/react"
 import { ConvexClient } from "convex/browser"
-import { describe, expect, it, vi } from "vitest"
+import { describe, expect, test, vi } from "vitest"
 
 import { type Id } from "@convex/_generated/dataModel"
 
@@ -112,7 +112,7 @@ function mockPersist() {
 }
 
 describe("restaurant shape translators", () => {
-    it("maps an update to the matching document fields", () => {
+    test("maps an update to the matching document fields", () => {
         const draft = restaurantFixture()
         // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- test-only restaurant id
         const id = "r1" as unknown as Id<"restaurants">
@@ -124,13 +124,13 @@ describe("restaurant shape translators", () => {
         expect(draft.cuisine).toBe("Italian")
     })
 
-    it("maps a full row back to update args", () => {
+    test("maps a full row back to update args", () => {
         const row = restaurantFixture({ name: "Sushi Bar" })
 
         expect(toUpdateArgs(row)).toMatchObject({ name: "Sushi Bar", cuisine: "Italian" })
     })
 
-    it("maps a row to add args", () => {
+    test("maps a row to add args", () => {
         const row = restaurantFixture()
 
         expect(toAddArgs(row)).toMatchObject({
@@ -140,13 +140,13 @@ describe("restaurant shape translators", () => {
         })
     })
 
-    it("forwards the client mutation key to add args", () => {
+    test("forwards the client mutation key to add args", () => {
         const row = restaurantFixture({ clientMutationId: "user-1:key-1" })
 
         expect(toAddArgs(row)).toMatchObject({ clientMutationId: "user-1:key-1" })
     })
 
-    it("builds temp rows carrying the client mutation key", () => {
+    test("builds temp rows carrying the client mutation key", () => {
         const temp = buildTempRestaurant({
             ownerId: "user-1",
             ownerName: "Alex",
@@ -162,7 +162,7 @@ describe("restaurant shape translators", () => {
         }).toThrow("still syncing")
     })
 
-    it("accepts real ids in the temp guard", () => {
+    test("accepts real ids in the temp guard", () => {
         expect(() => {
             // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- test-only restaurant id
             assertRealRestaurantId("r1" as unknown as Id<"restaurants">)
@@ -171,7 +171,7 @@ describe("restaurant shape translators", () => {
 })
 
 describe("restaurant collections", () => {
-    it("shows an optimistic update immediately and converges on sync", async () => {
+    test("shows an optimistic update immediately and converges on sync", async () => {
         const persist = mockPersist()
         const backend = createSeededClient({ liveRows: [restaurantFixture()] })
         const collections = getSessionCollections(backend.client, persist, SESSION)
@@ -191,7 +191,7 @@ describe("restaurant collections", () => {
         expect(collections.owner.get(id)?.name).toBe("Sushi Bar")
     })
 
-    it("rolls back an optimistic update when persistence fails", async () => {
+    test("rolls back an optimistic update when persistence fails", async () => {
         const persist = mockPersist()
         persist.updateRestaurant.mockRejectedValueOnce(new Error("mutation failed"))
         const backend = createSeededClient({ liveRows: [restaurantFixture()] })
@@ -210,7 +210,7 @@ describe("restaurant collections", () => {
         expect(collections.owner.get(id)?.name).toBe("Trattoria Verde")
     })
 
-    it("shows an optimistic insert immediately and swaps in the synced row", async () => {
+    test("shows an optimistic insert immediately and swaps in the synced row", async () => {
         const persist = mockPersist()
         const backend = createSeededClient()
         const collections = getSessionCollections(backend.client, persist, SESSION)
@@ -231,7 +231,7 @@ describe("restaurant collections", () => {
         expect(collections.owner.size).toBe(1)
     })
 
-    it("resolves the synced id by client mutation key after a delayed ack", async () => {
+    test("resolves the synced id by client mutation key after a delayed ack", async () => {
         const persist = mockPersist()
         const backend = createSeededClient()
         const collections = getSessionCollections(backend.client, persist, SESSION)
@@ -256,7 +256,7 @@ describe("restaurant collections", () => {
         await expect(pending).resolves.toBe(realId)
     })
 
-    it("times out resolving an id that never syncs", async () => {
+    test("times out resolving an id that never syncs", async () => {
         const persist = mockPersist()
         const backend = createSeededClient()
         const collections = getSessionCollections(backend.client, persist, SESSION)
@@ -265,7 +265,7 @@ describe("restaurant collections", () => {
         await expect(resolveRestaurantIdByKey(collections.owner, "user-1:ghost", 50)).rejects.toThrow("Timed out")
     })
 
-    it("persists rapid consecutive inserts under distinct keys", async () => {
+    test("persists rapid consecutive inserts under distinct keys", async () => {
         const persist = mockPersist()
         const backend = createSeededClient()
         const collections = getSessionCollections(backend.client, persist, SESSION)
@@ -299,7 +299,7 @@ describe("restaurant collections", () => {
         expect(keys).toEqual(["user-1:rapid-1", "user-1:rapid-2"])
     })
 
-    it("scopes synced rows per session key", async () => {
+    test("scopes synced rows per session key", async () => {
         const persist = mockPersist()
         const backend = createSeededClient({ liveRows: [restaurantFixture()] })
 
@@ -317,7 +317,7 @@ describe("restaurant collections", () => {
         expect(annaAgain.owner.size).toBe(0)
     })
 
-    it("rolls back an optimistic insert when persistence fails", async () => {
+    test("rolls back an optimistic insert when persistence fails", async () => {
         const persist = mockPersist()
         persist.addRestaurant.mockRejectedValueOnce(new Error("mutation failed"))
         const backend = createSeededClient()
@@ -341,7 +341,7 @@ describe("restaurant collections", () => {
         expect(collections.owner.size).toBe(0)
     })
 
-    it("clears user-scoped queries while keeping shared ones", () => {
+    test("clears user-scoped queries while keeping shared ones", () => {
         const queryClient = new QueryClient()
         queryClient.setQueryData(["restaurants:get", "{}"], [{ name: "Stale" }])
         queryClient.setQueryData(["friendships:listFriends", "{}"], [])
@@ -364,7 +364,7 @@ describe("restaurant collections", () => {
         expect(queryClient.getQueryData(["auth:getAuthMethods", "{}"])).toEqual({ password: true })
     })
 
-    it("returns collection rows from the restaurants hook", async () => {
+    test("returns collection rows from the restaurants hook", async () => {
         vi.mocked(authClient.getSession).mockResolvedValue({
             data: { user: { id: "user-1", email: "alex@example.com", name: "Alex" } },
             error: null,
@@ -386,7 +386,7 @@ describe("restaurant collections", () => {
         })
     })
 
-    it("returns undefined from the restaurants hook when signed out", async () => {
+    test("returns undefined from the restaurants hook when signed out", async () => {
         vi.mocked(authClient.getSession).mockResolvedValue({ data: { user: null }, error: null })
         const backend = createSeededClient({ liveRows: [restaurantFixture()] })
         injectSyncClient(backend.client)
@@ -417,7 +417,7 @@ describe("restaurant collections", () => {
         expect(backend.subscriberCount()).toBe(0)
     })
 
-    it("isolates account data across sign-out to a different account", async () => {
+    test("isolates account data across sign-out to a different account", async () => {
         vi.mocked(authClient.getSession).mockResolvedValue({
             data: { user: { id: "anna", email: "anna@example.com", name: "Anna" } },
             error: null,
@@ -455,7 +455,7 @@ describe("restaurant collections", () => {
         expect(second.result.current?.some((r) => r.ownerId === "anna")).toBe(false)
     })
 
-    it("waits for the convex token before subscribing", async () => {
+    test("waits for the convex token before subscribing", async () => {
         vi.mocked(authClient.getSession).mockResolvedValue({
             data: { user: { id: "user-1", email: "alex@example.com", name: "Alex" } },
             error: null,
@@ -493,7 +493,7 @@ describe("restaurant collections", () => {
         expect(backend.subscriberCount()).toBeGreaterThan(0)
     })
 
-    it("holds subscriptions until convex auth installs", async () => {
+    test("holds subscriptions until convex auth installs", async () => {
         vi.mocked(authClient.getSession).mockResolvedValue({
             data: { user: { id: "user-1", email: "alex@example.com", name: "Alex" } },
             error: null,
@@ -522,7 +522,7 @@ describe("restaurant collections", () => {
         expect(backend.subscriberCount()).toBeGreaterThan(0)
     })
 
-    it("resets user-scoped query data when the session changes", async () => {
+    test("resets user-scoped query data when the session changes", async () => {
         vi.mocked(authClient.getSession).mockResolvedValue({
             data: { user: { id: "user-1", email: "alex@example.com", name: "Alex" } },
             error: null,

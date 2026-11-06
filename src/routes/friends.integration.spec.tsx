@@ -1,7 +1,7 @@
 import { QueryClient } from "@tanstack/react-query"
 import { RouterProvider, createMemoryHistory, createRouter } from "@tanstack/react-router"
 import { fireEvent, render, screen, waitFor } from "@testing-library/react"
-import { describe, expect, it, vi } from "vitest"
+import { describe, expect, test, vi } from "vitest"
 
 import { ConvexProvider } from "@core/convex-client"
 import { type RestaurantDoc } from "@core/db/restaurants"
@@ -103,7 +103,7 @@ async function renderAt(path: string): Promise<void> {
 }
 
 describe("friends screen", () => {
-    it("renders friends with their recent discoveries", async () => {
+    test("renders friends with their recent discoveries", async () => {
         testUser = { id: "user-1", email: "alex@example.com", name: "Alex" }
         querySeeds.clear()
         seedFriends()
@@ -117,7 +117,7 @@ describe("friends screen", () => {
         })
     })
 
-    it("renders incoming and outgoing requests", async () => {
+    test("renders incoming and outgoing requests", async () => {
         testUser = { id: "user-1", email: "alex@example.com", name: "Alex" }
         querySeeds.clear()
         seedFriends()
@@ -131,7 +131,7 @@ describe("friends screen", () => {
         expect(screen.getByText("Request sent")).toBeInTheDocument()
     })
 
-    it("accepts an incoming request", async () => {
+    test("accepts an incoming request", async () => {
         testUser = { id: "user-1", email: "alex@example.com", name: "Alex" }
         querySeeds.clear()
         seedFriends()
@@ -148,7 +148,7 @@ describe("friends screen", () => {
         })
     })
 
-    it("removes a friend", async () => {
+    test("removes a friend", async () => {
         testUser = { id: "user-1", email: "alex@example.com", name: "Alex" }
         querySeeds.clear()
         seedFriends()
@@ -165,7 +165,7 @@ describe("friends screen", () => {
         })
     })
 
-    it("invites a friend by email", async () => {
+    test("invites a friend by email", async () => {
         testUser = { id: "user-1", email: "alex@example.com", name: "Alex" }
         querySeeds.clear()
         seedFriends()
@@ -186,7 +186,7 @@ describe("friends screen", () => {
         })
     })
 
-    it("shows an empty state with no friends", async () => {
+    test("shows an empty state with no friends", async () => {
         testUser = { id: "user-1", email: "alex@example.com", name: "Alex" }
         querySeeds.clear()
         seedQuery("friendships:listFriends", undefined, [])

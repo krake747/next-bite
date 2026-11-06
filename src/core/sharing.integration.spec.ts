@@ -1,5 +1,5 @@
 import { convexTest, type TestConvexForDataModel } from "convex-test"
-import { describe, expect, it, vi } from "vitest"
+import { describe, expect, test, vi } from "vitest"
 
 import { api } from "@convex/_generated/api"
 import { type DataModel, type Id } from "@convex/_generated/dataModel"
@@ -31,7 +31,7 @@ async function createRestaurant(t: TestConvexForDataModel<DataModel>, subject: s
 }
 
 describe("sharing and social gating", () => {
-    it("lets a shared user react and blocks strangers", async () => {
+    test("lets a shared user react and blocks strangers", async () => {
         const t = setup()
         await registerUser(t, "anna", "anna@example.com")
         await registerUser(t, "ben", "ben@example.com")
@@ -45,7 +45,7 @@ describe("sharing and social gating", () => {
         )
     })
 
-    it("rejects non-owner writes and shares", async () => {
+    test("rejects non-owner writes and shares", async () => {
         const t = setup()
         await registerUser(t, "anna", "anna@example.com")
         await registerUser(t, "ben", "ben@example.com")
@@ -62,7 +62,7 @@ describe("sharing and social gating", () => {
         ).rejects.toThrow("only the owner")
     })
 
-    it("revokes reactions after unshare", async () => {
+    test("revokes reactions after unshare", async () => {
         const t = setup()
         await registerUser(t, "anna", "anna@example.com")
         await registerUser(t, "ben", "ben@example.com")
@@ -79,7 +79,7 @@ describe("sharing and social gating", () => {
         )
     })
 
-    it("rejects anonymous and non-owner enrichment actions", async () => {
+    test("rejects anonymous and non-owner enrichment actions", async () => {
         const t = setup()
         await registerUser(t, "anna", "anna@example.com")
         await registerUser(t, "ben", "ben@example.com")
@@ -92,7 +92,7 @@ describe("sharing and social gating", () => {
         await expect(t.action(api.restaurants.refreshOpeningHours, { restaurantId })).rejects.toThrow("Unauthorized")
     })
 
-    it("accepts group invitations idempotently", async () => {
+    test("accepts group invitations idempotently", async () => {
         const t = setup()
         await registerUser(t, "anna", "anna@example.com")
         await registerUser(t, "ben", "ben@example.com")
@@ -110,7 +110,7 @@ describe("sharing and social gating", () => {
         expect(groups).toHaveLength(1)
     })
 
-    it("accepts friend invitations idempotently on both sides", async () => {
+    test("accepts friend invitations idempotently on both sides", async () => {
         const t = setup()
         await registerUser(t, "anna", "anna@example.com")
         await registerUser(t, "ben", "ben@example.com")
@@ -127,7 +127,7 @@ describe("sharing and social gating", () => {
         expect(benFriends).toEqual([{ authUserId: "anna", name: "anna" }])
     })
 
-    it("lists a group's shared restaurants for members only", async () => {
+    test("lists a group's shared restaurants for members only", async () => {
         const t = setup()
         await registerUser(t, "anna", "anna@example.com")
         await registerUser(t, "ben", "ben@example.com")
@@ -145,7 +145,7 @@ describe("sharing and social gating", () => {
         )
     })
 
-    it("reads group identity plus members for members and nothing for strangers", async () => {
+    test("reads group identity plus members for members and nothing for strangers", async () => {
         const t = setup()
         await registerUser(t, "anna", "anna@example.com")
         await registerUser(t, "ben", "ben@example.com")
@@ -160,7 +160,7 @@ describe("sharing and social gating", () => {
         expect(await asUser(t, "cas").query(api.groups.getGroup, { groupId })).toBeNull()
     })
 
-    it("rejects group writes without permission", async () => {
+    test("rejects group writes without permission", async () => {
         const t = setup()
         await registerUser(t, "anna", "anna@example.com")
         await registerUser(t, "ben", "ben@example.com")
@@ -183,7 +183,7 @@ describe("sharing and social gating", () => {
         ).rejects.toThrow("only the owner")
     })
 
-    it("requests by email and surfaces pending requests both ways", async () => {
+    test("requests by email and surfaces pending requests both ways", async () => {
         const t = setup()
         await registerUser(t, "anna", "anna@example.com")
         await registerUser(t, "ben", "ben@example.com")
@@ -208,7 +208,7 @@ describe("sharing and social gating", () => {
         expect((await asUser(t, "anna").query(api.friendships.listFriendRequests, {})).outgoing).toEqual([])
     })
 
-    it("rejects friend requests to self", async () => {
+    test("rejects friend requests to self", async () => {
         const t = setup()
         await registerUser(t, "anna", "anna@example.com")
 
@@ -217,7 +217,7 @@ describe("sharing and social gating", () => {
         ).rejects.toThrow("yourself")
     })
 
-    it("rejects friend requests to unknown emails", async () => {
+    test("rejects friend requests to unknown emails", async () => {
         const t = setup()
         await registerUser(t, "anna", "anna@example.com")
 
@@ -226,7 +226,7 @@ describe("sharing and social gating", () => {
         ).rejects.toThrow("Nobody joined")
     })
 
-    it("rejects accepting without a pending request", async () => {
+    test("rejects accepting without a pending request", async () => {
         const t = setup()
         await registerUser(t, "anna", "anna@example.com")
         await registerUser(t, "cas", "cas@example.com")
@@ -236,7 +236,7 @@ describe("sharing and social gating", () => {
         ).rejects.toThrow("No pending friend request")
     })
 
-    it("completes mutual requests as friends without dangling pendings", async () => {
+    test("completes mutual requests as friends without dangling pendings", async () => {
         const t = setup()
         await registerUser(t, "anna", "anna@example.com")
         await registerUser(t, "ben", "ben@example.com")
@@ -250,7 +250,7 @@ describe("sharing and social gating", () => {
         expect((await asUser(t, "ben").query(api.friendships.listFriendRequests, {})).incoming).toEqual([])
     })
 
-    it("resolves mixed-case emails", async () => {
+    test("resolves mixed-case emails", async () => {
         const t = setup()
         await registerUser(t, "anna", "anna@example.com")
         await registerUser(t, "ben", "Ben@Example.com")
@@ -261,7 +261,7 @@ describe("sharing and social gating", () => {
         expect(bensView.incoming).toEqual([{ authUserId: "anna", name: "anna" }])
     })
 
-    it("lists only visible discoveries per friend", async () => {
+    test("lists only visible discoveries per friend", async () => {
         const t = setup()
         await registerUser(t, "anna", "anna@example.com")
         await registerUser(t, "ben", "ben@example.com")
@@ -281,7 +281,7 @@ describe("sharing and social gating", () => {
         ).rejects.toThrow("friends only")
     })
 
-    it("removes friendships on both sides", async () => {
+    test("removes friendships on both sides", async () => {
         const t = setup()
         await registerUser(t, "anna", "anna@example.com")
         await registerUser(t, "ben", "ben@example.com")

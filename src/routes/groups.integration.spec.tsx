@@ -1,7 +1,7 @@
 import { QueryClient } from "@tanstack/react-query"
 import { RouterProvider, createMemoryHistory, createRouter } from "@tanstack/react-router"
 import { fireEvent, render, screen, waitFor, within } from "@testing-library/react"
-import { describe, expect, it, vi } from "vitest"
+import { describe, expect, test, vi } from "vitest"
 
 import { ConvexProvider } from "@core/convex-client"
 import { type RestaurantDoc } from "@core/db/restaurants"
@@ -92,7 +92,7 @@ function ownerRestaurant(overrides?: Partial<Omit<RestaurantDoc, "_id">> & { _id
 }
 
 describe("groups list", () => {
-    it("renders the caller's groups", async () => {
+    test("renders the caller's groups", async () => {
         testUser = { id: "user-1", email: "alex@example.com", name: "Alex" }
         querySeeds.clear()
         seedQuery("groups:listMyGroups", undefined, [{ group: { _id: "g1", name: "Food Crew" }, role: "admin" }])
@@ -103,7 +103,7 @@ describe("groups list", () => {
         })
     })
 
-    it("shows an actionable empty state with no groups", async () => {
+    test("shows an actionable empty state with no groups", async () => {
         testUser = { id: "user-1", email: "alex@example.com", name: "Alex" }
         querySeeds.clear()
         seedQuery("groups:listMyGroups", undefined, [])
@@ -115,7 +115,7 @@ describe("groups list", () => {
         expect(screen.getByLabelText("New group")).toBeInTheDocument()
     })
 
-    it("asks signed-out visitors to sign in", async () => {
+    test("asks signed-out visitors to sign in", async () => {
         testUser = null
         querySeeds.clear()
         await renderAt("/groups")
@@ -125,7 +125,7 @@ describe("groups list", () => {
         })
     })
 
-    it("creates a group from the form", async () => {
+    test("creates a group from the form", async () => {
         testUser = { id: "user-1", email: "alex@example.com", name: "Alex" }
         querySeeds.clear()
         seedQuery("groups:listMyGroups", undefined, [])
@@ -177,7 +177,7 @@ describe("group detail", () => {
         ])
     }
 
-    it("renders identity and members", async () => {
+    test("renders identity and members", async () => {
         testUser = { id: "user-1", email: "alex@example.com", name: "Alex" }
         querySeeds.clear()
         seedDetail()
@@ -189,7 +189,7 @@ describe("group detail", () => {
         expect(within(screen.getByLabelText("Members")).getByText("2 members")).toBeInTheDocument()
     })
 
-    it("renders shared places with social counts", async () => {
+    test("renders shared places with social counts", async () => {
         testUser = { id: "user-1", email: "alex@example.com", name: "Alex" }
         querySeeds.clear()
         seedDetail()
@@ -203,7 +203,7 @@ describe("group detail", () => {
         })
     })
 
-    it("shows the not-found card to strangers", async () => {
+    test("shows the not-found card to strangers", async () => {
         testUser = { id: "user-1", email: "alex@example.com", name: "Alex" }
         querySeeds.clear()
         seedQuery("groups:listMyGroups", undefined, [])
@@ -217,7 +217,7 @@ describe("group detail", () => {
         })
     })
 
-    it("removes only the caller's own shared place", async () => {
+    test("removes only the caller's own shared place", async () => {
         testUser = { id: "user-1", email: "alex@example.com", name: "Alex" }
         querySeeds.clear()
         seedDetail()
@@ -237,7 +237,7 @@ describe("group detail", () => {
         })
     })
 
-    it("adds an unshared restaurant to the group", async () => {
+    test("adds an unshared restaurant to the group", async () => {
         testUser = { id: "user-1", email: "alex@example.com", name: "Alex" }
         querySeeds.clear()
         seedDetail()

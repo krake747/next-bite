@@ -1,6 +1,6 @@
 import { render, screen, waitFor } from "@testing-library/react"
 import { ConvexClient } from "convex/browser"
-import { describe, expect, it, vi } from "vitest"
+import { describe, expect, test, vi } from "vitest"
 
 import { AuthProvider } from "./auth-provider"
 
@@ -30,7 +30,7 @@ vi.mock("./auth-client", () => ({
 }))
 
 describe("AuthProvider", () => {
-    it("provides the Better Auth session token to the Convex client", async () => {
+    test("provides the Better Auth session token to the Convex client", async () => {
         const setAuth = vi.spyOn(ConvexClient.prototype, "setAuth").mockImplementation(() => {})
         try {
             render(

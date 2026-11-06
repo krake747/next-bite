@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest"
+import { describe, expect, test } from "vitest"
 
 import { type Id } from "@convex/_generated/dataModel"
 
@@ -17,7 +17,7 @@ const snapshot: SocialSnapshot = {
 }
 
 describe("withoutTempIds", () => {
-    it("drops optimistic ids while keeping real ones", () => {
+    test("drops optimistic ids while keeping real ones", () => {
         // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- test-only restaurant ids
         const real = "r1" as unknown as Id<"restaurants">
         // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- test-only temp id
@@ -29,7 +29,7 @@ describe("withoutTempIds", () => {
 })
 
 describe("summarizeSocial", () => {
-    it("aggregates counts, personal state, and chronological comments", () => {
+    test("aggregates counts, personal state, and chronological comments", () => {
         const summary = summarizeSocial("aaa", snapshot, "u1")
         expect(summary.wantCount).toBe(1)
         expect(summary.beenCount).toBe(1)
@@ -40,7 +40,7 @@ describe("summarizeSocial", () => {
         expect(summary.interestedNames).toEqual(["Alex", "Priya"])
     })
 
-    it("isolates restaurants and treats guests as non-participants", () => {
+    test("isolates restaurants and treats guests as non-participants", () => {
         expect(summarizeSocial("bbb", snapshot, null)).toEqual({
             wantCount: 0,
             beenCount: 0,
@@ -52,7 +52,7 @@ describe("summarizeSocial", () => {
         })
     })
 
-    it("marks others as non-participants", () => {
+    test("marks others as non-participants", () => {
         const summary = summarizeSocial("aaa", snapshot, "u9")
         expect(summary.wanted).toBe(false)
         expect(summary.liked).toBe(false)
@@ -61,7 +61,7 @@ describe("summarizeSocial", () => {
 })
 
 describe("orderFeedByRecency", () => {
-    it("sorts newest first without mutating the input", () => {
+    test("sorts newest first without mutating the input", () => {
         const input = [{ _creationTime: 1 }, { _creationTime: 3 }, { _creationTime: 2 }]
         const ordered = orderFeedByRecency(input)
         expect(ordered.map((item) => item._creationTime)).toEqual([3, 2, 1])
@@ -70,7 +70,7 @@ describe("orderFeedByRecency", () => {
 })
 
 describe("feedTextFor", () => {
-    it("prefers notes and falls back to an added line", () => {
+    test("prefers notes and falls back to an added line", () => {
         expect(feedTextFor("Verde", "Great pasta.")).toBe("Great pasta.")
         expect(feedTextFor("Verde", "  ")).toBe("Added Verde.")
         expect(feedTextFor("Verde", undefined)).toBe("Added Verde.")

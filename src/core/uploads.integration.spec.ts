@@ -1,5 +1,5 @@
 import { convexTest, type TestConvexForDataModel } from "convex-test"
-import { describe, expect, it, vi } from "vitest"
+import { describe, expect, test, vi } from "vitest"
 
 import { api, internal } from "@convex/_generated/api"
 import { type DataModel, type Id } from "@convex/_generated/dataModel"
@@ -76,7 +76,7 @@ function imageEntry(storageId: string): { url: string; storageId: string } {
 }
 
 describe("upload ownership", () => {
-    it("refuses to delete a storage ID that is not part of the restaurant", async () => {
+    test("refuses to delete a storage ID that is not part of the restaurant", async () => {
         const t = setup()
         await registerUser(t, "anna")
         const restaurantId = await createRestaurant(t, "anna")
@@ -94,7 +94,7 @@ describe("upload ownership", () => {
         ).rejects.toThrow("not part of this restaurant")
     })
 
-    it("deletes a matching image entry", async () => {
+    test("deletes a matching image entry", async () => {
         const t = setup()
         await registerUser(t, "anna")
         const restaurantId = await createRestaurant(t, "anna")
@@ -112,7 +112,7 @@ describe("upload ownership", () => {
         expect(owned.find((r) => r._id === restaurantId)?.images).toEqual([])
     })
 
-    it("refuses to attach an image uploaded by someone else", async () => {
+    test("refuses to attach an image uploaded by someone else", async () => {
         const t = setup()
         await registerUser(t, "anna")
         await registerUser(t, "ben")
@@ -123,7 +123,7 @@ describe("upload ownership", () => {
         await expect(attachImage(t, "anna", restaurantId, bensFile)).rejects.toThrow("does not belong")
     })
 
-    it("refuses to delete a grafted image with a foreign ownership record", async () => {
+    test("refuses to delete a grafted image with a foreign ownership record", async () => {
         const t = setup()
         await registerUser(t, "anna")
         await registerUser(t, "ben")
@@ -143,7 +143,7 @@ describe("upload ownership", () => {
         ).rejects.toThrow("does not belong")
     })
 
-    it("refuses to attach a storage ID with no ownership record", async () => {
+    test("refuses to attach a storage ID with no ownership record", async () => {
         const t = setup()
         await registerUser(t, "anna")
         await registerUser(t, "ben")
@@ -153,7 +153,7 @@ describe("upload ownership", () => {
         await expect(attachImage(t, "ben", restaurantId, unrecordedId)).rejects.toThrow("does not belong")
     })
 
-    it("refuses to attach a file already attached to another restaurant", async () => {
+    test("refuses to attach a file already attached to another restaurant", async () => {
         const t = setup()
         await registerUser(t, "anna")
         const firstId = await createRestaurant(t, "anna")
@@ -165,7 +165,7 @@ describe("upload ownership", () => {
         await expect(attachImage(t, "anna", secondId, sharedId)).rejects.toThrow("another restaurant")
     })
 
-    it("refuses orphan cleanup of a file attached to a restaurant", async () => {
+    test("refuses orphan cleanup of a file attached to a restaurant", async () => {
         const t = setup()
         await registerUser(t, "anna")
         const restaurantId = await createRestaurant(t, "anna")
@@ -178,7 +178,7 @@ describe("upload ownership", () => {
         ).rejects.toThrow("attached")
     })
 
-    it("refuses to delete an image with no ownership record", async () => {
+    test("refuses to delete an image with no ownership record", async () => {
         const t = setup()
         await registerUser(t, "anna")
         await registerUser(t, "ben")
@@ -194,7 +194,7 @@ describe("upload ownership", () => {
         ).rejects.toThrow("does not belong")
     })
 
-    it("refuses restaurant cleanup for a storage ID with no ownership record", async () => {
+    test("refuses restaurant cleanup for a storage ID with no ownership record", async () => {
         const t = setup()
         await registerUser(t, "anna")
         await registerUser(t, "ben")
@@ -206,7 +206,7 @@ describe("upload ownership", () => {
         ).rejects.toThrow("does not belong")
     })
 
-    it("removes the restaurant but leaves foreign and unrecorded blobs alone", async () => {
+    test("removes the restaurant but leaves foreign and unrecorded blobs alone", async () => {
         const t = setup()
         await registerUser(t, "anna")
         await registerUser(t, "ben")
@@ -227,7 +227,7 @@ describe("upload ownership", () => {
         })
     })
 
-    it("refuses orphan cleanup from a non-owner", async () => {
+    test("refuses orphan cleanup from a non-owner", async () => {
         const t = setup()
         await registerUser(t, "anna")
         await registerUser(t, "ben")
@@ -239,7 +239,7 @@ describe("upload ownership", () => {
         ).rejects.toThrow("does not belong")
     })
 
-    it("lets the owner clean up an orphan upload", async () => {
+    test("lets the owner clean up an orphan upload", async () => {
         const t = setup()
         await registerUser(t, "anna")
         const orphanId = await storeBlob(t)
@@ -252,7 +252,7 @@ describe("upload ownership", () => {
         ).rejects.toThrow("does not belong")
     })
 
-    it("deduplicates rapid double-submits with the same client mutation key", async () => {
+    test("deduplicates rapid double-submits with the same client mutation key", async () => {
         const t = setup()
         await registerUser(t, "anna")
         const key = "anna:repeated-key"
@@ -276,7 +276,7 @@ describe("upload ownership", () => {
         expect(owned.find((r) => r._id === first)?.clientMutationId).toBe(key)
     })
 
-    it("keeps distinct client mutation keys as distinct restaurants", async () => {
+    test("keeps distinct client mutation keys as distinct restaurants", async () => {
         const t = setup()
         await registerUser(t, "anna")
 
@@ -297,7 +297,7 @@ describe("upload ownership", () => {
         expect(owned).toHaveLength(2)
     })
 
-    it("scopes client mutation keys per user", async () => {
+    test("scopes client mutation keys per user", async () => {
         const t = setup()
         await registerUser(t, "anna")
         await registerUser(t, "ben")
@@ -319,7 +319,7 @@ describe("upload ownership", () => {
         expect(bens).not.toEqual(annas)
     })
 
-    it("refuses restaurant cleanup for a storage ID outside the restaurant", async () => {
+    test("refuses restaurant cleanup for a storage ID outside the restaurant", async () => {
         const t = setup()
         await registerUser(t, "anna")
         const restaurantId = await createRestaurant(t, "anna")

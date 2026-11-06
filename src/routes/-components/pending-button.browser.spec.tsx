@@ -1,10 +1,10 @@
 import { render, screen } from "@testing-library/react"
-import { describe, it, expect } from "vitest"
+import { describe, test, expect } from "vitest"
 
 import { PendingButton } from "./pending-button"
 
 describe("PendingButton", () => {
-    it("disables with a spinner while pending", () => {
+    test("disables with a spinner while pending", () => {
         render(
             <PendingButton type="submit" pending={true}>
                 Sign in
@@ -15,7 +15,7 @@ describe("PendingButton", () => {
         expect(button.getAttribute("aria-busy")).toBe("true")
     })
 
-    it("renders an enabled button when idle", () => {
+    test("renders an enabled button when idle", () => {
         render(
             <PendingButton type="submit" pending={false}>
                 Sign in

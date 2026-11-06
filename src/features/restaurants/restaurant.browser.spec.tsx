@@ -1,13 +1,13 @@
 import { render, screen } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
-import { describe, expect, it, vi } from "vitest"
+import { describe, expect, test, vi } from "vitest"
 
 import { RestaurantGallery } from "./restaurant-gallery"
 import { RestaurantHeader } from "./restaurant-header"
 import { RestaurantInterestButton } from "./restaurant-interest-button"
 
 describe("RestaurantHeader", () => {
-    it("shows name, menu, attribution, location, and hours", async () => {
+    test("shows name, menu, attribution, location, and hours", async () => {
         const user = userEvent.setup()
         const onShowHours = vi.fn<() => void>()
         render(
@@ -48,7 +48,7 @@ describe("RestaurantHeader", () => {
 describe("RestaurantGallery", () => {
     const photos = [{ url: "https://example.com/1.jpg", author: "Alex" }, { url: "https://example.com/2.jpg" }]
 
-    it("shows the hero with cuisine badge, count button, and viewer", async () => {
+    test("shows the hero with cuisine badge, count button, and viewer", async () => {
         const user = userEvent.setup()
         render(<RestaurantGallery photos={photos} name="Trattoria Verde" cuisine="Italian" />)
         expect(screen.getByText("Italian")).toBeInTheDocument()
@@ -57,7 +57,7 @@ describe("RestaurantGallery", () => {
         expect(screen.getByText("Image Gallery (1/2)")).toBeInTheDocument()
     })
 
-    it("falls back to a cuisine placeholder without photos", () => {
+    test("falls back to a cuisine placeholder without photos", () => {
         render(<RestaurantGallery photos={[]} name="Trattoria Verde" cuisine="Italian" />)
         expect(screen.getAllByText("Italian").length).toBeGreaterThan(0)
         expect(screen.queryByRole("button", { name: /photos|View/ })).not.toBeInTheDocument()
@@ -65,7 +65,7 @@ describe("RestaurantGallery", () => {
 })
 
 describe("RestaurantInterestButton", () => {
-    it("toggles want-to-try through its callback", async () => {
+    test("toggles want-to-try through its callback", async () => {
         const user = userEvent.setup()
         const onToggleWant = vi.fn<() => void>()
         const { rerender } = render(

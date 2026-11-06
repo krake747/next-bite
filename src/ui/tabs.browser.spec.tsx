@@ -1,11 +1,11 @@
 import { render, screen } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
-import { describe, expect, it, vi } from "vitest"
+import { describe, expect, test, vi } from "vitest"
 
 import { Tabs, TabsList, TabsPanel, TabsTab } from "./tabs"
 
 describe("Tabs", () => {
-    it("switches panels and reports the value", async () => {
+    test("switches panels and reports the value", async () => {
         const user = userEvent.setup()
         const onValueChange = vi.fn<(value: string | number) => void>()
         render(

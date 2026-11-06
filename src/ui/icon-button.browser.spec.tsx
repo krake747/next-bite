@@ -1,10 +1,10 @@
 import { render, screen } from "@testing-library/react"
-import { describe, it, expect } from "vitest"
+import { describe, test, expect } from "vitest"
 
 import { IconButton } from "./icon-button"
 
 describe("IconButton", () => {
-    it("names the button from the label", () => {
+    test("names the button from the label", () => {
         render(
             <IconButton label="Close">
                 <span>x</span>
@@ -15,7 +15,7 @@ describe("IconButton", () => {
         expect(button.dataset.slot).toBe("icon-button")
     })
 
-    it("prefers an explicit title", () => {
+    test("prefers an explicit title", () => {
         render(
             <IconButton label="Refresh hours" title="Refresh hours">
                 <span>x</span>
@@ -24,7 +24,7 @@ describe("IconButton", () => {
         expect(screen.getByRole("button", { name: "Refresh hours" }).getAttribute("title")).toBe("Refresh hours")
     })
 
-    it("passes disabled through", () => {
+    test("passes disabled through", () => {
         render(
             <IconButton label="Find hours" disabled>
                 <span>x</span>

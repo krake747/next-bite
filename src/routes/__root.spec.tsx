@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest"
+import { describe, expect, test } from "vitest"
 
 import { Route } from "@routes/__root"
 
@@ -11,7 +11,7 @@ type FontPreload = {
 }
 
 describe("root head", () => {
-    it("preloads the above-the-fold display and body fonts", () => {
+    test("preloads the above-the-fold display and body fonts", () => {
         expect(Route.options.head).toBeDefined()
         // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- spec-only narrowing of the route head fn to its links payload
         const head = Route.options.head as unknown as () => { links: ReadonlyArray<FontPreload> }

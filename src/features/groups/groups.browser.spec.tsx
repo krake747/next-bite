@@ -1,5 +1,5 @@
 import { render, screen } from "@testing-library/react"
-import { describe, expect, it } from "vitest"
+import { describe, expect, test } from "vitest"
 
 import { GroupCard } from "./group-card"
 import { GroupHeader } from "./group-header"
@@ -14,7 +14,7 @@ const restaurants = [
 ]
 
 describe("GroupMembers", () => {
-    it("shows members and invites when empty", () => {
+    test("shows members and invites when empty", () => {
         const { rerender } = render(<GroupMembers members={members} />)
         expect(screen.getByText("3 members")).toBeInTheDocument()
         rerender(<GroupMembers members={[]} />)
@@ -23,7 +23,7 @@ describe("GroupMembers", () => {
 })
 
 describe("GroupHeader", () => {
-    it("shows identity, counts, and members", () => {
+    test("shows identity, counts, and members", () => {
         render(<GroupHeader name="Food Crew" description="Weekend plans" members={members} restaurantCount={2} />)
         expect(screen.getByRole("heading", { name: "Food Crew" })).toBeInTheDocument()
         expect(screen.getByText("Weekend plans")).toBeInTheDocument()
@@ -33,21 +33,21 @@ describe("GroupHeader", () => {
 })
 
 describe("SharedRestaurantList", () => {
-    it("lists shared spots", () => {
+    test("lists shared spots", () => {
         render(<SharedRestaurantList items={restaurants} />)
         expect(screen.getByText("Trattoria Verde")).toBeInTheDocument()
         expect(screen.getByText("Added by Alex")).toBeInTheDocument()
         expect(screen.getByText("Sushi Bar")).toBeInTheDocument()
     })
 
-    it("invites sharing when empty", () => {
+    test("invites sharing when empty", () => {
         render(<SharedRestaurantList items={[]} />)
         expect(screen.getByText(/Share somewhere/)).toBeInTheDocument()
     })
 })
 
 describe("GroupCard", () => {
-    it("composes header, list, and members", () => {
+    test("composes header, list, and members", () => {
         render(<GroupCard name="Food Crew" members={members} restaurants={restaurants} />)
         expect(screen.getByRole("heading", { name: "Food Crew" })).toBeInTheDocument()
         expect(screen.getByText("Trattoria Verde")).toBeInTheDocument()

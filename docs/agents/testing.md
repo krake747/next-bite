@@ -41,12 +41,12 @@ Run tests only for files you change. Run the full suite only when asked.
 Pure logic, no DOM. Functions in `src/core/` are the primary target.
 
 ```ts
-import { describe, it, expect } from "vitest"
+import { describe, test, expect } from "vitest"
 
 import { formatFileSize } from "./image-utils"
 
 describe("formatFileSize", () => {
-  it("formats kilobytes", () => {
+  test("formats kilobytes", () => {
     expect(formatFileSize(1536)).toBe("1.5 KB")
   })
 })
@@ -56,7 +56,9 @@ describe("formatFileSize", () => {
   `src/core/image-utils.ts`
 - Prefer testing exported functions at their public interface
 - Do not test implementation details (internals, private helpers)
-- Keep timeouts in `vite.config.ts` test projects, never `vi.setConfig` timeouts in spec files
+- Keep timeouts in `vite.config.ts` test projects, never `vi.setConfig` timeouts in spec files. The
+  rule is `slowTestThreshold = testTimeout - 500` in every project, so slow warnings fire on the
+  same margin before the timeout kills the test
 
 ## Browser tests
 
@@ -65,12 +67,12 @@ Component tests with happy-dom plus @testing-library/react. Components in `src/u
 
 ```tsx
 import { render, screen } from "@testing-library/react"
-import { describe, it, expect } from "vitest"
+import { describe, test, expect } from "vitest"
 
 import { Badge } from "./badge"
 
 describe("Badge", () => {
-  it("renders children", () => {
+  test("renders children", () => {
     render(<Badge>Hello</Badge>)
     expect(screen.getByText("Hello")).toBeInTheDocument()
   })
@@ -86,8 +88,10 @@ describe("Badge", () => {
 ## MSW for HTTP
 
 Selected specs control HTTP at the boundary with Mock Service Worker (`msw/node` `setupServer`).
-Lifecycle lives in `src/vitest.setup.ts` (listen with `onUnhandledFrame: "error"`, `resetHandlers`
-after each test, `close` after the suite).
+Only specs that touch HTTP import `server` from `src/vitest.msw.setup.ts`, which registers its own
+`listen` (with `onUnhandledFrame: "error"`), `resetHandlers`, and `close` lifecycle for that file.
+All DOM projects share the minimal `src/vitest.setup.ts` (jest-dom matchers plus `cleanup`); the MSW
+server never starts globally, so non-HTTP specs pay no interceptor cost.
 
 Use `server.use(...)` per test for one-off sequences. Prefer that over `vi.stubGlobal("fetch")`. Do
 not add Testcontainers or a live backend dependency to these tests.
@@ -105,5 +109,8 @@ the unspread value, and the helper already normalises that. Hooks that call `use
 
 ## Configuration
 
-- `vite.config.ts` holds the Vitest projects (timeouts, environments, aliases)
-- `src/vitest.setup.ts` wires `@testing-library/jest-dom/vitest` matchers plus the MSW lifecycle
+- `vite.config.ts` holds the Vitest projects (timeouts, environments, aliases). The three DOM
+  projects share one `domSetupFiles` entry plus one happy-dom options object; only the browser
+  project's `environment` line changes when the real-browser runner lands
+- `src/vitest.setup.ts` wires `@testing-library/jest-dom/vitest` matchers plus `cleanup`
+- `src/vitest.msw.setup.ts` owns the MSW lifecycle and is imported only by HTTP specs

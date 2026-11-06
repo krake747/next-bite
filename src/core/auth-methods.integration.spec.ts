@@ -1,5 +1,5 @@
 import { convexTest, type TestConvexForDataModel } from "convex-test"
-import { describe, expect, it, vi } from "vitest"
+import { describe, expect, test, vi } from "vitest"
 
 import { api } from "@convex/_generated/api"
 import { type DataModel } from "@convex/_generated/dataModel"
@@ -20,7 +20,7 @@ function setup(): TestConvexForDataModel<DataModel> {
 }
 
 describe("auth methods", () => {
-    it("defaults to password-only so contributors need zero auth setup", async () => {
+    test("defaults to password-only so contributors need zero auth setup", async () => {
         const t = setup()
         await expect(t.query(api.auth.getAuthMethods, {})).resolves.toEqual({
             password: true,
