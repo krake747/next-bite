@@ -192,9 +192,10 @@ export const useGroup = (groupId: Id<"groups">) => {
     return useConvexQuery(api.groups.getGroup, { groupId }, { skip: status.kind !== "ready" })
 }
 
-export const useGroupRestaurants = (groupId: Id<"groups">, enabled = true) => {
+export const useGroupRestaurants = (groupId: Id<"groups"> | null | undefined) => {
     const status = useSessionStatus()
-    return useConvexQuery(api.shares.listForGroup, { groupId }, { skip: status.kind !== "ready" || !enabled })
+    const skip = status.kind !== "ready" || groupId === null || groupId === undefined
+    return useConvexQuery(api.shares.listForGroup, skip ? undefined : { groupId }, { skip })
 }
 
 export const useRestaurantShares = (restaurantId: Id<"restaurants">) => {

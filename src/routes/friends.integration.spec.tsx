@@ -5,7 +5,7 @@ import { describe, expect, it, vi } from "vitest"
 
 import { ConvexProvider } from "@core/convex-client"
 import { type RestaurantDoc } from "@core/db/restaurants"
-import { createSeededClient, type MutationCall } from "@core/db/seeded-client"
+import { createSeededClient, seedKey, type MutationCall } from "@core/db/seeded-client"
 
 import { routeTree } from "../routeTree.gen"
 
@@ -51,8 +51,7 @@ vi.mock("@core/auth-provider", async (importOriginal) => {
 })
 
 function seedQuery(fn: string, args: unknown, value: unknown): void {
-    const raw = JSON.stringify(args) ?? "no-args"
-    querySeeds.set(`${fn}|${raw === "{}" ? "no-args" : raw}`, value)
+    querySeeds.set(seedKey(fn, args), value)
 }
 
 function sharedRestaurant(overrides?: Partial<Omit<RestaurantDoc, "_id">> & { _id?: string }): RestaurantDoc {
@@ -92,7 +91,9 @@ async function renderAt(path: string): Promise<void> {
     })
     await router.load()
     render(
-        <ConvexProvider client={createSeededClient(querySeeds, mutationCalls, "f9")}>
+        <ConvexProvider
+            client={createSeededClient({ seeds: querySeeds, calls: mutationCalls, mutateResult: "f9" }).client}
+        >
             <RouterProvider router={router} />
         </ConvexProvider>,
     )

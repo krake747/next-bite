@@ -4,8 +4,8 @@ import { render, screen, within, waitFor } from "@testing-library/react"
 import { type ConvexClient } from "convex/browser"
 import { describe, expect, it, vi } from "vitest"
 
-import { mockBackend } from "@core/db/mock-sync-client"
 import { type RestaurantDoc } from "@core/db/restaurants"
+import { createSeededClient } from "@core/db/seeded-client"
 
 import { routeTree } from "../routeTree.gen"
 
@@ -63,7 +63,7 @@ function friendRestaurant(name: string): RestaurantDoc {
 }
 
 async function renderHome(feed: ReadonlyArray<RestaurantDoc>): Promise<void> {
-    injectSyncClient(mockBackend(feed).syncClient)
+    injectSyncClient(createSeededClient({ liveRows: feed }).client)
     const queryClient = new QueryClient()
     const router = createRouter({
         routeTree,

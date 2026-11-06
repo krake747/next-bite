@@ -86,6 +86,13 @@ export function copyStoredImages(
     return images.map((img) => ({ url: img.url, storageId: img.storageId }))
 }
 
+function coordsArg(coords: RestaurantCoords | undefined): { coords: RestaurantCoords } | Record<string, never> {
+    if (coords === undefined) {
+        return {}
+    }
+    return { coords: { lat: coords.lat, lng: coords.lng } }
+}
+
 export function persistCallerFor(client: ConvexClient): RestaurantPersist {
     return {
         updateRestaurant: async (args) => {
@@ -132,9 +139,7 @@ export function toUpdateArgs(row: RestaurantDoc): RestaurantUpdateArgs {
         name: row.name,
         cuisine: row.cuisine,
         addressLabel: row.address.label,
-        ...(row.address.enrichment?.coords !== undefined
-            ? { coords: { lat: row.address.enrichment.coords.lat, lng: row.address.enrichment.coords.lng } }
-            : {}),
+        ...coordsArg(row.address.enrichment?.coords),
         ...(row.details?.notes !== undefined ? { notes: row.details.notes } : {}),
         ...(row.details?.link !== undefined ? { link: row.details.link } : {}),
         ...(row.rating !== undefined ? { rating: row.rating } : {}),
@@ -150,9 +155,7 @@ export function toAddArgs(row: RestaurantDoc): RestaurantAddArgs {
         addressLabel: row.address.label,
         ...(row.details?.notes !== undefined && row.details.notes !== "" ? { notes: row.details.notes } : {}),
         ...(row.details?.link !== undefined && row.details.link !== "" ? { link: row.details.link } : {}),
-        ...(row.address.enrichment?.coords !== undefined
-            ? { coords: { lat: row.address.enrichment.coords.lat, lng: row.address.enrichment.coords.lng } }
-            : {}),
+        ...coordsArg(row.address.enrichment?.coords),
         images: copyStoredImages(row.images),
         ...(row.clientMutationId !== undefined ? { clientMutationId: row.clientMutationId } : {}),
     }

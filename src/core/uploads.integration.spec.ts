@@ -222,7 +222,9 @@ describe("upload ownership", () => {
 
         const owned = await asUser(t, "anna").query(api.restaurants.get, {})
         expect(owned.find((r) => r._id === restaurantId)).toBeUndefined()
-        expect(await t.query(internal.uploads.ownerByStorage, { storageId: bensFile })).toBe("ben")
+        await expect(t.query(internal.uploads.lookupByStorage, { storageId: bensFile })).resolves.toMatchObject({
+            ownerId: "ben",
+        })
     })
 
     it("refuses orphan cleanup from a non-owner", async () => {

@@ -1,18 +1,13 @@
-import { useState } from "react"
-
-import { photoUrls, type GalleryPhoto } from "@pattern/gallery/photos"
-import { ImageGalleryModal } from "@pattern/image-gallery-modal"
+import { Lightbox, useLightbox } from "@pattern/gallery/lightbox"
+import { type GalleryPhoto } from "@pattern/gallery/photos"
 import { LazyImage } from "@pattern/lazy-image"
-
-export type { GalleryPhoto } from "@pattern/gallery/photos"
 
 export function PhotoGallery({
     photos,
 }: Readonly<{
     photos: ReadonlyArray<GalleryPhoto>
 }>) {
-    const [viewerIndex, setViewerIndex] = useState<number | null>(null)
-    const urls = photoUrls(photos)
+    const lightbox = useLightbox(photos)
 
     if (photos.length === 0) {
         return null
@@ -26,7 +21,7 @@ export function PhotoGallery({
                         key={photo.url}
                         type="button"
                         onClick={() => {
-                            setViewerIndex(index)
+                            lightbox.openAt(index)
                         }}
                         className="group relative aspect-square overflow-hidden rounded-lg"
                         aria-label={`Open photo ${index + 1}${photo.author ? ` by ${photo.author}` : ""}`}
@@ -49,25 +44,14 @@ export function PhotoGallery({
                 <button
                     type="button"
                     onClick={() => {
-                        setViewerIndex(3)
+                        lightbox.openAt(3)
                     }}
                     className="mt-2 cursor-pointer text-sm font-medium text-tomato-700 hover:text-tomato-600"
                 >
                     View all {photos.length} photos
                 </button>
             )}
-            {viewerIndex !== null && (
-                <ImageGalleryModal
-                    images={urls}
-                    show
-                    initialIndex={viewerIndex}
-                    onOpenChange={(open) => {
-                        if (!open) {
-                            setViewerIndex(null)
-                        }
-                    }}
-                />
-            )}
+            <Lightbox lightbox={lightbox} />
         </div>
     )
 }

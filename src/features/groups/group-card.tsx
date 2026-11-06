@@ -7,29 +7,19 @@ import { SharedRestaurantList, type SharedRestaurant } from "./shared-restaurant
 export function GroupCard({
     name,
     description,
-    coverUrl,
     members,
     restaurants,
-    onSelectRestaurant,
 }: Readonly<{
     name: string
     description?: string | undefined
-    coverUrl?: string | undefined
     members: ReadonlyArray<AvatarMember>
     restaurants: ReadonlyArray<SharedRestaurant>
-    onSelectRestaurant?: ((id: string) => void) | undefined
 }>) {
     return (
         <Card>
-            <GroupHeader
-                name={name}
-                description={description}
-                coverUrl={coverUrl}
-                members={members}
-                restaurantCount={restaurants.length}
-            />
+            <GroupHeader name={name} description={description} members={members} restaurantCount={restaurants.length} />
             <div className="pt-3">
-                <SharedRestaurantList items={restaurants} onSelect={onSelectRestaurant} />
+                <SharedRestaurantList items={restaurants} />
             </div>
         </Card>
     )

@@ -4,7 +4,7 @@ import { describe, expect, it, vi } from "vitest"
 
 import { type Id } from "@convex/_generated/dataModel"
 import { ConvexProvider } from "@core/convex-client"
-import { createSeededClient, type MutationCall } from "@core/db/seeded-client"
+import { createSeededClient, seedKey, type MutationCall } from "@core/db/seeded-client"
 
 import { ShareToGroupDialog } from "./share-to-group-dialog"
 
@@ -58,7 +58,9 @@ function renderDialog(): void {
     const queryClient = new QueryClient()
     render(
         <QueryClientProvider client={queryClient}>
-            <ConvexProvider client={createSeededClient(querySeeds, mutationCalls, "s1")}>
+            <ConvexProvider
+                client={createSeededClient({ seeds: querySeeds, calls: mutationCalls, mutateResult: "s1" }).client}
+            >
                 <ShareToGroupDialog
                     restaurantId={restaurantId}
                     restaurantName="Trattoria Verde"
@@ -74,8 +76,10 @@ describe("share to group dialog", () => {
     it("shares with a group through Add to group", async () => {
         querySeeds.clear()
         mutationCalls.length = 0
-        querySeeds.set("groups:listMyGroups|no-args", [{ group: { _id: "g1", name: "Food Crew" }, role: "admin" }])
-        querySeeds.set('shares:listShares|{"restaurantId":"r1"}', [])
+        querySeeds.set(seedKey("groups:listMyGroups", undefined), [
+            { group: { _id: "g1", name: "Food Crew" }, role: "admin" },
+        ])
+        querySeeds.set(seedKey("shares:listShares", { restaurantId: "r1" }), [])
         renderDialog()
 
         await waitFor(() => {
@@ -94,8 +98,10 @@ describe("share to group dialog", () => {
     it("removes an existing group share", async () => {
         querySeeds.clear()
         mutationCalls.length = 0
-        querySeeds.set("groups:listMyGroups|no-args", [{ group: { _id: "g1", name: "Food Crew" }, role: "admin" }])
-        querySeeds.set('shares:listShares|{"restaurantId":"r1"}', [
+        querySeeds.set(seedKey("groups:listMyGroups", undefined), [
+            { group: { _id: "g1", name: "Food Crew" }, role: "admin" },
+        ])
+        querySeeds.set(seedKey("shares:listShares", { restaurantId: "r1" }), [
             { _id: "s1", target: { kind: "group", groupId: "g1" }, displayName: "Food Crew" },
         ])
         renderDialog()

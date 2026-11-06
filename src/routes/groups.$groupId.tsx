@@ -3,6 +3,7 @@ import { createFileRoute, Link } from "@tanstack/react-router"
 import { useAuth, useGroup, useGroupRestaurants, useRestaurants, useShareWithGroup, useUnshare } from "@core/hooks"
 import { orderFeedByRecency, useSocialSummaries } from "@core/social"
 import { GroupMembers } from "@features/groups/group-members"
+import { EmptyState } from "@pattern/empty-state"
 import { BackNav } from "@routes/-layouts/back-nav"
 import { PageContainer } from "@routes/-layouts/page-container"
 import { PageLayout } from "@routes/-layouts/page-layout"
@@ -21,7 +22,7 @@ function GroupNotFound() {
     return (
         <PageLayout>
             <PageContainer>
-                <BackNav backTo="/groups" />
+                <BackNav backTo="/groups" label="Back to groups" />
                 <div className="py-16 text-center">
                     <p className="font-display text-2xl font-semibold text-balance text-stone-900">Group not found</p>
                     <p className="mt-2 text-sm text-pretty text-stone-600">
@@ -104,14 +105,11 @@ function GroupRestaurantsSection({
     const feed = orderFeedByRecency(restaurants)
     if (feed.length === 0) {
         return (
-            <div className="mt-4 rounded-card border border-border bg-surface p-6 text-center shadow-card">
-                <p className="font-display text-lg font-semibold text-balance text-stone-900">
-                    No shared restaurants yet
-                </p>
-                <p className="mx-auto mt-1 max-w-md text-sm text-pretty text-stone-600">
-                    Add one of your saved restaurants below to start the list.
-                </p>
-            </div>
+            <EmptyState
+                title="No shared restaurants yet"
+                body="Add one of your saved restaurants below to start the list."
+                className="mt-4"
+            />
         )
     }
     return (
@@ -163,7 +161,7 @@ function GroupDetail() {
     const groupConvexId = groupId as unknown as Id<"groups">
     const auth = useAuth()
     const group = useGroup(groupConvexId)
-    const restaurants = useGroupRestaurants(groupConvexId, group !== undefined && group !== null)
+    const restaurants = useGroupRestaurants(group === null || group === undefined ? null : groupConvexId)
 
     if (group === null) {
         return <GroupNotFound />
@@ -173,7 +171,7 @@ function GroupDetail() {
         return (
             <PageLayout>
                 <PageContainer>
-                    <BackNav backTo="/groups" />
+                    <BackNav backTo="/groups" label="Back to groups" />
                     <div className="pt-4">
                         <LoadingPlaceholder />
                     </div>
@@ -188,7 +186,7 @@ function GroupDetail() {
     return (
         <PageLayout>
             <PageContainer>
-                <BackNav backTo="/groups" />
+                <BackNav backTo="/groups" label="Back to groups" />
                 <Header>
                     <HeaderTitle>{group.group.name}</HeaderTitle>
                     <HeaderSubtitle>

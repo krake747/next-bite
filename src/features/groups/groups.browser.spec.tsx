@@ -1,6 +1,5 @@
 import { render, screen } from "@testing-library/react"
-import userEvent from "@testing-library/user-event"
-import { describe, expect, it, vi } from "vitest"
+import { describe, expect, it } from "vitest"
 
 import { GroupCard } from "./group-card"
 import { GroupHeader } from "./group-header"
@@ -34,15 +33,11 @@ describe("GroupHeader", () => {
 })
 
 describe("SharedRestaurantList", () => {
-    it("lists shared spots and reports selection", async () => {
-        const user = userEvent.setup()
-        const onSelect = vi.fn<(id: string) => void>()
-        render(<SharedRestaurantList items={restaurants} onSelect={onSelect} />)
+    it("lists shared spots", () => {
+        render(<SharedRestaurantList items={restaurants} />)
         expect(screen.getByText("Trattoria Verde")).toBeInTheDocument()
         expect(screen.getByText("Added by Alex")).toBeInTheDocument()
-
-        await user.click(screen.getByRole("button", { name: /Sushi Bar/ }))
-        expect(onSelect).toHaveBeenCalledWith("r2")
+        expect(screen.getByText("Sushi Bar")).toBeInTheDocument()
     })
 
     it("invites sharing when empty", () => {

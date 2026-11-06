@@ -10,6 +10,7 @@ import {
     useRemoveFriend,
     useRequestFriendByEmail,
 } from "@core/hooks"
+import { EmptyState } from "@pattern/empty-state"
 import { PageContainer } from "@routes/-layouts/page-container"
 import { PageLayout } from "@routes/-layouts/page-layout"
 import { Button } from "@ui/button"
@@ -199,12 +200,11 @@ function FriendsList() {
     }
     if (friends.length === 0) {
         return (
-            <div className="mt-6 rounded-card border border-border bg-surface p-6 text-center shadow-card">
-                <p className="font-display text-lg font-semibold text-balance text-stone-900">No friends yet</p>
-                <p className="mx-auto mt-1 max-w-md text-sm text-pretty text-stone-600">
-                    Invite someone by email above. Their latest shared restaurants land in your home feed.
-                </p>
-            </div>
+            <EmptyState
+                title="No friends yet"
+                body="Invite someone by email above. Their latest shared restaurants land in your home feed."
+                className="mt-6"
+            />
         )
     }
 

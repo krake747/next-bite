@@ -2,6 +2,7 @@ import { api } from "../../convex/_generated/api"
 import { type Id } from "../../convex/_generated/dataModel"
 import { useConvexMutation, useConvexQuery } from "./convex-client.tsx"
 import { useSessionStatus } from "./hooks"
+import { countReactions } from "./social-counts"
 import { isTempId } from "./temp-ids"
 
 export type InterestInput = {
@@ -83,16 +84,9 @@ export function summarizeSocial(
     const comments = snapshot.comments
         .filter((comment) => comment.restaurantId === restaurantId)
         .toSorted((a, b) => a.createdAt - b.createdAt)
-    const wants = interests.filter((interest) => interest.status === "want")
-    const beens = interests.filter((interest) => interest.status === "been")
     return {
-        wantCount: wants.length,
-        beenCount: beens.length,
-        wanted: userId === null ? false : wants.some((interest) => interest.userId === userId),
-        likeCount: likes.length,
-        liked: userId === null ? false : likes.some((like) => like.userId === userId),
+        ...countReactions(interests, likes, userId),
         comments,
-        interestedNames: interests.map((interest) => interest.displayName),
     }
 }
 

@@ -1,29 +1,25 @@
+import { type GenericDatabaseReader } from "convex/server"
 import { v } from "convex/values"
 
+import { type DataModel, type Doc } from "./_generated/dataModel"
 import { internalMutation, internalQuery } from "./_generated/server"
 
-export const ownerByStorage = internalQuery({
-    args: {
-        storageId: v.string(),
-    },
-    handler: async (ctx, args): Promise<string | null> => {
-        const existing = await ctx.db
-            .query("uploads")
-            .withIndex("by_storage", (q) => q.eq("storageId", args.storageId))
-            .unique()
-        return existing?.ownerId ?? null
-    },
-})
+async function findUploadByStorage(
+    db: GenericDatabaseReader<DataModel>,
+    storageId: string,
+): Promise<Doc<"uploads"> | null> {
+    return db
+        .query("uploads")
+        .withIndex("by_storage", (q) => q.eq("storageId", storageId))
+        .unique()
+}
 
 export const lookupByStorage = internalQuery({
     args: {
         storageId: v.string(),
     },
     handler: async (ctx, args) => {
-        const existing = await ctx.db
-            .query("uploads")
-            .withIndex("by_storage", (q) => q.eq("storageId", args.storageId))
-            .unique()
+        const existing = await findUploadByStorage(ctx.db, args.storageId)
         if (!existing) {
             return null
         }
@@ -37,10 +33,7 @@ export const record = internalMutation({
         ownerId: v.string(),
     },
     handler: async (ctx, args) => {
-        const existing = await ctx.db
-            .query("uploads")
-            .withIndex("by_storage", (q) => q.eq("storageId", args.storageId))
-            .unique()
+        const existing = await findUploadByStorage(ctx.db, args.storageId)
         if (existing) {
             return existing._id
         }
@@ -53,10 +46,7 @@ export const removeRecord = internalMutation({
         storageId: v.string(),
     },
     handler: async (ctx, args) => {
-        const existing = await ctx.db
-            .query("uploads")
-            .withIndex("by_storage", (q) => q.eq("storageId", args.storageId))
-            .unique()
+        const existing = await findUploadByStorage(ctx.db, args.storageId)
         if (existing) {
             await ctx.db.delete(existing._id)
         }
@@ -70,10 +60,7 @@ export const attach = internalMutation({
         restaurantId: v.id("restaurants"),
     },
     handler: async (ctx, args) => {
-        const existing = await ctx.db
-            .query("uploads")
-            .withIndex("by_storage", (q) => q.eq("storageId", args.storageId))
-            .unique()
+        const existing = await findUploadByStorage(ctx.db, args.storageId)
         if (!existing || existing.ownerId !== args.ownerId) {
             throw new Error("Unauthorized: storage does not belong to you")
         }
@@ -93,10 +80,7 @@ export const detach = internalMutation({
         // Best-effort dissociation: only clears the association when the record exists and the
         // owner matches. Missing or foreign records are left alone so dropping a legacy image
         // from a restaurant never fails and never touches another owner's data.
-        const existing = await ctx.db
-            .query("uploads")
-            .withIndex("by_storage", (q) => q.eq("storageId", args.storageId))
-            .unique()
+        const existing = await findUploadByStorage(ctx.db, args.storageId)
         if (!existing || existing.ownerId !== args.ownerId) {
             return
         }

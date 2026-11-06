@@ -1,7 +1,8 @@
-import { createFileRoute } from "@tanstack/react-router"
+import { createFileRoute, redirect } from "@tanstack/react-router"
 import { getSchema } from "cva/tools"
 import { useState } from "react"
 
+import { env } from "@core/env"
 import { GroupCard } from "@features/groups/group-card"
 import { SharedRestaurantList } from "@features/groups/shared-restaurant-list"
 import { EmptyRestaurantsState } from "@features/restaurants/empty-restaurants-state"
@@ -29,6 +30,12 @@ import { Tabs, TabsList, TabsTab, TabsPanel } from "@ui/tabs"
 
 export const Route = createFileRoute("/design-system")({
     head: () => ({ meta: [{ title: "Design System - Next Bite" }] }),
+    beforeLoad: () => {
+        if (!env.DEV) {
+            // oxlint-disable-next-line typescript/only-throw-error -- TanStack Router redirects via thrown redirect objects by design
+            throw redirect({ to: "/" })
+        }
+    },
     component: DesignSystemPage,
 })
 
