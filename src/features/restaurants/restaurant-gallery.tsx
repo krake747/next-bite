@@ -1,9 +1,8 @@
 import Images from "lucide-react/icons/images"
 import Utensils from "lucide-react/icons/utensils"
-import { useState } from "react"
 
-import { type GalleryPhoto } from "@features/social/photo-gallery"
-import { ImageGalleryModal } from "@pattern/image-gallery-modal"
+import { Lightbox, useLightbox } from "@pattern/gallery/lightbox"
+import { type GalleryPhoto } from "@pattern/gallery/photos"
 import { LazyImage } from "@pattern/lazy-image"
 import { Badge } from "@ui/badge"
 
@@ -18,17 +17,16 @@ export function RestaurantGallery({
     cuisine: string
     actions?: React.ReactNode | undefined
 }>) {
-    const [showGallery, setShowGallery] = useState(false)
+    const lightbox = useLightbox(photos)
     const cover = photos[0]?.url
     const hasImages = photos.length > 0
-    const urls = photos.map((photo) => photo.url)
 
     return (
         <>
             <div className="relative aspect-2/1 w-full overflow-hidden">
                 {hasImages ? (
                     <>
-                        <LazyImage src={cover} alt={`${name} - main image`} aspectRatio="2/1" loading="lazy" />
+                        <LazyImage src={cover} alt={`${name} - main image`} aspectRatio="2/1" />
                         <div className="pointer-events-none absolute inset-0 bg-linear-to-t from-black/70 via-black/20 to-transparent" />
                     </>
                 ) : (
@@ -54,7 +52,7 @@ export function RestaurantGallery({
                         <button
                             type="button"
                             onClick={() => {
-                                setShowGallery(true)
+                                lightbox.openAt(0)
                             }}
                             className="flex items-center gap-1.5 rounded-full bg-surface/95 px-2.5 py-1 text-xs font-medium text-stone-900 shadow-lg backdrop-blur-md transition-colors duration-200 hover:bg-surface"
                         >
@@ -64,7 +62,7 @@ export function RestaurantGallery({
                     </div>
                 )}
             </div>
-            <ImageGalleryModal images={urls} show={showGallery} onOpenChange={setShowGallery} />
+            <Lightbox lightbox={lightbox} />
         </>
     )
 }

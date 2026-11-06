@@ -4,7 +4,7 @@ import { v } from "convex/values"
 import { type DataModel } from "./_generated/dataModel"
 import { type Doc, type Id } from "./_generated/dataModel"
 import { mutation, query } from "./_generated/server"
-import { requireUserId } from "./helpers"
+import { FALLBACK_DISPLAY_NAME, requireUserId } from "./helpers"
 import { imageObjectValidator } from "./validators"
 
 type Membership = Doc<"groupMembers">
@@ -189,7 +189,7 @@ export const getGroup = query({
             role: membership.role,
             members: members.map((member, index) => ({
                 userId: member.userId,
-                name: profiles[index]?.name ?? "Someone",
+                name: profiles[index]?.name ?? FALLBACK_DISPLAY_NAME,
                 role: member.role,
             })),
         }

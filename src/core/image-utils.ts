@@ -48,15 +48,12 @@ export function validateImageFile(file: Readonly<File>): void {
     }
 }
 
-export async function processImage(
-    file: Readonly<File>,
-    options: Readonly<{ maxWidth?: number | undefined; quality?: number | undefined }> = {},
-): Promise<ProcessedImage> {
+export async function processImage(file: Readonly<File>): Promise<ProcessedImage> {
     validateImageFile(file)
 
-    const { maxWidth = IMAGE_PROCESS_DEFAULTS.maxWidth, quality = IMAGE_PROCESS_DEFAULTS.quality } = options
+    const maxWidth = IMAGE_PROCESS_DEFAULTS.maxWidth
+    const quality = IMAGE_PROCESS_DEFAULTS.quality
 
-    // GIFs are passed through without canvas processing to preserve animation
     if (file.type === "image/gif") {
         return {
             blob: file,

@@ -1,46 +1,100 @@
 import { type ConvexClient } from "convex/browser"
 import { getFunctionName } from "convex/server"
 
+import { convexArgsKey } from "../convex-client"
+
 export type SeedMap = Map<string, unknown>
 export type MutationCall = { fn: string; args: unknown }
 
 export function seedKey(fn: string, args: unknown): string {
-    const raw = JSON.stringify(args) ?? "no-args"
-    // Subscriptions spread args ({...undefined} is {}), while the cache keys the unspread
-    // value. No caller passes an explicit {}, so both spellings address the same seed.
-    return `${fn}|${raw === "{}" ? "no-args" : raw}`
+    return `${fn}|${convexArgsKey(args)}`
+}
+
+export type SeededClientOptions = {
+    readonly seeds?: SeedMap | undefined
+    readonly calls?: MutationCall[] | undefined
+    readonly mutateResult?: unknown
+    readonly liveRows?: ReadonlyArray<unknown> | undefined
+    readonly queryHook?: (() => Promise<unknown>) | undefined
 }
 
 // Test-only Convex client: serves seeded query results by function path plus args and records
 // mutations by function path. Stands in for the Convex subscription surface where the real
-// AuthProvider would otherwise shadow injected values with a live client.
-export function createSeededClient(seeds: SeedMap, calls: MutationCall[], mutateResult: unknown = "m1"): ConvexClient {
-    const queryStub: unknown = async () => {
-        await Promise.resolve()
-        return []
+// AuthProvider would otherwise shadow injected values with a live client. Queries without a
+// seed fall back to the live rows, which pushState refreshes for every subscriber, so the
+// same double drives both keyed route specs and live collection specs.
+export function createSeededClient(options: SeededClientOptions = {}) {
+    const seeds = options.seeds ?? new Map<string, unknown>()
+    const calls = options.calls ?? []
+    const mutateResult = options.mutateResult ?? "m1"
+    let liveRows: ReadonlyArray<unknown> = options.liveRows === undefined ? [] : [...options.liveRows]
+    const receivers = new Set<{
+        key: string
+        receive: (value: unknown) => void
+        current: unknown
+    }>()
+
+    const valueFor = (key: string): unknown => {
+        const seeded = seeds.get(key)
+        if (seeded !== undefined) {
+            return structuredClone(seeded)
+        }
+        return structuredClone([...liveRows])
     }
-    const mutationStub: unknown = async (ref: unknown, args: unknown) => {
-        await Promise.resolve()
-        // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- test-only function reference shaped to the Convex subscription surface
-        calls.push({ fn: getFunctionName(ref as never), args })
-        return mutateResult
-    }
+
     const syncClient = {
         onUpdate: (ref: unknown, args: unknown, receive: (result: unknown) => void) => {
             // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- test-only function reference shaped to the Convex subscription surface
-            const rows = seeds.get(seedKey(getFunctionName(ref as never), args))
-            receive(rows === undefined ? [] : structuredClone(rows))
-            const unsub: () => void = () => {}
+            const key = seedKey(getFunctionName(ref as never), args)
+            const entry = { key, receive, current: valueFor(key) }
+            receivers.add(entry)
+            receive(entry.current)
+            const unsub: () => void = () => {
+                receivers.delete(entry)
+            }
             return Object.assign(unsub, {
-                unsubscribe: () => {},
-                getCurrentValue: () => null,
+                unsubscribe: () => {
+                    receivers.delete(entry)
+                },
+                getCurrentValue: () => entry.current,
             })
         },
         // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- test-only query stub standing in for client.query
-        query: queryStub as ConvexClient["query"],
+        query: (async () => {
+            if (options.queryHook !== undefined) {
+                return options.queryHook()
+            }
+            await Promise.resolve()
+            return []
+        }) as ConvexClient["query"],
         // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- test-only mutation recorder standing in for client.mutation
-        mutation: mutationStub as ConvexClient["mutation"],
+        mutation: (async (ref: unknown, args: unknown) => {
+            await Promise.resolve()
+            // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- test-only function reference shaped to the Convex subscription surface
+            calls.push({ fn: getFunctionName(ref as never), args })
+            return mutateResult
+        }) as ConvexClient["mutation"],
     }
-    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- test-only sync client standing in for the Convex subscription surface
-    return syncClient as unknown as ConvexClient
+
+    const pushState = (rows: ReadonlyArray<unknown>, key?: string): void => {
+        if (key === undefined) {
+            liveRows = [...rows]
+        } else {
+            seeds.set(key, [...rows])
+        }
+        for (const entry of receivers) {
+            const matches = key === undefined ? !seeds.has(entry.key) : entry.key === key
+            if (matches) {
+                entry.current = valueFor(entry.key)
+                entry.receive(entry.current)
+            }
+        }
+    }
+
+    return {
+        // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- test-only sync client standing in for the Convex subscription surface
+        client: syncClient as unknown as ConvexClient,
+        pushState,
+        subscriberCount: (): number => receivers.size,
+    }
 }

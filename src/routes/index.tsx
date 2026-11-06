@@ -19,6 +19,7 @@ import { AddRestaurantDialog } from "@features/restaurants/add-restaurant-dialog
 import { RestaurantCardSkeleton } from "@features/restaurants/restaurant-card-skeleton"
 import { RestaurantList } from "@features/restaurants/restaurant-list"
 import { ActivityPost } from "@features/social/activity-post"
+import { EmptyState } from "@pattern/empty-state"
 import {
     CommunityStats,
     HowItWorks,
@@ -116,14 +117,11 @@ function HomeFeed({
             <h2 className="font-display text-2xl font-semibold text-balance text-stone-900">Latest activity</h2>
             <p className="mt-1 text-stone-600">Fresh saves and shouts from your people.</p>
             {feed.length === 0 ? (
-                <div className="mt-6 rounded-card border border-border bg-surface p-6 text-center shadow-card">
-                    <p className="font-display text-lg font-semibold text-balance text-stone-900">
-                        No crew activity yet
-                    </p>
-                    <p className="mx-auto mt-1 max-w-md text-sm text-pretty text-stone-600">
-                        When friends share restaurants with you, their latest saves land here.
-                    </p>
-                </div>
+                <EmptyState
+                    title="No crew activity yet"
+                    body="When friends share restaurants with you, their latest saves land here."
+                    className="mt-6"
+                />
             ) : (
                 <div className="space-y-6 pt-6">
                     {feed.map((restaurant) => {
@@ -134,13 +132,8 @@ function HomeFeed({
                                 author={{ name: restaurant.ownerName }}
                                 time={new Date(restaurant._creationTime).toLocaleDateString()}
                                 text={feedTextFor(restaurant.name, restaurant.details?.notes)}
-                                restaurantName={restaurant.name}
-                                restaurantCuisine={restaurant.cuisine}
-                                photoUrls={restaurant.images.map((img) => img.url)}
-                                ownerName={restaurant.ownerName}
-                                wantCount={social.wantCount}
-                                beenCount={social.beenCount}
-                                interestedFriends={social.interestedNames.map((name) => ({ name }))}
+                                restaurant={restaurant}
+                                social={{ ...social, ownerName: restaurant.ownerName }}
                                 reactions={{
                                     liked: social.liked,
                                     likeCount: social.likeCount,
@@ -202,7 +195,6 @@ function HomeDiscover({
                 hasFilter={filterState.filter !== null && filterState.filter !== ""}
                 hasSearch={filterState.search !== ""}
                 onAddClick={onAddClick}
-                sortOrder={sortOrder}
                 socialFor={actions.socialFor}
                 onToggleWant={(restaurant) => {
                     actions.toggleWantFor(restaurant)()

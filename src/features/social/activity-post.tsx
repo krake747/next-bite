@@ -1,7 +1,8 @@
+import { AvatarGroup, type AvatarMember } from "@pattern/avatar-group"
+import { photoUrls } from "@pattern/gallery/photos"
 import { LazyImage } from "@pattern/lazy-image"
 
-import { AvatarGroup, type AvatarMember } from "./avatar-group"
-import { ReactionBar } from "./reaction-bar"
+import { ReactionBar, type Reactions } from "./reaction-bar"
 import { SocialMetadata } from "./social-metadata"
 
 export type ActivityAuthor = {
@@ -43,18 +44,7 @@ function ActivityRestaurant({
     )
 }
 
-type ActivityReactions = {
-    readonly liked: boolean
-    readonly likeCount: number
-    readonly onToggleLike: () => void
-    readonly commentCount: number
-    readonly onComment: () => void
-    readonly wanted: boolean
-    readonly wantCount: number
-    readonly onToggleWant: () => void
-}
-
-const idleReactions: ActivityReactions = {
+const idleReactions: Reactions = {
     liked: false,
     likeCount: 0,
     onToggleLike: () => {},
@@ -69,47 +59,47 @@ export function ActivityPost({
     author,
     time,
     text,
-    restaurantName,
-    restaurantCuisine,
-    photoUrls,
-    ownerName,
-    wantCount,
-    beenCount,
-    interestedFriends,
+    restaurant,
+    social,
     reactions,
 }: Readonly<{
     author: ActivityAuthor
     time: string
     text: string
-    restaurantName: string
-    restaurantCuisine?: string | undefined
-    photoUrls?: ReadonlyArray<string> | undefined
-    ownerName?: string | undefined
-    wantCount?: number | undefined
-    beenCount?: number | undefined
-    interestedFriends?: ReadonlyArray<AvatarMember> | undefined
-    reactions?: ActivityReactions | undefined
+    restaurant: Readonly<{
+        name: string
+        cuisine?: string | undefined
+        images?: ReadonlyArray<Readonly<{ url: string }>> | undefined
+    }>
+    social?:
+        | Readonly<{
+              ownerName?: string | undefined
+              wantCount?: number | undefined
+              beenCount?: number | undefined
+              interestedNames?: ReadonlyArray<string> | undefined
+          }>
+        | undefined
+    reactions?: Reactions | undefined
 }>) {
     const active = reactions ?? idleReactions
-    const friends = interestedFriends ?? []
+    const friends: ReadonlyArray<AvatarMember> = (social?.interestedNames ?? []).map((name) => ({ name }))
     return (
         <article className="overflow-hidden rounded-card border border-border bg-surface shadow-card">
             <ActivityAuthorHeader author={author} time={time} />
             <div className="space-y-3 p-4">
                 <p className="text-body text-stone-800">{text}</p>
-                <ActivityRestaurant name={restaurantName} cuisine={restaurantCuisine} photoUrls={photoUrls} />
-                <SocialMetadata ownerName={ownerName} wantCount={wantCount} beenCount={beenCount} />
-                {friends.length > 0 && <AvatarGroup members={friends} />}
-                <ReactionBar
-                    liked={active.liked}
-                    likeCount={active.likeCount}
-                    onToggleLike={active.onToggleLike}
-                    commentCount={active.commentCount}
-                    onComment={active.onComment}
-                    wanted={active.wanted}
-                    wantCount={active.wantCount}
-                    onToggleWant={active.onToggleWant}
+                <ActivityRestaurant
+                    name={restaurant.name}
+                    cuisine={restaurant.cuisine}
+                    photoUrls={photoUrls(restaurant.images ?? [])}
                 />
+                <SocialMetadata
+                    ownerName={social?.ownerName}
+                    wantCount={social?.wantCount}
+                    beenCount={social?.beenCount}
+                />
+                {friends.length > 0 && <AvatarGroup members={friends} />}
+                <ReactionBar reactions={active} />
             </div>
         </article>
     )

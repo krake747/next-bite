@@ -15,11 +15,12 @@ import { ShareToGroupDialog } from "@features/groups/share-to-group-dialog"
 import { RestaurantGallery } from "@features/restaurants/restaurant-gallery"
 import { RestaurantHeader } from "@features/restaurants/restaurant-header"
 import { RestaurantInterestButton } from "@features/restaurants/restaurant-interest-button"
-import { AvatarGroup } from "@features/social/avatar-group"
 import { CommentList } from "@features/social/comment-list"
-import { PhotoGallery, type GalleryPhoto } from "@features/social/photo-gallery"
+import { PhotoGallery } from "@features/social/photo-gallery"
 import { ReactionBar } from "@features/social/reaction-bar"
 import { SocialMetadata } from "@features/social/social-metadata"
+import { AvatarGroup } from "@pattern/avatar-group"
+import { type GalleryPhoto } from "@pattern/gallery/photos"
 import { BackNav } from "@routes/-layouts/back-nav"
 import { PageContainer } from "@routes/-layouts/page-container"
 import { PageLayout } from "@routes/-layouts/page-layout"
@@ -53,7 +54,7 @@ function DetailHero({
     onToggleWant: () => void
     onToggleLike: () => void
     onShowHours: () => void
-    shareAction?: React.ReactNode | undefined
+    shareAction: React.ReactNode
 }>) {
     return (
         <div className="overflow-hidden rounded-card border border-border bg-surface shadow-card">
@@ -76,16 +77,18 @@ function DetailHero({
                     onToggleWant={onToggleWant}
                 />
                 <ReactionBar
-                    liked={social.liked}
-                    likeCount={social.likeCount}
-                    onToggleLike={onToggleLike}
-                    commentCount={social.comments.length}
-                    onComment={() => {}}
-                    wanted={social.wanted}
-                    wantCount={social.wantCount}
-                    onToggleWant={onToggleWant}
+                    reactions={{
+                        liked: social.liked,
+                        likeCount: social.likeCount,
+                        onToggleLike,
+                        commentCount: social.comments.length,
+                        onComment: () => {},
+                        wanted: social.wanted,
+                        wantCount: social.wantCount,
+                        onToggleWant,
+                    }}
                 />
-                {shareAction !== undefined && shareAction}
+                {shareAction}
             </div>
             <div className="space-y-3 p-5 md:p-4">
                 {restaurant.details?.notes !== undefined && restaurant.details.notes !== "" && (
@@ -178,7 +181,7 @@ function DetailNotFound() {
     return (
         <PageLayout>
             <PageContainer>
-                <BackNav backTo="/" />
+                <BackNav backTo="/" label="Back to restaurants" />
                 <div className="py-16 text-center">
                     <p className="font-display text-2xl font-semibold text-balance text-stone-900">Spot not found</p>
                     <p className="mt-2 text-sm text-pretty text-stone-600">
@@ -263,7 +266,7 @@ function RestaurantDetail() {
     return (
         <PageLayout>
             <PageContainer>
-                <BackNav backTo="/" />
+                <BackNav backTo="/" label="Back to restaurants" />
                 <div className="mx-auto max-w-3xl space-y-6 pt-4">
                     <DetailHero
                         restaurant={restaurant}

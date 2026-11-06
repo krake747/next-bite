@@ -19,6 +19,7 @@ import { emptySocialSummary, type RestaurantSocial, type RestaurantSocialSummary
 import { EmojiRating } from "@pattern/emoji-rating"
 import { Button } from "@ui/button"
 import { Card } from "@ui/card"
+import { cx } from "@ui/cva.config"
 import { Dialog, DialogAction, DialogBackdrop, DialogDescription, DialogPanel, DialogTitle } from "@ui/dialog"
 import { OpeningHoursDialog } from "@ui/opening-hours-dialog"
 
@@ -26,6 +27,40 @@ import { EditRestaurantDialog } from "./edit-restaurant-dialog"
 import { RestaurantGallery } from "./restaurant-gallery"
 import { RestaurantHeader } from "./restaurant-header"
 import { RestaurantInterestButton } from "./restaurant-interest-button"
+
+function GalleryActionButton({
+    label,
+    title,
+    tone,
+    disabled,
+    onClick,
+    children,
+}: Readonly<{
+    label: string
+    title: string
+    tone: "neutral" | "destructive"
+    disabled?: boolean | undefined
+    onClick: () => void
+    children: React.ReactNode
+}>) {
+    return (
+        <button
+            type="button"
+            onClick={onClick}
+            disabled={disabled}
+            aria-label={label}
+            title={title}
+            className={cx(
+                "flex size-7 items-center justify-center rounded-full bg-surface/90 shadow-md backdrop-blur-sm transition-all duration-200 hover:shadow-lg",
+                tone === "destructive"
+                    ? "text-destructive hover:bg-destructive/10"
+                    : "text-stone-600 hover:bg-surface hover:text-stone-900 disabled:opacity-50",
+            )}
+        >
+            {children}
+        </button>
+    )
+}
 
 export function RestaurantCard({
     restaurant,
@@ -53,9 +88,14 @@ export function RestaurantCard({
     const enrichment = restaurant.address.enrichment
     const hasPlaceId = enrichment?.placeId !== undefined && enrichment?.placeId !== ""
 
-    const handleRefreshHours = () => {
+    const runHoursLookup = (lookup: {
+        mutate: (
+            args: { restaurantId: Restaurant["_id"] },
+            opts: { onError: () => void; onSettled: () => void },
+        ) => void
+    }) => {
         setIsRefreshing(true)
-        refreshOpeningHours.mutate(
+        lookup.mutate(
             { restaurantId: restaurant._id },
             {
                 onError: () => {},
@@ -66,17 +106,12 @@ export function RestaurantCard({
         )
     }
 
+    const handleRefreshHours = () => {
+        runHoursLookup(refreshOpeningHours)
+    }
+
     const handleFindHours = () => {
-        setIsRefreshing(true)
-        lookupPlaceIdAndHours.mutate(
-            { restaurantId: restaurant._id },
-            {
-                onError: () => {},
-                onSettled: () => {
-                    setIsRefreshing(false)
-                },
-            },
-        )
+        runHoursLookup(lookupPlaceIdAndHours)
     }
 
     const handleDelete = () => {
@@ -117,50 +152,46 @@ export function RestaurantCard({
                         auth.isAuthenticated ? (
                             <>
                                 {hasPlaceId ? (
-                                    <button
-                                        type="button"
-                                        onClick={handleRefreshHours}
-                                        disabled={isRefreshing}
-                                        aria-label="Refresh hours"
-                                        className="flex size-7 items-center justify-center rounded-full bg-surface/90 text-stone-600 shadow-md backdrop-blur-sm transition-all duration-200 hover:bg-surface hover:text-stone-900 hover:shadow-lg disabled:opacity-50"
+                                    <GalleryActionButton
+                                        label="Refresh hours"
                                         title="Refresh hours"
+                                        tone="neutral"
+                                        disabled={isRefreshing}
+                                        onClick={handleRefreshHours}
                                     >
                                         <RotateCcw className="size-3.5" aria-hidden="true" />
-                                    </button>
+                                    </GalleryActionButton>
                                 ) : (
-                                    <button
-                                        type="button"
-                                        onClick={handleFindHours}
-                                        disabled={isRefreshing}
-                                        aria-label="Find hours"
-                                        className="flex size-7 items-center justify-center rounded-full bg-surface/90 text-stone-600 shadow-md backdrop-blur-sm transition-all duration-200 hover:bg-surface hover:text-stone-900 hover:shadow-lg disabled:opacity-50"
+                                    <GalleryActionButton
+                                        label="Find hours"
                                         title="Find hours"
+                                        tone="neutral"
+                                        disabled={isRefreshing}
+                                        onClick={handleFindHours}
                                     >
                                         <Search className="size-3.5" aria-hidden="true" />
-                                    </button>
+                                    </GalleryActionButton>
                                 )}
-                                <button
-                                    type="button"
+                                <GalleryActionButton
+                                    label="Edit restaurant"
+                                    title="Edit restaurant"
+                                    tone="neutral"
                                     onClick={() => {
                                         setDialog("edit")
                                     }}
-                                    aria-label="Edit restaurant"
-                                    className="flex size-7 items-center justify-center rounded-full bg-surface/90 text-stone-600 shadow-md backdrop-blur-sm transition-all duration-200 hover:bg-surface hover:text-stone-900 hover:shadow-lg"
-                                    title="Edit restaurant"
                                 >
                                     <SquarePen className="size-3.5" aria-hidden="true" />
-                                </button>
-                                <button
-                                    type="button"
+                                </GalleryActionButton>
+                                <GalleryActionButton
+                                    label="Delete restaurant"
+                                    title="Delete restaurant"
+                                    tone="destructive"
                                     onClick={() => {
                                         setDialog("delete")
                                     }}
-                                    aria-label="Delete restaurant"
-                                    className="flex size-7 items-center justify-center rounded-full bg-surface/90 text-destructive shadow-md backdrop-blur-sm transition-all duration-200 hover:bg-destructive/10 hover:shadow-lg"
-                                    title="Delete restaurant"
                                 >
                                     <Trash2 className="size-3.5" aria-hidden="true" />
-                                </button>
+                                </GalleryActionButton>
                             </>
                         ) : undefined
                     }
@@ -195,7 +226,9 @@ export function RestaurantCard({
                         restaurant={restaurant}
                     />
                 )}
-                <RestaurantCardRating rating={restaurant.rating} onRate={handleRate} />
+                <div className="px-5 py-2 md:px-4 md:py-2">
+                    <EmojiRating rating={restaurant.rating} onRate={handleRate} />
+                </div>
             </Card>
 
             <EditRestaurantDialog
@@ -298,20 +331,6 @@ function RestaurantCardMap({
                     <p className="mt-2 text-center text-xs text-stone-600">Click map to get directions</p>
                 </div>
             )}
-        </div>
-    )
-}
-
-function RestaurantCardRating({
-    rating,
-    onRate,
-}: Readonly<{
-    rating: number | undefined
-    onRate: (rating: number) => void | Promise<void>
-}>) {
-    return (
-        <div className="px-5 py-2 md:px-4 md:py-2">
-            <EmojiRating rating={rating} onRate={onRate} />
         </div>
     )
 }

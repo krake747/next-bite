@@ -97,7 +97,7 @@ function authReducer(state: Readonly<AuthState>, action: Readonly<AuthAction>): 
     }
 }
 
-function useAuthStore() {
+export function useAuthStore() {
     const [state, dispatch] = useReducer(authReducer, {
         isAuthenticated: false,
         isLoading: true,
@@ -258,5 +258,3 @@ function useAuthStore() {
         signOut,
     }
 }
-
-export { useAuthStore }

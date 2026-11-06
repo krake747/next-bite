@@ -63,7 +63,9 @@ async function renderAt(path: string): Promise<void> {
     })
     await router.load()
     render(
-        <ConvexProvider client={createSeededClient(querySeeds, mutationCalls, "g9")}>
+        <ConvexProvider
+            client={createSeededClient({ seeds: querySeeds, calls: mutationCalls, mutateResult: "g9" }).client}
+        >
             <RouterProvider router={router} />
         </ConvexProvider>,
     )

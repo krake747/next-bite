@@ -30,25 +30,19 @@ function ReactionButton({ pressed, count, label, onToggle, children }: ReactionB
     )
 }
 
-export function ReactionBar({
-    liked,
-    likeCount,
-    onToggleLike,
-    commentCount,
-    onComment,
-    wanted,
-    wantCount,
-    onToggleWant,
-}: Readonly<{
-    liked: boolean
-    likeCount: number
-    onToggleLike: () => void
-    commentCount: number
-    onComment: () => void
-    wanted: boolean
-    wantCount: number
-    onToggleWant: () => void
-}>) {
+export type Reactions = {
+    readonly liked: boolean
+    readonly likeCount: number
+    readonly onToggleLike: () => void
+    readonly commentCount: number
+    readonly onComment: () => void
+    readonly wanted: boolean
+    readonly wantCount: number
+    readonly onToggleWant: () => void
+}
+
+export function ReactionBar({ reactions }: Readonly<{ reactions: Reactions }>) {
+    const { liked, likeCount, onToggleLike, commentCount, onComment, wanted, wantCount, onToggleWant } = reactions
     return (
         <div className="flex items-center gap-1" role="group" aria-label="Reactions">
             <ReactionButton pressed={liked} count={likeCount} label="Like" onToggle={onToggleLike}>

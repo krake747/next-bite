@@ -15,17 +15,15 @@ export function PageLayout({ children }: Readonly<{ children: React.ReactNode }>
     // signed-in users gain the nav as a normal post-hydration update.
     const showNav = auth.isAuthenticated
 
+    const handleAddClick = () => {
+        setShowAdd(true)
+    }
+
     return (
         <div data-slot="page-layout" className="flex min-h-screen flex-col">
             <TopBar />
             <div className="flex flex-1 flex-col md:flex-row">
-                {showNav && (
-                    <AppNav
-                        onAddClick={() => {
-                            setShowAdd(true)
-                        }}
-                    />
-                )}
+                {showNav && <AppNav onAddClick={handleAddClick} />}
                 <main className={showNav ? "flex-1 pb-24 md:pb-0" : "flex-1"}>{children}</main>
             </div>
             <Footer />

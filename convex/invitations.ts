@@ -3,7 +3,7 @@ import { v } from "convex/values"
 import { internal } from "./_generated/api"
 import { mutation, query } from "./_generated/server"
 import { requireMembership } from "./groups"
-import { requireUserId } from "./helpers"
+import { FALLBACK_DISPLAY_NAME, FALLBACK_GROUP_NAME, requireUserId } from "./helpers"
 import { inviteTargetValidator } from "./validators"
 
 const INVITE_TTL_MS = 7 * 24 * 60 * 60 * 1000
@@ -50,11 +50,11 @@ export const getInvite = query({
             .unique()
         const groupName =
             invite.target.kind === "group"
-                ? ((await ctx.db.get(invite.target.groupId))?.name ?? "Unknown group")
+                ? ((await ctx.db.get(invite.target.groupId))?.name ?? FALLBACK_GROUP_NAME)
                 : undefined
         return {
             target: invite.target,
-            invitedByName: inviter?.name ?? "Someone",
+            invitedByName: inviter?.name ?? FALLBACK_DISPLAY_NAME,
             ...(groupName !== undefined ? { groupName } : {}),
             status: invite.status,
             expiresAt: invite.expiresAt,

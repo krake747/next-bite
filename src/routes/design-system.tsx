@@ -1,19 +1,20 @@
-import { createFileRoute } from "@tanstack/react-router"
+import { createFileRoute, redirect } from "@tanstack/react-router"
 import { getSchema } from "cva/tools"
 import { useState } from "react"
 
+import { env } from "@core/env"
 import { GroupCard } from "@features/groups/group-card"
 import { SharedRestaurantList } from "@features/groups/shared-restaurant-list"
 import { EmptyRestaurantsState } from "@features/restaurants/empty-restaurants-state"
 import { RestaurantHeader } from "@features/restaurants/restaurant-header"
 import { RestaurantInterestButton } from "@features/restaurants/restaurant-interest-button"
 import { ActivityPost } from "@features/social/activity-post"
-import { AvatarGroup } from "@features/social/avatar-group"
 import { CommentList } from "@features/social/comment-list"
 import { FriendPresence } from "@features/social/friend-presence"
 import { PhotoGallery } from "@features/social/photo-gallery"
 import { ReactionBar } from "@features/social/reaction-bar"
 import { SocialMetadata } from "@features/social/social-metadata"
+import { AvatarGroup } from "@pattern/avatar-group"
 import { PageContainer } from "@routes/-layouts/page-container"
 import { PageLayout } from "@routes/-layouts/page-layout"
 import { Avatar } from "@ui/avatar"
@@ -29,6 +30,12 @@ import { Tabs, TabsList, TabsTab, TabsPanel } from "@ui/tabs"
 
 export const Route = createFileRoute("/design-system")({
     head: () => ({ meta: [{ title: "Design System - Next Bite" }] }),
+    beforeLoad: () => {
+        if (!env.DEV) {
+            // oxlint-disable-next-line typescript/only-throw-error -- TanStack Router redirects via thrown redirect objects by design
+            throw redirect({ to: "/" })
+        }
+    },
     component: DesignSystemPage,
 })
 
@@ -351,14 +358,16 @@ function SocialSection() {
             <div className="w-full space-y-4">
                 <SocialMetadata ownerName="Alex" wantCount={4} beenCount={1} />
                 <ReactionBar
-                    liked
-                    likeCount={3}
-                    onToggleLike={() => {}}
-                    commentCount={2}
-                    onComment={() => {}}
-                    wanted
-                    wantCount={4}
-                    onToggleWant={() => {}}
+                    reactions={{
+                        liked: true,
+                        likeCount: 3,
+                        onToggleLike: () => {},
+                        commentCount: 2,
+                        onComment: () => {},
+                        wanted: true,
+                        wantCount: 4,
+                        onToggleWant: () => {},
+                    }}
                 />
                 <CommentList
                     comments={[
@@ -385,11 +394,8 @@ function ActivitySection() {
                     author={{ name: "Alex" }}
                     time="2 hours ago"
                     text="You have to try this place."
-                    restaurantName="Trattoria Verde"
-                    restaurantCuisine="Italian"
-                    ownerName="Alex"
-                    wantCount={4}
-                    interestedFriends={[{ name: "Priya" }, { name: "Jamie" }]}
+                    restaurant={{ name: "Trattoria Verde", cuisine: "Italian" }}
+                    social={{ ownerName: "Alex", wantCount: 4, interestedNames: ["Priya", "Jamie"] }}
                     reactions={{
                         liked: false,
                         likeCount: 3,
@@ -407,7 +413,6 @@ function ActivitySection() {
                         { url: "https://picsum.photos/seed/nextbite2/400", author: "Priya" },
                         { url: "https://picsum.photos/seed/nextbite3/400" },
                     ]}
-                    onAddPhoto={() => {}}
                 />
             </div>
         </Section>

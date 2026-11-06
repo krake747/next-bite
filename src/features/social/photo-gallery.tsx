@@ -1,23 +1,13 @@
-import Camera from "lucide-react/icons/camera"
-import { useState } from "react"
-
-import { ImageGalleryModal } from "@pattern/image-gallery-modal"
+import { Lightbox, useLightbox } from "@pattern/gallery/lightbox"
+import { type GalleryPhoto } from "@pattern/gallery/photos"
 import { LazyImage } from "@pattern/lazy-image"
-
-export type GalleryPhoto = {
-    readonly url: string
-    readonly author?: string | undefined
-}
 
 export function PhotoGallery({
     photos,
-    onAddPhoto,
 }: Readonly<{
     photos: ReadonlyArray<GalleryPhoto>
-    onAddPhoto?: (() => void) | undefined
 }>) {
-    const [viewerIndex, setViewerIndex] = useState<number | null>(null)
-    const urls = photos.map((photo) => photo.url)
+    const lightbox = useLightbox(photos)
 
     if (photos.length === 0) {
         return null
@@ -31,7 +21,7 @@ export function PhotoGallery({
                         key={photo.url}
                         type="button"
                         onClick={() => {
-                            setViewerIndex(index)
+                            lightbox.openAt(index)
                         }}
                         className="group relative aspect-square overflow-hidden rounded-lg"
                         aria-label={`Open photo ${index + 1}${photo.author ? ` by ${photo.author}` : ""}`}
@@ -54,35 +44,14 @@ export function PhotoGallery({
                 <button
                     type="button"
                     onClick={() => {
-                        setViewerIndex(3)
+                        lightbox.openAt(3)
                     }}
                     className="mt-2 cursor-pointer text-sm font-medium text-tomato-700 hover:text-tomato-600"
                 >
                     View all {photos.length} photos
                 </button>
             )}
-            {onAddPhoto !== undefined && (
-                <button
-                    type="button"
-                    onClick={onAddPhoto}
-                    className="mt-2 inline-flex cursor-pointer items-center gap-1.5 text-sm font-medium text-tomato-700 hover:text-tomato-600"
-                >
-                    <Camera className="size-4" aria-hidden="true" />
-                    Add your photo
-                </button>
-            )}
-            {viewerIndex !== null && (
-                <ImageGalleryModal
-                    images={urls}
-                    show
-                    initialIndex={viewerIndex}
-                    onOpenChange={(open) => {
-                        if (!open) {
-                            setViewerIndex(null)
-                        }
-                    }}
-                />
-            )}
+            <Lightbox lightbox={lightbox} />
         </div>
     )
 }

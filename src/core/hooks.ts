@@ -6,7 +6,8 @@ import { useEffect, useState } from "react"
 import { api } from "../../convex/_generated/api"
 import { type Doc, type Id } from "../../convex/_generated/dataModel"
 import { getConvexSessionToken } from "./auth-client"
-import { useAuth } from "./auth-provider"
+import { useAuth as useAuthSource } from "./auth-provider"
+import { FALLBACK_DISPLAY_NAME } from "./constants"
 import { useConvexClient, useConvexQuery, useConvexMutation, useConvexAction } from "./convex-client.tsx"
 import {
     applyUpdateArgsToDraft,
@@ -64,7 +65,7 @@ function useSessionKey(): string | null {
 export type SessionStatus = { kind: "loading" } | { kind: "signed-out" } | { kind: "ready"; userId: string }
 
 export function useSessionStatus(): SessionStatus {
-    const { isAuthenticated, isLoading, user } = useAuth()
+    const { isAuthenticated, isLoading, user } = useAuthSource()
     const client = useConvexClient()
     const [convexReady, setConvexReady] = useState(false)
     const sessionKey = !isAuthenticated || isLoading || user === null ? null : user.id
@@ -156,7 +157,7 @@ export const useAcceptFriend = () => useConvexMutation(api.friendships.acceptFri
 export const useRemoveFriend = () => useConvexMutation(api.friendships.removeFriend)
 
 export function useEnsureProfile(): void {
-    const auth = useAuth()
+    const auth = useAuthSource()
     const client = useConvexClient()
     const sessionKey = useSessionKey()
     useEffect(() => {
@@ -191,9 +192,10 @@ export const useGroup = (groupId: Id<"groups">) => {
     return useConvexQuery(api.groups.getGroup, { groupId }, { skip: status.kind !== "ready" })
 }
 
-export const useGroupRestaurants = (groupId: Id<"groups">, enabled = true) => {
+export const useGroupRestaurants = (groupId: Id<"groups"> | null | undefined) => {
     const status = useSessionStatus()
-    return useConvexQuery(api.shares.listForGroup, { groupId }, { skip: status.kind !== "ready" || !enabled })
+    const skip = status.kind !== "ready" || groupId === null || groupId === undefined
+    return useConvexQuery(api.shares.listForGroup, skip ? undefined : { groupId }, { skip })
 }
 
 export const useRestaurantShares = (restaurantId: Id<"restaurants">) => {
@@ -219,7 +221,7 @@ export const useAuthMethods = (): AuthMethods | undefined => useConvexQuery(api.
 
 export function useAddRestaurantWithHours() {
     const client = useConvexClient()
-    const auth = useAuth()
+    const auth = useAuthSource()
     return useMutation({
         mutationFn: async (args: RestaurantAddArgs): Promise<Id<"restaurants">> => {
             if (client === null || !auth.isAuthenticated || auth.user === null) {
@@ -232,7 +234,7 @@ export function useAddRestaurantWithHours() {
             const clientMutationId = args.clientMutationId ?? crypto.randomUUID()
             const temp = buildTempRestaurant({
                 ownerId: auth.user.id,
-                ownerName: auth.user.name ?? "Someone",
+                ownerName: auth.user.name ?? FALLBACK_DISPLAY_NAME,
                 ...args,
                 clientMutationId,
             })
@@ -317,7 +319,7 @@ export function useUploadImage() {
     }
 }
 
-export { useAuth }
-export type { ImageRecord }
+export const useAuth = useAuthSource
+export type { ImageRecord } from "./schemas"
 
 export type Restaurant = Doc<"restaurants">

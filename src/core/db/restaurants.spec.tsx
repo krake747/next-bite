@@ -8,7 +8,6 @@ import { type Id } from "@convex/_generated/dataModel"
 import { authClient } from "../auth-client"
 import { AuthProvider, useAuth as useProbeAuth } from "../auth-provider"
 import { useRestaurants } from "../hooks"
-import { mockBackend } from "./mock-sync-client"
 import {
     applyUpdateArgsToDraft,
     assertRealRestaurantId,
@@ -21,6 +20,7 @@ import {
     type RestaurantAddArgs,
     type RestaurantDoc,
 } from "./restaurants"
+import { createSeededClient } from "./seeded-client"
 
 const SESSION = "user-1"
 
@@ -173,8 +173,8 @@ describe("restaurant shape translators", () => {
 describe("restaurant collections", () => {
     it("shows an optimistic update immediately and converges on sync", async () => {
         const persist = mockPersist()
-        const backend = mockBackend([restaurantFixture()])
-        const collections = getSessionCollections(backend.syncClient, persist, SESSION)
+        const backend = createSeededClient({ liveRows: [restaurantFixture()] })
+        const collections = getSessionCollections(backend.client, persist, SESSION)
         await collections.owner.preload()
         // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- test-only restaurant id
         const id = "r1" as unknown as Id<"restaurants">
@@ -194,8 +194,8 @@ describe("restaurant collections", () => {
     it("rolls back an optimistic update when persistence fails", async () => {
         const persist = mockPersist()
         persist.updateRestaurant.mockRejectedValueOnce(new Error("mutation failed"))
-        const backend = mockBackend([restaurantFixture()])
-        const collections = getSessionCollections(backend.syncClient, persist, SESSION)
+        const backend = createSeededClient({ liveRows: [restaurantFixture()] })
+        const collections = getSessionCollections(backend.client, persist, SESSION)
         await collections.owner.preload()
         // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- test-only restaurant id
         const id = "r1" as unknown as Id<"restaurants">
@@ -212,8 +212,8 @@ describe("restaurant collections", () => {
 
     it("shows an optimistic insert immediately and swaps in the synced row", async () => {
         const persist = mockPersist()
-        const backend = mockBackend([])
-        const collections = getSessionCollections(backend.syncClient, persist, SESSION)
+        const backend = createSeededClient()
+        const collections = getSessionCollections(backend.client, persist, SESSION)
         await collections.owner.preload()
 
         const tx = collections.owner.insert({ ...restaurantFixture() })
@@ -233,8 +233,8 @@ describe("restaurant collections", () => {
 
     it("resolves the synced id by client mutation key after a delayed ack", async () => {
         const persist = mockPersist()
-        const backend = mockBackend([])
-        const collections = getSessionCollections(backend.syncClient, persist, SESSION)
+        const backend = createSeededClient()
+        const collections = getSessionCollections(backend.client, persist, SESSION)
         await collections.owner.preload()
 
         const temp = buildTempRestaurant({
@@ -258,8 +258,8 @@ describe("restaurant collections", () => {
 
     it("times out resolving an id that never syncs", async () => {
         const persist = mockPersist()
-        const backend = mockBackend([])
-        const collections = getSessionCollections(backend.syncClient, persist, SESSION)
+        const backend = createSeededClient()
+        const collections = getSessionCollections(backend.client, persist, SESSION)
         await collections.owner.preload()
 
         await expect(resolveRestaurantIdByKey(collections.owner, "user-1:ghost", 50)).rejects.toThrow("Timed out")
@@ -267,8 +267,8 @@ describe("restaurant collections", () => {
 
     it("persists rapid consecutive inserts under distinct keys", async () => {
         const persist = mockPersist()
-        const backend = mockBackend([])
-        const collections = getSessionCollections(backend.syncClient, persist, SESSION)
+        const backend = createSeededClient()
+        const collections = getSessionCollections(backend.client, persist, SESSION)
         await collections.owner.preload()
 
         const first = collections.owner.insert(
@@ -299,23 +299,29 @@ describe("restaurant collections", () => {
         expect(keys).toEqual(["user-1:rapid-1", "user-1:rapid-2"])
     })
 
-    it("scopes collections per session key", () => {
+    it("scopes synced rows per session key", async () => {
         const persist = mockPersist()
-        const backend = mockBackend([])
+        const backend = createSeededClient({ liveRows: [restaurantFixture()] })
 
-        const anna = getSessionCollections(backend.syncClient, persist, "anna")
-        const again = getSessionCollections(backend.syncClient, persist, "anna")
-        const ben = getSessionCollections(backend.syncClient, persist, "ben")
+        const anna = getSessionCollections(backend.client, persist, "anna")
+        await anna.owner.preload()
+        expect(anna.owner.size).toBe(1)
 
-        expect(again.owner).toBe(anna.owner)
+        const ben = getSessionCollections(backend.client, persist, "ben")
         expect(ben.owner).not.toBe(anna.owner)
+        expect(ben.owner.size).toBe(0)
+        await ben.owner.preload()
+        expect(ben.owner.size).toBe(1)
+
+        const annaAgain = getSessionCollections(backend.client, persist, "anna")
+        expect(annaAgain.owner.size).toBe(0)
     })
 
     it("rolls back an optimistic insert when persistence fails", async () => {
         const persist = mockPersist()
         persist.addRestaurant.mockRejectedValueOnce(new Error("mutation failed"))
-        const backend = mockBackend([])
-        const collections = getSessionCollections(backend.syncClient, persist, SESSION)
+        const backend = createSeededClient()
+        const collections = getSessionCollections(backend.client, persist, SESSION)
         await collections.owner.preload()
 
         const tx = collections.owner.insert(
@@ -363,8 +369,8 @@ describe("restaurant collections", () => {
             data: { user: { id: "user-1", email: "alex@example.com", name: "Alex" } },
             error: null,
         })
-        const backend = mockBackend([restaurantFixture()])
-        injectSyncClient(backend.syncClient)
+        const backend = createSeededClient({ liveRows: [restaurantFixture()] })
+        injectSyncClient(backend.client)
         const queryClient = new QueryClient()
 
         const { result } = renderHook(() => useRestaurants(), {
@@ -382,8 +388,8 @@ describe("restaurant collections", () => {
 
     it("returns undefined from the restaurants hook when signed out", async () => {
         vi.mocked(authClient.getSession).mockResolvedValue({ data: { user: null }, error: null })
-        const backend = mockBackend([restaurantFixture()])
-        injectSyncClient(backend.syncClient)
+        const backend = createSeededClient({ liveRows: [restaurantFixture()] })
+        injectSyncClient(backend.client)
         const queryClient = new QueryClient()
 
         const { result } = renderHook(
@@ -401,10 +407,14 @@ describe("restaurant collections", () => {
         )
 
         await vi.waitFor(() => {
-            expect(result.current).not.toBeNull()
+            expect(vi.mocked(authClient.getSession)).toHaveBeenCalled()
         })
-        expect(result.current.restaurants).toBeUndefined()
+        await new Promise((resolve) => {
+            setTimeout(resolve, 50)
+        })
         expect(result.current.authed).toBe(false)
+        expect(result.current.restaurants).toBeUndefined()
+        expect(backend.subscriberCount()).toBe(0)
     })
 
     it("isolates account data across sign-out to a different account", async () => {
@@ -412,8 +422,10 @@ describe("restaurant collections", () => {
             data: { user: { id: "anna", email: "anna@example.com", name: "Anna" } },
             error: null,
         })
-        const annasBackend = mockBackend([restaurantFixture({ ownerId: "anna", ownerName: "Anna" })])
-        injectSyncClient(annasBackend.syncClient)
+        const annasBackend = createSeededClient({
+            liveRows: [restaurantFixture({ ownerId: "anna", ownerName: "Anna" })],
+        })
+        injectSyncClient(annasBackend.client)
         const queryClient = new QueryClient()
         const wrapper = ({ children }: Readonly<{ children: React.ReactNode }>) => (
             <QueryClientProvider client={queryClient}>
@@ -431,8 +443,10 @@ describe("restaurant collections", () => {
             data: { user: { id: "ben", email: "ben@example.com", name: "Ben" } },
             error: null,
         })
-        const bensBackend = mockBackend([restaurantFixture({ ownerId: "ben", ownerName: "Ben", name: "Sushi Bar" })])
-        injectSyncClient(bensBackend.syncClient)
+        const bensBackend = createSeededClient({
+            liveRows: [restaurantFixture({ ownerId: "ben", ownerName: "Ben", name: "Sushi Bar" })],
+        })
+        injectSyncClient(bensBackend.client)
 
         const second = renderHook(() => useRestaurants(), { wrapper })
         await vi.waitFor(() => {
@@ -447,8 +461,8 @@ describe("restaurant collections", () => {
             error: null,
         })
         tokenMock.mockResolvedValue({ data: null })
-        const gated = mockBackend([restaurantFixture()])
-        injectSyncClient(gated.syncClient)
+        const gated = createSeededClient({ liveRows: [restaurantFixture()] })
+        injectSyncClient(gated.client)
         const queryClient = new QueryClient()
         const wrapper = ({ children }: Readonly<{ children: React.ReactNode }>) => (
             <QueryClientProvider client={queryClient}>
@@ -458,16 +472,19 @@ describe("restaurant collections", () => {
 
         const { result, unmount } = renderHook(() => useRestaurants(), { wrapper })
         await vi.waitFor(() => {
-            expect(result.current).not.toBeNull()
+            expect(vi.mocked(authClient.getSession)).toHaveBeenCalled()
         })
         // Session resolved but no convex token: no subscription, no rows.
+        await new Promise((resolve) => {
+            setTimeout(resolve, 50)
+        })
         expect(result.current).toBeUndefined()
         expect(gated.subscriberCount()).toBe(0)
         unmount()
 
         tokenMock.mockResolvedValue({ data: { token: "test-token" } })
-        const backend = mockBackend([restaurantFixture()])
-        injectSyncClient(backend.syncClient)
+        const backend = createSeededClient({ liveRows: [restaurantFixture()] })
+        injectSyncClient(backend.client)
 
         const second = renderHook(() => useRestaurants(), { wrapper })
         await vi.waitFor(() => {
@@ -482,8 +499,8 @@ describe("restaurant collections", () => {
             error: null,
         })
         const flaky = flakyAuthQuery(2)
-        const backend = mockBackend([], { query: flaky.query })
-        injectSyncClient(backend.syncClient)
+        const backend = createSeededClient({ queryHook: flaky.query })
+        injectSyncClient(backend.client)
         const queryClient = new QueryClient()
 
         const { result } = renderHook(() => useRestaurants(), {
@@ -510,8 +527,8 @@ describe("restaurant collections", () => {
             data: { user: { id: "user-1", email: "alex@example.com", name: "Alex" } },
             error: null,
         })
-        const backend = mockBackend([restaurantFixture()])
-        injectSyncClient(backend.syncClient)
+        const backend = createSeededClient({ liveRows: [restaurantFixture()] })
+        injectSyncClient(backend.client)
         const queryClient = new QueryClient()
 
         const { unmount } = renderHook(() => useRestaurants(), {

@@ -9,7 +9,6 @@ type RestaurantListProps = {
     hasFilter?: boolean | undefined
     hasSearch?: boolean | undefined
     onAddClick: () => void
-    sortOrder?: "added" | "name" | undefined
     socialFor?: ((restaurant: Restaurant) => RestaurantSocial | RestaurantSocialSummary) | undefined
     onToggleWant?: ((restaurant: Restaurant) => void) | undefined
     detailsHrefFor?: ((restaurant: Restaurant) => string) | undefined

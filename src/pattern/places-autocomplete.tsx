@@ -4,6 +4,8 @@ import { useRef, useState, useEffect, useId } from "react"
 import { cx } from "@ui/cva.config"
 import { control, fieldLabel } from "@ui/variants"
 
+type Bias = Readonly<{ north: number; south: number; east: number; west: number }>
+
 type PlacesAutocompleteProps = {
     value: string
     onChange: (value: string, lat?: number, lng?: number, placeId?: string) => void
@@ -11,7 +13,7 @@ type PlacesAutocompleteProps = {
     label?: string | undefined
     className?: string | undefined
     id?: string | undefined
-    locationBias?: Readonly<{ north: number; south: number; east: number; west: number }> | undefined
+    locationBias?: Bias | undefined
 }
 
 const DEFAULT_LOCATION_BIAS = {
@@ -52,8 +54,6 @@ function handlePlaceSelectEvent(event: unknown, onChange: PlacesAutocompleteProp
             onChange(address, lat ?? undefined, lng ?? undefined, place.id ?? undefined)
         })
 }
-
-type Bias = Readonly<{ north: number; south: number; east: number; west: number }>
 
 function mountAutocomplete(params: {
     placesLib: google.maps.PlacesLibrary

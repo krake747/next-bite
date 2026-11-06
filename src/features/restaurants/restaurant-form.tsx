@@ -107,7 +107,6 @@ export function RestaurantForm(props: Readonly<RestaurantFormProps>) {
                 onImagesChange={(updated) => {
                     gallery.setImages([...updated])
                 }}
-                maxImages={5}
                 {...(props.mode === "edit"
                     ? { restaurantId: props.restaurant._id }
                     : { onRemove: gallery.trackRemoved })}

@@ -6,6 +6,7 @@ const valid = {
     VITE_CONVEX_URL: "https://example.convex.cloud",
     VITE_CONVEX_SITE_URL: "https://example.convex.site",
     VITE_GOOGLE_MAPS_API_KEY: "test-key",
+    DEV: false,
 }
 
 describe("parseEnv", () => {

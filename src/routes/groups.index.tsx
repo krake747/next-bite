@@ -2,6 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router"
 import { useState } from "react"
 
 import { useAuth, useCreateGroup, useMyGroups } from "@core/hooks"
+import { EmptyState } from "@pattern/empty-state"
 import { PageContainer } from "@routes/-layouts/page-container"
 import { PageLayout } from "@routes/-layouts/page-layout"
 import { Button } from "@ui/button"
@@ -96,14 +97,11 @@ function GroupsPage() {
                     <>
                         <CreateGroupForm />
                         {groups.length === 0 ? (
-                            <div className="mt-6 rounded-card border border-border bg-surface p-6 text-center shadow-card">
-                                <p className="font-display text-lg font-semibold text-balance text-stone-900">
-                                    No groups yet
-                                </p>
-                                <p className="mx-auto mt-1 max-w-md text-sm text-pretty text-stone-600">
-                                    Create your first group above, then add restaurants to its shared list.
-                                </p>
-                            </div>
+                            <EmptyState
+                                title="No groups yet"
+                                body="Create your first group above, then add restaurants to its shared list."
+                                className="mt-6"
+                            />
                         ) : (
                             <ul className="mt-6 grid gap-4 md:grid-cols-2">
                                 {groups.map(({ group, role }) => (

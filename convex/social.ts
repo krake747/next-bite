@@ -1,6 +1,7 @@
-import { type GenericMutationCtx } from "convex/server"
+import { type GenericDatabaseReader, type GenericMutationCtx } from "convex/server"
 import { v } from "convex/values"
 
+import { countReactions } from "../src/core/social-counts"
 import { type DataModel, type Doc, type Id } from "./_generated/dataModel"
 import { mutation, query } from "./_generated/server"
 import { authComponent } from "./auth"
@@ -43,26 +44,39 @@ async function requireVisibleRestaurant(
     return { userId, name }
 }
 
+type SocialRows = {
+    interests: Doc<"interests">[]
+    likes: Doc<"likes">[]
+    comments: Doc<"comments">[]
+}
+
+async function collectSocialFor(
+    db: GenericDatabaseReader<DataModel>,
+    restaurantId: Id<"restaurants">,
+): Promise<SocialRows> {
+    const [interests, likes, comments] = await Promise.all([
+        db
+            .query("interests")
+            .withIndex("by_restaurant", (q) => q.eq("restaurantId", restaurantId))
+            .collect(),
+        db
+            .query("likes")
+            .withIndex("by_restaurant", (q) => q.eq("restaurantId", restaurantId))
+            .collect(),
+        db
+            .query("comments")
+            .withIndex("by_restaurant", (q) => q.eq("restaurantId", restaurantId))
+            .collect(),
+    ])
+    return { interests, likes, comments }
+}
+
 export const getForRestaurant = query({
     args: {
         restaurantId: v.id("restaurants"),
     },
     handler: async (ctx, args) => {
-        const [interests, likes, comments] = await Promise.all([
-            ctx.db
-                .query("interests")
-                .withIndex("by_restaurant", (q) => q.eq("restaurantId", args.restaurantId))
-                .collect(),
-            ctx.db
-                .query("likes")
-                .withIndex("by_restaurant", (q) => q.eq("restaurantId", args.restaurantId))
-                .collect(),
-            ctx.db
-                .query("comments")
-                .withIndex("by_restaurant", (q) => q.eq("restaurantId", args.restaurantId))
-                .collect(),
-        ])
-        return { interests, likes, comments }
+        return collectSocialFor(ctx.db, args.restaurantId)
     },
 })
 
@@ -90,31 +104,17 @@ export const getSummaries = query({
         const userId = identity?.subject ?? null
         return Promise.all(
             args.restaurantIds.map(async (restaurantId) => {
-                const [interests, likes, comments] = await Promise.all([
-                    ctx.db
-                        .query("interests")
-                        .withIndex("by_restaurant", (q) => q.eq("restaurantId", restaurantId))
-                        .collect(),
-                    ctx.db
-                        .query("likes")
-                        .withIndex("by_restaurant", (q) => q.eq("restaurantId", restaurantId))
-                        .collect(),
-                    ctx.db
-                        .query("comments")
-                        .withIndex("by_restaurant", (q) => q.eq("restaurantId", restaurantId))
-                        .collect(),
-                ])
-                const wants = interests.filter((interest) => interest.status === "want")
-                const beens = interests.filter((interest) => interest.status === "been")
+                const { interests, likes, comments } = await collectSocialFor(ctx.db, restaurantId)
+                const counts = countReactions(interests, likes, userId)
                 return {
                     restaurantId,
-                    wantCount: wants.length,
-                    beenCount: beens.length,
-                    likeCount: likes.length,
+                    wantCount: counts.wantCount,
+                    beenCount: counts.beenCount,
+                    likeCount: counts.likeCount,
                     commentCount: comments.length,
-                    wanted: userId === null ? false : wants.some((interest) => interest.userId === userId),
-                    liked: userId === null ? false : likes.some((like) => like.userId === userId),
-                    interestedNames: interests.slice(0, 5).map((interest) => interest.displayName),
+                    wanted: counts.wanted,
+                    liked: counts.liked,
+                    interestedNames: counts.interestedNames.slice(0, 5),
                 }
             }),
         )
