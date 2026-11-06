@@ -269,7 +269,7 @@ export function getSessionCollections(
     return created
 }
 
-const USER_SCOPED_QUERY_PREFIXES = ["restaurants:", "friendships:", "social:"]
+const USER_SCOPED_QUERY_PREFIXES = ["restaurants:", "friendships:", "social:", "users:", "groups:", "shares:"]
 
 export function isUserScopedQueryKey(queryKey: ReadonlyArray<unknown>): boolean {
     const [namespace] = queryKey

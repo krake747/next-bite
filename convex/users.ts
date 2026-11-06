@@ -66,15 +66,27 @@ export const updateMe = mutation({
     },
     handler: async (ctx, args) => {
         const userId = await requireUserId(ctx)
+        if (args.name === undefined && args.avatar === undefined) {
+            throw new Error("Nothing to update: provide name or avatar")
+        }
         const profile = await ctx.db
             .query("profiles")
             .withIndex("by_auth_user", (q) => q.eq("authUserId", userId))
             .unique()
         if (!profile) {
-            throw new Error("Profile not found: call ensureProfile first")
-        }
-        if (args.name === undefined && args.avatar === undefined) {
-            throw new Error("Nothing to update: provide name or avatar")
+            // First save from the onboarding form: no profile row exists yet. The auth record
+            // supplies the email so the onboarding path needs no separate ensure call.
+            const authUser = await readAuthUser(ctx)
+            if (!authUser?.email) {
+                throw new Error("Profile not found: call ensureProfile first")
+            }
+            return ctx.db.insert("profiles", {
+                authUserId: userId,
+                name: formatDisplayName(args.name ?? authUser?.email ?? ""),
+                email: authUser.email,
+                ...(args.avatar !== undefined ? { avatar: args.avatar } : {}),
+                createdAt: Date.now(),
+            })
         }
         await ctx.db.patch(profile._id, {
             ...(args.name !== undefined ? { name: formatDisplayName(args.name) } : {}),

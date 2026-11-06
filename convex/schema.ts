@@ -49,6 +49,7 @@ export default defineSchema({
         updatedAt: v.number(),
     })
         .index("by_restaurant", ["restaurantId"])
+        .index("by_user", ["userId"])
         .index("by_user_restaurant", ["userId", "restaurantId"]),
     likes: defineTable({
         ...socialFields,
