@@ -8,7 +8,7 @@ import { components } from "./_generated/api"
 import { type DataModel } from "./_generated/dataModel"
 import { query } from "./_generated/server"
 import authConfig from "./auth.config"
-import { sendOtpEmail } from "./email"
+import { sendOtpEmail, hasMailgunConfig, isMailDevFallback } from "./email"
 import { getValidatedConvexSiteUrl } from "./env"
 
 const convexSiteUrl = getValidatedConvexSiteUrl()
@@ -37,7 +37,9 @@ export const getAuthMethods = query({
         password: true,
         google: hasGoogleEnv(),
         github: hasGithubEnv(),
-        emailOtp: isEmailOtpEnabled(),
+        // OTP is offered only when a code can actually be delivered: flag on plus either a
+        // working mail configuration or the explicit local dev fallback.
+        emailOtp: isEmailOtpEnabled() && (hasMailgunConfig() || isMailDevFallback()),
     }),
 })
 
@@ -71,7 +73,9 @@ export const createAuth = (ctx: GenericCtx<DataModel>) => {
                 : {}),
         },
         plugins: [
-            ...(isEmailOtpEnabled()
+            // Same deliverability gate as getAuthMethods: no OTP endpoints when no code can
+            // actually be delivered.
+            ...(isEmailOtpEnabled() && (hasMailgunConfig() || isMailDevFallback())
                 ? [
                       emailOTP({
                           async sendVerificationOTP({ email, otp, type }) {
