@@ -358,14 +358,16 @@ function SocialSection() {
             <div className="w-full space-y-4">
                 <SocialMetadata ownerName="Alex" wantCount={4} beenCount={1} />
                 <ReactionBar
-                    liked
-                    likeCount={3}
-                    onToggleLike={() => {}}
-                    commentCount={2}
-                    onComment={() => {}}
-                    wanted
-                    wantCount={4}
-                    onToggleWant={() => {}}
+                    reactions={{
+                        liked: true,
+                        likeCount: 3,
+                        onToggleLike: () => {},
+                        commentCount: 2,
+                        onComment: () => {},
+                        wanted: true,
+                        wantCount: 4,
+                        onToggleWant: () => {},
+                    }}
                 />
                 <CommentList
                     comments={[
@@ -392,11 +394,8 @@ function ActivitySection() {
                     author={{ name: "Alex" }}
                     time="2 hours ago"
                     text="You have to try this place."
-                    restaurantName="Trattoria Verde"
-                    restaurantCuisine="Italian"
-                    ownerName="Alex"
-                    wantCount={4}
-                    interestedFriends={[{ name: "Priya" }, { name: "Jamie" }]}
+                    restaurant={{ name: "Trattoria Verde", cuisine: "Italian" }}
+                    social={{ ownerName: "Alex", wantCount: 4, interestedNames: ["Priya", "Jamie"] }}
                     reactions={{
                         liked: false,
                         likeCount: 3,

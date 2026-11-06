@@ -132,13 +132,8 @@ function HomeFeed({
                                 author={{ name: restaurant.ownerName }}
                                 time={new Date(restaurant._creationTime).toLocaleDateString()}
                                 text={feedTextFor(restaurant.name, restaurant.details?.notes)}
-                                restaurantName={restaurant.name}
-                                restaurantCuisine={restaurant.cuisine}
-                                photoUrls={restaurant.images.map((img) => img.url)}
-                                ownerName={restaurant.ownerName}
-                                wantCount={social.wantCount}
-                                beenCount={social.beenCount}
-                                interestedFriends={social.interestedNames.map((name) => ({ name }))}
+                                restaurant={restaurant}
+                                social={{ ...social, ownerName: restaurant.ownerName }}
                                 reactions={{
                                     liked: social.liked,
                                     likeCount: social.likeCount,

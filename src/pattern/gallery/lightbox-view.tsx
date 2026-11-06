@@ -51,18 +51,7 @@ export function LightboxView() {
                 <NavigationArrow direction="next" onClick={viewer.showNext} hidden={singleImage} />
             </div>
 
-            <ZoomControls
-                zoom={zoomPan.zoom}
-                onZoomIn={zoomPan.zoomIn}
-                onZoomOut={zoomPan.zoomOut}
-                onRotate={zoomPan.rotate}
-                onToggleFullscreen={() => {
-                    viewer.toggleFullscreen()
-                }}
-                onReset={zoomPan.resetZoom}
-                isFullscreen={viewer.isFullscreen}
-                onBackToGrid={viewer.backToGrid}
-            />
+            <ZoomControls zoomPan={zoomPan} />
         </>
     )
 }

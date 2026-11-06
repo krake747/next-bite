@@ -64,14 +64,16 @@ describe("ReactionBar", () => {
         const onComment = vi.fn<() => void>()
         render(
             <ReactionBar
-                liked={false}
-                likeCount={3}
-                onToggleLike={onToggleLike}
-                commentCount={1}
-                onComment={onComment}
-                wanted={false}
-                wantCount={4}
-                onToggleWant={onToggleWant}
+                reactions={{
+                    liked: false,
+                    likeCount: 3,
+                    onToggleLike,
+                    commentCount: 1,
+                    onComment,
+                    wanted: false,
+                    wantCount: 4,
+                    onToggleWant,
+                }}
             />,
         )
         await user.click(screen.getByRole("button", { name: /Like/ }))
@@ -126,11 +128,8 @@ describe("ActivityPost", () => {
                 author={{ name: "Alex" }}
                 time="2 hours ago"
                 text="You have to try this place."
-                restaurantName="Trattoria Verde"
-                restaurantCuisine="Italian"
-                ownerName="Alex"
-                wantCount={4}
-                interestedFriends={friends.slice(0, 2)}
+                restaurant={{ name: "Trattoria Verde", cuisine: "Italian" }}
+                social={{ ownerName: "Alex", wantCount: 4, interestedNames: friends.slice(0, 2).map((f) => f.name) }}
                 reactions={{
                     liked: false,
                     likeCount: 3,

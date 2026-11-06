@@ -77,14 +77,16 @@ function DetailHero({
                     onToggleWant={onToggleWant}
                 />
                 <ReactionBar
-                    liked={social.liked}
-                    likeCount={social.likeCount}
-                    onToggleLike={onToggleLike}
-                    commentCount={social.comments.length}
-                    onComment={() => {}}
-                    wanted={social.wanted}
-                    wantCount={social.wantCount}
-                    onToggleWant={onToggleWant}
+                    reactions={{
+                        liked: social.liked,
+                        likeCount: social.likeCount,
+                        onToggleLike,
+                        commentCount: social.comments.length,
+                        onComment: () => {},
+                        wanted: social.wanted,
+                        wantCount: social.wantCount,
+                        onToggleWant,
+                    }}
                 />
                 {shareAction}
             </div>
