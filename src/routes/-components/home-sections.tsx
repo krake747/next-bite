@@ -1,7 +1,4 @@
 import { Link } from "@tanstack/react-router"
-import Heart from "lucide-react/icons/heart"
-import MapPin from "lucide-react/icons/map-pin"
-import Users from "lucide-react/icons/users"
 
 import { Button } from "@ui/button"
 import { Skeleton } from "@ui/skeleton"
@@ -15,12 +12,7 @@ export type LandingStats = {
 
 export function LandingEyebrow() {
     return (
-        <p className="inline-flex items-center gap-2 rounded-full bg-surface/80 py-1 pr-4 pl-1 text-sm font-semibold text-stone-700 shadow-card ring-1 ring-border backdrop-blur-sm">
-            <span className="flex size-8 items-center justify-center rounded-full bg-linear-to-br from-tomato-500 to-tomato-600 text-white shadow-inner">
-                <Users className="size-4" />
-            </span>
-            Shared by friends, not algorithms
-        </p>
+        <p className="text-xs font-bold tracking-widest text-tomato-700 uppercase">Shared by friends, not algorithms</p>
     )
 }
 
@@ -46,14 +38,11 @@ export function CommunityStatsSkeleton() {
         >
             <Skeleton className="mx-auto h-8 w-56" />
             <Skeleton className="mx-auto mt-2 h-4 w-72" />
-            <div className="mt-6 grid gap-4 sm:grid-cols-3">
+            <div className="mt-6 grid grid-cols-3 divide-x divide-border rounded-card border border-border bg-surface">
                 {[0, 1, 2].map((index) => (
-                    <div
-                        key={index}
-                        className="rounded-card border border-border bg-surface p-6 text-center shadow-card"
-                    >
-                        <Skeleton className="mx-auto h-10 w-24" />
-                        <Skeleton className="mx-auto mt-2 h-4 w-28" />
+                    <div key={index} className="px-4 py-5">
+                        <Skeleton className="mx-auto h-9 w-16" />
+                        <Skeleton className="mx-auto mt-2 h-4 w-20" />
                     </div>
                 ))}
             </div>
@@ -63,7 +52,7 @@ export function CommunityStatsSkeleton() {
 
 export function CommunityStats({ stats }: Readonly<{ stats: LandingStats }>) {
     const topCuisine = stats.topCuisines[0]
-    const cards = [
+    const statEntries = [
         { value: String(stats.totalRestaurants), label: "places shared" },
         { value: String(stats.totalWants), label: "wants saved" },
         { value: topCuisine?.cuisine ?? "—", label: "top cuisine" },
@@ -74,34 +63,36 @@ export function CommunityStats({ stats }: Readonly<{ stats: LandingStats }>) {
                 The short list keeps growing
             </h2>
             <p className="mt-2 text-center text-stone-600">Live counts from friends sharing right now.</p>
-            <div className="mt-6 grid gap-4 sm:grid-cols-3">
-                {cards.map((card) => (
-                    <div
-                        key={card.label}
-                        className="rounded-card border border-border bg-surface p-6 text-center shadow-card"
-                    >
-                        <p className="font-display text-4xl font-semibold text-balance text-stone-900">{card.value}</p>
-                        <p className="mt-1 text-sm text-stone-600">{card.label}</p>
+            <dl className="mt-6 grid grid-cols-3 divide-x divide-border rounded-card border border-border bg-surface">
+                {statEntries.map((entry) => (
+                    <div key={entry.label} className="flex flex-col px-4 py-5 text-center">
+                        <dt className="order-2 mt-1 text-sm text-stone-600">{entry.label}</dt>
+                        <dd className="order-1 font-display text-3xl font-semibold text-balance text-stone-900 tabular-nums sm:text-4xl">
+                            {entry.value}
+                        </dd>
                     </div>
                 ))}
-            </div>
+            </dl>
+            {stats.recentAdds.length > 0 && (
+                <p className="mt-4 text-center text-sm text-stone-600">
+                    Fresh on the list:{" "}
+                    {stats.recentAdds.map((recent) => `${recent.name} (${recent.cuisine})`).join(" · ")}
+                </p>
+            )}
         </section>
     )
 }
 
 const steps = [
     {
-        icon: MapPin,
         title: "Add places",
         body: "Save the spots your group keeps naming in the chat.",
     },
     {
-        icon: Heart,
         title: "Vote want-to-go",
         body: "Heart the ones you would actually show up for.",
     },
     {
-        icon: Users,
         title: "Pick the next bite",
         body: "Open the list, see the overlap, stop debating dinner.",
     },
@@ -114,24 +105,17 @@ export function HowItWorks() {
                 How it works
             </h2>
             <p className="mt-2 text-center text-stone-600">Three steps between group chat chaos and a table.</p>
-            <div className="mt-6 grid gap-4 sm:grid-cols-3">
+            <ol className="mx-auto mt-8 grid max-w-3xl gap-8 sm:grid-cols-3 sm:gap-6">
                 {steps.map((step, index) => (
-                    <div key={step.title} className="rounded-card border border-border bg-surface p-6 shadow-card">
-                        <div className="flex items-center gap-3">
-                            <span className="flex size-9 items-center justify-center rounded-full bg-tomato-100 text-tomato-600">
-                                <step.icon className="size-4" />
-                            </span>
-                            <span className="text-xs font-semibold tracking-widest text-stone-500 uppercase">
-                                Step {index + 1}
-                            </span>
-                        </div>
-                        <p className="mt-3 font-display text-lg font-semibold text-balance text-stone-900">
+                    <li key={step.title} className="border-t-2 border-tomato-600 pt-4">
+                        <p className="font-display text-4xl font-semibold text-tomato-600 tabular-nums">{index + 1}</p>
+                        <p className="mt-2 font-display text-lg font-semibold text-balance text-stone-900">
                             {step.title}
                         </p>
                         <p className="mt-1 text-sm leading-relaxed text-stone-600">{step.body}</p>
-                    </div>
+                    </li>
                 ))}
-            </div>
+            </ol>
         </section>
     )
 }
@@ -140,7 +124,7 @@ export function LandingCloser() {
     return (
         <section aria-label="Get started" className="mx-auto w-full max-w-3xl px-4 py-16 text-center sm:px-6">
             <h2 className="font-display text-3xl font-semibold text-balance text-stone-900 sm:text-4xl">
-                Stop scrolling. Start eating.
+                Stop debating dinner in the chat.
             </h2>
             <p className="mx-auto mt-3 max-w-md text-stone-600">
                 Bring your people, build the short list, and always know where to go next.

@@ -1,7 +1,7 @@
 import { cva, type VariantProps } from "@ui/cva.config"
 
 const brandIcon = cva({
-    base: "relative flex items-center justify-center rounded-card bg-linear-to-br from-tomato-500 to-tomato-600 text-white shadow-popover",
+    base: "flex items-center justify-center rounded-card bg-primary text-white shadow-popover",
     variants: {
         size: {
             sm: "size-12",
@@ -19,11 +19,5 @@ type BrandIconProps = VariantProps<typeof brandIcon> & {
 }
 
 export function BrandIcon({ children, size }: Readonly<BrandIconProps>) {
-    return (
-        <div className="relative">
-            <div className="absolute inset-0 rounded-full bg-tomato-500/20 blur-2xl" />
-            <div className="absolute inset-0 animate-pulse rounded-full bg-tomato-400/10 blur-xl" />
-            <div className={brandIcon({ size })}>{children}</div>
-        </div>
-    )
+    return <div className={brandIcon({ size })}>{children}</div>
 }

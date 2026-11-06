@@ -235,14 +235,6 @@ function LandingHero() {
     return (
         <section aria-label="Welcome" className="relative overflow-hidden border-b border-border bg-background">
             <BackgroundLayers />
-            <div
-                aria-hidden="true"
-                className="pointer-events-none absolute inset-0 opacity-[0.015]"
-                style={{
-                    backgroundImage: `linear-gradient(color-mix(in oklch, var(--color-stone-900) 5%, transparent) 1px, transparent 1px), linear-gradient(90deg, color-mix(in oklch, var(--color-stone-900) 5%, transparent) 1px, transparent 1px)`,
-                    backgroundSize: "60px 60px",
-                }}
-            />
             <div className="relative mx-auto w-full max-w-3xl px-4 py-14 text-center sm:px-6 sm:py-20 lg:py-24">
                 <LandingEyebrow />
                 <h1 className="mt-6 font-display text-5xl leading-tight font-semibold tracking-tight text-balance text-stone-900 sm:text-6xl lg:text-7xl">
