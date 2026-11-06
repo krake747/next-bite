@@ -24,6 +24,12 @@ const imageRecordSchema = v.object({
     // The upload endpoint returns the storage id as a JSON string. Brand it here at the parse
     // boundary; the backend revalidates the table on every call, so this proves plumbing only.
     storageId: v.custom<Id<"_storage">>((value) => typeof value === "string" && value.length > 0),
+    ownerId: v.optional(v.string()),
+    displayName: v.optional(v.string()),
+    mimeType: v.optional(v.string()),
+    byteSize: v.optional(v.number()),
+    width: v.optional(v.number()),
+    height: v.optional(v.number()),
 })
 
 export type ImageRecord = v.InferOutput<typeof imageRecordSchema>

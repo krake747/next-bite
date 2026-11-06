@@ -5,6 +5,7 @@ import betterAuth from "@convex-dev/better-auth/convex.config"
 
 const app = defineApp({
     env: {
+        APP_ORIGINS: v.optional(v.string()),
         GOOGLE_MAPS_API_KEY: v.optional(v.string()),
         GOOGLE_CLIENT_ID: v.optional(v.string()),
         GOOGLE_CLIENT_SECRET: v.optional(v.string()),

@@ -20,6 +20,7 @@ import { CommentList } from "@features/social/comment-list"
 import { PhotoGallery } from "@features/social/photo-gallery"
 import { ReactionBar } from "@features/social/reaction-bar"
 import { SocialMetadata } from "@features/social/social-metadata"
+import { VisitMemories } from "@features/social/visit-memories"
 import { AvatarGroup } from "@pattern/avatar-group"
 import { type GalleryPhoto } from "@pattern/gallery/photos"
 import { BackNav } from "@routes/-layouts/back-nav"
@@ -240,7 +241,7 @@ function RestaurantDetail() {
     }
 
     const social = restaurantSocial ?? emptySocial
-    const photos = restaurant.images.map((img) => ({ url: img.url }))
+    const photos = restaurant.images.map((img) => ({ url: img.url, author: img.displayName ?? restaurant.ownerName }))
 
     const goToLogin = () => {
         void navigate({ to: "/login", viewTransition: true })
@@ -279,6 +280,7 @@ function RestaurantDetail() {
                         shareAction={<DetailShare restaurant={restaurant} />}
                     />
                     <DetailPhotos photos={photos} />
+                    <VisitMemories restaurantId={restaurant._id} />
                     <DetailComments
                         restaurant={restaurant}
                         social={social}

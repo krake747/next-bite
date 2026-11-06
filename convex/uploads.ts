@@ -23,7 +23,12 @@ export const lookupByStorage = internalQuery({
         if (!existing) {
             return null
         }
-        return { ownerId: existing.ownerId, restaurantId: existing.restaurantId ?? null }
+        return {
+            ownerId: existing.ownerId,
+            restaurantId: existing.restaurantId ?? null,
+            mimeType: existing.mimeType ?? null,
+            byteSize: existing.byteSize ?? null,
+        }
     },
 })
 
@@ -37,7 +42,18 @@ export const record = internalMutation({
         if (existing) {
             return existing._id
         }
-        return ctx.db.insert("uploads", { storageId: args.storageId, ownerId: args.ownerId, createdAt: Date.now() })
+        // Server-observed blob metadata: content type and size come from the
+        // platform's storage record, never from client claims.
+        const stored = await ctx.db.system.get("_storage", args.storageId)
+        const mimeType = typeof stored?.contentType === "string" ? stored.contentType : undefined
+        const byteSize = typeof stored?.size === "number" ? stored.size : undefined
+        return ctx.db.insert("uploads", {
+            storageId: args.storageId,
+            ownerId: args.ownerId,
+            ...(mimeType !== undefined ? { mimeType } : {}),
+            ...(byteSize !== undefined ? { byteSize } : {}),
+            createdAt: Date.now(),
+        })
     },
 })
 

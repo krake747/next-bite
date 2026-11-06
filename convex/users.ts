@@ -1,7 +1,7 @@
 import { v } from "convex/values"
 
-import { type Doc } from "./_generated/dataModel"
-import { mutation, query } from "./_generated/server"
+import { type Doc, type Id } from "./_generated/dataModel"
+import { mutation, query, type MutationCtx } from "./_generated/server"
 import { formatDisplayName, readAuthUser, requireUserId } from "./helpers"
 import { imageObjectValidator } from "./validators"
 
@@ -45,6 +45,41 @@ export const getMe = query({
     },
 })
 
+type AvatarInput = {
+    url: string
+    storageId: Id<"_storage">
+    width?: number | undefined
+    height?: number | undefined
+}
+
+// Avatar ownership is verified against the server upload record, and display
+// metadata comes from the record and profile, never from client-claimed fields.
+async function resolveAvatarUpload(
+    ctx: MutationCtx,
+    userId: string,
+    displayName: string,
+    avatar: AvatarInput,
+): Promise<NonNullable<Doc<"profiles">["avatar"]>> {
+    const record = await ctx.db
+        .query("uploads")
+        .withIndex("by_storage", (q) => q.eq("storageId", avatar.storageId))
+        .unique()
+    if (!record || record.ownerId !== userId) {
+        throw new Error("Unauthorized: storage does not belong to you")
+    }
+    const url = (await ctx.storage.getUrl(avatar.storageId)) ?? avatar.url
+    return {
+        url,
+        storageId: avatar.storageId,
+        ownerId: userId,
+        displayName,
+        ...(record.mimeType !== undefined ? { mimeType: record.mimeType } : {}),
+        ...(record.byteSize !== undefined ? { byteSize: record.byteSize } : {}),
+        ...(avatar.width !== undefined ? { width: avatar.width } : {}),
+        ...(avatar.height !== undefined ? { height: avatar.height } : {}),
+    }
+}
+
 export const updateMe = mutation({
     args: {
         name: v.optional(v.string()),
@@ -59,6 +94,9 @@ export const updateMe = mutation({
             .query("profiles")
             .withIndex("by_auth_user", (q) => q.eq("authUserId", userId))
             .unique()
+        const displayName = profile?.name ?? formatDisplayName(args.name ?? (await readAuthUser(ctx))?.email ?? "")
+        const avatar =
+            args.avatar !== undefined ? await resolveAvatarUpload(ctx, userId, displayName, args.avatar) : undefined
         if (!profile) {
             // First save from the onboarding form: no profile row exists yet. The auth record
             // supplies the email so the onboarding path needs no separate ensure call.
@@ -68,15 +106,15 @@ export const updateMe = mutation({
             }
             return ctx.db.insert("profiles", {
                 authUserId: userId,
-                name: formatDisplayName(args.name ?? authUser?.email ?? ""),
+                name: displayName,
                 email: authUser.email,
-                ...(args.avatar !== undefined ? { avatar: args.avatar } : {}),
+                ...(avatar !== undefined ? { avatar } : {}),
                 createdAt: Date.now(),
             })
         }
         await ctx.db.patch(profile._id, {
             ...(args.name !== undefined ? { name: formatDisplayName(args.name) } : {}),
-            ...(args.avatar !== undefined ? { avatar: args.avatar } : {}),
+            ...(avatar !== undefined ? { avatar } : {}),
         })
         return profile._id
     },

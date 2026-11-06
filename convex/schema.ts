@@ -43,6 +43,13 @@ export default defineSchema({
         restaurantId: v.id("restaurants"),
         createdAt: v.number(),
     }).index("by_user_key", ["userId", "key"]),
+    visitMemories: defineTable({
+        restaurantId: v.id("restaurants"),
+        userId: v.string(),
+        displayName: v.string(),
+        images: v.array(restaurantImageValidator),
+        createdAt: v.number(),
+    }).index("by_restaurant", ["restaurantId"]),
     interests: defineTable({
         ...socialFields,
         status: v.union(v.literal("want"), v.literal("been")),
@@ -118,6 +125,8 @@ export default defineSchema({
         storageId: v.id("_storage"),
         ownerId: v.string(),
         restaurantId: v.optional(v.id("restaurants")),
+        mimeType: v.optional(v.string()),
+        byteSize: v.optional(v.number()),
         createdAt: v.number(),
     }).index("by_storage", ["storageId"]),
     // Better Auth tables will be added by the convex component

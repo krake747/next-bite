@@ -18,7 +18,12 @@ function assertImageLimit(images: ReadonlyArray<unknown>): void {
     }
 }
 
-type UploadRecord = { ownerId: string; restaurantId: Id<"restaurants"> | null } | null
+type UploadRecord = {
+    ownerId: string
+    restaurantId: Id<"restaurants"> | null
+    mimeType: string | null
+    byteSize: number | null
+} | null
 
 // Fail-closed ownership: a missing record and a foreign record both reject with the same
 // message so callers cannot probe which storage IDs exist.
@@ -30,10 +35,47 @@ function requireUploadOwner(record: UploadRecord, ownerId: string): asserts reco
 
 // Attach requires a server ownership record matching the caller and no conflicting resource
 // association. allowId is the restaurant being written (null while adding, before it exists).
-function assertAttachable(record: UploadRecord, ownerId: string, allowId: Id<"restaurants"> | null): void {
+function assertAttachable(record: UploadRecord, ownerId: string, allowId: Id<"restaurants"> | null): asserts record {
     requireUploadOwner(record, ownerId)
     if (record.restaurantId !== null && record.restaurantId !== allowId) {
         throw new Error("Storage is already attached to another restaurant")
+    }
+}
+
+type ImageInput = {
+    readonly storageId: Id<"_storage">
+    readonly width?: number | undefined
+    readonly height?: number | undefined
+}
+
+// Server-derived attribution: ownership, display name, URL, MIME type, and
+// byte size come from the upload record, profile, and storage system, never
+// from client-claimed fields. Client-reported dimensions pass through as
+// untrusted display hints.
+function withServerMetadata(
+    image: ImageInput,
+    owner: Readonly<{ ownerId: string; displayName: string }>,
+    record: NonNullable<UploadRecord>,
+    url: string,
+): {
+    url: string
+    storageId: Id<"_storage">
+    ownerId: string
+    displayName: string
+    mimeType?: string
+    byteSize?: number
+    width?: number
+    height?: number
+} {
+    return {
+        url,
+        storageId: image.storageId,
+        ...(image.width !== undefined ? { width: image.width } : {}),
+        ...(image.height !== undefined ? { height: image.height } : {}),
+        ownerId: owner.ownerId,
+        displayName: owner.displayName,
+        ...(record.mimeType !== null ? { mimeType: record.mimeType } : {}),
+        ...(record.byteSize !== null ? { byteSize: record.byteSize } : {}),
     }
 }
 
@@ -492,9 +534,11 @@ export const addWithOpeningHours = action({
         const userId = await requireUserId(ctx)
         const images = args.images ?? []
         assertImageLimit(images)
+        const attachable: { image: ImageInput; record: NonNullable<UploadRecord> }[] = []
         for (const img of images) {
             const record = await ctx.runQuery(internal.uploads.lookupByStorage, { storageId: img.storageId })
             assertAttachable(record, userId, null)
+            attachable.push({ image: img, record })
         }
 
         const google = await lookupPlaceIdFromGoogle(args.name, args.addressLabel)
@@ -513,6 +557,17 @@ export const addWithOpeningHours = action({
         const enrichment = buildEnrichment({ placeId: google.placeId, coords, openingHours })
         const ownerName = await ctx.runQuery(internal.restaurants._profileNameByAuthUser, { authUserId: userId })
         const details = cleanDetails({ notes: args.notes, link: args.link })
+        const enrichedImages = await Promise.all(
+            attachable.map(async ({ image, record }) => {
+                const url =
+                    (await ctx.storage.getUrl(image.storageId)) ??
+                    images.find((candidate) => candidate.storageId === image.storageId)?.url
+                if (url === undefined) {
+                    throw new Error("Uploaded image is missing its URL")
+                }
+                return withServerMetadata(image, { ownerId: userId, displayName: ownerName }, record, url)
+            }),
+        )
         const { restaurantId, duplicate } = await ctx.runMutation(internal.restaurants._insertRestaurant, {
             ownerId: userId,
             ownerName,
@@ -523,12 +578,12 @@ export const addWithOpeningHours = action({
                 ...(enrichment !== undefined ? { enrichment } : {}),
             },
             ...(details !== undefined ? { details } : {}),
-            images,
+            images: enrichedImages,
             ...(args.clientMutationId !== undefined ? { clientMutationId: args.clientMutationId } : {}),
         })
         // A duplicate retry returns the first call's id; its images are already attached.
         if (!duplicate) {
-            for (const img of images) {
+            for (const img of enrichedImages) {
                 await ctx.runMutation(internal.uploads.attach, {
                     storageId: img.storageId,
                     ownerId: userId,
@@ -539,6 +594,62 @@ export const addWithOpeningHours = action({
         return restaurantId
     },
 })
+
+// Reconciles a submitted image list against the stored restaurant: keeps
+// already-attached entries untouched (with their stored metadata), enriches
+// genuinely new uploads with server-derived identity, attaches them, and
+// detaches removed ones. Returns the merged list to persist.
+async function syncRestaurantImages(
+    ctx: MutationCtx,
+    restaurant: Doc<"restaurants">,
+    inputs: ReadonlyArray<ImageInput & { url: string }>,
+): Promise<Doc<"restaurants">["images"]> {
+    const previousIds = new Set(restaurant.images.map((img) => img.storageId))
+    const nextIds = new Set(inputs.map((img) => img.storageId))
+    const fresh: { image: ImageInput; record: NonNullable<UploadRecord>; url: string }[] = []
+    for (const img of inputs) {
+        if (previousIds.has(img.storageId)) {
+            continue
+        }
+        const record = await ctx.runQuery(internal.uploads.lookupByStorage, { storageId: img.storageId })
+        assertAttachable(record, restaurant.ownerId, restaurant._id)
+        const url = (await ctx.storage.getUrl(img.storageId)) ?? img.url
+        fresh.push({ image: img, record, url })
+    }
+    const storedById = new Map(restaurant.images.map((img) => [img.storageId, img]))
+    if (fresh.length > 0) {
+        const ownerName = await ctx.runQuery(internal.restaurants._profileNameByAuthUser, {
+            authUserId: restaurant.ownerId,
+        })
+        for (const { image, record, url } of fresh) {
+            const enriched = withServerMetadata(
+                image,
+                { ownerId: restaurant.ownerId, displayName: ownerName },
+                record,
+                url,
+            )
+            storedById.set(image.storageId, enriched)
+            await ctx.runMutation(internal.uploads.attach, {
+                storageId: image.storageId,
+                ownerId: restaurant.ownerId,
+                restaurantId: restaurant._id,
+            })
+        }
+    }
+    const merged: Doc<"restaurants">["images"] = []
+    for (const img of inputs) {
+        const kept = storedById.get(img.storageId)
+        if (kept !== undefined) {
+            merged.push(kept)
+        }
+    }
+    for (const storageId of previousIds) {
+        if (!nextIds.has(storageId)) {
+            await ctx.runMutation(internal.uploads.detach, { storageId, ownerId: restaurant.ownerId })
+        }
+    }
+    return merged
+}
 
 export const update = mutation({
     args: {
@@ -556,35 +667,19 @@ export const update = mutation({
     handler: async (ctx, args) => {
         const restaurant = await requireOwnedRestaurant(ctx, args.id)
 
-        if (args.images !== undefined) {
-            assertImageLimit(args.images)
-            const previousIds = new Set(restaurant.images.map((img) => img.storageId))
-            const nextIds = new Set(args.images.map((img) => img.storageId))
-            for (const img of args.images) {
-                if (previousIds.has(img.storageId)) {
-                    continue
-                }
-                const record = await ctx.runQuery(internal.uploads.lookupByStorage, { storageId: img.storageId })
-                assertAttachable(record, restaurant.ownerId, args.id)
-            }
-            for (const img of args.images) {
-                if (!previousIds.has(img.storageId)) {
-                    await ctx.runMutation(internal.uploads.attach, {
-                        storageId: img.storageId,
-                        ownerId: restaurant.ownerId,
-                        restaurantId: args.id,
-                    })
-                }
-            }
-            for (const storageId of previousIds) {
-                if (!nextIds.has(storageId)) {
-                    await ctx.runMutation(internal.uploads.detach, { storageId, ownerId: restaurant.ownerId })
-                }
-            }
-        }
-
         const details = mergeDetails(restaurant.details, { notes: args.notes, link: args.link })
         const enrichment = mergeEnrichment(restaurant.address.enrichment, args.coords)
+
+        if (args.images !== undefined) {
+            const images = args.images
+            assertImageLimit(images)
+            const mergedImages = await syncRestaurantImages(ctx, restaurant, images)
+            await ctx.db.patch(
+                args.id,
+                buildRestaurantPatch(restaurant, { ...args, images: mergedImages }, details, enrichment),
+            )
+            return
+        }
 
         await ctx.db.patch(args.id, buildRestaurantPatch(restaurant, args, details, enrichment))
     },
@@ -759,5 +854,71 @@ export const lookupPlaceIdAndHours = action({
             },
         })
         console.log("lookupPlaceIdAndHours: Done!")
+    },
+})
+
+export const addVisitMemory = mutation({
+    args: {
+        restaurantId: v.id("restaurants"),
+        images: v.array(restaurantImageValidator),
+    },
+    handler: async (ctx, args): Promise<Id<"visitMemories">> => {
+        const userId = await requireUserId(ctx)
+        const restaurant = await ctx.db.get(args.restaurantId)
+        if (!restaurant) {
+            throw new Error("Restaurant not found")
+        }
+        if (!(await isRestaurantVisibleTo(ctx.db, userId, restaurant))) {
+            throw new Error("Restaurant is not visible to you")
+        }
+        assertImageLimit(args.images)
+        if (args.images.length === 0) {
+            throw new Error("Add at least one photo")
+        }
+        const displayName = await ctx.runQuery(internal.restaurants._profileNameByAuthUser, { authUserId: userId })
+        const enrichedImages = []
+        for (const img of args.images) {
+            const record = await ctx.runQuery(internal.uploads.lookupByStorage, { storageId: img.storageId })
+            assertAttachable(record, userId, args.restaurantId)
+            const url = (await ctx.storage.getUrl(img.storageId)) ?? img.url
+            enrichedImages.push(withServerMetadata(img, { ownerId: userId, displayName }, record, url))
+        }
+        const memoryId = await ctx.db.insert("visitMemories", {
+            restaurantId: args.restaurantId,
+            userId,
+            displayName,
+            images: enrichedImages,
+            createdAt: Date.now(),
+        })
+        for (const img of enrichedImages) {
+            await ctx.runMutation(internal.uploads.attach, {
+                storageId: img.storageId,
+                ownerId: userId,
+                restaurantId: args.restaurantId,
+            })
+        }
+        return memoryId
+    },
+})
+
+export const listVisitMemories = query({
+    args: { restaurantId: v.id("restaurants") },
+    handler: async (ctx, args) => {
+        const identity = await ctx.auth.getUserIdentity()
+        if (!identity) {
+            return []
+        }
+        const restaurant = await ctx.db.get(args.restaurantId)
+        if (!restaurant) {
+            return []
+        }
+        if (!(await isRestaurantVisibleTo(ctx.db, identity.subject, restaurant))) {
+            return []
+        }
+        return ctx.db
+            .query("visitMemories")
+            .withIndex("by_restaurant", (q) => q.eq("restaurantId", args.restaurantId))
+            .order("desc")
+            .take(30)
     },
 })

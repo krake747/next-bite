@@ -2,8 +2,9 @@ import { createFileRoute, Link } from "@tanstack/react-router"
 import { useState } from "react"
 
 import { type Doc } from "@convex/_generated/dataModel"
-import { useAuth, useMyProfile, useMyStatuses, useRestaurants, useUpdateProfile } from "@core/hooks"
+import { useAuth, useMyProfile, useMyStatuses, useRestaurants, useUpdateProfile, type ImageRecord } from "@core/hooks"
 import { orderFeedByRecency } from "@core/social"
+import { ImageUpload } from "@pattern/image-upload"
 import { SignedOutGate } from "@routes/-components/signed-out-gate"
 import { PageContainer } from "@routes/-layouts/page-container"
 import { PageLayout } from "@routes/-layouts/page-layout"
@@ -106,12 +107,65 @@ function ProfileSection() {
         )
     }
     return (
-        <ProfileForm
-            email={profile.profile.email}
-            initialName={profile.profile.name}
-            heading="Your profile"
-            subheading="Only you see this page."
-        />
+        <>
+            <AvatarSection avatarUrl={profile.profile.avatar?.url ?? null} />
+            <ProfileForm
+                email={profile.profile.email}
+                initialName={profile.profile.name}
+                heading="Your profile"
+                subheading="Only you see this page."
+            />
+        </>
+    )
+}
+
+export function AvatarSection({ avatarUrl }: Readonly<{ avatarUrl: string | null }>) {
+    const updateProfile = useUpdateProfile()
+    const [error, setError] = useState<string | null>(null)
+
+    const handleAvatar = async (images: ReadonlyArray<ImageRecord>) => {
+        const image = images[0]
+        if (image === undefined || updateProfile.isPending) {
+            return
+        }
+        setError(null)
+        try {
+            await updateProfile.mutateAsync({ avatar: { url: image.url, storageId: image.storageId } })
+        } catch (err) {
+            setError(err instanceof Error ? err.message : "Could not save your photo")
+        }
+    }
+
+    return (
+        <section aria-label="Profile photo" className="pt-6">
+            <div className="mt-3 flex items-center gap-4 rounded-card border border-border bg-surface p-5 shadow-card">
+                {avatarUrl !== null ? (
+                    <img
+                        src={avatarUrl}
+                        alt="Your profile photo"
+                        className="size-16 rounded-full object-cover"
+                        loading="lazy"
+                    />
+                ) : (
+                    <div aria-hidden="true" className="size-16 rounded-full bg-surface-muted" />
+                )}
+                <div className="min-w-0 flex-1">
+                    <ImageUpload
+                        images={[]}
+                        onImagesChange={(updated) => {
+                            void handleAvatar(updated)
+                        }}
+                        maxFiles={1}
+                        disabled={updateProfile.isPending}
+                    />
+                    {error !== null && (
+                        <p role="alert" className="pt-2 text-sm text-destructive">
+                            {error}
+                        </p>
+                    )}
+                </div>
+            </div>
+        </section>
     )
 }
 

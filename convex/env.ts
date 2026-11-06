@@ -18,6 +18,30 @@ export function getValidatedConvexSiteUrl(): string {
     return url
 }
 
+// Trusted browser origins for upload CORS, as a comma-separated list. Loopback
+// origins are always trusted so local development works with zero config;
+// every other browser origin must be listed here or the browser blocks the
+// response. Non-browser callers send no Origin and are unaffected.
+export function appOrigins(): string[] {
+    const raw = env.APP_ORIGINS
+    if (!isPresent(raw)) {
+        return []
+    }
+    return raw
+        .split(",")
+        .map((origin) => origin.trim())
+        .filter((origin) => origin !== "")
+}
+
+export function isLoopbackOrigin(origin: string): boolean {
+    try {
+        const { hostname } = new URL(origin)
+        return hostname === "localhost" || hostname === "127.0.0.1" || hostname === "[::1]" || hostname === "::1"
+    } catch {
+        return false
+    }
+}
+
 export function googleMapsApiKey(): string | undefined {
     const key = env.GOOGLE_MAPS_API_KEY
     return isPresent(key) ? key : undefined

@@ -3,13 +3,16 @@ import { httpRouter } from "convex/server"
 import { internal } from "./_generated/api"
 import { httpAction } from "./_generated/server"
 import { authComponent, createAuth } from "./auth"
+import { resolveCorsHeaders } from "./cors"
+import { appOrigins } from "./env"
 
 const http = httpRouter()
 
-const corsHeaders = {
-    "Access-Control-Allow-Origin": "*",
-    "Access-Control-Allow-Methods": "POST, OPTIONS",
-    "Access-Control-Allow-Headers": "Content-Type, Authorization",
+// The upload endpoint is browser-facing cross-origin, so it reflects only
+// trusted app origins. Anything else gets no CORS headers and the browser
+// blocks the response. Non-browser callers send no Origin and are unaffected.
+function corsHeadersFor(request: Request): Record<string, string> {
+    return resolveCorsHeaders(request.headers.get("Origin"), appOrigins())
 }
 
 const MAX_UPLOAD_BYTES = 20 * 1024 * 1024
@@ -29,7 +32,7 @@ http.route({
                     status: 401,
                     headers: {
                         "Content-Type": "application/json",
-                        ...corsHeaders,
+                        ...corsHeadersFor(request),
                     },
                 })
             }
@@ -47,7 +50,7 @@ http.route({
                         status: 400,
                         headers: {
                             "Content-Type": "application/json",
-                            ...corsHeaders,
+                            ...corsHeadersFor(request),
                         },
                     },
                 )
@@ -61,7 +64,7 @@ http.route({
                         status: 413,
                         headers: {
                             "Content-Type": "application/json",
-                            ...corsHeaders,
+                            ...corsHeadersFor(request),
                         },
                     },
                 )
@@ -70,21 +73,30 @@ http.route({
             const storageId = await ctx.storage.store(blob)
             const url = await ctx.storage.getUrl(storageId)
             await ctx.runMutation(internal.uploads.record, { storageId, ownerId: identity.subject })
+            const stored = await ctx.runQuery(internal.uploads.lookupByStorage, { storageId })
 
-            return new Response(JSON.stringify({ storageId, url }), {
-                status: 200,
-                headers: {
-                    "Content-Type": "application/json",
-                    ...corsHeaders,
+            return new Response(
+                JSON.stringify({
+                    storageId,
+                    url,
+                    ...(typeof stored?.mimeType === "string" ? { mimeType: stored.mimeType } : {}),
+                    ...(typeof stored?.byteSize === "number" ? { byteSize: stored.byteSize } : {}),
+                }),
+                {
+                    status: 200,
+                    headers: {
+                        "Content-Type": "application/json",
+                        ...corsHeadersFor(request),
+                    },
                 },
-            })
+            )
         } catch (error) {
             console.error("Upload error:", error)
             return new Response(JSON.stringify({ error: error instanceof Error ? error.message : "Upload failed" }), {
                 status: 500,
                 headers: {
                     "Content-Type": "application/json",
-                    ...corsHeaders,
+                    ...corsHeadersFor(request),
                 },
             })
         }
@@ -94,10 +106,10 @@ http.route({
 http.route({
     path: "/upload",
     method: "OPTIONS",
-    handler: httpAction(async () => {
+    handler: httpAction(async (_ctx, request) => {
         return new Response(null, {
             status: 204,
-            headers: corsHeaders,
+            headers: corsHeadersFor(request),
         })
     }),
 })

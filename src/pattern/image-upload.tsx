@@ -41,6 +41,7 @@ type ImageUploadProps = {
     readonly images: ReadonlyArray<Readonly<ImageRecord>>
     readonly onImagesChange: (images: ReadonlyArray<Readonly<ImageRecord>>) => void
     readonly disabled?: boolean | undefined
+    readonly maxFiles?: number | undefined
     readonly restaurantId?: Id<"restaurants"> | undefined
     readonly onRemove?: ((storageId: Id<"_storage">) => void) | undefined
 }
@@ -96,7 +97,7 @@ export function ImageUpload(props: Readonly<ImageUploadProps>) {
 
     const handleFiles = async (files: FileListLike) => {
         const fileArray = Array.from(files).filter((f) => isAcceptedImageType(f.type))
-        const remainingSlots = MAX_IMAGES - props.images.length
+        const remainingSlots = (props.maxFiles ?? MAX_IMAGES) - props.images.length
         const filesToProcess = fileArray.slice(0, remainingSlots)
         if (filesToProcess.length === 0) {
             return
@@ -203,7 +204,7 @@ export function ImageUpload(props: Readonly<ImageUploadProps>) {
         }
     }
 
-    const canAddMore = props.images.length < MAX_IMAGES
+    const canAddMore = props.images.length < (props.maxFiles ?? MAX_IMAGES)
 
     return (
         <div className="space-y-4">

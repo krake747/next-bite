@@ -80,6 +80,20 @@ function imageEntry(storageId: Id<"_storage">): { url: string; storageId: Id<"_s
     return { url: `https://example.com/${storageId}.jpg`, storageId }
 }
 
+async function storedImageUrl(
+    t: TestConvexForDataModel<DataModel>,
+    subject: string,
+    restaurantId: Id<"restaurants">,
+    storageId: Id<"_storage">,
+): Promise<string> {
+    const owned = await asUser(t, subject).query(api.restaurants.get, {})
+    const url = owned.find((r) => r._id === restaurantId)?.images.find((img) => img.storageId === storageId)?.url
+    if (url === undefined) {
+        throw new TypeError("Expected the image to be stored")
+    }
+    return url
+}
+
 describe("upload ownership", () => {
     test("refuses to delete a storage ID that is not part of the restaurant", async () => {
         const t = setup()
@@ -109,7 +123,7 @@ describe("upload ownership", () => {
 
         await asUser(t, "anna").mutation(api.restaurants.deleteImage, {
             restaurantId,
-            imageUrl: `https://example.com/${attachedId}.jpg`,
+            imageUrl: await storedImageUrl(t, "anna", restaurantId, attachedId),
             storageId: attachedId,
         })
 
@@ -139,7 +153,7 @@ describe("upload ownership", () => {
         await expect(
             asUser(t, "anna").mutation(api.restaurants.deleteImage, {
                 restaurantId,
-                imageUrl: `https://example.com/${bensFile}.jpg`,
+                imageUrl: await storedImageUrl(t, "anna", restaurantId, bensFile),
                 storageId: bensFile,
             }),
         ).rejects.toThrow("does not belong")
@@ -336,5 +350,89 @@ describe("upload ownership", () => {
         await expect(
             asUser(t, "anna").mutation(api.restaurants.cleanupStorage, { restaurantId, storageId: foreignId }),
         ).rejects.toThrow("not part of this restaurant")
+    })
+})
+
+describe("avatar ownership", () => {
+    test("rejects avatars recorded for another user", async () => {
+        const t = setup()
+        await registerUser(t, "anna")
+        await registerUser(t, "ben")
+        const bensFile = await storeBlob(t)
+        await recordUpload(t, bensFile, "ben")
+
+        await expect(
+            asUser(t, "anna").mutation(api.users.updateMe, {
+                avatar: { url: `https://example.com/${bensFile}.jpg`, storageId: bensFile },
+            }),
+        ).rejects.toThrow("does not belong")
+    })
+
+    test("stores server-derived avatar metadata", async () => {
+        const t = setup()
+        await registerUser(t, "ben")
+        const bensFile = await storeBlob(t)
+        await recordUpload(t, bensFile, "ben")
+
+        await asUser(t, "ben").mutation(api.users.updateMe, {
+            avatar: { url: `https://example.com/${bensFile}.jpg`, storageId: bensFile },
+        })
+
+        const me = await asUser(t, "ben").query(api.users.getMe, {})
+        expect(me).toMatchObject({
+            status: "ready",
+            profile: {
+                avatar: {
+                    storageId: bensFile,
+                    ownerId: "ben",
+                    displayName: "ben",
+                    mimeType: "image/jpeg",
+                    byteSize: 6,
+                },
+            },
+        })
+    })
+})
+
+describe("upload metadata", () => {
+    test("records server-observed metadata at upload time", async () => {
+        const t = setup()
+        await registerUser(t, "anna")
+        const storedId = await storeBlob(t)
+        await recordUpload(t, storedId, "anna")
+
+        await expect(t.query(internal.uploads.lookupByStorage, { storageId: storedId })).resolves.toMatchObject({
+            ownerId: "anna",
+            restaurantId: null,
+            mimeType: "image/jpeg",
+            byteSize: 6,
+        })
+    })
+
+    test("embeds server-derived attribution when attaching", async () => {
+        const t = setup()
+        await registerUser(t, "anna")
+        const restaurantId = await createRestaurant(t, "anna")
+        const storedId = await storeBlob(t)
+        await recordUpload(t, storedId, "anna")
+        await attachImage(t, "anna", restaurantId, storedId)
+
+        const owned = await asUser(t, "anna").query(api.restaurants.get, {})
+        expect(owned.filter((r) => r._id === restaurantId).map((restaurant) => restaurant.images)).toEqual([
+            [
+                expect.objectContaining({
+                    storageId: storedId,
+                    ownerId: "anna",
+                    displayName: "anna",
+                    mimeType: "image/jpeg",
+                    byteSize: 6,
+                }),
+            ],
+        ])
+        expect(
+            owned
+                .filter((r) => r._id === restaurantId)
+                .flatMap((restaurant) => restaurant.images.map((img) => typeof img.url)),
+        ).toEqual(["string"])
     })
 })

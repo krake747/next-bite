@@ -266,6 +266,14 @@ export const useShareWithUser = () => useConvexMutation(api.shares.shareWithUser
 export const useUnshare = () => useConvexMutation(api.shares.unshare)
 export const useCreateGroup = () => useConvexMutation(api.groups.createGroup)
 
+export const useVisitMemories = (restaurantId: Id<"restaurants"> | null | undefined) => {
+    const status = useSessionStatus()
+    const skip = status.kind !== "ready" || restaurantId === null || restaurantId === undefined
+    return useConvexQuery(api.restaurants.listVisitMemories, skip ? undefined : { restaurantId }, { skip })
+}
+
+export const useAddVisitMemory = () => useConvexMutation(api.restaurants.addVisitMemory)
+
 export const useLandingStats = () => useConvexQuery(api.landing.getStats)
 
 export type AuthMethods = {
