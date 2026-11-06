@@ -18,10 +18,15 @@ test("navigates Home to Friends to Groups without page errors", async ({ page })
     await expect(page).toHaveURL(/\/friends$/, { timeout: 15000 })
     await expect(page.getByRole("heading", { name: "Friends" })).toBeVisible()
     await page.waitForLoadState("networkidle")
+    // Let the entry view transition finish: starting the next one mid-flight aborts with a
+    // page error.
+    await page.waitForTimeout(1000)
 
     await page.getByRole("link", { name: "Groups" }).click()
     await expect(page).toHaveURL(/\/groups$/, { timeout: 15000 })
     await expect(page.getByRole("heading", { name: "Groups" })).toBeVisible()
+    await page.waitForLoadState("networkidle")
+    await page.waitForTimeout(1000)
 
     expect(errors).toEqual([])
 })

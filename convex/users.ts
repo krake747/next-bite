@@ -38,7 +38,7 @@ export const ensureProfile = mutation({
         return ctx.db.insert("profiles", {
             authUserId: userId,
             name,
-            email: args.email,
+            email: args.email.trim().toLowerCase(),
             createdAt: Date.now(),
         })
     },

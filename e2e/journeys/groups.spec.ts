@@ -45,8 +45,8 @@ test("create group, add restaurant, and view it on the shared list", async ({ pa
     await expect(page.getByText(placeName).first()).toBeVisible({ timeout: 20000 })
 
     await page.getByText(placeName).first().click()
-    await expect(page.getByRole("button", { name: "Add to group" }).first()).toBeVisible({ timeout: 20000 })
-    await page.getByRole("button", { name: "Add to group" }).first().click()
+    await expect(page.getByRole("button", { name: "Share" })).toBeVisible({ timeout: 20000 })
+    await page.getByRole("button", { name: "Share" }).click()
     const dialog = page.getByRole("dialog")
     await dialog.getByRole("button", { name: "Add to group" }).click()
     await expect(dialog.getByRole("button", { name: "Remove" })).toBeVisible({ timeout: 20000 })

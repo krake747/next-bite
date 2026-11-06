@@ -32,6 +32,10 @@ export function mockBackend(
                 await Promise.resolve()
                 return []
             },
+            mutation: async (): Promise<unknown> => {
+                await Promise.resolve()
+                return null
+            },
         },
         pushState: (rows: ReadonlyArray<RestaurantDoc>) => {
             state = [...rows]

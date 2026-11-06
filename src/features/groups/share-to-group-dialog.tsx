@@ -1,5 +1,12 @@
 import { type Id } from "@convex/_generated/dataModel"
-import { useMyGroups, useRestaurantShares, useShareWithGroup, useUnshare } from "@core/hooks"
+import {
+    useFriends,
+    useMyGroups,
+    useRestaurantShares,
+    useShareWithGroup,
+    useShareWithUser,
+    useUnshare,
+} from "@core/hooks"
 import { Button } from "@ui/button"
 import { Dialog, DialogBackdrop, DialogPanel, DialogTitle } from "@ui/dialog"
 
@@ -15,23 +22,83 @@ export function ShareToGroupDialog({
     onOpenChange: (open: boolean) => void
 }>) {
     const groups = useMyGroups()
+    const friends = useFriends()
     const shares = useRestaurantShares(restaurantId)
     const shareWithGroup = useShareWithGroup()
+    const shareWithUser = useShareWithUser()
     const unshare = useUnshare()
 
     const sharedGroupIds = new Set(
         (shares ?? []).flatMap((share) => (share.target.kind === "group" ? [share.target.groupId] : [])),
+    )
+    const sharedUserIds = new Set(
+        (shares ?? []).flatMap((share) => (share.target.kind === "user" ? [share.target.userId] : [])),
     )
 
     return (
         <Dialog show={show} onOpenChange={onOpenChange}>
             <DialogBackdrop>
                 <DialogPanel size="md" className="max-h-[85vh]">
-                    <DialogTitle>Add to group</DialogTitle>
+                    <DialogTitle>Share</DialogTitle>
                     <p className="mt-1 text-sm text-stone-600">
-                        Share {restaurantName} with one of your groups. Only members see it.
+                        Share {restaurantName} with friends and groups. Only people you share with see it.
                     </p>
-                    <div className="pt-4">
+                    <h3 className="pt-4 font-display text-base font-semibold text-stone-900">Friends</h3>
+                    <div className="pt-2">
+                        {friends === undefined ? (
+                            <p className="text-sm text-stone-600">Loading friends…</p>
+                        ) : friends.length === 0 ? (
+                            <p className="text-sm text-stone-600">
+                                No friends yet. Add some from the Friends tab first.
+                            </p>
+                        ) : (
+                            <ul className="space-y-2">
+                                {friends.map((friend) => {
+                                    const shared = sharedUserIds.has(friend.authUserId)
+                                    return (
+                                        <li
+                                            key={friend.authUserId}
+                                            className="flex items-center justify-between gap-3 rounded-card border border-border bg-surface p-3"
+                                        >
+                                            <span className="truncate text-sm font-medium text-stone-900">
+                                                {friend.name}
+                                            </span>
+                                            {shared ? (
+                                                <Button
+                                                    size="sm"
+                                                    variant="secondary"
+                                                    disabled={unshare.isPending}
+                                                    onClick={() => {
+                                                        unshare.mutate({
+                                                            restaurantId,
+                                                            target: { kind: "user", userId: friend.authUserId },
+                                                        })
+                                                    }}
+                                                >
+                                                    Remove
+                                                </Button>
+                                            ) : (
+                                                <Button
+                                                    size="sm"
+                                                    disabled={shareWithUser.isPending}
+                                                    onClick={() => {
+                                                        shareWithUser.mutate({
+                                                            restaurantId,
+                                                            userId: friend.authUserId,
+                                                        })
+                                                    }}
+                                                >
+                                                    Share
+                                                </Button>
+                                            )}
+                                        </li>
+                                    )
+                                })}
+                            </ul>
+                        )}
+                    </div>
+                    <h3 className="pt-4 font-display text-base font-semibold text-stone-900">Groups</h3>
+                    <div className="pt-2">
                         {groups === undefined ? (
                             <p className="text-sm text-stone-600">Loading groups…</p>
                         ) : groups.length === 0 ? (

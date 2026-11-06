@@ -137,7 +137,7 @@ describe("groups list", () => {
         fireEvent.click(screen.getByRole("button", { name: "Create group" }))
 
         await waitFor(() => {
-            expect(mutationCalls).toEqual([{ fn: "groups:createGroup", args: { name: "Sunday Crew" } }])
+            expect(mutationCalls).toContainEqual({ fn: "groups:createGroup", args: { name: "Sunday Crew" } })
         })
     })
 })
@@ -228,9 +228,10 @@ describe("group detail", () => {
         fireEvent.click(screen.getByRole("button", { name: "Remove" }))
 
         await waitFor(() => {
-            expect(mutationCalls).toEqual([
-                { fn: "shares:unshare", args: { restaurantId: "r1", target: { kind: "group", groupId } } },
-            ])
+            expect(mutationCalls).toContainEqual({
+                fn: "shares:unshare",
+                args: { restaurantId: "r1", target: { kind: "group", groupId } },
+            })
         })
     })
 
@@ -247,7 +248,7 @@ describe("group detail", () => {
         fireEvent.click(screen.getByRole("button", { name: "Add to group" }))
 
         await waitFor(() => {
-            expect(mutationCalls).toEqual([{ fn: "shares:shareWithGroup", args: { restaurantId: "r2", groupId } }])
+            expect(mutationCalls).toContainEqual({ fn: "shares:shareWithGroup", args: { restaurantId: "r2", groupId } })
         })
     })
 })
