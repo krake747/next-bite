@@ -234,7 +234,7 @@ function HomeActions({ onAddClick }: Readonly<{ onAddClick: () => void }>) {
     )
 }
 
-function LandingHero({ totalRestaurants }: Readonly<{ totalRestaurants: number | undefined }>) {
+function LandingHero() {
     return (
         <section aria-label="Welcome" className="relative overflow-hidden border-b border-border bg-background">
             <BackgroundLayers />
@@ -247,7 +247,7 @@ function LandingHero({ totalRestaurants }: Readonly<{ totalRestaurants: number |
                 }}
             />
             <div className="relative mx-auto w-full max-w-3xl px-4 py-14 text-center sm:px-6 sm:py-20 lg:py-24">
-                <LandingEyebrow totalRestaurants={totalRestaurants} />
+                <LandingEyebrow />
                 <h1 className="mt-6 font-display text-5xl leading-tight font-semibold tracking-tight text-balance text-stone-900 sm:text-6xl lg:text-7xl">
                     Your friends have good taste
                 </h1>
@@ -266,7 +266,7 @@ function SignedOutHome() {
     const stats = useLandingStats()
     return (
         <PageLayout>
-            <LandingHero totalRestaurants={stats?.totalRestaurants} />
+            <LandingHero />
             <PageContainer>
                 {stats === undefined ? (
                     <CommunityStatsSkeleton />

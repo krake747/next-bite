@@ -13,11 +13,11 @@ export type LandingStats = {
     readonly recentAdds: ReadonlyArray<{ readonly name: string; readonly cuisine: string; readonly createdAt: number }>
 }
 
-export function LandingEyebrow({ totalRestaurants }: Readonly<{ totalRestaurants: number | undefined }>) {
+export function LandingEyebrow() {
     return (
         <p className="inline-flex items-center gap-2 rounded-full bg-surface/80 py-1 pr-4 pl-1 text-sm font-semibold text-stone-700 shadow-card ring-1 ring-border backdrop-blur-sm">
-            <span className="flex size-8 items-center justify-center rounded-full bg-linear-to-br from-tomato-500 to-tomato-600 text-white tabular-nums shadow-inner">
-                {totalRestaurants ?? "·"}
+            <span className="flex size-8 items-center justify-center rounded-full bg-linear-to-br from-tomato-500 to-tomato-600 text-white shadow-inner">
+                <Users className="size-4" />
             </span>
             Shared by friends, not algorithms
         </p>
@@ -44,7 +44,9 @@ export function CommunityStatsSkeleton() {
             aria-label="Community activity"
             className="mx-auto w-full max-w-5xl px-4 pt-12 sm:px-6 lg:px-12"
         >
-            <div className="grid gap-4 sm:grid-cols-3">
+            <Skeleton className="mx-auto h-8 w-56" />
+            <Skeleton className="mx-auto mt-2 h-4 w-72" />
+            <div className="mt-6 grid gap-4 sm:grid-cols-3">
                 {[0, 1, 2].map((index) => (
                     <div
                         key={index}
@@ -68,7 +70,11 @@ export function CommunityStats({ stats }: Readonly<{ stats: LandingStats }>) {
     ]
     return (
         <section aria-label="Community activity" className="mx-auto w-full max-w-5xl px-4 pt-12 sm:px-6 lg:px-12">
-            <div className="grid gap-4 sm:grid-cols-3">
+            <h2 className="text-center font-display text-2xl font-semibold text-balance text-stone-900">
+                The short list keeps growing
+            </h2>
+            <p className="mt-2 text-center text-stone-600">Live counts from friends sharing right now.</p>
+            <div className="mt-6 grid gap-4 sm:grid-cols-3">
                 {cards.map((card) => (
                     <div
                         key={card.label}
@@ -79,15 +85,6 @@ export function CommunityStats({ stats }: Readonly<{ stats: LandingStats }>) {
                     </div>
                 ))}
             </div>
-            {stats.recentAdds.length === 0 ? null : (
-                <ul className="mx-auto mt-8 max-w-md space-y-2 text-center">
-                    {stats.recentAdds.map((place) => (
-                        <li key={`${place.name}-${place.createdAt}`} className="text-sm text-stone-600">
-                            {place.name} · {place.cuisine}
-                        </li>
-                    ))}
-                </ul>
-            )}
         </section>
     )
 }
