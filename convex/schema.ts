@@ -106,6 +106,7 @@ export default defineSchema({
     uploads: defineTable({
         storageId: v.string(),
         ownerId: v.string(),
+        restaurantId: v.optional(v.id("restaurants")),
         createdAt: v.number(),
     }).index("by_storage", ["storageId"]),
     // Better Auth tables will be added by the convex component

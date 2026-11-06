@@ -39,6 +39,25 @@ async function createRestaurant(t: TestConvexForDataModel<DataModel>, subject: s
     })
 }
 
+async function recordUpload(t: TestConvexForDataModel<DataModel>, storageId: string, ownerId: string): Promise<void> {
+    await t.mutation(internal.uploads.record, { storageId, ownerId })
+}
+
+async function insertRestaurantWithImages(
+    t: TestConvexForDataModel<DataModel>,
+    subject: string,
+    images: { url: string; storageId: string }[],
+): Promise<Id<"restaurants">> {
+    return t.mutation(internal.restaurants._insertRestaurant, {
+        ownerId: subject,
+        ownerName: subject,
+        name: "Trattoria Verde",
+        cuisine: "Italian",
+        address: { label: "Luxembourg City" },
+        images,
+    })
+}
+
 async function attachImage(
     t: TestConvexForDataModel<DataModel>,
     subject: string,
@@ -51,12 +70,17 @@ async function attachImage(
     })
 }
 
+function imageEntry(storageId: string): { url: string; storageId: string } {
+    return { url: `https://example.com/${storageId}.jpg`, storageId }
+}
+
 describe("upload ownership", () => {
     it("refuses to delete a storage ID that is not part of the restaurant", async () => {
         const t = setup()
         await registerUser(t, "anna")
         const restaurantId = await createRestaurant(t, "anna")
         const attachedId = await storeBlob(t)
+        await recordUpload(t, attachedId, "anna")
         await attachImage(t, "anna", restaurantId, attachedId)
         const foreignId = await storeBlob(t)
 
@@ -74,6 +98,7 @@ describe("upload ownership", () => {
         await registerUser(t, "anna")
         const restaurantId = await createRestaurant(t, "anna")
         const attachedId = await storeBlob(t)
+        await recordUpload(t, attachedId, "anna")
         await attachImage(t, "anna", restaurantId, attachedId)
 
         await asUser(t, "anna").mutation(api.restaurants.deleteImage, {
@@ -86,14 +111,24 @@ describe("upload ownership", () => {
         expect(owned.find((r) => r._id === restaurantId)?.images).toEqual([])
     })
 
-    it("refuses to delete an image uploaded by someone else", async () => {
+    it("refuses to attach an image uploaded by someone else", async () => {
         const t = setup()
         await registerUser(t, "anna")
         await registerUser(t, "ben")
         const restaurantId = await createRestaurant(t, "anna")
         const bensFile = await storeBlob(t)
-        await t.mutation(internal.uploads.record, { storageId: bensFile, ownerId: "ben" })
-        await attachImage(t, "anna", restaurantId, bensFile)
+        await recordUpload(t, bensFile, "ben")
+
+        await expect(attachImage(t, "anna", restaurantId, bensFile)).rejects.toThrow("does not belong")
+    })
+
+    it("refuses to delete a grafted image with a foreign ownership record", async () => {
+        const t = setup()
+        await registerUser(t, "anna")
+        await registerUser(t, "ben")
+        const bensFile = await storeBlob(t)
+        await recordUpload(t, bensFile, "ben")
+        const restaurantId = await insertRestaurantWithImages(t, "anna", [imageEntry(bensFile)])
 
         await expect(
             asUser(t, "anna").mutation(api.restaurants.deleteImage, {
@@ -102,6 +137,91 @@ describe("upload ownership", () => {
                 storageId: bensFile,
             }),
         ).rejects.toThrow("does not belong")
+        await expect(
+            asUser(t, "anna").mutation(api.restaurants.cleanupStorage, { restaurantId, storageId: bensFile }),
+        ).rejects.toThrow("does not belong")
+    })
+
+    it("refuses to attach a storage ID with no ownership record", async () => {
+        const t = setup()
+        await registerUser(t, "anna")
+        await registerUser(t, "ben")
+        const restaurantId = await createRestaurant(t, "ben")
+        const unrecordedId = await storeBlob(t)
+
+        await expect(attachImage(t, "ben", restaurantId, unrecordedId)).rejects.toThrow("does not belong")
+    })
+
+    it("refuses to attach a file already attached to another restaurant", async () => {
+        const t = setup()
+        await registerUser(t, "anna")
+        const firstId = await createRestaurant(t, "anna")
+        const secondId = await createRestaurant(t, "anna")
+        const sharedId = await storeBlob(t)
+        await recordUpload(t, sharedId, "anna")
+        await attachImage(t, "anna", firstId, sharedId)
+
+        await expect(attachImage(t, "anna", secondId, sharedId)).rejects.toThrow("another restaurant")
+    })
+
+    it("refuses orphan cleanup of a file attached to a restaurant", async () => {
+        const t = setup()
+        await registerUser(t, "anna")
+        const restaurantId = await createRestaurant(t, "anna")
+        const attachedId = await storeBlob(t)
+        await recordUpload(t, attachedId, "anna")
+        await attachImage(t, "anna", restaurantId, attachedId)
+
+        await expect(
+            asUser(t, "anna").mutation(api.restaurants.cleanupStorage, { storageId: attachedId }),
+        ).rejects.toThrow("attached")
+    })
+
+    it("refuses to delete an image with no ownership record", async () => {
+        const t = setup()
+        await registerUser(t, "anna")
+        await registerUser(t, "ben")
+        const victimId = await storeBlob(t)
+        const restaurantId = await insertRestaurantWithImages(t, "ben", [imageEntry(victimId)])
+
+        await expect(
+            asUser(t, "ben").mutation(api.restaurants.deleteImage, {
+                restaurantId,
+                imageUrl: `https://example.com/${victimId}.jpg`,
+                storageId: victimId,
+            }),
+        ).rejects.toThrow("does not belong")
+    })
+
+    it("refuses restaurant cleanup for a storage ID with no ownership record", async () => {
+        const t = setup()
+        await registerUser(t, "anna")
+        await registerUser(t, "ben")
+        const victimId = await storeBlob(t)
+        const restaurantId = await insertRestaurantWithImages(t, "ben", [imageEntry(victimId)])
+
+        await expect(
+            asUser(t, "ben").mutation(api.restaurants.cleanupStorage, { restaurantId, storageId: victimId }),
+        ).rejects.toThrow("does not belong")
+    })
+
+    it("removes the restaurant but leaves foreign and unrecorded blobs alone", async () => {
+        const t = setup()
+        await registerUser(t, "anna")
+        await registerUser(t, "ben")
+        const bensFile = await storeBlob(t)
+        await recordUpload(t, bensFile, "ben")
+        const unrecordedId = await storeBlob(t)
+        const restaurantId = await insertRestaurantWithImages(t, "anna", [
+            imageEntry(bensFile),
+            imageEntry(unrecordedId),
+        ])
+
+        await asUser(t, "anna").mutation(api.restaurants.remove, { id: restaurantId })
+
+        const owned = await asUser(t, "anna").query(api.restaurants.get, {})
+        expect(owned.find((r) => r._id === restaurantId)).toBeUndefined()
+        expect(await t.query(internal.uploads.ownerByStorage, { storageId: bensFile })).toBe("ben")
     })
 
     it("refuses orphan cleanup from a non-owner", async () => {
@@ -134,6 +254,7 @@ describe("upload ownership", () => {
         await registerUser(t, "anna")
         const restaurantId = await createRestaurant(t, "anna")
         const attachedId = await storeBlob(t)
+        await recordUpload(t, attachedId, "anna")
         await attachImage(t, "anna", restaurantId, attachedId)
         const foreignId = await storeBlob(t)
 
