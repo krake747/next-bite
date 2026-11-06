@@ -1,4 +1,4 @@
-import { Avatar } from "@ui/avatar"
+import { Avatar, AvatarFallback, AvatarImage } from "@ui/avatar"
 import { cx } from "@ui/cva.config"
 
 export type AvatarMember = {
@@ -28,14 +28,10 @@ export function AvatarGroup({
     return (
         <div className={cx("flex items-center", className)} role="group" aria-label={label}>
             {visible.map((member, index) => (
-                <Avatar
-                    key={`${member.name}-${index}`}
-                    name={member.name}
-                    src={member.src}
-                    size="sm"
-                    ring="surface"
-                    className={cx(index > 0 && "-ml-2")}
-                />
+                <Avatar key={`${member.name}-${index}`} size="sm" ring="surface" className={cx(index > 0 && "-ml-2")}>
+                    <AvatarImage src={member.src} alt={member.name} />
+                    <AvatarFallback name={member.name} />
+                </Avatar>
             ))}
             {overflow > 0 && (
                 <span

@@ -18,7 +18,7 @@ import { AvatarGroup } from "@pattern/avatar-group"
 import { PendingButton } from "@routes/-components/pending-button"
 import { PageContainer } from "@routes/-layouts/page-container"
 import { PageLayout } from "@routes/-layouts/page-layout"
-import { Avatar } from "@ui/avatar"
+import { Avatar, AvatarFallback, AvatarImage, AvatarPresence } from "@ui/avatar"
 import { Badge, badge } from "@ui/badge"
 import { Button, button } from "@ui/button"
 import { Card } from "@ui/card"
@@ -327,11 +327,27 @@ function AvatarsSection() {
             body="Circular friends with initials fallback. Groups collapse to four plus an overflow count. Presence is display-only."
         >
             <div className="flex items-end gap-3">
-                <Avatar name="Alex" size="xs" />
-                <Avatar name="Priya" size="sm" />
-                <Avatar name="Jamie" size="md" />
-                <Avatar name="Leo" size="lg" presence />
-                <Avatar name="Noor" size="xl" ring="surface" />
+                <Avatar size="xs">
+                    <AvatarImage alt="Alex" />
+                    <AvatarFallback name="Alex" />
+                </Avatar>
+                <Avatar size="sm">
+                    <AvatarImage alt="Priya" />
+                    <AvatarFallback name="Priya" />
+                </Avatar>
+                <Avatar size="md">
+                    <AvatarImage alt="Jamie" />
+                    <AvatarFallback name="Jamie" />
+                </Avatar>
+                <Avatar size="lg">
+                    <AvatarImage alt="Leo" />
+                    <AvatarFallback name="Leo" />
+                    <AvatarPresence />
+                </Avatar>
+                <Avatar size="xl" ring="surface">
+                    <AvatarImage alt="Noor" />
+                    <AvatarFallback name="Noor" />
+                </Avatar>
             </div>
             <AvatarGroup members={friends} />
             <span className="inline-flex items-center gap-2 text-sm text-stone-600">

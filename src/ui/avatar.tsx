@@ -1,4 +1,5 @@
 import { Avatar as BaseAvatar } from "@base-ui/react/avatar"
+import { createContext, use } from "react"
 
 import { cva, cx, type VariantProps } from "@ui/cva.config"
 
@@ -39,6 +40,10 @@ const fallbackText = cva({
     },
 })
 
+type AvatarSize = NonNullable<VariantProps<typeof avatar>["size"]>
+
+const AvatarSizeContext = createContext<AvatarSize>("sm")
+
 function initials(name: string | undefined): string {
     const parts = (name ?? "").trim().split(/\s+/)
     const first = parts[0]?.[0] ?? ""
@@ -48,36 +53,69 @@ function initials(name: string | undefined): string {
 }
 
 type AvatarProps = VariantProps<typeof avatar> &
-    Readonly<{
-        src?: string | undefined
-        name: string
-        presence?: boolean | undefined
-        className?: string | undefined
-    }>
+    Omit<React.ComponentProps<typeof BaseAvatar.Root>, "children"> & {
+        readonly children: React.ReactNode
+    }
 
-export function Avatar({ src, name, size, ring, presence, className }: AvatarProps) {
+export function Avatar({ size, ring, className, children, ...rest }: Readonly<AvatarProps>) {
+    const resolvedSize = size ?? "sm"
     return (
-        <BaseAvatar.Root
-            data-slot="avatar"
-            data-presence={presence === true ? "" : undefined}
-            className={cx(avatar({ size, ring }), className)}
-        >
-            <BaseAvatar.Image src={src} alt={name} className="size-full rounded-full object-cover" />
-            <BaseAvatar.Fallback
-                aria-label={name}
-                className={cx(
-                    "flex size-full items-center justify-center rounded-full bg-tomato-100 text-tomato-700",
-                    fallbackText({ size }),
-                )}
+        <AvatarSizeContext value={resolvedSize}>
+            <BaseAvatar.Root
+                data-slot="avatar"
+                className={cx(avatar({ size: resolvedSize, ring }), className)}
+                {...rest}
             >
-                {initials(name)}
-            </BaseAvatar.Fallback>
-            {presence === true && (
-                <span
-                    aria-hidden="true"
-                    className="absolute -right-0.5 -bottom-0.5 size-3 rounded-full bg-success ring-2 ring-surface"
-                />
+                {children}
+            </BaseAvatar.Root>
+        </AvatarSizeContext>
+    )
+}
+
+export function AvatarImage({
+    src,
+    alt,
+    className,
+    ...props
+}: Readonly<
+    Omit<React.ComponentProps<typeof BaseAvatar.Image>, "children"> & {
+        readonly alt: string
+    }
+>) {
+    return (
+        <BaseAvatar.Image
+            src={src}
+            alt={alt}
+            className={cx("size-full rounded-full object-cover", className)}
+            {...props}
+        />
+    )
+}
+
+export function AvatarFallback({ name, className }: Readonly<{ name: string; className?: string | undefined }>) {
+    const size = use(AvatarSizeContext)
+    return (
+        <BaseAvatar.Fallback
+            aria-label={name}
+            className={cx(
+                "flex size-full items-center justify-center rounded-full bg-tomato-100 text-tomato-700",
+                fallbackText({ size }),
+                className,
             )}
-        </BaseAvatar.Root>
+        >
+            {initials(name)}
+        </BaseAvatar.Fallback>
+    )
+}
+
+export function AvatarPresence({ className }: Readonly<{ className?: string | undefined }>) {
+    return (
+        <span
+            aria-hidden="true"
+            className={cx(
+                "absolute -right-0.5 -bottom-0.5 size-3 rounded-full bg-success ring-2 ring-surface",
+                className,
+            )}
+        />
     )
 }
