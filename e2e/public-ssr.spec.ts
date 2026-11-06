@@ -16,8 +16,8 @@ test("serves the public landing heading in raw HTML", async ({ request }) => {
     expect(html).not.toContain(loadingVerb)
 })
 
-test("serves the design-system heading in raw HTML", async ({ request }) => {
-    const response = await request.get("/design-system")
+test("serves the design system heading in raw HTML", async ({ request }) => {
+    const response = await request.get("/ds")
 
     expect(response.ok()).toBe(true)
     const html = await response.text()
