@@ -92,6 +92,17 @@ after each test, `close` after the suite).
 Use `server.use(...)` per test for one-off sequences. Prefer that over `vi.stubGlobal("fetch")`. Do
 not add Testcontainers or a live backend dependency to these tests.
 
+## Route specs that need backend data
+
+`AuthProvider` wraps children in its own live `ConvexProvider`, which shadows any test-injected
+client for hooks that read `useConvexQuery` directly. So route specs never inject through context.
+Instead: mock `@core/auth-provider` with a passthrough `AuthProvider` plus a scripted `useAuth`,
+wrap the tree in `ConvexProvider`, and serve seeded query results plus a mutation recorder through
+`createSeededClient` in `src/core/db/seeded-client.ts`. Build seed keys with its `seedKey` helper,
+never hand-rolled strings; subscriptions spread args (`{...undefined}` is `{}`) while the cache keys
+the unspread value, and the helper already normalises that. Hooks that call `useQueryClient` need a
+`QueryClientProvider` in the wrapper.
+
 ## Configuration
 
 - `vite.config.ts` holds the Vitest projects (timeouts, environments, aliases)
