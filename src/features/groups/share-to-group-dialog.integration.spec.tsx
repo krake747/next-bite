@@ -84,9 +84,10 @@ describe("share to group dialog", () => {
         fireEvent.click(screen.getByRole("button", { name: "Add to group" }))
 
         await waitFor(() => {
-            expect(mutationCalls).toEqual([
-                { fn: "shares:shareWithGroup", args: { restaurantId: "r1", groupId: "g1" } },
-            ])
+            expect(mutationCalls).toContainEqual({
+                fn: "shares:shareWithGroup",
+                args: { restaurantId: "r1", groupId: "g1" },
+            })
         })
     })
 
@@ -105,9 +106,10 @@ describe("share to group dialog", () => {
         fireEvent.click(screen.getByRole("button", { name: "Remove" }))
 
         await waitFor(() => {
-            expect(mutationCalls).toEqual([
-                { fn: "shares:unshare", args: { restaurantId: "r1", target: { kind: "group", groupId: "g1" } } },
-            ])
+            expect(mutationCalls).toContainEqual({
+                fn: "shares:unshare",
+                args: { restaurantId: "r1", target: { kind: "group", groupId: "g1" } },
+            })
         })
     })
 })

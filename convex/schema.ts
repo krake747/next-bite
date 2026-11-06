@@ -67,7 +67,9 @@ export default defineSchema({
         email: v.string(),
         avatar: v.optional(imageObjectValidator),
         createdAt: v.number(),
-    }).index("by_auth_user", ["authUserId"]),
+    })
+        .index("by_auth_user", ["authUserId"])
+        .index("by_email", ["email"]),
     friendships: defineTable({
         ownerId: v.string(),
         friendAuthUserId: v.string(),
@@ -75,7 +77,8 @@ export default defineSchema({
         createdAt: v.number(),
     })
         .index("by_owner", ["ownerId"])
-        .index("by_owner_friend", ["ownerId", "friendAuthUserId"]),
+        .index("by_owner_friend", ["ownerId", "friendAuthUserId"])
+        .index("by_friend", ["friendAuthUserId"]),
     groups: defineTable({
         ownerId: v.string(),
         name: v.string(),

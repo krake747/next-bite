@@ -129,6 +129,46 @@ export const useFriends = () => {
     return useConvexQuery(api.friendships.listFriends, undefined, { skip: status.kind !== "ready" })
 }
 
+export const useFriendDiscoveries = (friendAuthUserId: string) => {
+    const status = useSessionStatus()
+    return useConvexQuery(api.friendships.listDiscoveries, { friendAuthUserId }, { skip: status.kind !== "ready" })
+}
+
+export const useFriendRequests = () => {
+    const status = useSessionStatus()
+    return useConvexQuery(api.friendships.listFriendRequests, undefined, { skip: status.kind !== "ready" })
+}
+
+export const useRequestFriendByEmail = () => useConvexMutation(api.friendships.requestFriendByEmail)
+export const useAcceptFriend = () => useConvexMutation(api.friendships.acceptFriend)
+export const useRemoveFriend = () => useConvexMutation(api.friendships.removeFriend)
+
+export function useEnsureProfile(): void {
+    const auth = useAuth()
+    const client = useConvexClient()
+    const sessionKey = useSessionKey()
+    useEffect(() => {
+        // Profiles back display names and email lookup. Signups create the auth session but no
+        // profile row, so every ready session ensures one exactly once. The readiness gate
+        // matters: firing pre-install runs the mutation unauthenticated. Failures stay silent:
+        // callers already fall back to placeholder names.
+        if (sessionKey === null || client === null) {
+            return
+        }
+        const user = auth.user
+        if (user === null || user.id !== sessionKey) {
+            return
+        }
+        const { email, name } = user
+        void client
+            .mutation(api.users.ensureProfile, {
+                email,
+                ...(name !== undefined && name !== null ? { name } : {}),
+            })
+            .catch(() => {})
+    }, [sessionKey, client, auth.user])
+}
+
 export const useMyGroups = () => {
     const status = useSessionStatus()
     return useConvexQuery(api.groups.listMyGroups, undefined, { skip: status.kind !== "ready" })
@@ -150,6 +190,7 @@ export const useRestaurantShares = (restaurantId: Id<"restaurants">) => {
 }
 
 export const useShareWithGroup = () => useConvexMutation(api.shares.shareWithGroup)
+export const useShareWithUser = () => useConvexMutation(api.shares.shareWithUser)
 export const useUnshare = () => useConvexMutation(api.shares.unshare)
 export const useCreateGroup = () => useConvexMutation(api.groups.createGroup)
 

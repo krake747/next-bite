@@ -204,7 +204,7 @@ function DetailShare({ restaurant }: Readonly<{ restaurant: Restaurant }>) {
                     setShowShare(true)
                 }}
             >
-                Add to group
+                Share
             </Button>
             <ShareToGroupDialog
                 restaurantId={restaurant._id}

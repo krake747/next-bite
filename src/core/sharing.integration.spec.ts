@@ -182,4 +182,115 @@ describe("sharing and social gating", () => {
             }),
         ).rejects.toThrow("only the owner")
     })
+
+    it("requests by email and surfaces pending requests both ways", async () => {
+        const t = setup()
+        await registerUser(t, "anna", "anna@example.com")
+        await registerUser(t, "ben", "ben@example.com")
+
+        await asUser(t, "anna").mutation(api.friendships.requestFriendByEmail, { email: "ben@example.com" })
+
+        const annasView = await asUser(t, "anna").query(api.friendships.listFriendRequests, {})
+        expect(annasView.incoming).toEqual([])
+        expect(annasView.outgoing).toEqual([{ authUserId: "ben", name: "ben" }])
+        const bensView = await asUser(t, "ben").query(api.friendships.listFriendRequests, {})
+        expect(bensView.incoming).toEqual([{ authUserId: "anna", name: "anna" }])
+        expect(bensView.outgoing).toEqual([])
+
+        await asUser(t, "ben").mutation(api.friendships.acceptFriend, { friendAuthUserId: "anna" })
+
+        expect(await asUser(t, "anna").query(api.friendships.listFriends, {})).toEqual([
+            { authUserId: "ben", name: "ben" },
+        ])
+        expect(await asUser(t, "ben").query(api.friendships.listFriends, {})).toEqual([
+            { authUserId: "anna", name: "anna" },
+        ])
+        expect((await asUser(t, "anna").query(api.friendships.listFriendRequests, {})).outgoing).toEqual([])
+    })
+
+    it("rejects friend requests to self", async () => {
+        const t = setup()
+        await registerUser(t, "anna", "anna@example.com")
+
+        await expect(
+            asUser(t, "anna").mutation(api.friendships.requestFriendByEmail, { email: "anna@example.com" }),
+        ).rejects.toThrow("yourself")
+    })
+
+    it("rejects friend requests to unknown emails", async () => {
+        const t = setup()
+        await registerUser(t, "anna", "anna@example.com")
+
+        await expect(
+            asUser(t, "anna").mutation(api.friendships.requestFriendByEmail, { email: "nobody@example.com" }),
+        ).rejects.toThrow("Nobody joined")
+    })
+
+    it("rejects accepting without a pending request", async () => {
+        const t = setup()
+        await registerUser(t, "anna", "anna@example.com")
+        await registerUser(t, "cas", "cas@example.com")
+
+        await expect(
+            asUser(t, "cas").mutation(api.friendships.acceptFriend, { friendAuthUserId: "anna" }),
+        ).rejects.toThrow("No pending friend request")
+    })
+
+    it("completes mutual requests as friends without dangling pendings", async () => {
+        const t = setup()
+        await registerUser(t, "anna", "anna@example.com")
+        await registerUser(t, "ben", "ben@example.com")
+        await asUser(t, "anna").mutation(api.friendships.requestFriendByEmail, { email: "ben@example.com" })
+        await asUser(t, "ben").mutation(api.friendships.requestFriendByEmail, { email: "anna@example.com" })
+
+        expect(await asUser(t, "anna").query(api.friendships.listFriends, {})).toEqual([
+            { authUserId: "ben", name: "ben" },
+        ])
+        expect((await asUser(t, "anna").query(api.friendships.listFriendRequests, {})).outgoing).toEqual([])
+        expect((await asUser(t, "ben").query(api.friendships.listFriendRequests, {})).incoming).toEqual([])
+    })
+
+    it("resolves mixed-case emails", async () => {
+        const t = setup()
+        await registerUser(t, "anna", "anna@example.com")
+        await registerUser(t, "ben", "Ben@Example.com")
+
+        await asUser(t, "anna").mutation(api.friendships.requestFriendByEmail, { email: "ben@example.com" })
+
+        const bensView = await asUser(t, "ben").query(api.friendships.listFriendRequests, {})
+        expect(bensView.incoming).toEqual([{ authUserId: "anna", name: "anna" }])
+    })
+
+    it("lists only visible discoveries per friend", async () => {
+        const t = setup()
+        await registerUser(t, "anna", "anna@example.com")
+        await registerUser(t, "ben", "ben@example.com")
+        await registerUser(t, "cas", "cas@example.com")
+        await asUser(t, "anna").mutation(api.friendships.requestFriendByEmail, { email: "ben@example.com" })
+        await asUser(t, "ben").mutation(api.friendships.acceptFriend, { friendAuthUserId: "anna" })
+        const sharedId = await createRestaurant(t, "ben")
+        await asUser(t, "ben").mutation(api.shares.shareWithUser, { restaurantId: sharedId, userId: "anna" })
+        await createRestaurant(t, "ben")
+
+        const discoveries = await asUser(t, "anna").query(api.friendships.listDiscoveries, {
+            friendAuthUserId: "ben",
+        })
+        expect(discoveries.map((r) => r._id)).toEqual([sharedId])
+        await expect(
+            asUser(t, "anna").query(api.friendships.listDiscoveries, { friendAuthUserId: "cas" }),
+        ).rejects.toThrow("friends only")
+    })
+
+    it("removes friendships on both sides", async () => {
+        const t = setup()
+        await registerUser(t, "anna", "anna@example.com")
+        await registerUser(t, "ben", "ben@example.com")
+        await asUser(t, "anna").mutation(api.friendships.requestFriendByEmail, { email: "ben@example.com" })
+        await asUser(t, "ben").mutation(api.friendships.acceptFriend, { friendAuthUserId: "anna" })
+
+        await asUser(t, "anna").mutation(api.friendships.removeFriend, { friendAuthUserId: "ben" })
+
+        expect(await asUser(t, "anna").query(api.friendships.listFriends, {})).toEqual([])
+        expect(await asUser(t, "ben").query(api.friendships.listFriends, {})).toEqual([])
+    })
 })
