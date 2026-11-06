@@ -2,6 +2,7 @@ import ChevronLeft from "lucide-react/icons/chevron-left"
 import ChevronRight from "lucide-react/icons/chevron-right"
 
 import { cx } from "@ui/cva.config"
+import { IconButton } from "@ui/icon-button"
 
 export function NavigationArrow({
     direction,
@@ -15,26 +16,22 @@ export function NavigationArrow({
         direction: "prev" | "next"
         onClick: (event: React.MouseEvent<HTMLButtonElement>) => void
         hidden?: boolean | undefined
-    } & Omit<React.ComponentProps<"button">, "onClick" | "children" | "type">
+    } & Omit<React.ComponentProps<"button">, "onClick" | "children" | "type" | "aria-label">
 >) {
     const isPrev = direction === "prev"
     const Icon = isPrev ? ChevronLeft : ChevronRight
 
     return (
-        <button
-            type="button"
+        <IconButton
+            label={`${direction} image`}
+            tone="inverse"
+            size="lg"
             onClick={onClick}
             disabled={disabled}
-            className={cx(
-                "absolute z-10 rounded-full bg-surface/20 p-3 text-white backdrop-blur-sm transition-colors duration-150 ease hover:bg-surface/30",
-                isPrev ? "left-4" : "right-4",
-                hidden === true && "hidden",
-                className,
-            )}
-            aria-label={`${direction} image`}
+            className={cx("absolute z-10", isPrev ? "left-4" : "right-4", hidden === true && "hidden", className)}
             {...rest}
         >
             <Icon className="size-6" />
-        </button>
+        </IconButton>
     )
 }

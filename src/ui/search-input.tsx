@@ -4,7 +4,7 @@ import X from "lucide-react/icons/x"
 import { useId, useState } from "react"
 
 import { cx } from "@ui/cva.config"
-import { focusRing } from "@ui/variants"
+import { IconButton } from "@ui/icon-button"
 
 type SearchInputProps = {
     value?: string | undefined
@@ -70,18 +70,15 @@ export function SearchInput({
                         {...rest}
                     />
                     {current !== "" && (
-                        <button
-                            type="button"
+                        <IconButton
+                            label="Clear search"
+                            tone="plain"
                             onClick={clearSearch}
                             disabled={disabled}
-                            className={cx(
-                                focusRing(),
-                                "hit-area-2 absolute right-0 flex size-8 items-center justify-center rounded-full text-stone-400 transition-colors duration-150 hover:bg-stone-100 hover:text-stone-600",
-                            )}
-                            aria-label="Clear search"
+                            className="hit-area-2 absolute right-0"
                         >
                             <X className="size-3.5" />
-                        </button>
+                        </IconButton>
                     )}
                 </>
             ),

@@ -5,6 +5,7 @@ import ZoomIn from "lucide-react/icons/zoom-in"
 import ZoomOut from "lucide-react/icons/zoom-out"
 
 import { Button } from "@ui/button"
+import { IconButton } from "@ui/icon-button"
 
 import { useGalleryViewer } from "./gallery-viewer"
 import { useZoomPan } from "./use-zoom-pan"
@@ -16,42 +17,27 @@ export function ZoomControls({ zoomPan }: Readonly<{ zoomPan: ZoomHandle }>) {
     return (
         <div className="flex flex-wrap items-center justify-center gap-2 p-4">
             <div className="flex items-center gap-1">
-                <button
-                    type="button"
-                    onClick={zoomPan.zoomOut}
-                    className="rounded-full bg-surface/20 p-2 text-white backdrop-blur-sm transition-colors hover:bg-surface/30"
-                    aria-label="Zoom out"
-                >
+                <IconButton label="Zoom out" tone="inverse" size="xs" onClick={zoomPan.zoomOut}>
                     <ZoomOut className="size-5" />
-                </button>
+                </IconButton>
                 <span className="min-w-12 text-center text-sm text-white">{Math.round(zoomPan.zoom * 100)}%</span>
-                <button
-                    type="button"
-                    onClick={zoomPan.zoomIn}
-                    className="rounded-full bg-surface/20 p-2 text-white backdrop-blur-sm transition-colors hover:bg-surface/30"
-                    aria-label="Zoom in"
-                >
+                <IconButton label="Zoom in" tone="inverse" size="xs" onClick={zoomPan.zoomIn}>
                     <ZoomIn className="size-5" />
-                </button>
+                </IconButton>
             </div>
 
             <div className="flex items-center gap-1">
-                <button
-                    type="button"
-                    onClick={zoomPan.rotate}
-                    className="rounded-full bg-surface/20 p-2 text-white backdrop-blur-sm transition-colors hover:bg-surface/30"
-                    aria-label="Rotate"
-                >
+                <IconButton label="Rotate" tone="inverse" size="xs" onClick={zoomPan.rotate}>
                     <RotateCcw className="size-5" />
-                </button>
-                <button
-                    type="button"
+                </IconButton>
+                <IconButton
+                    label={viewer.isFullscreen ? "Exit fullscreen" : "Fullscreen"}
+                    tone="inverse"
+                    size="xs"
                     onClick={viewer.toggleFullscreen}
-                    className="rounded-full bg-surface/20 p-2 text-white backdrop-blur-sm transition-colors hover:bg-surface/30"
-                    aria-label={viewer.isFullscreen ? "Exit fullscreen" : "Fullscreen"}
                 >
                     {viewer.isFullscreen ? <Minimize className="size-5" /> : <Maximize className="size-5" />}
-                </button>
+                </IconButton>
                 <button
                     type="button"
                     onClick={zoomPan.resetZoom}

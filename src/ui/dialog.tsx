@@ -2,7 +2,7 @@ import { Dialog as BaseDialog } from "@base-ui/react/dialog"
 import X from "lucide-react/icons/x"
 
 import { cva, cx, type VariantProps } from "@ui/cva.config"
-import { focusRing } from "@ui/variants"
+import { IconButton } from "@ui/icon-button"
 
 export function Dialog({
     show,
@@ -132,32 +132,21 @@ export function DialogDescription({
     )
 }
 
-const closeButton = cva({
-    base: "hit-area-2 absolute top-4 right-4 flex size-8 items-center justify-center rounded-full text-stone-400 transition-colors duration-150 hover:bg-stone-100 hover:text-stone-600",
-    composes: [focusRing],
-    variants: {
-        tone: {
-            default: "",
-            soft: "bg-stone-100 hover:bg-stone-200",
-        },
-    },
-    defaultVariants: {
-        tone: "default",
-    },
-})
-
 export function DialogCloseButton({
     onClick,
-    tone,
     className,
-    ...rest
-}: Readonly<{ onClick: () => void } & VariantProps<typeof closeButton>> &
-    Omit<React.ComponentProps<"button">, "onClick" | "type" | "children">) {
+}: Readonly<
+    { onClick: () => void } & Omit<React.ComponentProps<"button">, "onClick" | "type" | "children" | "aria-label">
+>) {
     return (
-        <button type="button" onClick={onClick} className={cx(closeButton({ tone }), className)} {...rest}>
+        <IconButton
+            label="Close"
+            tone="plain"
+            onClick={onClick}
+            className={cx("hit-area-2 absolute top-4 right-4", className)}
+        >
             <X className="size-4" />
-            <span className="sr-only">Close</span>
-        </button>
+        </IconButton>
     )
 }
 

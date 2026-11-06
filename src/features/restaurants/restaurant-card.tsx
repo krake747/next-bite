@@ -19,48 +19,14 @@ import { emptySocialSummary, type RestaurantSocial, type RestaurantSocialSummary
 import { EmojiRating } from "@pattern/emoji-rating"
 import { Button } from "@ui/button"
 import { Card } from "@ui/card"
-import { cx } from "@ui/cva.config"
 import { Dialog, DialogAction, DialogBackdrop, DialogDescription, DialogPanel, DialogTitle } from "@ui/dialog"
+import { IconButton } from "@ui/icon-button"
 import { OpeningHoursDialog } from "@ui/opening-hours-dialog"
 
 import { EditRestaurantDialog } from "./edit-restaurant-dialog"
 import { RestaurantGallery } from "./restaurant-gallery"
 import { RestaurantHeader } from "./restaurant-header"
 import { RestaurantInterestButton } from "./restaurant-interest-button"
-
-function GalleryActionButton({
-    label,
-    title,
-    tone,
-    disabled,
-    onClick,
-    children,
-}: Readonly<{
-    label: string
-    title: string
-    tone: "neutral" | "destructive"
-    disabled?: boolean | undefined
-    onClick: () => void
-    children: React.ReactNode
-}>) {
-    return (
-        <button
-            type="button"
-            onClick={onClick}
-            disabled={disabled}
-            aria-label={label}
-            title={title}
-            className={cx(
-                "flex size-7 items-center justify-center rounded-full bg-surface/90 shadow-md backdrop-blur-sm transition-all duration-200 hover:shadow-lg",
-                tone === "destructive"
-                    ? "text-destructive hover:bg-destructive/10"
-                    : "text-stone-600 hover:bg-surface hover:text-stone-900 disabled:opacity-50",
-            )}
-        >
-            {children}
-        </button>
-    )
-}
 
 export function RestaurantCard({
     restaurant,
@@ -152,46 +118,43 @@ export function RestaurantCard({
                         auth.isAuthenticated ? (
                             <>
                                 {hasPlaceId ? (
-                                    <GalleryActionButton
+                                    <IconButton
                                         label="Refresh hours"
-                                        title="Refresh hours"
-                                        tone="neutral"
+                                        size="sm"
                                         disabled={isRefreshing}
                                         onClick={handleRefreshHours}
                                     >
                                         <RotateCcw className="size-3.5" />
-                                    </GalleryActionButton>
+                                    </IconButton>
                                 ) : (
-                                    <GalleryActionButton
+                                    <IconButton
                                         label="Find hours"
-                                        title="Find hours"
-                                        tone="neutral"
+                                        size="sm"
                                         disabled={isRefreshing}
                                         onClick={handleFindHours}
                                     >
                                         <Search className="size-3.5" />
-                                    </GalleryActionButton>
+                                    </IconButton>
                                 )}
-                                <GalleryActionButton
+                                <IconButton
                                     label="Edit restaurant"
-                                    title="Edit restaurant"
-                                    tone="neutral"
+                                    size="sm"
                                     onClick={() => {
                                         setDialog("edit")
                                     }}
                                 >
                                     <SquarePen className="size-3.5" />
-                                </GalleryActionButton>
-                                <GalleryActionButton
+                                </IconButton>
+                                <IconButton
                                     label="Delete restaurant"
-                                    title="Delete restaurant"
+                                    size="sm"
                                     tone="destructive"
                                     onClick={() => {
                                         setDialog("delete")
                                     }}
                                 >
                                     <Trash2 className="size-3.5" />
-                                </GalleryActionButton>
+                                </IconButton>
                             </>
                         ) : undefined
                     }
