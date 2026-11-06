@@ -1,5 +1,4 @@
 import { Field, Form, useField, useForm } from "@formisch/react"
-import { useState } from "react"
 import * as v from "valibot"
 
 import { useAuth } from "@core/hooks"
@@ -15,9 +14,16 @@ const OtpCodeSchema = v.object({
     code: v.pipe(v.string(), v.minLength(6)),
 })
 
-export function OtpForm({ onSuccess }: Readonly<{ onSuccess: () => void }>) {
+export function OtpForm({
+    onSuccess,
+    email,
+    onEmailChange,
+}: Readonly<{
+    onSuccess: () => void
+    email: string | undefined
+    onEmailChange: (email: string | undefined) => void
+}>) {
     const auth = useAuth()
-    const [email, setEmail] = useState<string | undefined>(undefined)
     const emailForm = useForm({ schema: OtpEmailSchema })
     const emailField = useField(emailForm, { path: ["email"] })
     const codeForm = useForm({ schema: OtpCodeSchema })
@@ -26,7 +32,7 @@ export function OtpForm({ onSuccess }: Readonly<{ onSuccess: () => void }>) {
     const handleSend = async (output: Readonly<{ email: string }>) => {
         try {
             await auth.requestOtp(output.email)
-            setEmail(output.email)
+            onEmailChange(output.email)
         } catch {
             return
         }
@@ -76,7 +82,7 @@ export function OtpForm({ onSuccess }: Readonly<{ onSuccess: () => void }>) {
                     type="button"
                     className="font-medium text-tomato-600 underline-offset-2 hover:underline"
                     onClick={() => {
-                        setEmail(undefined)
+                        onEmailChange(undefined)
                     }}
                 >
                     Use a different email

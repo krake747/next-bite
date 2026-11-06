@@ -1,6 +1,7 @@
 import { useForm, Field, Form, useField } from "@formisch/react"
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router"
 import UtensilsCrossed from "lucide-react/icons/utensils-crossed"
+import { useState } from "react"
 import * as v from "valibot"
 
 import { useAuth, useAuthMethods } from "@core/hooks"
@@ -39,6 +40,7 @@ function LoginPage() {
     const emailField = useField(form, { path: ["email"] })
     const passwordField = useField(form, { path: ["password"] })
     const methods = useAuthMethods()
+    const [otpEmail, setOtpEmail] = useState<string | undefined>(undefined)
 
     const goHome = () => {
         void navigate({ to: redirectTo ?? "/", replace: true, from: Route.fullPath })
@@ -129,7 +131,7 @@ function LoginPage() {
             {methods?.emailOtp === true && (
                 <>
                     <AuthDivider />
-                    <OtpForm onSuccess={goHome} />
+                    <OtpForm onSuccess={goHome} email={otpEmail} onEmailChange={setOtpEmail} />
                 </>
             )}
         </AuthLayout>
