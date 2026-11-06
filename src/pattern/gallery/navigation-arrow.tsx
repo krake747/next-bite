@@ -15,9 +15,7 @@ export function NavigationArrow({
         direction: "prev" | "next"
         onClick: (event: React.MouseEvent<HTMLButtonElement>) => void
         hidden?: boolean | undefined
-        disabled?: boolean | undefined
-        className?: string | undefined
-    } & Omit<React.ComponentProps<"button">, "onClick" | "disabled" | "className" | "children" | "type">
+    } & Omit<React.ComponentProps<"button">, "onClick" | "children" | "type">
 >) {
     const isPrev = direction === "prev"
     const Icon = isPrev ? ChevronLeft : ChevronRight

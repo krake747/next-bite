@@ -40,8 +40,7 @@ const backdrop = cva({
 })
 
 type DialogBackdropProps = VariantProps<typeof backdrop> &
-    Readonly<{ className?: string | undefined; children?: React.ReactNode | undefined }> &
-    Omit<React.ComponentProps<typeof BaseDialog.Backdrop>, "className" | "children" | "render">
+    Omit<React.ComponentProps<typeof BaseDialog.Backdrop>, "render">
 
 export function DialogBackdrop({ variant, tone, className, children, ...rest }: DialogBackdropProps) {
     return (
@@ -79,9 +78,7 @@ const panel = cva({
     },
 })
 
-type DialogPanelProps = VariantProps<typeof panel> &
-    Readonly<{ className?: string | undefined; children?: React.ReactNode | undefined }> &
-    Omit<React.ComponentProps<typeof BaseDialog.Popup>, "className" | "children" | "render">
+type DialogPanelProps = VariantProps<typeof panel> & Omit<React.ComponentProps<typeof BaseDialog.Popup>, "render">
 
 export function DialogPanel({ size, padding, tone, className, children, ...rest }: DialogPanelProps) {
     return (
@@ -109,9 +106,7 @@ const title = cva({
     },
 })
 
-type DialogTitleProps = VariantProps<typeof title> &
-    Readonly<{ className?: string | undefined; children?: React.ReactNode | undefined }> &
-    Omit<React.ComponentProps<typeof BaseDialog.Title>, "className" | "children" | "render">
+type DialogTitleProps = VariantProps<typeof title> & Omit<React.ComponentProps<typeof BaseDialog.Title>, "render">
 
 export function DialogTitle({ size, tone, className, children, ...rest }: DialogTitleProps) {
     return (
@@ -125,8 +120,7 @@ export function DialogDescription({
     className,
     children,
     ...rest
-}: Readonly<{ className?: string | undefined; children?: React.ReactNode | undefined }> &
-    Omit<React.ComponentProps<typeof BaseDialog.Description>, "className" | "children" | "render">) {
+}: Readonly<Omit<React.ComponentProps<typeof BaseDialog.Description>, "render">>) {
     return (
         <BaseDialog.Description
             data-slot="dialog-description"
@@ -157,12 +151,8 @@ export function DialogCloseButton({
     tone,
     className,
     ...rest
-}: Readonly<
-    { onClick: () => void } & VariantProps<typeof closeButton> & { className?: string | undefined } & Omit<
-            React.ComponentProps<"button">,
-            "onClick" | "className" | "type" | "children"
-        >
->) {
+}: Readonly<{ onClick: () => void } & VariantProps<typeof closeButton>> &
+    Omit<React.ComponentProps<"button">, "onClick" | "type" | "children">) {
     return (
         <button type="button" onClick={onClick} className={cx(closeButton({ tone }), className)} {...rest}>
             <X className="size-4" aria-hidden="true" />

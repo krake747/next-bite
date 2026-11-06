@@ -54,6 +54,7 @@ export function Button({
     return (
         <BaseButton
             data-slot="button"
+            data-loading={loading === true ? "" : undefined}
             type={type ?? "button"}
             className={button({ variant, size, class: className })}
             disabled={disabled === true || loading === true}

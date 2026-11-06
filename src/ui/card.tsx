@@ -1,15 +1,6 @@
 import { cx } from "@ui/cva.config"
 
-export function Card({
-    className,
-    ...props
-}: Readonly<
-    {
-        className?: string | undefined
-        style?: React.CSSProperties | undefined
-        children?: React.ReactNode | undefined
-    } & Omit<React.ComponentProps<"div">, "className" | "style" | "children">
->) {
+export function Card({ className, children, ...props }: Readonly<React.ComponentProps<"div">>) {
     return (
         <div
             data-slot="card"
@@ -19,6 +10,8 @@ export function Card({
                 className,
             )}
             {...props}
-        />
+        >
+            {children}
+        </div>
     )
 }

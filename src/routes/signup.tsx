@@ -1,5 +1,5 @@
 import { useForm, Field, Form, useField } from "@formisch/react"
-import { createFileRoute, useNavigate } from "@tanstack/react-router"
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router"
 import UserIcon from "lucide-react/icons/user"
 import { useState } from "react"
 import * as v from "valibot"
@@ -92,10 +92,7 @@ function SignupPage() {
             subtitle="Create an account to start adding restaurants"
             footerLink={
                 <p className="text-sm text-stone-600">
-                    Already have an account?{" "}
-                    <TextLink to="/login" viewTransition>
-                        Sign in
-                    </TextLink>
+                    Already have an account? <TextLink render={<Link to="/login" viewTransition />}>Sign in</TextLink>
                 </p>
             }
         >

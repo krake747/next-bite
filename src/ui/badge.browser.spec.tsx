@@ -34,4 +34,11 @@ describe("Badge", () => {
         const badge = screen.getByText("Styled")
         expect(badge.className).toContain("custom-class")
     })
+
+    it("exposes slot and variant as data attributes", () => {
+        render(<Badge variant="brand">Marked</Badge>)
+        const badge = screen.getByText("Marked")
+        expect(badge.dataset.slot).toBe("badge")
+        expect(badge.dataset.variant).toBe("brand")
+    })
 })

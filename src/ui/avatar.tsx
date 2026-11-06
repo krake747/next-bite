@@ -57,7 +57,11 @@ type AvatarProps = VariantProps<typeof avatar> &
 
 export function Avatar({ src, name, size, ring, presence, className }: AvatarProps) {
     return (
-        <BaseAvatar.Root data-slot="avatar" className={cx(avatar({ size, ring }), className)}>
+        <BaseAvatar.Root
+            data-slot="avatar"
+            data-presence={presence === true ? "" : undefined}
+            className={cx(avatar({ size, ring }), className)}
+        >
             <BaseAvatar.Image src={src} alt={name} className="size-full rounded-full object-cover" />
             <BaseAvatar.Fallback
                 aria-label={name}

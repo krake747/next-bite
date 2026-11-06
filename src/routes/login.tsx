@@ -1,5 +1,5 @@
 import { useForm, Field, Form, useField } from "@formisch/react"
-import { createFileRoute, useNavigate } from "@tanstack/react-router"
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router"
 import UtensilsCrossed from "lucide-react/icons/utensils-crossed"
 import * as v from "valibot"
 
@@ -81,10 +81,7 @@ function LoginPage() {
             subtitle="Sign in to continue to your next bite"
             footerLink={
                 <p className="text-sm text-stone-600">
-                    Do not have an account?{" "}
-                    <TextLink to="/signup" viewTransition>
-                        Sign up
-                    </TextLink>
+                    Do not have an account? <TextLink render={<Link to="/signup" viewTransition />}>Sign up</TextLink>
                 </p>
             }
         >

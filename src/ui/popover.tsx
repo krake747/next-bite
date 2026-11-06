@@ -26,9 +26,7 @@ export function PopoverTrigger({
     className,
     children,
     ...rest
-}: Readonly<{ className?: string | undefined; children?: React.ReactNode | undefined }> &
-    VariantProps<typeof trigger> &
-    Omit<React.ComponentProps<typeof BasePopover.Trigger>, "className" | "children" | "render">) {
+}: VariantProps<typeof trigger> & Omit<React.ComponentProps<typeof BasePopover.Trigger>, "render">) {
     return (
         <BasePopover.Trigger data-slot="popover-trigger" className={cx(trigger({ tone }), className)} {...rest}>
             {children}

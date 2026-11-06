@@ -1,3 +1,5 @@
+import { useRender } from "@base-ui/react/use-render"
+
 import { cva, cx, type VariantProps } from "@ui/cva.config"
 
 export const badge = cva({
@@ -22,9 +24,12 @@ type BadgeProps = VariantProps<typeof badge> & {
 }
 
 export function Badge({ variant, className, children }: Readonly<BadgeProps>) {
-    return (
-        <span data-slot="badge" className={cx(badge({ variant }), className)}>
-            {children}
-        </span>
-    )
+    return useRender({
+        defaultTagName: "span",
+        state: { slot: "badge", variant: variant ?? "neutral" },
+        props: {
+            className: cx(badge({ variant }), className),
+            children,
+        },
+    })
 }
