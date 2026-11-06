@@ -34,7 +34,7 @@ export function NavigationArrow({
             aria-label={`${direction} image`}
             {...rest}
         >
-            <Icon className="size-6" aria-hidden="true" />
+            <Icon className="size-6" />
         </button>
     )
 }

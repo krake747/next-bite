@@ -223,10 +223,7 @@ function HomeActions({ onAddClick }: Readonly<{ onAddClick: () => void }>) {
                         void navigate({ to: "/login", viewTransition: true })
                     }}
                 >
-                    <Plus
-                        className="size-4 transition-transform duration-200 group-hover:rotate-90"
-                        aria-hidden="true"
-                    />
+                    <Plus className="size-4 transition-transform duration-200 group-hover:rotate-90" />
                     Sign in to add
                 </Button>
             )}

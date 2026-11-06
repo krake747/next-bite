@@ -190,7 +190,7 @@ export function Select(props: Readonly<SelectProps>) {
                 >
                     <BaseSelect.Value>{() => selectedLabel}</BaseSelect.Value>
                     <BaseSelect.Icon>
-                        <ChevronDown className="size-4 shrink-0 text-stone-400" aria-hidden="true" />
+                        <ChevronDown className="size-4 shrink-0 text-stone-400" />
                     </BaseSelect.Icon>
                 </BaseSelect.Trigger>
                 <BaseSelect.Portal>
@@ -205,7 +205,7 @@ export function Select(props: Readonly<SelectProps>) {
                                     >
                                         <BaseSelect.ItemText>{item.label}</BaseSelect.ItemText>
                                         <BaseSelect.ItemIndicator>
-                                            <Check className="size-4 text-tomato-600" aria-hidden="true" />
+                                            <Check className="size-4 text-tomato-600" />
                                         </BaseSelect.ItemIndicator>
                                     </BaseSelect.Item>
                                 ))}
@@ -241,7 +241,7 @@ function FieldErrors({ errors, id }: Readonly<{ errors: unknown; id?: string | u
     const message = Array.isArray(errors) && typeof errors[0] === "string" ? errors[0] : null
     return message !== null && message !== "" ? (
         <div id={id} role="alert" className="flex items-center gap-1.5 text-sm text-destructive">
-            <CircleAlert className="size-4 shrink-0" aria-hidden="true" />
+            <CircleAlert className="size-4 shrink-0" />
             <span>{message}</span>
         </div>
     ) : null

@@ -24,7 +24,7 @@ export function Header({ children }: Readonly<{ children?: React.ReactNode | und
                             <div className="absolute inset-0 rounded-full bg-tomato-500/20 blur-2xl" />
 
                             <div className="relative flex size-20 items-center justify-center rounded-card bg-linear-to-br from-tomato-500 to-tomato-600 text-white shadow-popover">
-                                <UtensilsCrossed className="size-10" aria-hidden="true" />
+                                <UtensilsCrossed className="size-10" />
                             </div>
                         </div>
                     </div>

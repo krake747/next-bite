@@ -159,7 +159,7 @@ export function RestaurantCard({
                                         disabled={isRefreshing}
                                         onClick={handleRefreshHours}
                                     >
-                                        <RotateCcw className="size-3.5" aria-hidden="true" />
+                                        <RotateCcw className="size-3.5" />
                                     </GalleryActionButton>
                                 ) : (
                                     <GalleryActionButton
@@ -169,7 +169,7 @@ export function RestaurantCard({
                                         disabled={isRefreshing}
                                         onClick={handleFindHours}
                                     >
-                                        <Search className="size-3.5" aria-hidden="true" />
+                                        <Search className="size-3.5" />
                                     </GalleryActionButton>
                                 )}
                                 <GalleryActionButton
@@ -180,7 +180,7 @@ export function RestaurantCard({
                                         setDialog("edit")
                                     }}
                                 >
-                                    <SquarePen className="size-3.5" aria-hidden="true" />
+                                    <SquarePen className="size-3.5" />
                                 </GalleryActionButton>
                                 <GalleryActionButton
                                     label="Delete restaurant"
@@ -190,7 +190,7 @@ export function RestaurantCard({
                                         setDialog("delete")
                                     }}
                                 >
-                                    <Trash2 className="size-3.5" aria-hidden="true" />
+                                    <Trash2 className="size-3.5" />
                                 </GalleryActionButton>
                             </>
                         ) : undefined

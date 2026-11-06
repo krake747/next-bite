@@ -59,7 +59,7 @@ export function CommentList({
                                     }}
                                     aria-label={`Delete comment by ${comment.author}`}
                                 >
-                                    <Trash2 className="size-4" aria-hidden="true" />
+                                    <Trash2 className="size-4" />
                                 </Button>
                             )}
                         </li>

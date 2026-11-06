@@ -46,13 +46,13 @@ export function ReactionBar({ reactions }: Readonly<{ reactions: Reactions }>) {
     return (
         <div className="flex items-center gap-1" role="group" aria-label="Reactions">
             <ReactionButton pressed={liked} count={likeCount} label="Like" onToggle={onToggleLike}>
-                <Heart className={cx("size-4", liked && "fill-current")} aria-hidden="true" />
+                <Heart className={cx("size-4", liked && "fill-current")} />
             </ReactionButton>
             <ReactionButton pressed={false} count={commentCount} label="Comments" onToggle={onComment}>
-                <MessageCircle className="size-4" aria-hidden="true" />
+                <MessageCircle className="size-4" />
             </ReactionButton>
             <ReactionButton pressed={wanted} count={wantCount} label="Want to try" onToggle={onToggleWant}>
-                <Bookmark className={cx("size-4", wanted && "fill-current")} aria-hidden="true" />
+                <Bookmark className={cx("size-4", wanted && "fill-current")} />
             </ReactionButton>
         </div>
     )

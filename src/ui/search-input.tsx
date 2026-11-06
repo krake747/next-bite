@@ -57,7 +57,7 @@ export function SearchInput({
             className: cx("relative flex items-center", className),
             children: (
                 <>
-                    <Search className="pointer-events-none absolute left-0 size-4 text-stone-400" aria-hidden="true" />
+                    <Search className="pointer-events-none absolute left-0 size-4 text-stone-400" />
                     <input
                         ref={ref}
                         id={id ?? fallbackId}
@@ -80,7 +80,7 @@ export function SearchInput({
                             )}
                             aria-label="Clear search"
                         >
-                            <X className="size-3.5" aria-hidden="true" />
+                            <X className="size-3.5" />
                         </button>
                     )}
                 </>

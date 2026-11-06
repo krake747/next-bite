@@ -119,7 +119,7 @@ export function HowItWorks() {
                     <div key={step.title} className="rounded-card border border-border bg-surface p-6 shadow-card">
                         <div className="flex items-center gap-3">
                             <span className="flex size-9 items-center justify-center rounded-full bg-tomato-100 text-tomato-600">
-                                <step.icon className="size-4" aria-hidden="true" />
+                                <step.icon className="size-4" />
                             </span>
                             <span className="text-xs font-semibold tracking-widest text-stone-500 uppercase">
                                 Step {index + 1}

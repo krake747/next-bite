@@ -20,7 +20,7 @@ const itemClasses =
 function AppLink({ to, label, Icon }: Readonly<{ to: string; label: string; Icon: typeof House }>) {
     return (
         <Link to={to} viewTransition className={cx(itemClasses)}>
-            <Icon className="size-5 shrink-0 md:size-4" aria-hidden="true" />
+            <Icon className="size-5 shrink-0 md:size-4" />
             <span>{label}</span>
         </Link>
     )
@@ -39,7 +39,7 @@ export function AppNav({ onAddClick }: Readonly<{ onAddClick: () => void }>) {
                 <AppLink to={destinations[0].to} label={destinations[0].label} Icon={destinations[0].Icon} />
                 <AppLink to={destinations[1].to} label={destinations[1].label} Icon={destinations[1].Icon} />
                 <button type="button" onClick={onAddClick} className={cx(itemClasses, "cursor-pointer")}>
-                    <Plus className="size-5 shrink-0 md:size-4" aria-hidden="true" />
+                    <Plus className="size-5 shrink-0 md:size-4" />
                     <span>Add</span>
                 </button>
                 <AppLink to={destinations[2].to} label={destinations[2].label} Icon={destinations[2].Icon} />

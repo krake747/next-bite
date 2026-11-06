@@ -61,7 +61,7 @@ export function Button({
             aria-busy={loading === true}
             {...rest}
         >
-            {loading === true && <LoaderCircle className="size-4 animate-spin" aria-hidden="true" />}
+            {loading === true && <LoaderCircle className="size-4 animate-spin" />}
             {children}
         </BaseButton>
     )

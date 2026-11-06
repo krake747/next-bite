@@ -25,7 +25,7 @@ export function RestaurantInterestButton({
                     : "bg-tomato-50 text-tomato-700 inset-ring inset-ring-tomato-700/10 hover:bg-tomato-100",
             )}
         >
-            <Bookmark className={cx("size-4", wanted && "fill-current")} aria-hidden="true" />
+            <Bookmark className={cx("size-4", wanted && "fill-current")} />
             {wanted ? "Want to try" : "Want to try?"}
             {wantCount > 0 && <span className="text-xs font-medium tabular-nums opacity-80">{wantCount}</span>}
         </button>
