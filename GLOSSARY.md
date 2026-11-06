@@ -13,8 +13,8 @@ exactly one friend. A user manages their own list of friends. _Avoid_: Contact, 
 reviewer
 
 **User**: An authenticated person using the app. A user owns their friend list and restaurant
-collection. There is no sharing or multi-user collaboration — each user has an independent dataset.
-_Avoid_: Account, member, profile
+collection, and sees restaurants shared with them by friends and groups. _Avoid_: Account, member,
+profile
 
 **Rating**: A score from 1 to 7 represented as an emoji: 🫥 (terrible), 😞 (bad), 😐 (okay), 🙂
 (good), 😊 (great), 🤩 (outstanding), 🍆 (legendary). Set by the user for each restaurant they've

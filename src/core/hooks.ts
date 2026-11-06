@@ -8,15 +8,23 @@ import { parseImageRecord, type ImageRecord } from "./schemas"
 
 export const useRestaurants = () => {
     const { isAuthenticated } = useAuth()
-    return useConvexQuery(api.restaurants.get, undefined, { skip: !isAuthenticated })
+    return useConvexQuery(api.restaurants.get, undefined, { key: "restaurants.get", skip: !isAuthenticated })
 }
-export const useVisibleRestaurant = (id: Id<"restaurants">) => useConvexQuery(api.restaurants.getById, { id })
+export const useFeedRestaurants = () => {
+    const { isAuthenticated } = useAuth()
+    return useConvexQuery(api.restaurants.feed, undefined, { key: "restaurants.feed", skip: !isAuthenticated })
+}
+export const useVisibleRestaurant = (id: Id<"restaurants">) =>
+    useConvexQuery(api.restaurants.getById, { id }, { key: "restaurants.getById" })
 export const useFriends = () => {
     const { isAuthenticated } = useAuth()
-    return useConvexQuery(api.friendships.listFriends, undefined, { skip: !isAuthenticated })
+    return useConvexQuery(api.friendships.listFriends, undefined, {
+        key: "friendships.listFriends",
+        skip: !isAuthenticated,
+    })
 }
 
-export const useLandingStats = () => useConvexQuery(api.landing.getStats)
+export const useLandingStats = () => useConvexQuery(api.landing.getStats, undefined, { key: "landing.getStats" })
 
 export type AuthMethods = {
     readonly password: boolean
@@ -25,7 +33,8 @@ export type AuthMethods = {
     readonly emailOtp: boolean
 }
 
-export const useAuthMethods = (): AuthMethods | undefined => useConvexQuery(api.auth.getAuthMethods)
+export const useAuthMethods = (): AuthMethods | undefined =>
+    useConvexQuery(api.auth.getAuthMethods, undefined, { key: "auth.getAuthMethods" })
 
 export const useAddRestaurantWithHours = () => useConvexAction(api.restaurants.addWithOpeningHours)
 export const useUpdateRestaurant = () => useConvexMutation(api.restaurants.update)

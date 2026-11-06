@@ -409,6 +409,38 @@ export const getById = query({
     },
 })
 
+const FEED_LIMIT = 30
+
+export const feed = query({
+    args: {},
+    handler: async (ctx) => {
+        const userId = await requireUserId(ctx)
+
+        const friendships = await ctx.db
+            .query("friendships")
+            .withIndex("by_owner", (q) => q.eq("ownerId", userId))
+            .collect()
+        const candidateIds = new Set(
+            friendships.filter((row) => row.status === "accepted").map((row) => row.friendAuthUserId),
+        )
+        candidateIds.delete(userId)
+
+        const discoveries: Doc<"restaurants">[] = []
+        for (const ownerId of candidateIds) {
+            const owned = await ctx.db
+                .query("restaurants")
+                .withIndex("by_owner", (q) => q.eq("ownerId", ownerId))
+                .collect()
+            for (const restaurant of owned) {
+                if (await isRestaurantVisibleTo(ctx.db, userId, restaurant)) {
+                    discoveries.push(restaurant)
+                }
+            }
+        }
+        return discoveries.toSorted((a, b) => b._creationTime - a._creationTime).slice(0, FEED_LIMIT)
+    },
+})
+
 export const addWithOpeningHours = action({
     args: {
         name: v.string(),

@@ -2,7 +2,7 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router"
 import Plus from "lucide-react/icons/plus"
 import { useState } from "react"
 
-import { useRestaurants, useAuth, useLandingStats, type Restaurant } from "@core/hooks"
+import { useFeedRestaurants, useRestaurants, useAuth, useLandingStats, type Restaurant } from "@core/hooks"
 import {
     emptySocialSummary,
     feedTextFor,
@@ -115,38 +115,49 @@ function HomeFeed({
         <section aria-label="Latest activity" className="pt-10">
             <h2 className="font-display text-2xl font-semibold text-balance text-stone-900">Latest activity</h2>
             <p className="mt-1 text-stone-600">Fresh saves and shouts from your people.</p>
-            <div className="space-y-6 pt-6">
-                {feed.map((restaurant) => {
-                    const social = actions.socialFor(restaurant)
-                    return (
-                        <ActivityPost
-                            key={restaurant._id}
-                            author={{ name: restaurant.ownerName }}
-                            time={new Date(restaurant._creationTime).toLocaleDateString()}
-                            text={feedTextFor(restaurant.name, restaurant.details?.notes)}
-                            restaurantName={restaurant.name}
-                            restaurantCuisine={restaurant.cuisine}
-                            photoUrls={restaurant.images.map((img) => img.url)}
-                            ownerName={restaurant.ownerName}
-                            wantCount={social.wantCount}
-                            beenCount={social.beenCount}
-                            interestedFriends={social.interestedNames.map((name) => ({ name }))}
-                            reactions={{
-                                liked: social.liked,
-                                likeCount: social.likeCount,
-                                onToggleLike: actions.toggleLikeFor(restaurant),
-                                commentCount: social.commentCount,
-                                onComment: () => {
-                                    actions.goToDetail(restaurant)
-                                },
-                                wanted: social.wanted,
-                                wantCount: social.wantCount,
-                                onToggleWant: actions.toggleWantFor(restaurant),
-                            }}
-                        />
-                    )
-                })}
-            </div>
+            {feed.length === 0 ? (
+                <div className="mt-6 rounded-card border border-border bg-surface p-6 text-center shadow-card">
+                    <p className="font-display text-lg font-semibold text-balance text-stone-900">
+                        No crew activity yet
+                    </p>
+                    <p className="mx-auto mt-1 max-w-md text-sm text-pretty text-stone-600">
+                        When friends share restaurants with you, their latest saves land here.
+                    </p>
+                </div>
+            ) : (
+                <div className="space-y-6 pt-6">
+                    {feed.map((restaurant) => {
+                        const social = actions.socialFor(restaurant)
+                        return (
+                            <ActivityPost
+                                key={restaurant._id}
+                                author={{ name: restaurant.ownerName }}
+                                time={new Date(restaurant._creationTime).toLocaleDateString()}
+                                text={feedTextFor(restaurant.name, restaurant.details?.notes)}
+                                restaurantName={restaurant.name}
+                                restaurantCuisine={restaurant.cuisine}
+                                photoUrls={restaurant.images.map((img) => img.url)}
+                                ownerName={restaurant.ownerName}
+                                wantCount={social.wantCount}
+                                beenCount={social.beenCount}
+                                interestedFriends={social.interestedNames.map((name) => ({ name }))}
+                                reactions={{
+                                    liked: social.liked,
+                                    likeCount: social.likeCount,
+                                    onToggleLike: actions.toggleLikeFor(restaurant),
+                                    commentCount: social.commentCount,
+                                    onComment: () => {
+                                        actions.goToDetail(restaurant)
+                                    },
+                                    wanted: social.wanted,
+                                    wantCount: social.wantCount,
+                                    onToggleWant: actions.toggleWantFor(restaurant),
+                                }}
+                            />
+                        )
+                    })}
+                </div>
+            )}
         </section>
     )
 }
@@ -274,16 +285,16 @@ function SignedOutHome() {
 
 function Home() {
     const restaurants = useRestaurants()
-    const actions = useSocialActions(restaurants)
+    const feedRestaurants = useFeedRestaurants()
+    const restaurantListState = restaurants ?? []
+    const feed = orderFeedByRecency(feedRestaurants ?? [])
+    const actions = useSocialActions([...feed, ...restaurantListState])
     const [showAddDialog, setShowAddDialog] = useState(false)
     const [sortOrder, setSortOrder] = useState<"added" | "name">("added")
 
     if (!actions.auth.isAuthenticated) {
         return <SignedOutHome />
     }
-
-    const restaurantListState = restaurants ?? []
-    const feed = orderFeedByRecency(restaurantListState)
 
     return (
         <PageLayout>
@@ -307,7 +318,7 @@ function Home() {
                         <HeaderBadge count={restaurantListState.length} />
                     </div>
                 </Header>
-                {restaurants === undefined ? (
+                {restaurants === undefined || feedRestaurants === undefined ? (
                     <>
                         <div className="pt-4">
                             <FriendsFilterSkeleton />

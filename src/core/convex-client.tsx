@@ -11,14 +11,19 @@ function ConvexProvider({ client, children }: Readonly<{ client: ConvexClient | 
 
 function useConvexQuery<Query extends FunctionReference<"query">>(
     query: Query,
-    args?: FunctionArgs<Query>,
-    options?: Readonly<{ skip?: boolean | undefined }>,
+    args: FunctionArgs<Query> | undefined,
+    options: Readonly<{ key: string; skip?: boolean | undefined }>,
 ): FunctionReturnType<Query> | undefined {
     const client = useContext(ConvexContext)
     const queryClient = useQueryClient()
-    const key = JSON.stringify(args)
-    const queryKey = [query, key] as const
-    const skip = options?.skip ?? false
+    // Convex function references are fresh proxies on every access with no
+    // enumerable identity, so every reference hashes the same under TanStack
+    // Query. The explicit key keeps cache entries apart and keeps the
+    // subscription effect from refiring on every render.
+    const namespace = options.key
+    const argsKey = JSON.stringify(args) ?? "no-args"
+    const queryKey = [namespace, argsKey] as const
+    const skip = options.skip ?? false
 
     const [data, setData] = useState<FunctionReturnType<Query> | undefined>(() => {
         return skip ? undefined : queryClient.getQueryData<FunctionReturnType<Query>>(queryKey)
@@ -33,7 +38,7 @@ function useConvexQuery<Query extends FunctionReference<"query">>(
                       setData(value)
                   })
         return unsub
-    }, [query, key, client, skip])
+    }, [namespace, argsKey, client, skip])
 
     return skip ? undefined : data
 }
