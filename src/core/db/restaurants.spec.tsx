@@ -36,6 +36,13 @@ function injectSyncClient(syncClient: unknown): void {
     injectedClient = syncClient as ConvexClient
 }
 
+const { tokenMock } = vi.hoisted(() => ({
+    tokenMock: vi.fn<() => Promise<{ data: { token: string } | null }>>(async () => {
+        await Promise.resolve()
+        return { data: { token: "test-token" } }
+    }),
+}))
+
 vi.mock("../auth-client", () => ({
     authClient: {
         useSession: () => ({
@@ -49,11 +56,12 @@ vi.mock("../auth-client", () => ({
             return { data: { user: { id: "user-1", email: "alex@example.com", name: "Alex" } }, error: null }
         }),
         convex: {
-            token: vi.fn<() => Promise<{ data: null }>>(async () => {
-                await Promise.resolve()
-                return { data: null }
-            }),
+            token: tokenMock,
         },
+    },
+    getConvexSessionToken: async () => {
+        const { data } = await tokenMock()
+        return typeof data?.token === "string" ? data.token : null
     },
 }))
 
@@ -74,6 +82,20 @@ function restaurantFixture(overrides?: Partial<RestaurantDoc>): RestaurantDoc {
     } as unknown as RestaurantDoc
 }
 
+function flakyAuthQuery(failures: number): { attempts: () => number; query: () => Promise<unknown> } {
+    let attempts = 0
+    return {
+        attempts: () => attempts,
+        query: async () => {
+            attempts += 1
+            if (attempts <= failures) {
+                throw new Error("Unauthorized")
+            }
+            await Promise.resolve()
+            return []
+        },
+    }
+}
 function mockPersist() {
     return {
         updateRestaurant: vi.fn<(args: { id: Id<"restaurants">; name?: string | undefined }) => Promise<unknown>>(
@@ -413,6 +435,70 @@ describe("restaurant collections", () => {
             expect(second.result.current?.map((r) => r.name)).toEqual(["Sushi Bar"])
         })
         expect(second.result.current?.some((r) => r.ownerId === "anna")).toBe(false)
+    })
+
+    it("waits for the convex token before subscribing", async () => {
+        vi.mocked(authClient.getSession).mockResolvedValue({
+            data: { user: { id: "user-1", email: "alex@example.com", name: "Alex" } },
+            error: null,
+        })
+        tokenMock.mockResolvedValue({ data: null })
+        const gated = mockBackend([restaurantFixture()])
+        injectSyncClient(gated.syncClient)
+        const queryClient = new QueryClient()
+        const wrapper = ({ children }: Readonly<{ children: React.ReactNode }>) => (
+            <QueryClientProvider client={queryClient}>
+                <AuthProvider>{children}</AuthProvider>
+            </QueryClientProvider>
+        )
+
+        const { result, unmount } = renderHook(() => useRestaurants(), { wrapper })
+        await vi.waitFor(() => {
+            expect(result.current).not.toBeNull()
+        })
+        // Session resolved but no convex token: no subscription, no rows.
+        expect(result.current).toBeUndefined()
+        expect(gated.subscriberCount()).toBe(0)
+        unmount()
+
+        tokenMock.mockResolvedValue({ data: { token: "test-token" } })
+        const backend = mockBackend([restaurantFixture()])
+        injectSyncClient(backend.syncClient)
+
+        const second = renderHook(() => useRestaurants(), { wrapper })
+        await vi.waitFor(() => {
+            expect(second.result.current?.map((r) => r.name)).toEqual(["Trattoria Verde"])
+        })
+        expect(backend.subscriberCount()).toBeGreaterThan(0)
+    })
+
+    it("holds subscriptions until convex auth installs", async () => {
+        vi.mocked(authClient.getSession).mockResolvedValue({
+            data: { user: { id: "user-1", email: "alex@example.com", name: "Alex" } },
+            error: null,
+        })
+        const flaky = flakyAuthQuery(2)
+        const backend = mockBackend([], { query: flaky.query })
+        injectSyncClient(backend.syncClient)
+        const queryClient = new QueryClient()
+
+        const { result } = renderHook(() => useRestaurants(), {
+            wrapper: ({ children }: Readonly<{ children: React.ReactNode }>) => (
+                <QueryClientProvider client={queryClient}>
+                    <AuthProvider>{children}</AuthProvider>
+                </QueryClientProvider>
+            ),
+        })
+
+        expect(backend.subscriberCount()).toBe(0)
+        await vi.waitFor(
+            () => {
+                expect(result.current).toEqual([])
+            },
+            { timeout: 8000 },
+        )
+        expect(flaky.attempts()).toBeGreaterThanOrEqual(3)
+        expect(backend.subscriberCount()).toBeGreaterThan(0)
     })
 
     it("resets user-scoped query data when the session changes", async () => {

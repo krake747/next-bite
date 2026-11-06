@@ -1,6 +1,7 @@
 import { useLiveQuery } from "@tanstack/react-db"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
-import { useEffect } from "react"
+import { type ConvexClient } from "convex/browser"
+import { useEffect, useState } from "react"
 
 import { api } from "../../convex/_generated/api"
 import { type Doc, type Id } from "../../convex/_generated/dataModel"
@@ -21,14 +22,72 @@ import {
 import { env } from "./env"
 import { parseImageRecord, type ImageRecord } from "./schemas"
 
-function useSessionKey(): string | null {
-    const { isAuthenticated, isLoading, user } = useAuth()
-    // Convex-auth readiness: the better-auth session resolved and names a user. Subscriptions
-    // before this point would run unauthenticated against user-scoped queries.
-    if (!isAuthenticated || isLoading || user === null) {
-        return null
+async function sleep(ms: number): Promise<void> {
+    await new Promise<void>((resolve) => {
+        setTimeout(resolve, ms)
+    })
+}
+
+async function probeConvexAuth(client: ConvexClient): Promise<boolean> {
+    const token = await getConvexSessionToken()
+    if (token === null) {
+        return false
     }
-    return user.id
+    try {
+        await client.query(api.friendships.listFriends, {})
+        return true
+    } catch {
+        return false
+    }
+}
+
+const CONVEX_AUTH_TIMEOUT_MS = 10000
+
+async function settleConvexAuth(client: ConvexClient, isCancelled: () => boolean): Promise<void> {
+    const deadline = Date.now() + CONVEX_AUTH_TIMEOUT_MS
+    while (!isCancelled()) {
+        if (await probeConvexAuth(client)) {
+            return
+        }
+        if (Date.now() >= deadline) {
+            return
+        }
+        await sleep(500)
+    }
+}
+
+function useSessionKey(): string | null {
+    const status = useSessionStatus()
+    return status.kind === "ready" ? status.userId : null
+}
+
+export type SessionStatus = { kind: "loading" } | { kind: "signed-out" } | { kind: "ready"; userId: string }
+
+export function useSessionStatus(): SessionStatus {
+    const { isAuthenticated, isLoading, user } = useAuth()
+    const client = useConvexClient()
+    const [convexReady, setConvexReady] = useState(false)
+    const sessionKey = !isAuthenticated || isLoading || user === null ? null : user.id
+    useEffect(() => {
+        let cancelled = false
+        if (sessionKey === null || client === null) {
+            setConvexReady(false)
+        } else {
+            // Past the deadline the gate opens anyway; the backend still enforces every rule.
+            void settleConvexAuth(client, () => cancelled).then(() => {
+                if (!cancelled) {
+                    setConvexReady(true)
+                }
+            })
+        }
+        return () => {
+            cancelled = true
+        }
+    }, [sessionKey, client])
+    if (sessionKey === null) {
+        return isLoading ? { kind: "loading" } : { kind: "signed-out" }
+    }
+    return convexReady ? { kind: "ready", userId: sessionKey } : { kind: "loading" }
 }
 
 function useOwnerOrFeed(kind: "owner" | "feed"): ReadonlyArray<Doc<"restaurants">> | undefined {
@@ -61,11 +120,38 @@ function useOwnerOrFeed(kind: "owner" | "feed"): ReadonlyArray<Doc<"restaurants"
 
 export const useRestaurants = () => useOwnerOrFeed("owner")
 export const useFeedRestaurants = () => useOwnerOrFeed("feed")
-export const useVisibleRestaurant = (id: Id<"restaurants">) => useConvexQuery(api.restaurants.getById, { id })
-export const useFriends = () => {
-    const { isAuthenticated } = useAuth()
-    return useConvexQuery(api.friendships.listFriends, undefined, { skip: !isAuthenticated })
+export const useVisibleRestaurant = (id: Id<"restaurants">) => {
+    const status = useSessionStatus()
+    return useConvexQuery(api.restaurants.getById, { id }, { skip: status.kind === "loading" })
 }
+export const useFriends = () => {
+    const status = useSessionStatus()
+    return useConvexQuery(api.friendships.listFriends, undefined, { skip: status.kind !== "ready" })
+}
+
+export const useMyGroups = () => {
+    const status = useSessionStatus()
+    return useConvexQuery(api.groups.listMyGroups, undefined, { skip: status.kind !== "ready" })
+}
+
+export const useGroup = (groupId: Id<"groups">) => {
+    const status = useSessionStatus()
+    return useConvexQuery(api.groups.getGroup, { groupId }, { skip: status.kind !== "ready" })
+}
+
+export const useGroupRestaurants = (groupId: Id<"groups">, enabled = true) => {
+    const status = useSessionStatus()
+    return useConvexQuery(api.shares.listForGroup, { groupId }, { skip: status.kind !== "ready" || !enabled })
+}
+
+export const useRestaurantShares = (restaurantId: Id<"restaurants">) => {
+    const status = useSessionStatus()
+    return useConvexQuery(api.shares.listShares, { restaurantId }, { skip: status.kind !== "ready" })
+}
+
+export const useShareWithGroup = () => useConvexMutation(api.shares.shareWithGroup)
+export const useUnshare = () => useConvexMutation(api.shares.unshare)
+export const useCreateGroup = () => useConvexMutation(api.groups.createGroup)
 
 export const useLandingStats = () => useConvexQuery(api.landing.getStats)
 

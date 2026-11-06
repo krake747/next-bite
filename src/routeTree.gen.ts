@@ -17,6 +17,8 @@ import { Route as GroupsRouteImport } from './routes/groups'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as SignupRouteImport } from './routes/signup'
 import { Route as YouRouteImport } from './routes/you'
+import { Route as GroupsIndexRouteImport } from './routes/groups.index'
+import { Route as GroupsGroupIdRouteImport } from './routes/groups.$groupId'
 import { Route as RestaurantsRestaurantIdRouteImport } from './routes/restaurants.$restaurantId'
 
 const IndexRoute = IndexRouteImport.update({
@@ -59,6 +61,16 @@ const YouRoute = YouRouteImport.update({
   path: '/you',
   getParentRoute: () => rootRouteImport,
 } as any)
+const GroupsIndexRoute = GroupsIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => GroupsRoute,
+} as any)
+const GroupsGroupIdRoute = GroupsGroupIdRouteImport.update({
+  id: '/$groupId',
+  path: '/$groupId',
+  getParentRoute: () => GroupsRoute,
+} as any)
 const RestaurantsRestaurantIdRoute = RestaurantsRestaurantIdRouteImport.update({
   id: '/restaurants/$restaurantId',
   path: '/restaurants/$restaurantId',
@@ -70,22 +82,25 @@ export interface FileRoutesByFullPath {
   '/$': typeof SplatRoute
   '/design-system': typeof DesignSystemRoute
   '/friends': typeof FriendsRoute
-  '/groups': typeof GroupsRoute
+  '/groups': typeof GroupsRouteWithChildren
   '/login': typeof LoginRoute
   '/signup': typeof SignupRoute
   '/you': typeof YouRoute
+  '/groups/$groupId': typeof GroupsGroupIdRoute
   '/restaurants/$restaurantId': typeof RestaurantsRestaurantIdRoute
+  '/groups/': typeof GroupsIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/$': typeof SplatRoute
   '/design-system': typeof DesignSystemRoute
   '/friends': typeof FriendsRoute
-  '/groups': typeof GroupsRoute
   '/login': typeof LoginRoute
   '/signup': typeof SignupRoute
   '/you': typeof YouRoute
+  '/groups/$groupId': typeof GroupsGroupIdRoute
   '/restaurants/$restaurantId': typeof RestaurantsRestaurantIdRoute
+  '/groups': typeof GroupsIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -93,11 +108,13 @@ export interface FileRoutesById {
   '/$': typeof SplatRoute
   '/design-system': typeof DesignSystemRoute
   '/friends': typeof FriendsRoute
-  '/groups': typeof GroupsRoute
+  '/groups': typeof GroupsRouteWithChildren
   '/login': typeof LoginRoute
   '/signup': typeof SignupRoute
   '/you': typeof YouRoute
+  '/groups/$groupId': typeof GroupsGroupIdRoute
   '/restaurants/$restaurantId': typeof RestaurantsRestaurantIdRoute
+  '/groups/': typeof GroupsIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -110,18 +127,21 @@ export interface FileRouteTypes {
     | '/login'
     | '/signup'
     | '/you'
+    | '/groups/$groupId'
     | '/restaurants/$restaurantId'
+    | '/groups/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/$'
     | '/design-system'
     | '/friends'
-    | '/groups'
     | '/login'
     | '/signup'
     | '/you'
+    | '/groups/$groupId'
     | '/restaurants/$restaurantId'
+    | '/groups'
   id:
     | '__root__'
     | '/'
@@ -132,7 +152,9 @@ export interface FileRouteTypes {
     | '/login'
     | '/signup'
     | '/you'
+    | '/groups/$groupId'
     | '/restaurants/$restaurantId'
+    | '/groups/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -140,7 +162,7 @@ export interface RootRouteChildren {
   SplatRoute: typeof SplatRoute
   DesignSystemRoute: typeof DesignSystemRoute
   FriendsRoute: typeof FriendsRoute
-  GroupsRoute: typeof GroupsRoute
+  GroupsRoute: typeof GroupsRouteWithChildren
   LoginRoute: typeof LoginRoute
   SignupRoute: typeof SignupRoute
   YouRoute: typeof YouRoute
@@ -205,6 +227,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof YouRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/groups/': {
+      id: '/groups/'
+      path: '/'
+      fullPath: '/groups/'
+      preLoaderRoute: typeof GroupsIndexRouteImport
+      parentRoute: typeof GroupsRoute
+    }
+    '/groups/$groupId': {
+      id: '/groups/$groupId'
+      path: '/$groupId'
+      fullPath: '/groups/$groupId'
+      preLoaderRoute: typeof GroupsGroupIdRouteImport
+      parentRoute: typeof GroupsRoute
+    }
     '/restaurants/$restaurantId': {
       id: '/restaurants/$restaurantId'
       path: '/restaurants/$restaurantId'
@@ -215,12 +251,25 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface GroupsRouteChildren {
+  GroupsGroupIdRoute: typeof GroupsGroupIdRoute
+  GroupsIndexRoute: typeof GroupsIndexRoute
+}
+
+const GroupsRouteChildren: GroupsRouteChildren = {
+  GroupsGroupIdRoute: GroupsGroupIdRoute,
+  GroupsIndexRoute: GroupsIndexRoute,
+}
+
+const GroupsRouteWithChildren =
+  GroupsRoute._addFileChildren(GroupsRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   SplatRoute: SplatRoute,
   DesignSystemRoute: DesignSystemRoute,
   FriendsRoute: FriendsRoute,
-  GroupsRoute: GroupsRoute,
+  GroupsRoute: GroupsRouteWithChildren,
   LoginRoute: LoginRoute,
   SignupRoute: SignupRoute,
   YouRoute: YouRoute,

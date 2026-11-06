@@ -34,11 +34,15 @@ vi.mock("@core/auth-client", () => ({
             return { data: { user: { id: "user-1", email: "alex@example.com", name: "Alex" } }, error: null }
         }),
         convex: {
-            token: vi.fn<() => Promise<{ data: null }>>(async () => {
+            token: vi.fn<() => Promise<{ data: { token: string } }>>(async () => {
                 await Promise.resolve()
-                return { data: null }
+                return { data: { token: "test-token" } }
             }),
         },
+    },
+    getConvexSessionToken: async () => {
+        await Promise.resolve()
+        return "test-token"
     },
 }))
 

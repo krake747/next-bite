@@ -153,3 +153,45 @@ export const listMyGroups = query({
         })
     },
 })
+
+export const getGroup = query({
+    args: {
+        groupId: v.id("groups"),
+    },
+    handler: async (ctx, args) => {
+        const userId = await requireUserId(ctx)
+        // Null for missing groups and strangers alike: no existence oracle for nonmembers.
+        const group = await ctx.db.get(args.groupId)
+        if (!group) {
+            return null
+        }
+        const membership = await ctx.db
+            .query("groupMembers")
+            .withIndex("by_group_user", (q) => q.eq("groupId", args.groupId).eq("userId", userId))
+            .unique()
+        if (!membership) {
+            return null
+        }
+        const members = await ctx.db
+            .query("groupMembers")
+            .withIndex("by_group", (q) => q.eq("groupId", args.groupId))
+            .collect()
+        const profiles = await Promise.all(
+            members.map(async (member) =>
+                ctx.db
+                    .query("profiles")
+                    .withIndex("by_auth_user", (q) => q.eq("authUserId", member.userId))
+                    .unique(),
+            ),
+        )
+        return {
+            group,
+            role: membership.role,
+            members: members.map((member, index) => ({
+                userId: member.userId,
+                name: profiles[index]?.name ?? "Someone",
+                role: member.role,
+            })),
+        }
+    },
+})

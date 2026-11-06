@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest"
 
-import { feedTextFor, orderFeedByRecency, summarizeSocial, type SocialSnapshot } from "./social"
+import { type Id } from "@convex/_generated/dataModel"
+
+import { feedTextFor, orderFeedByRecency, summarizeSocial, withoutTempIds, type SocialSnapshot } from "./social"
 
 const snapshot: SocialSnapshot = {
     interests: [
@@ -13,6 +15,18 @@ const snapshot: SocialSnapshot = {
         { _id: "c1", restaurantId: "aaa", userId: "u1", displayName: "Alex", text: "First", createdAt: 4 },
     ],
 }
+
+describe("withoutTempIds", () => {
+    it("drops optimistic ids while keeping real ones", () => {
+        // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- test-only restaurant ids
+        const real = "r1" as unknown as Id<"restaurants">
+        // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- test-only temp id
+        const temp = "optimistic-abc" as unknown as Id<"restaurants">
+
+        expect(withoutTempIds([temp, real])).toEqual([real])
+        expect(withoutTempIds([])).toEqual([])
+    })
+})
 
 describe("summarizeSocial", () => {
     it("aggregates counts, personal state, and chronological comments", () => {

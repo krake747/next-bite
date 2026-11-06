@@ -11,6 +11,7 @@ import {
     useToggleLike,
     type RestaurantSocial,
 } from "@core/social"
+import { ShareToGroupDialog } from "@features/groups/share-to-group-dialog"
 import { RestaurantGallery } from "@features/restaurants/restaurant-gallery"
 import { RestaurantHeader } from "@features/restaurants/restaurant-header"
 import { RestaurantInterestButton } from "@features/restaurants/restaurant-interest-button"
@@ -22,6 +23,7 @@ import { SocialMetadata } from "@features/social/social-metadata"
 import { BackNav } from "@routes/-layouts/back-nav"
 import { PageContainer } from "@routes/-layouts/page-container"
 import { PageLayout } from "@routes/-layouts/page-layout"
+import { Button } from "@ui/button"
 import { OpeningHoursDialog } from "@ui/opening-hours-dialog"
 
 import { type Id } from "../../convex/_generated/dataModel"
@@ -43,6 +45,7 @@ function DetailHero({
     onToggleWant,
     onToggleLike,
     onShowHours,
+    shareAction,
 }: Readonly<{
     restaurant: Restaurant
     social: RestaurantSocial
@@ -50,6 +53,7 @@ function DetailHero({
     onToggleWant: () => void
     onToggleLike: () => void
     onShowHours: () => void
+    shareAction?: React.ReactNode | undefined
 }>) {
     return (
         <div className="overflow-hidden rounded-card border border-border bg-surface shadow-card">
@@ -81,6 +85,7 @@ function DetailHero({
                     wantCount={social.wantCount}
                     onToggleWant={onToggleWant}
                 />
+                {shareAction !== undefined && shareAction}
             </div>
             <div className="space-y-3 p-5 md:p-4">
                 {restaurant.details?.notes !== undefined && restaurant.details.notes !== "" && (
@@ -185,6 +190,32 @@ function DetailNotFound() {
     )
 }
 
+function DetailShare({ restaurant }: Readonly<{ restaurant: Restaurant }>) {
+    const auth = useAuth()
+    const [showShare, setShowShare] = useState(false)
+    if (!auth.isAuthenticated || auth.user === null || restaurant.ownerId !== auth.user.id) {
+        return null
+    }
+    return (
+        <>
+            <Button
+                variant="secondary"
+                onClick={() => {
+                    setShowShare(true)
+                }}
+            >
+                Add to group
+            </Button>
+            <ShareToGroupDialog
+                restaurantId={restaurant._id}
+                restaurantName={restaurant.name}
+                show={showShare}
+                onOpenChange={setShowShare}
+            />
+        </>
+    )
+}
+
 function RestaurantDetail() {
     const { restaurantId } = Route.useParams()
     const navigate = useNavigate()
@@ -243,6 +274,7 @@ function RestaurantDetail() {
                         onShowHours={() => {
                             setShowHours(true)
                         }}
+                        shareAction={<DetailShare restaurant={restaurant} />}
                     />
                     <DetailPhotos photos={photos} />
                     <DetailComments

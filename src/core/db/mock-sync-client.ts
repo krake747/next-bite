@@ -1,6 +1,9 @@
 import { type RestaurantDoc } from "./restaurants"
 
-export function mockBackend(initial: ReadonlyArray<RestaurantDoc> = []) {
+export function mockBackend(
+    initial: ReadonlyArray<RestaurantDoc> = [],
+    hooks?: Readonly<{ query?: () => Promise<unknown> }>,
+) {
     let state = [...initial]
     const receivers = new Set<(result: ReadonlyArray<RestaurantDoc>) => void>()
     return {
@@ -22,6 +25,13 @@ export function mockBackend(initial: ReadonlyArray<RestaurantDoc> = []) {
                     getCurrentValue: () => [...state] as unknown as never,
                 })
             },
+            query: async (): Promise<unknown> => {
+                if (hooks?.query !== undefined) {
+                    return hooks.query()
+                }
+                await Promise.resolve()
+                return []
+            },
         },
         pushState: (rows: ReadonlyArray<RestaurantDoc>) => {
             state = [...rows]
@@ -29,5 +39,6 @@ export function mockBackend(initial: ReadonlyArray<RestaurantDoc> = []) {
                 push(state)
             }
         },
+        subscriberCount: (): number => receivers.size,
     }
 }

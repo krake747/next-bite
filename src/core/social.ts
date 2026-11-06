@@ -1,7 +1,8 @@
 import { api } from "../../convex/_generated/api"
 import { type Id } from "../../convex/_generated/dataModel"
-import { useAuth } from "./auth-provider"
 import { useConvexMutation, useConvexQuery } from "./convex-client.tsx"
+import { isTempRestaurantId } from "./db/restaurants"
+import { useSessionStatus } from "./hooks"
 
 export type InterestInput = {
     readonly restaurantId: string
@@ -106,14 +107,21 @@ export function feedTextFor(name: string, notes: string | undefined): string {
     return trimmed === "" ? `Added ${name}.` : trimmed
 }
 
+export function withoutTempIds(ids: ReadonlyArray<Id<"restaurants">>): Id<"restaurants">[] {
+    return ids.filter((id) => !isTempRestaurantId(id))
+}
+
 export function useSocialSummaries(
     restaurantIds: ReadonlyArray<Id<"restaurants">>,
 ): ReadonlyMap<string, RestaurantSocialSummary> | undefined {
-    const { isAuthenticated } = useAuth()
+    const status = useSessionStatus()
+    // Optimistic temp ids are not real Convex ids and the backend validator rejects them, so
+    // they never travel. The subscription re-fires with the synced ids once resolved.
+    const stableIds = withoutTempIds(restaurantIds)
     const summaries = useConvexQuery(
         api.social.getSummaries,
-        { restaurantIds: [...restaurantIds] },
-        { skip: !isAuthenticated },
+        { restaurantIds: [...stableIds] },
+        { skip: status.kind !== "ready" },
     )
     if (summaries === undefined) {
         return undefined
@@ -125,8 +133,8 @@ export function useSocialForRestaurant(
     restaurantId: Id<"restaurants">,
     userId: string | null,
 ): RestaurantSocial | undefined {
-    const { isAuthenticated } = useAuth()
-    const snapshot = useConvexQuery(api.social.getForRestaurant, { restaurantId }, { skip: !isAuthenticated })
+    const status = useSessionStatus()
+    const snapshot = useConvexQuery(api.social.getForRestaurant, { restaurantId }, { skip: status.kind !== "ready" })
     if (snapshot === undefined) {
         return undefined
     }

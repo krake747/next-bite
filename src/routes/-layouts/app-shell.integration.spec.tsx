@@ -27,6 +27,10 @@ vi.mock("@core/auth-client", () => ({
             }),
         },
     },
+    getConvexSessionToken: async () => {
+        await Promise.resolve()
+        return null
+    },
 }))
 
 async function renderAt(path: string): Promise<void> {
