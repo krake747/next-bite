@@ -265,9 +265,39 @@ export const _insertRestaurant = internalMutation({
             }),
         ),
         images: v.array(restaurantImageValidator),
+        clientMutationId: v.optional(v.string()),
     },
-    handler: async (ctx, args) =>
-        ctx.db.insert("restaurants", { ...args, visibility: "private", createdAt: Date.now() }),
+    handler: async (ctx, args): Promise<{ restaurantId: Id<"restaurants">; duplicate: boolean }> => {
+        // Idempotency lives inside this mutation so concurrent same-key inserts serialize: the
+        // second call sees the first call's dedupe row and returns the existing id instead of a
+        // second document.
+        const mutationKey = args.clientMutationId
+        if (mutationKey !== undefined) {
+            const prior = await ctx.db
+                .query("clientMutations")
+                .withIndex("by_user_key", (q) => q.eq("userId", args.ownerId).eq("key", mutationKey))
+                .unique()
+            if (prior) {
+                return { restaurantId: prior.restaurantId, duplicate: true }
+            }
+        }
+        const { clientMutationId: _dedupeKey, ...doc } = args
+        const restaurantId = await ctx.db.insert("restaurants", {
+            ...doc,
+            ...(mutationKey !== undefined ? { clientMutationId: mutationKey } : {}),
+            visibility: "private",
+            createdAt: Date.now(),
+        })
+        if (mutationKey !== undefined) {
+            await ctx.db.insert("clientMutations", {
+                key: mutationKey,
+                userId: args.ownerId,
+                restaurantId,
+                createdAt: Date.now(),
+            })
+        }
+        return { restaurantId, duplicate: false }
+    },
 })
 
 type GooglePlaceResult = {
@@ -487,6 +517,7 @@ export const addWithOpeningHours = action({
         link: v.optional(v.string()),
         coords: v.optional(coordsValidator),
         images: v.optional(v.array(restaurantImageValidator)),
+        clientMutationId: v.optional(v.string()),
     },
     handler: async (ctx, args): Promise<Id<"restaurants">> => {
         const userId = await requireUserId(ctx)
@@ -513,7 +544,7 @@ export const addWithOpeningHours = action({
         const enrichment = buildEnrichment({ placeId: google.placeId, coords, openingHours })
         const ownerName = await ctx.runQuery(internal.restaurants._profileNameByAuthUser, { authUserId: userId })
         const details = cleanDetails({ notes: args.notes, link: args.link })
-        const restaurantId = await ctx.runMutation(internal.restaurants._insertRestaurant, {
+        const { restaurantId, duplicate } = await ctx.runMutation(internal.restaurants._insertRestaurant, {
             ownerId: userId,
             ownerName,
             name: args.name,
@@ -524,9 +555,17 @@ export const addWithOpeningHours = action({
             },
             ...(details !== undefined ? { details } : {}),
             images,
+            ...(args.clientMutationId !== undefined ? { clientMutationId: args.clientMutationId } : {}),
         })
-        for (const img of images) {
-            await ctx.runMutation(internal.uploads.attach, { storageId: img.storageId, ownerId: userId, restaurantId })
+        // A duplicate retry returns the first call's id; its images are already attached.
+        if (!duplicate) {
+            for (const img of images) {
+                await ctx.runMutation(internal.uploads.attach, {
+                    storageId: img.storageId,
+                    ownerId: userId,
+                    restaurantId,
+                })
+            }
         }
         return restaurantId
     },

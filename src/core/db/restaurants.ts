@@ -70,6 +70,7 @@ export type RestaurantAddArgs = {
     readonly link?: string
     readonly coords?: RestaurantCoords
     readonly images?: RestaurantImageInput[]
+    readonly clientMutationId?: string
 }
 
 export type RestaurantPersist = {
@@ -145,15 +146,31 @@ export function toAddArgs(row: RestaurantDoc): RestaurantAddArgs {
             ? { coords: { lat: row.address.enrichment.coords.lat, lng: row.address.enrichment.coords.lng } }
             : {}),
         images: row.images.map((img) => ({ url: img.url, storageId: img.storageId })),
+        ...(row.clientMutationId !== undefined ? { clientMutationId: row.clientMutationId } : {}),
     }
 }
 
-export type TempRestaurantInput = RestaurantAddArgs & Readonly<{ ownerId: string; ownerName: string }>
+const TEMP_ID_PREFIX = "optimistic-"
+
+export function isTempRestaurantId(id: Id<"restaurants">): boolean {
+    return String(id).startsWith(TEMP_ID_PREFIX)
+}
+
+// Optimistic rows carry fabricated ids that the backend will reject. Nothing navigates to or
+// mutates against them: inserts resolve to the synced server id, and direct writes refuse them.
+export function assertRealRestaurantId(id: Id<"restaurants">): void {
+    if (isTempRestaurantId(id)) {
+        throw new Error("Restaurant is still syncing; try again in a moment")
+    }
+}
+
+export type TempRestaurantInput = RestaurantAddArgs &
+    Readonly<{ ownerId: string; ownerName: string; clientMutationId: string }>
 
 export function buildTempRestaurant(input: TempRestaurantInput): RestaurantDoc {
     const now = Date.now()
     // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- client-only placeholder id replaced by the server row on sync
-    const tempId = `optimistic-${crypto.randomUUID()}` as unknown as Id<"restaurants">
+    const tempId = `${TEMP_ID_PREFIX}${crypto.randomUUID()}` as unknown as Id<"restaurants">
     return {
         _id: tempId,
         _creationTime: now,
@@ -175,7 +192,35 @@ export function buildTempRestaurant(input: TempRestaurantInput): RestaurantDoc {
             : {}),
         images: (input.images ?? []).map((img) => ({ url: img.url, storageId: img.storageId })),
         visibility: "private",
+        clientMutationId: input.clientMutationId,
         createdAt: now,
+    }
+}
+
+export type SyncedRows = {
+    values(): Iterable<RestaurantDoc>
+}
+
+// Matches a synced server row to the insert that created it via the persisted client mutation
+// key. Skips the optimistic temp row itself, so callers never resolve to a fabricated id.
+export async function resolveRestaurantIdByKey(
+    rows: SyncedRows,
+    clientMutationId: string,
+    timeoutMs = 15000,
+): Promise<Id<"restaurants">> {
+    const startedAt = Date.now()
+    for (;;) {
+        for (const row of rows.values()) {
+            if (row.clientMutationId === clientMutationId && !isTempRestaurantId(row._id)) {
+                return row._id
+            }
+        }
+        if (Date.now() - startedAt >= timeoutMs) {
+            throw new Error("Timed out waiting for the synced restaurant")
+        }
+        await new Promise((resolve) => {
+            setTimeout(resolve, 50)
+        })
     }
 }
 
@@ -200,17 +245,39 @@ export function createRestaurantCollections(syncClient: SyncClient, persist: Res
     }
 }
 
-const collectionCache = new WeakMap<object, ReturnType<typeof createRestaurantCollections>>()
+const collectionCache = new WeakMap<
+    object,
+    { sessionKey: string; collections: ReturnType<typeof createRestaurantCollections> }
+>()
 
-export function getRestaurantCollections(
+// Collections are scoped to one signed-in session. The Convex client instance outlives sign-in,
+// so the cache slots per session key: a sign-out or account change drops the previous session's
+// synced rows instead of leaking them into the next session. Abandoned collections release with
+// their last live query; user-scoped TanStack Query entries are cleared alongside (see
+// clearUserScopedQueries).
+export function getSessionCollections(
     syncClient: SyncClient,
     persist: RestaurantPersist,
+    sessionKey: string,
 ): ReturnType<typeof createRestaurantCollections> {
     const hit = collectionCache.get(syncClient)
-    if (hit !== undefined) {
-        return hit
+    if (hit !== undefined && hit.sessionKey === sessionKey) {
+        return hit.collections
     }
     const created = createRestaurantCollections(syncClient, persist)
-    collectionCache.set(syncClient, created)
+    collectionCache.set(syncClient, { sessionKey, collections: created })
     return created
+}
+
+const USER_SCOPED_QUERY_PREFIXES = ["restaurants:", "friendships:", "social:"]
+
+export function isUserScopedQueryKey(queryKey: ReadonlyArray<unknown>): boolean {
+    const [namespace] = queryKey
+    return typeof namespace === "string" && USER_SCOPED_QUERY_PREFIXES.some((prefix) => namespace.startsWith(prefix))
+}
+
+export function clearUserScopedQueries(
+    removeQueries: (filters: { predicate: (query: { queryKey: ReadonlyArray<unknown> }) => boolean }) => void,
+): void {
+    removeQueries({ predicate: (query) => isUserScopedQueryKey(query.queryKey) })
 }

@@ -48,7 +48,7 @@ async function insertRestaurantWithImages(
     subject: string,
     images: { url: string; storageId: string }[],
 ): Promise<Id<"restaurants">> {
-    return t.mutation(internal.restaurants._insertRestaurant, {
+    const { restaurantId } = await t.mutation(internal.restaurants._insertRestaurant, {
         ownerId: subject,
         ownerName: subject,
         name: "Trattoria Verde",
@@ -56,6 +56,7 @@ async function insertRestaurantWithImages(
         address: { label: "Luxembourg City" },
         images,
     })
+    return restaurantId
 }
 
 async function attachImage(
@@ -247,6 +248,73 @@ describe("upload ownership", () => {
         await expect(
             asUser(t, "anna").mutation(api.restaurants.cleanupStorage, { storageId: orphanId }),
         ).rejects.toThrow("does not belong")
+    })
+
+    it("deduplicates rapid double-submits with the same client mutation key", async () => {
+        const t = setup()
+        await registerUser(t, "anna")
+        const key = "anna:repeated-key"
+
+        const first = await asUser(t, "anna").action(api.restaurants.addWithOpeningHours, {
+            name: "Trattoria Verde",
+            cuisine: "Italian",
+            addressLabel: "Luxembourg City",
+            clientMutationId: key,
+        })
+        const second = await asUser(t, "anna").action(api.restaurants.addWithOpeningHours, {
+            name: "Trattoria Verde",
+            cuisine: "Italian",
+            addressLabel: "Luxembourg City",
+            clientMutationId: key,
+        })
+
+        expect(second).toEqual(first)
+        const owned = await asUser(t, "anna").query(api.restaurants.get, {})
+        expect(owned.filter((r) => r.name === "Trattoria Verde")).toHaveLength(1)
+        expect(owned.find((r) => r._id === first)?.clientMutationId).toBe(key)
+    })
+
+    it("keeps distinct client mutation keys as distinct restaurants", async () => {
+        const t = setup()
+        await registerUser(t, "anna")
+
+        await asUser(t, "anna").action(api.restaurants.addWithOpeningHours, {
+            name: "Trattoria Verde",
+            cuisine: "Italian",
+            addressLabel: "Luxembourg City",
+            clientMutationId: "anna:first-key",
+        })
+        await asUser(t, "anna").action(api.restaurants.addWithOpeningHours, {
+            name: "Sushi Bar",
+            cuisine: "Japanese",
+            addressLabel: "Luxembourg City",
+            clientMutationId: "anna:second-key",
+        })
+
+        const owned = await asUser(t, "anna").query(api.restaurants.get, {})
+        expect(owned).toHaveLength(2)
+    })
+
+    it("scopes client mutation keys per user", async () => {
+        const t = setup()
+        await registerUser(t, "anna")
+        await registerUser(t, "ben")
+        const key = "shared-key"
+
+        const annas = await asUser(t, "anna").action(api.restaurants.addWithOpeningHours, {
+            name: "Trattoria Verde",
+            cuisine: "Italian",
+            addressLabel: "Luxembourg City",
+            clientMutationId: key,
+        })
+        const bens = await asUser(t, "ben").action(api.restaurants.addWithOpeningHours, {
+            name: "Trattoria Verde",
+            cuisine: "Italian",
+            addressLabel: "Luxembourg City",
+            clientMutationId: key,
+        })
+
+        expect(bens).not.toEqual(annas)
     })
 
     it("refuses restaurant cleanup for a storage ID outside the restaurant", async () => {

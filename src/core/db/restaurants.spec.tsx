@@ -1,3 +1,4 @@
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import { renderHook } from "@testing-library/react"
 import { ConvexClient } from "convex/browser"
 import { describe, expect, it, vi } from "vitest"
@@ -10,11 +11,18 @@ import { useRestaurants } from "../hooks"
 import { mockBackend } from "./mock-sync-client"
 import {
     applyUpdateArgsToDraft,
-    getRestaurantCollections,
+    assertRealRestaurantId,
+    buildTempRestaurant,
+    clearUserScopedQueries,
+    getSessionCollections,
+    resolveRestaurantIdByKey,
     toAddArgs,
     toUpdateArgs,
+    type RestaurantAddArgs,
     type RestaurantDoc,
 } from "./restaurants"
+
+const SESSION = "user-1"
 
 let injectedClient: ConvexClient | null = null
 
@@ -73,7 +81,7 @@ function mockPersist() {
                 await Promise.resolve()
             },
         ),
-        addRestaurant: vi.fn<() => Promise<Id<"restaurants">>>(async () => {
+        addRestaurant: vi.fn<(args: RestaurantAddArgs) => Promise<Id<"restaurants">>>(async () => {
             await Promise.resolve()
             // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- test-only storage id
             return "r9" as unknown as Id<"restaurants">
@@ -109,13 +117,42 @@ describe("restaurant shape translators", () => {
             addressLabel: "Luxembourg City",
         })
     })
+
+    it("forwards the client mutation key to add args", () => {
+        const row = restaurantFixture({ clientMutationId: "user-1:key-1" })
+
+        expect(toAddArgs(row)).toMatchObject({ clientMutationId: "user-1:key-1" })
+    })
+
+    it("builds temp rows carrying the client mutation key", () => {
+        const temp = buildTempRestaurant({
+            ownerId: "user-1",
+            ownerName: "Alex",
+            name: "Trattoria Verde",
+            cuisine: "Italian",
+            addressLabel: "Luxembourg City",
+            clientMutationId: "user-1:key-1",
+        })
+
+        expect(temp.clientMutationId).toBe("user-1:key-1")
+        expect(() => {
+            assertRealRestaurantId(temp._id)
+        }).toThrow("still syncing")
+    })
+
+    it("accepts real ids in the temp guard", () => {
+        expect(() => {
+            // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- test-only restaurant id
+            assertRealRestaurantId("r1" as unknown as Id<"restaurants">)
+        }).not.toThrow()
+    })
 })
 
 describe("restaurant collections", () => {
     it("shows an optimistic update immediately and converges on sync", async () => {
         const persist = mockPersist()
         const backend = mockBackend([restaurantFixture()])
-        const collections = getRestaurantCollections(backend.syncClient, persist)
+        const collections = getSessionCollections(backend.syncClient, persist, SESSION)
         await collections.owner.preload()
         // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- test-only restaurant id
         const id = "r1" as unknown as Id<"restaurants">
@@ -136,7 +173,7 @@ describe("restaurant collections", () => {
         const persist = mockPersist()
         persist.updateRestaurant.mockRejectedValueOnce(new Error("mutation failed"))
         const backend = mockBackend([restaurantFixture()])
-        const collections = getRestaurantCollections(backend.syncClient, persist)
+        const collections = getSessionCollections(backend.syncClient, persist, SESSION)
         await collections.owner.preload()
         // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- test-only restaurant id
         const id = "r1" as unknown as Id<"restaurants">
@@ -154,7 +191,7 @@ describe("restaurant collections", () => {
     it("shows an optimistic insert immediately and swaps in the synced row", async () => {
         const persist = mockPersist()
         const backend = mockBackend([])
-        const collections = getRestaurantCollections(backend.syncClient, persist)
+        const collections = getSessionCollections(backend.syncClient, persist, SESSION)
         await collections.owner.preload()
 
         const tx = collections.owner.insert({ ...restaurantFixture() })
@@ -172,12 +209,144 @@ describe("restaurant collections", () => {
         expect(collections.owner.size).toBe(1)
     })
 
+    it("resolves the synced id by client mutation key after a delayed ack", async () => {
+        const persist = mockPersist()
+        const backend = mockBackend([])
+        const collections = getSessionCollections(backend.syncClient, persist, SESSION)
+        await collections.owner.preload()
+
+        const temp = buildTempRestaurant({
+            ownerId: "user-1",
+            ownerName: "Alex",
+            name: "Trattoria Verde",
+            cuisine: "Italian",
+            addressLabel: "Luxembourg City",
+            clientMutationId: "user-1:delayed",
+        })
+        const tx = collections.owner.insert(temp)
+        await tx.when("settled")
+        // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- test-only restaurant id
+        const realId = "r9" as unknown as Id<"restaurants">
+
+        const pending = resolveRestaurantIdByKey(collections.owner, "user-1:delayed", 5000)
+        backend.pushState([{ ...restaurantFixture(), _id: realId, clientMutationId: "user-1:delayed" }])
+
+        await expect(pending).resolves.toBe(realId)
+    })
+
+    it("times out resolving an id that never syncs", async () => {
+        const persist = mockPersist()
+        const backend = mockBackend([])
+        const collections = getSessionCollections(backend.syncClient, persist, SESSION)
+        await collections.owner.preload()
+
+        await expect(resolveRestaurantIdByKey(collections.owner, "user-1:ghost", 50)).rejects.toThrow("Timed out")
+    })
+
+    it("persists rapid consecutive inserts under distinct keys", async () => {
+        const persist = mockPersist()
+        const backend = mockBackend([])
+        const collections = getSessionCollections(backend.syncClient, persist, SESSION)
+        await collections.owner.preload()
+
+        const first = collections.owner.insert(
+            buildTempRestaurant({
+                ownerId: "user-1",
+                ownerName: "Alex",
+                name: "First",
+                cuisine: "Italian",
+                addressLabel: "Luxembourg City",
+                clientMutationId: "user-1:rapid-1",
+            }),
+        )
+        const second = collections.owner.insert(
+            buildTempRestaurant({
+                ownerId: "user-1",
+                ownerName: "Alex",
+                name: "Second",
+                cuisine: "Japanese",
+                addressLabel: "Luxembourg City",
+                clientMutationId: "user-1:rapid-2",
+            }),
+        )
+        await first.when("settled")
+        await second.when("settled")
+
+        expect(persist.addRestaurant).toHaveBeenCalledTimes(2)
+        const keys = persist.addRestaurant.mock.calls.map((call) => call[0]?.clientMutationId)
+        expect(keys).toEqual(["user-1:rapid-1", "user-1:rapid-2"])
+    })
+
+    it("scopes collections per session key", () => {
+        const persist = mockPersist()
+        const backend = mockBackend([])
+
+        const anna = getSessionCollections(backend.syncClient, persist, "anna")
+        const again = getSessionCollections(backend.syncClient, persist, "anna")
+        const ben = getSessionCollections(backend.syncClient, persist, "ben")
+
+        expect(again.owner).toBe(anna.owner)
+        expect(ben.owner).not.toBe(anna.owner)
+    })
+
+    it("rolls back an optimistic insert when persistence fails", async () => {
+        const persist = mockPersist()
+        persist.addRestaurant.mockRejectedValueOnce(new Error("mutation failed"))
+        const backend = mockBackend([])
+        const collections = getSessionCollections(backend.syncClient, persist, SESSION)
+        await collections.owner.preload()
+
+        const tx = collections.owner.insert(
+            buildTempRestaurant({
+                ownerId: "user-1",
+                ownerName: "Alex",
+                name: "Trattoria Verde",
+                cuisine: "Italian",
+                addressLabel: "Luxembourg City",
+                clientMutationId: "user-1:doomed",
+            }),
+        )
+        expect(collections.owner.size).toBe(1)
+        await tx.when("settled").catch(() => {})
+
+        expect(tx.state).toBe("failed")
+        expect(collections.owner.size).toBe(0)
+    })
+
+    it("clears user-scoped queries while keeping shared ones", () => {
+        const queryClient = new QueryClient()
+        queryClient.setQueryData(["restaurants:get", "{}"], [{ name: "Stale" }])
+        queryClient.setQueryData(["friendships:listFriends", "{}"], [])
+        queryClient.setQueryData(["social:getSummaries", "{}"], [])
+        queryClient.setQueryData(["landing:getStats", "{}"], { count: 1 })
+        queryClient.setQueryData(["auth:getAuthMethods", "{}"], { password: true })
+
+        clearUserScopedQueries((filters) => {
+            queryClient.removeQueries(filters)
+        })
+
+        expect(queryClient.getQueryData(["restaurants:get", "{}"])).toBeUndefined()
+        expect(queryClient.getQueryData(["friendships:listFriends", "{}"])).toBeUndefined()
+        expect(queryClient.getQueryData(["social:getSummaries", "{}"])).toBeUndefined()
+        expect(queryClient.getQueryData(["landing:getStats", "{}"])).toEqual({ count: 1 })
+        expect(queryClient.getQueryData(["auth:getAuthMethods", "{}"])).toEqual({ password: true })
+    })
+
     it("returns collection rows from the restaurants hook", async () => {
+        vi.mocked(authClient.getSession).mockResolvedValue({
+            data: { user: { id: "user-1", email: "alex@example.com", name: "Alex" } },
+            error: null,
+        })
         const backend = mockBackend([restaurantFixture()])
         injectSyncClient(backend.syncClient)
+        const queryClient = new QueryClient()
 
         const { result } = renderHook(() => useRestaurants(), {
-            wrapper: ({ children }: Readonly<{ children: React.ReactNode }>) => <AuthProvider>{children}</AuthProvider>,
+            wrapper: ({ children }: Readonly<{ children: React.ReactNode }>) => (
+                <QueryClientProvider client={queryClient}>
+                    <AuthProvider>{children}</AuthProvider>
+                </QueryClientProvider>
+            ),
         })
 
         await vi.waitFor(() => {
@@ -189,6 +358,7 @@ describe("restaurant collections", () => {
         vi.mocked(authClient.getSession).mockResolvedValue({ data: { user: null }, error: null })
         const backend = mockBackend([restaurantFixture()])
         injectSyncClient(backend.syncClient)
+        const queryClient = new QueryClient()
 
         const { result } = renderHook(
             () => {
@@ -197,7 +367,9 @@ describe("restaurant collections", () => {
             },
             {
                 wrapper: ({ children }: Readonly<{ children: React.ReactNode }>) => (
-                    <AuthProvider>{children}</AuthProvider>
+                    <QueryClientProvider client={queryClient}>
+                        <AuthProvider>{children}</AuthProvider>
+                    </QueryClientProvider>
                 ),
             },
         )
@@ -207,5 +379,76 @@ describe("restaurant collections", () => {
         })
         expect(result.current.restaurants).toBeUndefined()
         expect(result.current.authed).toBe(false)
+    })
+
+    it("isolates account data across sign-out to a different account", async () => {
+        vi.mocked(authClient.getSession).mockResolvedValue({
+            data: { user: { id: "anna", email: "anna@example.com", name: "Anna" } },
+            error: null,
+        })
+        const annasBackend = mockBackend([restaurantFixture({ ownerId: "anna", ownerName: "Anna" })])
+        injectSyncClient(annasBackend.syncClient)
+        const queryClient = new QueryClient()
+        const wrapper = ({ children }: Readonly<{ children: React.ReactNode }>) => (
+            <QueryClientProvider client={queryClient}>
+                <AuthProvider>{children}</AuthProvider>
+            </QueryClientProvider>
+        )
+
+        const first = renderHook(() => useRestaurants(), { wrapper })
+        await vi.waitFor(() => {
+            expect(first.result.current?.map((r) => r.name)).toEqual(["Trattoria Verde"])
+        })
+        first.unmount()
+
+        vi.mocked(authClient.getSession).mockResolvedValue({
+            data: { user: { id: "ben", email: "ben@example.com", name: "Ben" } },
+            error: null,
+        })
+        const bensBackend = mockBackend([restaurantFixture({ ownerId: "ben", ownerName: "Ben", name: "Sushi Bar" })])
+        injectSyncClient(bensBackend.syncClient)
+
+        const second = renderHook(() => useRestaurants(), { wrapper })
+        await vi.waitFor(() => {
+            expect(second.result.current?.map((r) => r.name)).toEqual(["Sushi Bar"])
+        })
+        expect(second.result.current?.some((r) => r.ownerId === "anna")).toBe(false)
+    })
+
+    it("resets user-scoped query data when the session changes", async () => {
+        vi.mocked(authClient.getSession).mockResolvedValue({
+            data: { user: { id: "user-1", email: "alex@example.com", name: "Alex" } },
+            error: null,
+        })
+        const backend = mockBackend([restaurantFixture()])
+        injectSyncClient(backend.syncClient)
+        const queryClient = new QueryClient()
+
+        const { unmount } = renderHook(() => useRestaurants(), {
+            wrapper: ({ children }: Readonly<{ children: React.ReactNode }>) => (
+                <QueryClientProvider client={queryClient}>
+                    <AuthProvider>{children}</AuthProvider>
+                </QueryClientProvider>
+            ),
+        })
+        await vi.waitFor(() => {
+            expect(queryClient.getQueryData(["social:getSummaries", "{}"])).toBeUndefined()
+        })
+        queryClient.setQueryData(["restaurants:get", "{}"], [{ name: "Stale" }])
+        queryClient.setQueryData(["landing:getStats", "{}"], { count: 1 })
+        unmount()
+        vi.mocked(authClient.getSession).mockResolvedValue({ data: { user: null }, error: null })
+
+        renderHook(() => useRestaurants(), {
+            wrapper: ({ children }: Readonly<{ children: React.ReactNode }>) => (
+                <QueryClientProvider client={queryClient}>
+                    <AuthProvider>{children}</AuthProvider>
+                </QueryClientProvider>
+            ),
+        })
+        await vi.waitFor(() => {
+            expect(queryClient.getQueryData(["restaurants:get", "{}"])).toBeUndefined()
+        })
+        expect(queryClient.getQueryData(["landing:getStats", "{}"])).toEqual({ count: 1 })
     })
 })
