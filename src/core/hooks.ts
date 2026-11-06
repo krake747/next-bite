@@ -3,8 +3,9 @@ import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { type ConvexClient } from "convex/browser"
 import { useEffect, useState } from "react"
 
-import { api } from "../../convex/_generated/api"
-import { type Doc, type Id } from "../../convex/_generated/dataModel"
+import { api } from "@convex/_generated/api"
+import { type Doc, type Id } from "@convex/_generated/dataModel"
+
 import { getConvexSessionToken } from "./auth-client"
 import { useAuth as useAuthSource } from "./auth-provider"
 import { FALLBACK_DISPLAY_NAME } from "./constants"

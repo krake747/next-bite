@@ -33,9 +33,9 @@ export function CardsDemo() {
                     </div>
                 </Card>
                 <div className="flex flex-wrap gap-2">
-                    {badgeSchema.variant.values.map((variant) => (
-                        <Badge key={variant} variant={variant}>
-                            {badgeLabels[variant] ?? variant}
+                    {badgeSchema.tone.values.map((tone) => (
+                        <Badge key={tone} tone={tone}>
+                            {badgeLabels[tone] ?? tone}
                         </Badge>
                     ))}
                 </div>

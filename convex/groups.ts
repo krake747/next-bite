@@ -1,32 +1,8 @@
-import { type GenericDatabaseReader } from "convex/server"
 import { v } from "convex/values"
 
-import { type DataModel } from "./_generated/dataModel"
-import { type Doc, type Id } from "./_generated/dataModel"
 import { mutation, query } from "./_generated/server"
-import { FALLBACK_DISPLAY_NAME, requireUserId } from "./helpers"
+import { FALLBACK_DISPLAY_NAME, requireMembership, requireUserId } from "./helpers"
 import { imageObjectValidator } from "./validators"
-
-type Membership = Doc<"groupMembers">
-
-export async function requireMembership(
-    db: GenericDatabaseReader<DataModel>,
-    groupId: Id<"groups">,
-    userId: string,
-): Promise<Membership> {
-    const group = await db.get(groupId)
-    if (!group) {
-        throw new Error("Group not found")
-    }
-    const membership = await db
-        .query("groupMembers")
-        .withIndex("by_group_user", (q) => q.eq("groupId", groupId).eq("userId", userId))
-        .unique()
-    if (!membership) {
-        throw new Error("Unauthorized: group membership required")
-    }
-    return membership
-}
 
 export const createGroup = mutation({
     args: {

@@ -74,6 +74,7 @@ export function LazyImage({
 
     return (
         <div
+            data-slot="lazy-image"
             className={cx("relative overflow-hidden", aspectRatio !== undefined && aspectRatio !== "" && "w-full")}
             style={aspectRatio !== undefined && aspectRatio !== "" ? { aspectRatio } : undefined}
         >

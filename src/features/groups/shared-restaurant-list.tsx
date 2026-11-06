@@ -18,7 +18,7 @@ export function SharedRestaurantList({
         )
     }
     return (
-        <ul className="divide-y divide-stone-100">
+        <ul className="divide-y divide-border">
             {items.map((item) => (
                 <li key={item.id}>
                     <div className="flex items-center gap-2.5 px-4 py-2.5">
@@ -32,7 +32,7 @@ export function SharedRestaurantList({
                                 </p>
                             )}
                         </div>
-                        <Badge variant="neutral">{item.cuisine}</Badge>
+                        <Badge tone="neutral">{item.cuisine}</Badge>
                     </div>
                 </li>
             ))}

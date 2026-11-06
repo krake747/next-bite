@@ -7,13 +7,13 @@ export const button = cva({
     base: "group inline-flex cursor-pointer items-center justify-center font-semibold transition-colors duration-150 active:scale-[0.97] disabled:cursor-not-allowed disabled:bg-surface-muted disabled:text-muted-foreground disabled:shadow-none",
     composes: [focusRing],
     variants: {
-        variant: {
-            primary: "bg-primary text-white shadow-xs hover:bg-primary-hover",
+        tone: {
+            primary: "bg-primary text-inverse shadow-xs hover:bg-primary-hover",
             secondary:
                 "bg-surface-muted text-stone-900 shadow-xs inset-ring inset-ring-border-strong hover:bg-stone-200",
             outline: "border border-border bg-transparent text-stone-600 hover:bg-stone-100 hover:text-stone-900",
             ghost: "text-stone-600 hover:bg-stone-100 hover:text-stone-900",
-            destructive: "bg-destructive text-white shadow-xs hover:bg-destructive/90",
+            destructive: "bg-destructive text-inverse shadow-xs hover:bg-destructive/90",
         },
         size: {
             sm: "gap-x-1 rounded-control px-2.5 py-1 text-xs",
@@ -22,24 +22,21 @@ export const button = cva({
         },
     },
     defaultVariants: {
-        variant: "primary",
+        tone: "primary",
         size: "lg",
     },
 })
 
-type ButtonProps = VariantProps<typeof button> &
-    React.ComponentProps<"button"> & {
-        readonly render?: React.ReactElement | undefined
-    }
+type ButtonProps = VariantProps<typeof button> & React.ComponentProps<typeof BaseButton>
 
-export function Button({ variant, size, className, type, disabled, children, ...rest }: Readonly<ButtonProps>) {
+export function Button({ tone, size, className, type, disabled, children, ...props }: Readonly<ButtonProps>) {
     return (
         <BaseButton
             data-slot="button"
             type={type ?? "button"}
-            className={button({ variant, size, class: className })}
+            className={button({ tone, size, class: className })}
             disabled={disabled}
-            {...rest}
+            {...props}
         >
             {children}
         </BaseButton>

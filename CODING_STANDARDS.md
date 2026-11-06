@@ -27,8 +27,8 @@ Prefer `React.ComponentProps<"div">` and `useRender.ComponentProps<"a">` over ha
 intersections. Omit only props you genuinely narrow or forbid: a required `onClick`, or withholding
 Base UI's `render` passthrough. Never omit `className` or `children` just to re-add them with
 identical types. Destructure `children` explicitly instead of letting it ride inside `...props`, so
-the render output names what it renders. Check in review: every `Omit` names a prop whose type or
-presence differs from the source.
+the render output names what it renders. Name the passthrough spread `...props`, never `...rest`.
+Check in review: every `Omit` names a prop whose type or presence differs from the source.
 
 ## Every prop has a caller, extraction waits for the third copy
 

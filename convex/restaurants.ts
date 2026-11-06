@@ -5,7 +5,8 @@ import { MAX_IMAGES } from "../src/core/constants"
 import { internal } from "./_generated/api"
 import { type Doc, type Id } from "./_generated/dataModel"
 import { query, mutation, action, internalQuery, internalMutation, type MutationCtx } from "./_generated/server"
-import { requireUserId, FALLBACK_DISPLAY_NAME } from "./helpers"
+import { googleMapsApiKey } from "./env"
+import { requireUserId, requireOwnedRestaurant, FALLBACK_DISPLAY_NAME } from "./helpers"
 import { coordsValidator, enrichmentValidator, openingHoursValidator, restaurantImageValidator } from "./validators"
 import { isRestaurantVisibleTo } from "./visibility"
 
@@ -15,13 +16,6 @@ function assertImageLimit(images: ReadonlyArray<unknown>): void {
     if (images.length > MAX_IMAGES) {
         throw new Error(`Maximum ${MAX_IMAGES} images allowed`)
     }
-}
-
-// Storage IDs cross the client as plain strings, so the type system cannot prove them.
-// Convex validates them at runtime inside storage.delete.
-function asStorageId(storageId: string): Id<"_storage"> {
-    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- single documented boundary conversion; see above
-    return storageId as unknown as Id<"_storage">
 }
 
 type UploadRecord = { ownerId: string; restaurantId: Id<"restaurants"> | null } | null
@@ -49,14 +43,14 @@ function assertAttachable(record: UploadRecord, ownerId: string, allowId: Id<"re
 async function deleteAttachedImage(
     ctx: MutationCtx,
     restaurant: Doc<"restaurants">,
-    storageId: string,
+    storageId: Id<"_storage">,
 ): Promise<Doc<"restaurants">["images"]> {
     const record = await ctx.runQuery(internal.uploads.lookupByStorage, { storageId })
     requireUploadOwner(record, restaurant.ownerId)
     if (record.restaurantId !== null && record.restaurantId !== restaurant._id) {
         throw new Error("Storage ID is not part of this restaurant")
     }
-    await ctx.storage.delete(asStorageId(storageId))
+    await ctx.storage.delete(storageId)
     await ctx.runMutation(internal.uploads.removeRecord, { storageId })
     return restaurant.images.filter((img) => img.storageId !== storageId)
 }
@@ -105,10 +99,6 @@ const googlePlacesSearchSchema = valibot.object({
         ),
     ),
 })
-
-function hasGoogleApiKey(apiKey: string | undefined): apiKey is string {
-    return apiKey !== undefined && apiKey !== ""
-}
 
 type GoogleOpeningHours = NonNullable<valibot.InferOutput<typeof googleOpeningHoursSchema>["currentOpeningHours"]>
 
@@ -180,8 +170,8 @@ function toOpeningHoursData(google: GoogleOpeningHours): OpeningHoursData {
 }
 
 async function fetchOpeningHoursFromGoogle(placeId: string): Promise<OpeningHoursData> {
-    const apiKey = process.env.GOOGLE_MAPS_API_KEY
-    if (!hasGoogleApiKey(apiKey)) {
+    const apiKey = googleMapsApiKey()
+    if (apiKey === undefined) {
         console.log("fetchOpeningHoursFromGoogle: No API key")
         return openFallback()
     }
@@ -191,29 +181,6 @@ async function fetchOpeningHoursFromGoogle(placeId: string): Promise<OpeningHour
         return openFallback()
     }
     return toOpeningHoursData(google)
-}
-
-type DbGet = {
-    get: (id: Id<"restaurants">) => Promise<Doc<"restaurants"> | null>
-}
-
-type AuthCtx = {
-    auth: { getUserIdentity: () => Promise<{ subject: string } | null> }
-}
-
-export async function requireOwnedRestaurant(
-    ctx: AuthCtx & { db: DbGet },
-    id: Id<"restaurants">,
-): Promise<Doc<"restaurants">> {
-    const userId = await requireUserId(ctx)
-    const restaurant = await ctx.db.get(id)
-    if (!restaurant) {
-        throw new Error("Restaurant not found")
-    }
-    if (restaurant.ownerId !== userId) {
-        throw new Error("Unauthorized: only the owner can change this restaurant")
-    }
-    return restaurant
 }
 
 export const _getRestaurantById = internalQuery({
@@ -307,8 +274,8 @@ type GooglePlaceResult = {
 }
 
 async function lookupPlaceIdFromGoogle(name: string, location: string): Promise<GooglePlaceResult> {
-    const apiKey = process.env.GOOGLE_MAPS_API_KEY
-    if (!hasGoogleApiKey(apiKey)) {
+    const apiKey = googleMapsApiKey()
+    if (apiKey === undefined) {
         console.log("lookupPlaceIdFromGoogle: No API key")
         return {}
     }
@@ -393,7 +360,7 @@ type UpdateArgs = {
     notes?: string | undefined
     link?: string | undefined
     rating?: number | undefined
-    images?: { url: string; storageId: string }[] | undefined
+    images?: { url: string; storageId: Id<"_storage"> }[] | undefined
     visibility?: "private" | "shared" | undefined
 }
 
@@ -459,6 +426,8 @@ export const get = query({
 })
 
 export const getById = query({
+    // Null for anon, missing, and invisible alike: strangers learn nothing, not even whether
+    // the id exists.
     args: {
         id: v.id("restaurants"),
     },
@@ -645,7 +614,7 @@ export const remove = mutation({
                     console.warn("Skipping storage delete attached to another restaurant:", img.storageId)
                     continue
                 }
-                await ctx.storage.delete(asStorageId(img.storageId))
+                await ctx.storage.delete(img.storageId)
                 await ctx.runMutation(internal.uploads.removeRecord, { storageId: img.storageId })
             } catch (error) {
                 console.warn("Failed to delete orphaned image:", img.storageId, error)
@@ -660,7 +629,7 @@ export const deleteImage = mutation({
     args: {
         restaurantId: v.id("restaurants"),
         imageUrl: v.string(),
-        storageId: v.string(),
+        storageId: v.id("_storage"),
     },
     handler: async (ctx, args) => {
         const restaurant = await requireOwnedRestaurant(ctx, args.restaurantId)
@@ -680,7 +649,7 @@ export const deleteImage = mutation({
 export const cleanupStorage = mutation({
     args: {
         restaurantId: v.optional(v.id("restaurants")),
-        storageId: v.string(),
+        storageId: v.id("_storage"),
     },
     handler: async (ctx, args) => {
         const identity = await ctx.auth.getUserIdentity()
@@ -694,7 +663,7 @@ export const cleanupStorage = mutation({
             if (record.restaurantId !== null) {
                 throw new Error("Storage is attached to a restaurant; remove it from the restaurant instead")
             }
-            await ctx.storage.delete(asStorageId(args.storageId))
+            await ctx.storage.delete(args.storageId)
             await ctx.runMutation(internal.uploads.removeRecord, { storageId: args.storageId })
             return
         }

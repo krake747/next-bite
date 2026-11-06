@@ -23,7 +23,7 @@ export function AuthLayout({
             <div
                 className="pointer-events-none absolute inset-0 opacity-[0.015]"
                 style={{
-                    backgroundImage: `linear-gradient(rgba(0,0,0,0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(0,0,0,0.05) 1px, transparent 1px)`,
+                    backgroundImage: `linear-gradient(color-mix(in oklch, var(--color-stone-900) 5%, transparent) 1px, transparent 1px), linear-gradient(90deg, color-mix(in oklch, var(--color-stone-900) 5%, transparent) 1px, transparent 1px)`,
                     backgroundSize: "60px 60px",
                 }}
             />
@@ -42,7 +42,7 @@ export function AuthLayout({
                     <p className="mt-4 text-lg text-stone-600">{subtitle}</p>
                 </div>
 
-                <div className="relative mt-8 w-full max-w-md rounded-card border border-stone-200/60 bg-surface/80 p-6 shadow-card backdrop-blur-sm">
+                <div className="relative mt-8 w-full max-w-md rounded-card border border-border bg-surface/80 p-6 shadow-card backdrop-blur-sm">
                     {children}
                 </div>
 

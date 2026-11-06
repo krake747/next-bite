@@ -20,7 +20,7 @@ export function ZoomControls({ zoomPan }: Readonly<{ zoomPan: ZoomHandle }>) {
                 <IconButton label="Zoom out" tone="inverse" size="xs" onClick={zoomPan.zoomOut}>
                     <ZoomOut className="size-5" />
                 </IconButton>
-                <span className="min-w-12 text-center text-sm text-white">{Math.round(zoomPan.zoom * 100)}%</span>
+                <span className="min-w-12 text-center text-sm text-inverse">{Math.round(zoomPan.zoom * 100)}%</span>
                 <IconButton label="Zoom in" tone="inverse" size="xs" onClick={zoomPan.zoomIn}>
                     <ZoomIn className="size-5" />
                 </IconButton>
@@ -41,14 +41,14 @@ export function ZoomControls({ zoomPan }: Readonly<{ zoomPan: ZoomHandle }>) {
                 <button
                     type="button"
                     onClick={zoomPan.resetZoom}
-                    className="rounded-full bg-surface/20 px-3 py-2 text-sm text-white backdrop-blur-sm transition-colors hover:bg-surface/30"
+                    className="rounded-full bg-surface/20 px-3 py-2 text-sm text-inverse backdrop-blur-sm transition-colors hover:bg-surface/30"
                     aria-label="Reset zoom"
                 >
                     Reset
                 </button>
             </div>
 
-            <Button variant="secondary" size="md" onClick={viewer.backToGrid}>
+            <Button tone="secondary" size="md" onClick={viewer.backToGrid}>
                 Back to Grid
             </Button>
         </div>

@@ -19,7 +19,7 @@ export function OverlaysDemo() {
         <Card>
             <div className="flex flex-wrap items-center gap-3 p-5">
                 <Button
-                    variant="secondary"
+                    tone="secondary"
                     onClick={() => {
                         setShowDialog(true)
                     }}

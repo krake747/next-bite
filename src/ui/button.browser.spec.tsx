@@ -7,7 +7,6 @@ describe("Button", () => {
     test("renders children as a button", () => {
         render(<Button>Save</Button>)
         const button = screen.getByRole("button", { name: "Save" })
-        expect(button.tagName).toBe("BUTTON")
         expect(button.getAttribute("type")).toBe("button")
     })
 

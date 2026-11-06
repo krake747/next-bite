@@ -1,0 +1,21 @@
+import { render, screen } from "@testing-library/react"
+import { describe, expect, test } from "vitest"
+
+import { GroupCard } from "./group-card"
+
+const members = [{ name: "Alex" }, { name: "Priya" }, { name: "Jamie" }]
+
+const restaurants = [
+    { id: "r1", name: "Trattoria Verde", cuisine: "Italian", ownerName: "Alex" },
+    { id: "r2", name: "Sushi Bar", cuisine: "Japanese", ownerName: "Priya" },
+]
+
+describe("GroupCard", () => {
+    test("composes header, list, and members", () => {
+        render(<GroupCard name="Food Crew" members={members} restaurants={restaurants} />)
+        expect(screen.getByRole("heading", { name: "Food Crew" })).toBeInTheDocument()
+        expect(screen.getByText("Trattoria Verde")).toBeInTheDocument()
+        expect(screen.queryByText("2 members")).not.toBeInTheDocument()
+        expect(screen.getByText("3 members")).toBeInTheDocument()
+    })
+})

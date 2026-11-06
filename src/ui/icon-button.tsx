@@ -3,7 +3,7 @@ import { Button as BaseButton } from "@base-ui/react/button"
 import { cva, type VariantProps } from "@ui/cva.config"
 import { focusRing } from "@ui/variants"
 
-export const iconButton = cva({
+const iconButton = cva({
     base: "inline-flex cursor-pointer items-center justify-center rounded-full transition-colors duration-150 disabled:cursor-not-allowed disabled:opacity-50",
     composes: [focusRing],
     variants: {
@@ -11,7 +11,7 @@ export const iconButton = cva({
             neutral: "bg-surface/90 text-stone-600 shadow-md backdrop-blur-sm hover:bg-surface hover:text-stone-900",
             destructive: "bg-surface/90 text-destructive shadow-md backdrop-blur-sm hover:bg-destructive/10",
             plain: "text-stone-400 hover:bg-stone-100 hover:text-stone-600",
-            inverse: "bg-surface/20 text-white backdrop-blur-sm hover:bg-surface/30",
+            inverse: "bg-surface/20 text-inverse backdrop-blur-sm hover:bg-surface/30",
         },
         size: {
             xs: "p-2",
@@ -27,13 +27,12 @@ export const iconButton = cva({
 })
 
 type IconButtonProps = VariantProps<typeof iconButton> &
-    Omit<React.ComponentProps<"button">, "aria-label" | "children" | "type"> & {
+    Omit<React.ComponentProps<typeof BaseButton>, "aria-label" | "children" | "type"> & {
         readonly label: string
         readonly children: React.ReactNode
-        readonly render?: React.ReactElement | undefined
     }
 
-export function IconButton({ tone, size, label, title, className, children, ...rest }: Readonly<IconButtonProps>) {
+export function IconButton({ tone, size, label, title, className, children, ...props }: Readonly<IconButtonProps>) {
     return (
         <BaseButton
             data-slot="icon-button"
@@ -41,7 +40,7 @@ export function IconButton({ tone, size, label, title, className, children, ...r
             aria-label={label}
             title={title ?? label}
             className={iconButton({ tone, size, class: className })}
-            {...rest}
+            {...props}
         >
             {children}
         </BaseButton>

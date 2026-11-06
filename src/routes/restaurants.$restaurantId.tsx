@@ -1,6 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router"
 import { useState } from "react"
 
+import { type Id } from "@convex/_generated/dataModel"
 import { useVisibleRestaurant, useAuth, type Restaurant } from "@core/hooks"
 import {
     emptySocial,
@@ -26,8 +27,6 @@ import { PageContainer } from "@routes/-layouts/page-container"
 import { PageLayout } from "@routes/-layouts/page-layout"
 import { Button } from "@ui/button"
 import { OpeningHoursDialog } from "@ui/opening-hours-dialog"
-
-import { type Id } from "../../convex/_generated/dataModel"
 
 export const Route = createFileRoute("/restaurants/$restaurantId")({
     head: () => ({ meta: [{ title: "Restaurant details" }] }),
@@ -202,7 +201,7 @@ function DetailShare({ restaurant }: Readonly<{ restaurant: Restaurant }>) {
     return (
         <>
             <Button
-                variant="secondary"
+                tone="secondary"
                 onClick={() => {
                     setShowShare(true)
                 }}

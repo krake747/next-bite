@@ -59,7 +59,7 @@ export function EmptyRestaurantsState({
                     </Button>
                 ) : (
                     <Button
-                        variant="secondary"
+                        tone="secondary"
                         onClick={() => {
                             void navigate({ to: "/login", viewTransition: true })
                         }}

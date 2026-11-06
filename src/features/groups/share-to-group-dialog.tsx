@@ -66,7 +66,7 @@ export function ShareToGroupDialog({
                                             {shared ? (
                                                 <Button
                                                     size="sm"
-                                                    variant="secondary"
+                                                    tone="secondary"
                                                     disabled={unshare.isPending}
                                                     onClick={() => {
                                                         unshare.mutate({
@@ -120,7 +120,7 @@ export function ShareToGroupDialog({
                                             {shared ? (
                                                 <Button
                                                     size="sm"
-                                                    variant="secondary"
+                                                    tone="secondary"
                                                     disabled={unshare.isPending}
                                                     onClick={() => {
                                                         unshare.mutate({

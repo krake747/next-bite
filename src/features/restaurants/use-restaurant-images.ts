@@ -1,5 +1,6 @@
 import { useState } from "react"
 
+import { type Id } from "@convex/_generated/dataModel"
 import { useCleanupStorage, type ImageRecord } from "@core/hooks"
 
 export function useRestaurantImages(
@@ -8,9 +9,9 @@ export function useRestaurantImages(
 ) {
     const cleanupStorage = useCleanupStorage()
     const [images, setImages] = useState<ImageRecord[]>([...initialImages])
-    const [pendingRemovedStorageIds, setPendingRemovedStorageIds] = useState<string[]>([])
+    const [pendingRemovedStorageIds, setPendingRemovedStorageIds] = useState<Id<"_storage">[]>([])
 
-    const cleanupStorageIds = async (storageIds: ReadonlyArray<string>) => {
+    const cleanupStorageIds = async (storageIds: ReadonlyArray<Id<"_storage">>) => {
         for (const storageId of storageIds) {
             try {
                 await cleanupStorage.mutateAsync({ storageId })
@@ -29,7 +30,7 @@ export function useRestaurantImages(
         setImages([])
     }
 
-    const trackRemoved = (storageId: string) => {
+    const trackRemoved = (storageId: Id<"_storage">) => {
         setPendingRemovedStorageIds((prev) => [...prev, storageId])
     }
 

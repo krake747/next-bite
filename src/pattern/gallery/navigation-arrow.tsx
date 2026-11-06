@@ -10,7 +10,7 @@ export function NavigationArrow({
     hidden,
     disabled,
     className,
-    ...rest
+    ...props
 }: Readonly<
     {
         direction: "prev" | "next"
@@ -29,7 +29,7 @@ export function NavigationArrow({
             onClick={onClick}
             disabled={disabled}
             className={cx("absolute z-10", isPrev ? "left-4" : "right-4", hidden === true && "hidden", className)}
-            {...rest}
+            {...props}
         >
             <Icon className="size-6" />
         </IconButton>

@@ -212,13 +212,13 @@ function HomeActions({ onAddClick }: Readonly<{ onAddClick: () => void }>) {
     return (
         <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row">
             {auth.isAuthenticated ? (
-                <Button variant="secondary" onClick={onAddClick}>
+                <Button tone="secondary" onClick={onAddClick}>
                     <Plus className="size-4 transition-transform duration-200 group-hover:rotate-90" />
                     Add Restaurant
                 </Button>
             ) : (
                 <Button
-                    variant="secondary"
+                    tone="secondary"
                     onClick={() => {
                         void navigate({ to: "/login", viewTransition: true })
                     }}

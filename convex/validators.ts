@@ -1,6 +1,6 @@
 import { v } from "convex/values"
 
-export const restaurantImageValidator = v.object({ url: v.string(), storageId: v.string() })
+export const restaurantImageValidator = v.object({ url: v.string(), storageId: v.id("_storage") })
 
 export const imageObjectValidator = restaurantImageValidator.extend({
     width: v.optional(v.number()),

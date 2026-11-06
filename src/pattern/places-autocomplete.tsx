@@ -128,7 +128,7 @@ export function PlacesAutocomplete({
     }, [placesLib, onChange, inputId, locationBias])
 
     return (
-        <div className="flex flex-col gap-1.5">
+        <div data-slot="places-autocomplete" className="flex flex-col gap-1.5">
             {label !== undefined && label !== "" && (
                 <label htmlFor={inputId} className={fieldLabel()}>
                     {label}

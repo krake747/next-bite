@@ -1,3 +1,7 @@
+import { isMailDevFallback, mailgunConfig } from "./env"
+
+export { hasMailgunConfig, isMailDevFallback } from "./env"
+
 type OtpType = "sign-in" | "email-verification" | "forget-password" | "change-email"
 
 function otpSubject(type: OtpType): string {
@@ -10,26 +14,11 @@ function otpSubject(type: OtpType): string {
     return "Your Nextbite sign-in code"
 }
 
-function isPresent(value: string | undefined): boolean {
-    return value !== undefined && value.trim() !== ""
-}
-
-export function hasMailgunConfig(): boolean {
-    return isPresent(process.env.MAILGUN_API_KEY) && isPresent(process.env.MAILGUN_DOMAIN)
-}
-
-// Explicit opt-in only. Missing mail configuration fails closed everywhere else, including
-// preview and production, even when the OTP flag is on.
-export function isMailDevFallback(): boolean {
-    return process.env.MAILGUN_DEV_FALLBACK === "true"
-}
-
 export async function sendTransactionalEmail(
     input: Readonly<{ to: string; subject: string; text: string }>,
 ): Promise<void> {
-    const apiKey = process.env.MAILGUN_API_KEY
-    const domain = process.env.MAILGUN_DOMAIN
-    if (!hasMailgunConfig()) {
+    const config = mailgunConfig()
+    if (config === null) {
         if (isMailDevFallback()) {
             // Local development only. Log metadata, never recipient address, subject, or body:
             // the body carries the OTP code.
@@ -40,15 +29,15 @@ export async function sendTransactionalEmail(
         throw new Error("Email is not configured")
     }
     const body = new URLSearchParams({
-        from: `Nextbite <login@${domain}>`,
+        from: `Nextbite <login@${config.domain}>`,
         to: input.to,
         subject: input.subject,
         text: input.text,
     })
-    const response = await fetch(`https://api.eu.mailgun.net/v3/${domain}/messages`, {
+    const response = await fetch(`https://api.eu.mailgun.net/v3/${config.domain}/messages`, {
         method: "POST",
         headers: {
-            Authorization: `Basic ${btoa(`api:${apiKey}`)}`,
+            Authorization: `Basic ${btoa(`api:${config.apiKey}`)}`,
             "Content-Type": "application/x-www-form-urlencoded",
         },
         body,

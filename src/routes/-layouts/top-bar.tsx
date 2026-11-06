@@ -11,7 +11,7 @@ export function TopBar() {
     return (
         <div
             data-slot="top-bar"
-            className="sticky top-0 z-40 w-full border-b border-stone-200/60 bg-background/80 backdrop-blur-md"
+            className="sticky top-0 z-40 w-full border-b border-border bg-background/80 backdrop-blur-md"
         >
             <div className="mx-auto flex h-14 w-full max-w-350 items-center justify-between px-4 sm:px-6 lg:px-12">
                 <Link
@@ -54,7 +54,7 @@ function AuthButton() {
                 )}
             </PopoverTrigger>
             <PopoverPanel className="w-56">
-                <div className="border-b border-stone-200 px-4 py-2">
+                <div className="border-b border-border px-4 py-2">
                     <p className="text-sm font-medium text-stone-900">{auth.user?.name ?? "User"}</p>
                     <p className="text-xs text-stone-600">{auth.user?.email}</p>
                 </div>

@@ -45,6 +45,21 @@ describe("sharing and social gating", () => {
         )
     })
 
+    test("hides social rows from strangers", async () => {
+        const t = setup()
+        await registerUser(t, "anna", "anna@example.com")
+        await registerUser(t, "ben", "ben@example.com")
+        await registerUser(t, "cas", "cas@example.com")
+        const restaurantId = await createRestaurant(t, "anna")
+
+        await expect(asUser(t, "cas").query(api.social.getForRestaurant, { restaurantId })).resolves.toBeNull()
+        await expect(t.query(api.social.getForRestaurant, { restaurantId })).resolves.toBeNull()
+
+        await asUser(t, "anna").mutation(api.shares.shareWithUser, { restaurantId, userId: "ben" })
+        await expect(asUser(t, "ben").query(api.social.getForRestaurant, { restaurantId })).resolves.not.toBeNull()
+        await expect(asUser(t, "anna").query(api.social.getForRestaurant, { restaurantId })).resolves.not.toBeNull()
+    })
+
     test("rejects non-owner writes and shares", async () => {
         const t = setup()
         await registerUser(t, "anna", "anna@example.com")
@@ -224,6 +239,15 @@ describe("sharing and social gating", () => {
         await expect(
             asUser(t, "anna").mutation(api.friendships.requestFriendByEmail, { email: "nobody@example.com" }),
         ).rejects.toThrow("Nobody joined")
+    })
+
+    test("rejects friend requests to unknown users", async () => {
+        const t = setup()
+        await registerUser(t, "anna", "anna@example.com")
+
+        await expect(
+            asUser(t, "anna").mutation(api.friendships.requestFriend, { friendAuthUserId: "ghost" }),
+        ).rejects.toThrow("User not found")
     })
 
     test("rejects accepting without a pending request", async () => {

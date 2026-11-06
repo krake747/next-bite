@@ -5,16 +5,12 @@ import { countReactions } from "../src/core/social-counts"
 import { type DataModel, type Doc, type Id } from "./_generated/dataModel"
 import { mutation, query } from "./_generated/server"
 import { authComponent } from "./auth"
-import { FALLBACK_DISPLAY_NAME, formatDisplayName, requireUserId } from "./helpers"
+import { formatDisplayName, readAuthUser, requireUserId } from "./helpers"
 import { isRestaurantVisibleTo } from "./visibility"
 
 async function serverDisplayName(ctx: Parameters<typeof authComponent.getAuthUser>[0]): Promise<string> {
-    try {
-        const user = await authComponent.getAuthUser(ctx)
-        return formatDisplayName(user.name, user.email ?? undefined)
-    } catch {
-        return FALLBACK_DISPLAY_NAME
-    }
+    const user = await readAuthUser(ctx)
+    return formatDisplayName(user?.name, user?.email ?? undefined)
 }
 
 async function requireRestaurant(
@@ -76,6 +72,21 @@ export const getForRestaurant = query({
         restaurantId: v.id("restaurants"),
     },
     handler: async (ctx, args) => {
+        // Same anti-oracle rule as restaurants.getById: strangers learn nothing, not even
+        // whether the id exists. Callers only query visible restaurants, so null is unreachable
+        // in practice; it exists so enumeration proves nothing.
+        const identity = await ctx.auth.getUserIdentity()
+        if (!identity) {
+            return null
+        }
+        const restaurant = await ctx.db.get(args.restaurantId)
+        if (!restaurant) {
+            return null
+        }
+        const visible = await isRestaurantVisibleTo(ctx.db, identity.subject, restaurant)
+        if (!visible) {
+            return null
+        }
         return collectSocialFor(ctx.db, args.restaurantId)
     },
 })
@@ -93,6 +104,8 @@ export const listMyStatuses = query({
 })
 
 export const getSummaries = query({
+    // Signed-out callers get aggregate counts with no personal flags; identity only adds the
+    // viewer's own wanted/liked state. Nothing per-user leaks to strangers.
     args: {
         restaurantIds: v.array(v.id("restaurants")),
     },

@@ -25,9 +25,9 @@ export function ButtonsDemo() {
     return (
         <Card>
             <div className="flex flex-wrap items-center gap-3 p-5">
-                {buttonSchema.variant.values.map((variant) => (
-                    <Button key={variant} variant={variant}>
-                        {buttonLabels[variant]}
+                {buttonSchema.tone.values.map((tone) => (
+                    <Button key={tone} tone={tone}>
+                        {buttonLabels[tone]}
                     </Button>
                 ))}
                 {buttonSchema.size.values.map((size) => (

@@ -11,7 +11,7 @@ export function GalleryGrid({
     className?: string | undefined
 }>) {
     return (
-        <div className={cx("flex-1 overflow-y-auto p-4", className)}>
+        <div data-slot="gallery-grid" className={cx("flex-1 overflow-y-auto p-4", className)}>
             <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4">
                 {images.map((imageUrl, index) => (
                     <button

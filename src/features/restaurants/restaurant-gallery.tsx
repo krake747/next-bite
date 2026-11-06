@@ -39,7 +39,7 @@ export function RestaurantGallery({
                 )}
 
                 <div className="absolute top-3 left-3">
-                    <Badge variant="brand">
+                    <Badge tone="brand">
                         <Utensils className="mr-1 size-3" />
                         {cuisine}
                     </Badge>

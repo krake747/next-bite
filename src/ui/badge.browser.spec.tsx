@@ -9,24 +9,19 @@ describe("Badge", () => {
         expect(screen.getByText("Hello")).toBeInTheDocument()
     })
 
-    test("renders with neutral variant by default", () => {
+    test("renders with neutral tone by default", () => {
         render(<Badge>Default</Badge>)
         const badge = screen.getByText("Default")
-        expect(badge).toBeInTheDocument()
-        expect(badge.className).toMatch(/stone|neutral|secondary/i)
+        expect(badge.dataset.slot).toBe("badge")
+        expect(badge.dataset.variant).toBe("neutral")
     })
 
     test("renders interest states with accessible labels", () => {
-        const { unmount } = render(<Badge variant="brand">Want to try</Badge>)
-        const want = screen.getByText("Want to try")
-        expect(want).toBeInTheDocument()
-        expect(want.className).not.toBe("")
+        const { unmount } = render(<Badge tone="brand">Want to try</Badge>)
+        expect(screen.getByText("Want to try").dataset.variant).toBe("brand")
         unmount()
-        render(<Badge variant="success">Been there</Badge>)
-        const been = screen.getByText("Been there")
-        expect(been).toBeInTheDocument()
-        expect(been.className).not.toBe("")
-        expect(been.className).not.toBe(want.className)
+        render(<Badge tone="success">Been there</Badge>)
+        expect(screen.getByText("Been there").dataset.variant).toBe("success")
     })
 
     test("applies custom className", () => {
@@ -36,7 +31,7 @@ describe("Badge", () => {
     })
 
     test("exposes slot and variant as data attributes", () => {
-        render(<Badge variant="brand">Marked</Badge>)
+        render(<Badge tone="brand">Marked</Badge>)
         const badge = screen.getByText("Marked")
         expect(badge.dataset.slot).toBe("badge")
         expect(badge.dataset.variant).toBe("brand")

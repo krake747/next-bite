@@ -115,7 +115,7 @@ export default defineSchema({
         createdAt: v.number(),
     }).index("by_token", ["token"]),
     uploads: defineTable({
-        storageId: v.string(),
+        storageId: v.id("_storage"),
         ownerId: v.string(),
         restaurantId: v.optional(v.id("restaurants")),
         createdAt: v.number(),

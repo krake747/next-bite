@@ -83,7 +83,7 @@ export function EmojiRating({
     }
 
     return (
-        <div className={cx("flex w-full flex-col items-center gap-2", className)}>
+        <div data-slot="emoji-rating" className={cx("flex w-full flex-col items-center gap-2", className)}>
             <div
                 className="flex items-center gap-0.5"
                 onMouseLeave={() => {

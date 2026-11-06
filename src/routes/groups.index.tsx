@@ -1,8 +1,9 @@
 import { createFileRoute, Link } from "@tanstack/react-router"
 import { useState } from "react"
 
-import { useAuth, useCreateGroup, useMyGroups } from "@core/hooks"
+import { useCreateGroup, useMyGroups } from "@core/hooks"
 import { EmptyState } from "@pattern/empty-state"
+import { SignedOutGate } from "@routes/-components/signed-out-gate"
 import { PageContainer } from "@routes/-layouts/page-container"
 import { PageLayout } from "@routes/-layouts/page-layout"
 import { Button } from "@ui/button"
@@ -72,7 +73,6 @@ function CreateGroupForm() {
 }
 
 function GroupsPage() {
-    const auth = useAuth()
     const groups = useMyGroups()
 
     return (
@@ -82,50 +82,45 @@ function GroupsPage() {
                     <HeaderTitle>Groups</HeaderTitle>
                     <HeaderSubtitle>Plan the next table together. Each group is a shared list.</HeaderSubtitle>
                 </Header>
-                {!auth.isAuthenticated ? (
-                    <p className="pt-6 text-stone-600">
-                        <Link to="/login" viewTransition className="font-medium text-tomato-700 hover:underline">
-                            Sign in
-                        </Link>{" "}
-                        to see your groups.
-                    </p>
-                ) : groups === undefined ? (
-                    <div className="pt-6">
-                        <LoadingPlaceholder />
-                    </div>
-                ) : (
-                    <>
-                        <CreateGroupForm />
-                        {groups.length === 0 ? (
-                            <EmptyState
-                                title="No groups yet"
-                                body="Create your first group above, then add restaurants to its shared list."
-                                className="mt-6"
-                            />
-                        ) : (
-                            <ul className="mt-6 grid gap-4 md:grid-cols-2">
-                                {groups.map(({ group, role }) => (
-                                    <li
-                                        key={group._id}
-                                        className="rounded-card border border-border bg-surface p-5 shadow-card"
-                                    >
-                                        <Link
-                                            to="/groups/$groupId"
-                                            params={{ groupId: group._id }}
-                                            viewTransition
-                                            className="font-display text-lg font-semibold text-balance text-stone-900 hover:text-tomato-700"
+                <SignedOutGate context="your groups">
+                    {groups === undefined ? (
+                        <div className="pt-6">
+                            <LoadingPlaceholder />
+                        </div>
+                    ) : (
+                        <>
+                            <CreateGroupForm />
+                            {groups.length === 0 ? (
+                                <EmptyState
+                                    title="No groups yet"
+                                    body="Create your first group above, then add restaurants to its shared list."
+                                    className="mt-6"
+                                />
+                            ) : (
+                                <ul className="mt-6 grid gap-4 md:grid-cols-2">
+                                    {groups.map(({ group, role }) => (
+                                        <li
+                                            key={group._id}
+                                            className="rounded-card border border-border bg-surface p-5 shadow-card"
                                         >
-                                            {group.name}
-                                        </Link>
-                                        <p className="mt-1 text-sm text-stone-600">
-                                            {role === "admin" ? "Admin" : "Member"}
-                                        </p>
-                                    </li>
-                                ))}
-                            </ul>
-                        )}
-                    </>
-                )}
+                                            <Link
+                                                to="/groups/$groupId"
+                                                params={{ groupId: group._id }}
+                                                viewTransition
+                                                className="font-display text-lg font-semibold text-balance text-stone-900 hover:text-tomato-700"
+                                            >
+                                                {group.name}
+                                            </Link>
+                                            <p className="mt-1 text-sm text-stone-600">
+                                                {role === "admin" ? "Admin" : "Member"}
+                                            </p>
+                                        </li>
+                                    ))}
+                                </ul>
+                            )}
+                        </>
+                    )}
+                </SignedOutGate>
             </PageContainer>
         </PageLayout>
     )

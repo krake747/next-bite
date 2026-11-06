@@ -114,7 +114,7 @@ export function RestaurantForm(props: Readonly<RestaurantFormProps>) {
             <div className="flex justify-end gap-2 pt-2">
                 <Button
                     type="button"
-                    variant="secondary"
+                    tone="secondary"
                     onClick={() => {
                         void handleClose()
                     }}

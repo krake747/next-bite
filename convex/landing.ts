@@ -5,6 +5,7 @@ import { query } from "./_generated/server"
 const topCuisineValidator = v.object({ cuisine: v.string(), count: v.number() })
 const recentAddValidator = v.object({ name: v.string(), cuisine: v.string(), createdAt: v.number() })
 
+// Public on purpose: aggregate counts only, no per-user or contact data leaves here.
 export const getStats = query({
     args: {},
     returns: v.object({

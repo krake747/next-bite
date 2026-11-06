@@ -25,7 +25,7 @@ export function RestaurantDialog(props: RestaurantDialogProps) {
             <DialogBackdrop>
                 <DialogPanel size="md" className="max-h-[85vh]">
                     <div className="mb-6 flex items-center gap-3">
-                        <div className="flex size-10 items-center justify-center rounded-xl bg-linear-to-br from-tomato-500 to-tomato-600 text-white">
+                        <div className="flex size-10 items-center justify-center rounded-xl bg-linear-to-br from-tomato-500 to-tomato-600 text-inverse">
                             <UtensilsCrossed className="size-5" />
                         </div>
                         <DialogTitle size="lg">{title}</DialogTitle>

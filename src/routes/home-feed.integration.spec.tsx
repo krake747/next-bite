@@ -1,50 +1,48 @@
 import { QueryClient } from "@tanstack/react-query"
 import { RouterProvider, createMemoryHistory, createRouter } from "@tanstack/react-router"
 import { render, screen, within, waitFor } from "@testing-library/react"
-import { type ConvexClient } from "convex/browser"
 import { describe, expect, test, vi } from "vitest"
 
+import { ConvexProvider } from "@core/convex-client"
 import { type RestaurantDoc } from "@core/db/restaurants"
 import { createSeededClient } from "@core/db/seeded-client"
 
 import { routeTree } from "../routeTree.gen"
 
-let injectedClient: ConvexClient | null = null
-
-vi.mock("@core/convex-client", async (importOriginal) => {
-    const original = await importOriginal<typeof import("@core/convex-client")>()
-    return { ...original, useConvexClient: () => injectedClient }
+vi.mock("@core/auth-client", async (importOriginal) => {
+    const original = await importOriginal<typeof import("@core/auth-client")>()
+    return {
+        ...original,
+        getConvexSessionToken: vi.fn<() => Promise<string | null>>(async () => {
+            await Promise.resolve()
+            return "test-token"
+        }),
+    }
 })
 
-function injectSyncClient(syncClient: unknown): void {
-    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- test-only sync client standing in for the Convex subscription surface
-    injectedClient = syncClient as ConvexClient
-}
-
-vi.mock("@core/auth-client", () => ({
-    authClient: {
-        useSession: () => ({
-            data: null,
-            isPending: false,
-        }),
-        getSession: vi.fn<
-            () => Promise<{ data: { user: { id: string; email: string; name: string } | null }; error: null }>
-        >(async () => {
-            await Promise.resolve()
-            return { data: { user: { id: "user-1", email: "alex@example.com", name: "Alex" } }, error: null }
-        }),
-        convex: {
-            token: vi.fn<() => Promise<{ data: { token: string } }>>(async () => {
-                await Promise.resolve()
-                return { data: { token: "test-token" } }
-            }),
-        },
-    },
-    getConvexSessionToken: async () => {
+vi.mock("@core/auth-provider", async (importOriginal) => {
+    const original = await importOriginal<typeof import("@core/auth-provider")>()
+    const noop = async () => {
         await Promise.resolve()
-        return "test-token"
-    },
-}))
+    }
+    return {
+        ...original,
+        AuthProvider: ({ children }: Readonly<{ children: React.ReactNode }>) => <div>{children}</div>,
+        useAuth: () => ({
+            isAuthenticated: true,
+            isLoading: false,
+            user: { id: "user-1", email: "alex@example.com", name: "Alex" },
+            error: null,
+            initializeAuth: noop,
+            signInWithPassword: noop,
+            signUpWithPassword: noop,
+            signInWithSocial: noop,
+            requestOtp: noop,
+            verifyOtp: noop,
+            signOut: noop,
+        }),
+    }
+})
 
 function friendRestaurant(name: string): RestaurantDoc {
     // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- test fixture shaped to the restaurant document
@@ -63,7 +61,6 @@ function friendRestaurant(name: string): RestaurantDoc {
 }
 
 async function renderHome(feed: ReadonlyArray<RestaurantDoc>): Promise<void> {
-    injectSyncClient(createSeededClient({ liveRows: feed }).client)
     const queryClient = new QueryClient()
     const router = createRouter({
         routeTree,
@@ -71,7 +68,11 @@ async function renderHome(feed: ReadonlyArray<RestaurantDoc>): Promise<void> {
         context: { queryClient },
     })
     await router.load()
-    render(<RouterProvider router={router} />)
+    render(
+        <ConvexProvider client={createSeededClient({ liveRows: feed }).client}>
+            <RouterProvider router={router} />
+        </ConvexProvider>,
+    )
     await waitFor(() => {
         expect(document.querySelector('[aria-label="Latest activity"]')).toBeInTheDocument()
     })

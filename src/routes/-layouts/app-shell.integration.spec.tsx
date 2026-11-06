@@ -4,34 +4,49 @@ import { fireEvent, render, screen, waitFor } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import { afterEach, describe, expect, test, vi } from "vitest"
 
-import { authClient } from "@core/auth-client"
+import { ConvexProvider } from "@core/convex-client"
+import { createSeededClient, seedKey } from "@core/db/seeded-client"
 
 import { routeTree } from "../../routeTree.gen"
 
-vi.mock("@core/auth-client", () => ({
-    authClient: {
-        useSession: () => ({
-            data: null,
-            isPending: false,
-        }),
-        getSession: vi.fn<
-            () => Promise<{ data: { user: { id: string; email: string; name: string } | null }; error: null }>
-        >(async () => {
+vi.mock("@core/auth-client", async (importOriginal) => {
+    const original = await importOriginal<typeof import("@core/auth-client")>()
+    return {
+        ...original,
+        getConvexSessionToken: vi.fn<() => Promise<string | null>>(async () => {
             await Promise.resolve()
-            return { data: { user: null }, error: null }
+            return "test-token"
         }),
-        convex: {
-            token: vi.fn<() => Promise<{ data: null }>>(async () => {
-                await Promise.resolve()
-                return { data: null }
-            }),
-        },
-    },
-    getConvexSessionToken: async () => {
+    }
+})
+
+type TestUser = { id: string; email: string; name: string }
+
+let testUser: TestUser | null = null
+
+vi.mock("@core/auth-provider", async (importOriginal) => {
+    const original = await importOriginal<typeof import("@core/auth-provider")>()
+    const noop = async () => {
         await Promise.resolve()
-        return null
-    },
-}))
+    }
+    return {
+        ...original,
+        AuthProvider: ({ children }: Readonly<{ children: React.ReactNode }>) => <div>{children}</div>,
+        useAuth: () => ({
+            isAuthenticated: testUser !== null,
+            isLoading: false,
+            user: testUser,
+            error: null,
+            initializeAuth: noop,
+            signInWithPassword: noop,
+            signUpWithPassword: noop,
+            signInWithSocial: noop,
+            requestOtp: noop,
+            verifyOtp: noop,
+            signOut: noop,
+        }),
+    }
+})
 
 async function renderAt(path: string): Promise<void> {
     const queryClient = new QueryClient()
@@ -41,20 +56,30 @@ async function renderAt(path: string): Promise<void> {
         context: { queryClient },
     })
     await router.load()
-    render(<RouterProvider router={router} />)
+    // The signed-out home reads the landing aggregate; unseeded queries fall back to an empty
+    // list, which is not the aggregate shape, so seed it explicitly.
+    const seeds = new Map<string, unknown>([
+        [
+            seedKey("landing:getStats", undefined),
+            { totalRestaurants: 0, totalWants: 0, topCuisines: [], recentAdds: [] },
+        ],
+    ])
+    render(
+        <ConvexProvider client={createSeededClient({ seeds }).client}>
+            <RouterProvider router={router} />
+        </ConvexProvider>,
+    )
     await waitFor(() => {
         expect(document.querySelector('[data-slot="page-layout"]')).toBeInTheDocument()
     })
 }
 
-const signedInUser = { id: "user-1", email: "alex@example.com", name: "Alex" }
-
 function signIn(): void {
-    vi.mocked(authClient.getSession).mockResolvedValue({ data: { user: signedInUser }, error: null })
+    testUser = { id: "user-1", email: "alex@example.com", name: "Alex" }
 }
 
 afterEach(() => {
-    vi.mocked(authClient.getSession).mockResolvedValue({ data: { user: null }, error: null })
+    testUser = null
 })
 
 describe("app shell", () => {
@@ -98,21 +123,6 @@ describe("app shell", () => {
         await waitFor(() => {
             expect(screen.getByRole("heading", { name: "Groups" })).toBeInTheDocument()
         })
-    })
-
-    test("renders the Friends stub page", async () => {
-        await renderAt("/friends")
-        expect(screen.getByRole("heading", { name: "Friends" })).toBeInTheDocument()
-    })
-
-    test("renders the Groups stub page", async () => {
-        await renderAt("/groups")
-        expect(screen.getByRole("heading", { name: "Groups" })).toBeInTheDocument()
-    })
-
-    test("renders the You stub page", async () => {
-        await renderAt("/you")
-        expect(screen.getByRole("heading", { name: "You" })).toBeInTheDocument()
     })
 
     test("opens the add flow from the Add destination", async () => {

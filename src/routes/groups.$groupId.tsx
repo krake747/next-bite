@@ -1,5 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router"
 
+import { type Id } from "@convex/_generated/dataModel"
 import { useAuth, useGroup, useGroupRestaurants, useRestaurants, useShareWithGroup, useUnshare } from "@core/hooks"
 import { orderFeedByRecency, useSocialSummaries } from "@core/social"
 import { GroupMembers } from "@features/groups/group-members"
@@ -10,8 +11,6 @@ import { PageLayout } from "@routes/-layouts/page-layout"
 import { Button } from "@ui/button"
 import { Header, HeaderSubtitle, HeaderTitle } from "@ui/header"
 import { LoadingPlaceholder } from "@ui/loading"
-
-import { type Id } from "../../convex/_generated/dataModel"
 
 export const Route = createFileRoute("/groups/$groupId")({
     head: () => ({ meta: [{ title: "Group details" }] }),
@@ -136,7 +135,7 @@ function GroupRestaurantsSection({
                             <div className="pt-3">
                                 <Button
                                     size="sm"
-                                    variant="secondary"
+                                    tone="secondary"
                                     disabled={unshare.isPending}
                                     onClick={() => {
                                         unshare.mutate({

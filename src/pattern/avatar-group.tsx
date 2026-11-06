@@ -26,7 +26,7 @@ export function AvatarGroup({
             : `${members.map((member) => member.name).join(", ")}${overflow > 0 ? ` and ${overflow} more` : ""}`
 
     return (
-        <div className={cx("flex items-center", className)} role="group" aria-label={label}>
+        <div data-slot="avatar-group" className={cx("flex items-center", className)} role="group" aria-label={label}>
             {visible.map((member, index) => (
                 <Avatar key={`${member.name}-${index}`} size="sm" ring="surface" className={cx(index > 0 && "-ml-2")}>
                     <AvatarImage src={member.src} alt={member.name} />

@@ -92,11 +92,11 @@ export function PaletteDemo() {
                         <span className="rounded-full bg-surface px-3 py-1 text-xs ring-1 ring-border">surface</span>
                         <span className="rounded-full bg-surface-muted px-3 py-1 text-xs">surface-muted</span>
                         <span className="rounded-full bg-surface-accent px-3 py-1 text-xs">surface-accent</span>
-                        <span className="rounded-full bg-primary px-3 py-1 text-xs text-white">primary</span>
-                        <span className="rounded-full bg-success px-3 py-1 text-xs text-white">success</span>
-                        <span className="rounded-full bg-warning px-3 py-1 text-xs text-white">warning</span>
-                        <span className="rounded-full bg-destructive px-3 py-1 text-xs text-white">destructive</span>
-                        <span className="rounded-full bg-plum px-3 py-1 text-xs text-white">plum accent</span>
+                        <span className="rounded-full bg-primary px-3 py-1 text-xs text-inverse">primary</span>
+                        <span className="rounded-full bg-success px-3 py-1 text-xs text-inverse">success</span>
+                        <span className="rounded-full bg-warning px-3 py-1 text-xs text-inverse">warning</span>
+                        <span className="rounded-full bg-destructive px-3 py-1 text-xs text-inverse">destructive</span>
+                        <span className="rounded-full bg-plum px-3 py-1 text-xs text-inverse">plum accent</span>
                     </div>
                 </div>
             </div>

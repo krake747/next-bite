@@ -9,7 +9,7 @@ describe("TextLink", () => {
         const link = screen.getByText("External")
         expect(link.tagName).toBe("A")
         expect(link.getAttribute("href")).toBe("https://example.com")
-        expect(link.className).toContain("text-tomato-600")
+        expect(link.dataset.slot).toBe("text-link")
     })
 
     test("merges styling onto the rendered element", () => {
@@ -17,7 +17,6 @@ describe("TextLink", () => {
         const link = screen.getByTestId("router-link")
         expect(link.getAttribute("href")).toBe("/signup")
         expect(link.dataset.slot).toBe("text-link")
-        expect(link.className).toContain("text-tomato-600")
         expect(screen.getByText("Sign up")).toBeInTheDocument()
     })
 

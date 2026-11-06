@@ -5,7 +5,7 @@ import { focusRing } from "@ui/variants"
 
 type TextLinkProps = useRender.ComponentProps<"a">
 
-export function TextLink({ render, ref, className, ...props }: Readonly<TextLinkProps>) {
+export function TextLink({ render, ref, className, children, ...props }: Readonly<TextLinkProps>) {
     return useRender({
         defaultTagName: "a",
         render,
@@ -13,6 +13,7 @@ export function TextLink({ render, ref, className, ...props }: Readonly<TextLink
         state: { slot: "text-link" },
         props: {
             ...props,
+            children,
             className: cx(
                 focusRing(),
                 "font-semibold text-tomato-600 decoration-from-font underline-offset-4 transition-colors duration-150 hover:text-tomato-500 hover:underline",

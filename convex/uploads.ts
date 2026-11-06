@@ -1,12 +1,12 @@
 import { type GenericDatabaseReader } from "convex/server"
 import { v } from "convex/values"
 
-import { type DataModel, type Doc } from "./_generated/dataModel"
+import { type DataModel, type Doc, type Id } from "./_generated/dataModel"
 import { internalMutation, internalQuery } from "./_generated/server"
 
 async function findUploadByStorage(
     db: GenericDatabaseReader<DataModel>,
-    storageId: string,
+    storageId: Id<"_storage">,
 ): Promise<Doc<"uploads"> | null> {
     return db
         .query("uploads")
@@ -16,7 +16,7 @@ async function findUploadByStorage(
 
 export const lookupByStorage = internalQuery({
     args: {
-        storageId: v.string(),
+        storageId: v.id("_storage"),
     },
     handler: async (ctx, args) => {
         const existing = await findUploadByStorage(ctx.db, args.storageId)
@@ -29,7 +29,7 @@ export const lookupByStorage = internalQuery({
 
 export const record = internalMutation({
     args: {
-        storageId: v.string(),
+        storageId: v.id("_storage"),
         ownerId: v.string(),
     },
     handler: async (ctx, args) => {
@@ -43,7 +43,7 @@ export const record = internalMutation({
 
 export const removeRecord = internalMutation({
     args: {
-        storageId: v.string(),
+        storageId: v.id("_storage"),
     },
     handler: async (ctx, args) => {
         const existing = await findUploadByStorage(ctx.db, args.storageId)
@@ -55,7 +55,7 @@ export const removeRecord = internalMutation({
 
 export const attach = internalMutation({
     args: {
-        storageId: v.string(),
+        storageId: v.id("_storage"),
         ownerId: v.string(),
         restaurantId: v.id("restaurants"),
     },
@@ -73,7 +73,7 @@ export const attach = internalMutation({
 
 export const detach = internalMutation({
     args: {
-        storageId: v.string(),
+        storageId: v.id("_storage"),
         ownerId: v.string(),
     },
     handler: async (ctx, args) => {

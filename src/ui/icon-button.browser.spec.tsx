@@ -17,11 +17,11 @@ describe("IconButton", () => {
 
     test("prefers an explicit title", () => {
         render(
-            <IconButton label="Refresh hours" title="Refresh hours">
+            <IconButton label="Close" title="Refresh hours">
                 <span>x</span>
             </IconButton>,
         )
-        expect(screen.getByRole("button", { name: "Refresh hours" }).getAttribute("title")).toBe("Refresh hours")
+        expect(screen.getByRole("button", { name: "Close" }).getAttribute("title")).toBe("Refresh hours")
     })
 
     test("passes disabled through", () => {

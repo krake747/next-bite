@@ -61,7 +61,7 @@ export function OtpForm({ onSuccess }: Readonly<{ onSuccess: () => void }>) {
                         </FieldWrapper>
                     )}
                 </Field>
-                <PendingButton type="submit" variant="secondary" className="w-full" pending={auth.isLoading}>
+                <PendingButton type="submit" tone="secondary" className="w-full" pending={auth.isLoading}>
                     Email me a code
                 </PendingButton>
             </Form>

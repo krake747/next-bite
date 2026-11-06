@@ -3,7 +3,6 @@ import { useState } from "react"
 
 import {
     useAcceptFriend,
-    useAuth,
     useFriendDiscoveries,
     useFriends,
     useFriendRequests,
@@ -11,6 +10,7 @@ import {
     useRequestFriendByEmail,
 } from "@core/hooks"
 import { EmptyState } from "@pattern/empty-state"
+import { SignedOutGate } from "@routes/-components/signed-out-gate"
 import { PageContainer } from "@routes/-layouts/page-container"
 import { PageLayout } from "@routes/-layouts/page-layout"
 import { Button } from "@ui/button"
@@ -239,7 +239,7 @@ function FriendsList() {
                             </p>
                             <Button
                                 size="sm"
-                                variant="secondary"
+                                tone="secondary"
                                 disabled={removeFriend.isPending}
                                 onClick={() => {
                                     handleRemove(friend.authUserId)
@@ -257,8 +257,6 @@ function FriendsList() {
 }
 
 function FriendsPage() {
-    const auth = useAuth()
-
     return (
         <PageLayout>
             <PageContainer>
@@ -266,25 +264,16 @@ function FriendsPage() {
                     <HeaderTitle>Friends</HeaderTitle>
                     <HeaderSubtitle>See what your crew is craving. Friend connections live here.</HeaderSubtitle>
                 </Header>
-                {!auth.isAuthenticated ? (
-                    <p className="pt-6 text-stone-600">
-                        <Link to="/login" viewTransition className="font-medium text-tomato-700 hover:underline">
-                            Sign in
-                        </Link>{" "}
-                        to see your friends.
-                    </p>
-                ) : (
-                    <>
-                        <InviteByEmailForm />
-                        <RequestsSection />
-                        <section aria-label="Friends" className="pt-8">
-                            <h2 className="font-display text-2xl font-semibold text-balance text-stone-900">
-                                Your friends
-                            </h2>
-                            <FriendsList />
-                        </section>
-                    </>
-                )}
+                <SignedOutGate context="your friends">
+                    <InviteByEmailForm />
+                    <RequestsSection />
+                    <section aria-label="Friends" className="pt-8">
+                        <h2 className="font-display text-2xl font-semibold text-balance text-stone-900">
+                            Your friends
+                        </h2>
+                        <FriendsList />
+                    </section>
+                </SignedOutGate>
             </PageContainer>
         </PageLayout>
     )

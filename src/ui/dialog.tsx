@@ -30,7 +30,7 @@ const backdrop = cva({
         tone: {
             dim: "bg-stone-900/50 backdrop-blur-sm transition-opacity duration-150",
             deep: "bg-stone-900/80 backdrop-blur-sm transition-opacity duration-150",
-            dark: "bg-stone-900/90 transition-opacity duration-150",
+            darkest: "bg-stone-900/90 transition-opacity duration-150",
         },
     },
     defaultVariants: {
@@ -39,15 +39,14 @@ const backdrop = cva({
     },
 })
 
-type DialogBackdropProps = VariantProps<typeof backdrop> &
-    Omit<React.ComponentProps<typeof BaseDialog.Backdrop>, "render">
+type DialogBackdropProps = VariantProps<typeof backdrop> & React.ComponentProps<typeof BaseDialog.Backdrop>
 
-export function DialogBackdrop({ variant, tone, className, children, ...rest }: DialogBackdropProps) {
+export function DialogBackdrop({ variant, tone, className, children, ...props }: Readonly<DialogBackdropProps>) {
     return (
         <BaseDialog.Backdrop
             data-slot="dialog-backdrop"
             className={cx(backdrop({ variant, tone }), className)}
-            {...rest}
+            {...props}
         >
             {children}
         </BaseDialog.Backdrop>
@@ -78,11 +77,11 @@ const panel = cva({
     },
 })
 
-type DialogPanelProps = VariantProps<typeof panel> & Omit<React.ComponentProps<typeof BaseDialog.Popup>, "render">
+type DialogPanelProps = VariantProps<typeof panel> & React.ComponentProps<typeof BaseDialog.Popup>
 
-export function DialogPanel({ size, padding, tone, className, children, ...rest }: DialogPanelProps) {
+export function DialogPanel({ size, padding, tone, className, children, ...props }: Readonly<DialogPanelProps>) {
     return (
-        <BaseDialog.Popup data-slot="dialog-panel" className={cx(panel({ size, padding, tone }), className)} {...rest}>
+        <BaseDialog.Popup data-slot="dialog-panel" className={cx(panel({ size, padding, tone }), className)} {...props}>
             {children}
         </BaseDialog.Popup>
     )
@@ -97,7 +96,7 @@ const title = cva({
         },
         tone: {
             default: "",
-            inverse: "text-white",
+            inverse: "text-inverse",
         },
     },
     defaultVariants: {
@@ -106,11 +105,11 @@ const title = cva({
     },
 })
 
-type DialogTitleProps = VariantProps<typeof title> & Omit<React.ComponentProps<typeof BaseDialog.Title>, "render">
+type DialogTitleProps = VariantProps<typeof title> & React.ComponentProps<typeof BaseDialog.Title>
 
-export function DialogTitle({ size, tone, className, children, ...rest }: DialogTitleProps) {
+export function DialogTitle({ size, tone, className, children, ...props }: Readonly<DialogTitleProps>) {
     return (
-        <BaseDialog.Title data-slot="dialog-title" className={cx(title({ size, tone }), className)} {...rest}>
+        <BaseDialog.Title data-slot="dialog-title" className={cx(title({ size, tone }), className)} {...props}>
             {children}
         </BaseDialog.Title>
     )
@@ -119,13 +118,13 @@ export function DialogTitle({ size, tone, className, children, ...rest }: Dialog
 export function DialogDescription({
     className,
     children,
-    ...rest
-}: Readonly<Omit<React.ComponentProps<typeof BaseDialog.Description>, "render">>) {
+    ...props
+}: Readonly<React.ComponentProps<typeof BaseDialog.Description>>) {
     return (
         <BaseDialog.Description
             data-slot="dialog-description"
             className={cx("mt-2 text-sm text-stone-600", className)}
-            {...rest}
+            {...props}
         >
             {children}
         </BaseDialog.Description>
@@ -140,6 +139,7 @@ export function DialogCloseButton({
 >) {
     return (
         <IconButton
+            data-slot="dialog-close"
             label="Close"
             tone="plain"
             onClick={onClick}
@@ -155,7 +155,7 @@ export function DialogAction({
     children,
 }: Readonly<{ render?: React.ReactElement | undefined; children?: React.ReactNode | undefined }>) {
     if (render !== undefined) {
-        return <BaseDialog.Close render={render} />
+        return <BaseDialog.Close data-slot="dialog-action" render={render} />
     }
-    return <BaseDialog.Close>{children}</BaseDialog.Close>
+    return <BaseDialog.Close data-slot="dialog-action">{children}</BaseDialog.Close>
 }

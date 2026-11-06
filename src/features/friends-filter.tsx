@@ -51,7 +51,7 @@ export function FriendsFilter({
                             className={cx(
                                 "inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium transition-all",
                                 filter === friend.name
-                                    ? "bg-tomato-600 text-white shadow-sm"
+                                    ? "bg-tomato-600 text-inverse shadow-sm"
                                     : "bg-stone-100 text-stone-600 hover:bg-stone-200",
                             )}
                         >

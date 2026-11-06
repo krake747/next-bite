@@ -30,6 +30,15 @@ import type { DataModel } from "./dataModel.js";
 type Env = {
   readonly CONVEX_CLOUD_URL: string;
   readonly CONVEX_SITE_URL: string;
+  readonly AUTH_EMAIL_OTP_ENABLED: string | undefined;
+  readonly GITHUB_CLIENT_ID: string | undefined;
+  readonly GITHUB_CLIENT_SECRET: string | undefined;
+  readonly GOOGLE_CLIENT_ID: string | undefined;
+  readonly GOOGLE_CLIENT_SECRET: string | undefined;
+  readonly GOOGLE_MAPS_API_KEY: string | undefined;
+  readonly MAILGUN_API_KEY: string | undefined;
+  readonly MAILGUN_DEV_FALLBACK: string | undefined;
+  readonly MAILGUN_DOMAIN: string | undefined;
 };
 
 /**

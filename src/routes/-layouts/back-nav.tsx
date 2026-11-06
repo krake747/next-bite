@@ -8,7 +8,7 @@ type BackNavProps = {
 
 export function BackNav({ backTo, label }: Readonly<BackNavProps>) {
     return (
-        <div data-slot="back-nav" className="border-b border-stone-200/60 py-4">
+        <div data-slot="back-nav" className="border-b border-border py-4">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <Link
                     to={backTo}

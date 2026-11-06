@@ -1,7 +1,7 @@
 import { cva, type VariantProps } from "@ui/cva.config"
 
 const brandIcon = cva({
-    base: "flex items-center justify-center rounded-card bg-primary text-white shadow-popover",
+    base: "flex items-center justify-center rounded-card bg-primary text-inverse shadow-popover",
     variants: {
         size: {
             sm: "size-12",

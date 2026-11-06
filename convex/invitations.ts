@@ -2,8 +2,7 @@ import { v } from "convex/values"
 
 import { internal } from "./_generated/api"
 import { mutation, query } from "./_generated/server"
-import { requireMembership } from "./groups"
-import { FALLBACK_DISPLAY_NAME, FALLBACK_GROUP_NAME, requireUserId } from "./helpers"
+import { FALLBACK_DISPLAY_NAME, FALLBACK_GROUP_NAME, requireMembership, requireUserId } from "./helpers"
 import { inviteTargetValidator } from "./validators"
 
 const INVITE_TTL_MS = 7 * 24 * 60 * 60 * 1000
@@ -33,6 +32,8 @@ export const createInvite = mutation({
 })
 
 export const getInvite = query({
+    // Public on purpose: the token is the bearer credential. Reading reveals nothing beyond
+    // what the token holder already has; acceptance validates server side per ADR-0018.
     args: {
         token: v.string(),
     },

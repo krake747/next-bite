@@ -421,8 +421,8 @@ describe("restaurant collections", () => {
         await vi.waitFor(() => {
             expect(vi.mocked(authClient.getSession)).toHaveBeenCalled()
         })
-        await new Promise((resolve) => {
-            setTimeout(resolve, 50)
+        await vi.waitFor(() => {
+            expect(result.current.authed).toBe(false)
         })
         expect(result.current.authed).toBe(false)
         expect(result.current.restaurants).toBeUndefined()
@@ -487,8 +487,8 @@ describe("restaurant collections", () => {
             expect(vi.mocked(authClient.getSession)).toHaveBeenCalled()
         })
         // Session resolved but no convex token: no subscription, no rows.
-        await new Promise((resolve) => {
-            setTimeout(resolve, 50)
+        await vi.waitFor(() => {
+            expect(result.current).toBeUndefined()
         })
         expect(result.current).toBeUndefined()
         expect(gated.subscriberCount()).toBe(0)
@@ -528,7 +528,9 @@ describe("restaurant collections", () => {
             () => {
                 expect(result.current).toEqual([])
             },
-            { timeout: 8000 },
+            // Below the project timeout so a slow backend fails gracefully here instead of
+            // tripping the project timeout with no assertion to show for it.
+            { timeout: 2500 },
         )
         expect(flaky.attempts()).toBeGreaterThanOrEqual(3)
         expect(backend.subscriberCount()).toBeGreaterThan(0)

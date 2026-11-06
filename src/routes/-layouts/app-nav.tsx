@@ -33,7 +33,7 @@ export function AppNav({ onAddClick }: Readonly<{ onAddClick: () => void }>) {
         <nav
             aria-label="Primary"
             data-slot="app-nav"
-            className="fixed inset-x-0 bottom-0 z-40 border-t border-stone-200/60 bg-background/90 backdrop-blur-md md:static md:z-auto md:w-56 md:shrink-0 md:border-t-0 md:border-r md:bg-transparent md:backdrop-blur-none"
+            className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-background/90 backdrop-blur-md md:static md:z-auto md:w-56 md:shrink-0 md:border-t-0 md:border-r md:bg-transparent md:backdrop-blur-none"
         >
             <div className="mx-auto grid w-full max-w-350 grid-cols-5 gap-1 px-2 pt-2 pb-[calc(0.5rem+env(safe-area-inset-bottom))] md:flex md:flex-col md:gap-1 md:p-4">
                 <AppLink to={destinations[0].to} label={destinations[0].label} Icon={destinations[0].Icon} />

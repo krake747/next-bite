@@ -8,29 +8,23 @@ import { components } from "./_generated/api"
 import { type DataModel } from "./_generated/dataModel"
 import { query } from "./_generated/server"
 import authConfig from "./auth.config"
-import { sendOtpEmail, hasMailgunConfig, isMailDevFallback } from "./email"
-import { getValidatedConvexSiteUrl } from "./env"
+import { sendOtpEmail } from "./email"
+import {
+    getValidatedConvexSiteUrl,
+    githubCredentials,
+    googleCredentials,
+    hasGithubEnv,
+    hasGoogleEnv,
+    hasMailgunConfig,
+    isEmailOtpEnabled,
+    isMailDevFallback,
+} from "./env"
 
 const convexSiteUrl = getValidatedConvexSiteUrl()
 
-function isPresent(value: string | undefined): boolean {
-    return value !== undefined && value !== ""
-}
-
-function hasGoogleEnv(): boolean {
-    return isPresent(process.env.GOOGLE_CLIENT_ID) && isPresent(process.env.GOOGLE_CLIENT_SECRET)
-}
-
-function hasGithubEnv(): boolean {
-    return isPresent(process.env.GITHUB_CLIENT_ID) && isPresent(process.env.GITHUB_CLIENT_SECRET)
-}
-
-function isEmailOtpEnabled(): boolean {
-    return process.env.AUTH_EMAIL_OTP_ENABLED === "true"
-}
-
 export const authComponent = createClient<DataModel>(components.betterAuth)
 
+// Public on purpose: capability flags only, no secrets or user data.
 export const getAuthMethods = query({
     args: {},
     handler: () => ({
@@ -44,6 +38,8 @@ export const getAuthMethods = query({
 })
 
 export const createAuth = (ctx: GenericCtx<DataModel>) => {
+    const google = googleCredentials()
+    const github = githubCredentials()
     return betterAuth({
         baseURL: convexSiteUrl,
         trustedOrigins: [convexSiteUrl, "http://localhost:5173", "https://nextbite.kevinkraemer.com"],
@@ -55,20 +51,14 @@ export const createAuth = (ctx: GenericCtx<DataModel>) => {
             minPasswordLength: 8,
         },
         socialProviders: {
-            ...(hasGoogleEnv()
+            ...(google !== null
                 ? {
-                      google: {
-                          clientId: process.env.GOOGLE_CLIENT_ID ?? "",
-                          clientSecret: process.env.GOOGLE_CLIENT_SECRET ?? "",
-                      },
+                      google,
                   }
                 : {}),
-            ...(hasGithubEnv()
+            ...(github !== null
                 ? {
-                      github: {
-                          clientId: process.env.GITHUB_CLIENT_ID ?? "",
-                          clientSecret: process.env.GITHUB_CLIENT_SECRET ?? "",
-                      },
+                      github,
                   }
                 : {}),
         },

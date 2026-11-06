@@ -1,8 +1,10 @@
 import { createFileRoute, Link } from "@tanstack/react-router"
 import { useState } from "react"
 
+import { type Doc } from "@convex/_generated/dataModel"
 import { useAuth, useMyProfile, useMyStatuses, useRestaurants, useUpdateProfile } from "@core/hooks"
 import { orderFeedByRecency } from "@core/social"
+import { SignedOutGate } from "@routes/-components/signed-out-gate"
 import { PageContainer } from "@routes/-layouts/page-container"
 import { PageLayout } from "@routes/-layouts/page-layout"
 import { Button } from "@ui/button"
@@ -10,8 +12,6 @@ import { cx } from "@ui/cva.config"
 import { Header, HeaderSubtitle, HeaderTitle } from "@ui/header"
 import { LoadingPlaceholder } from "@ui/loading"
 import { control, fieldLabel } from "@ui/variants"
-
-import { type Doc } from "../../convex/_generated/dataModel"
 
 export const Route = createFileRoute("/you")({
     head: () => ({ meta: [{ title: "You - Next Bite" }] }),
@@ -192,8 +192,6 @@ function YouContent() {
 }
 
 function YouPage() {
-    const auth = useAuth()
-
     return (
         <PageLayout>
             <PageContainer>
@@ -201,16 +199,9 @@ function YouPage() {
                     <HeaderTitle>You</HeaderTitle>
                     <HeaderSubtitle>Your profile, saves, wants, and visits.</HeaderSubtitle>
                 </Header>
-                {!auth.isAuthenticated ? (
-                    <p className="pt-6 text-stone-600">
-                        <Link to="/login" viewTransition className="font-medium text-tomato-700 hover:underline">
-                            Sign in
-                        </Link>{" "}
-                        to see your profile.
-                    </p>
-                ) : (
+                <SignedOutGate context="your profile">
                     <YouContent />
-                )}
+                </SignedOutGate>
             </PageContainer>
         </PageLayout>
     )

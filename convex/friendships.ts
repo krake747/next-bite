@@ -44,6 +44,15 @@ export const requestFriend = mutation({
         if (args.friendAuthUserId === userId) {
             throw new Error("You cannot befriend yourself")
         }
+        // Befriending resolves against a real profile, like group adds do. Unknown ids fail
+        // here instead of leaving phantom pending rows nothing can ever accept.
+        const profile = await ctx.db
+            .query("profiles")
+            .withIndex("by_auth_user", (q) => q.eq("authUserId", args.friendAuthUserId))
+            .unique()
+        if (!profile) {
+            throw new Error("User not found")
+        }
         // Mutual interest completes the friendship instead of leaving crossed pendings.
         const incoming = await findRow(ctx.db, args.friendAuthUserId, userId)
         if (incoming && incoming.status === "pending") {

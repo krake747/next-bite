@@ -1,5 +1,6 @@
-import { api } from "../../convex/_generated/api"
-import { type Id } from "../../convex/_generated/dataModel"
+import { api } from "@convex/_generated/api"
+import { type Id } from "@convex/_generated/dataModel"
+
 import { useConvexMutation, useConvexQuery } from "./convex-client.tsx"
 import { useSessionStatus } from "./hooks"
 import { countReactions } from "./social-counts"
@@ -129,7 +130,7 @@ export function useSocialForRestaurant(
 ): RestaurantSocial | undefined {
     const status = useSessionStatus()
     const snapshot = useConvexQuery(api.social.getForRestaurant, { restaurantId }, { skip: status.kind !== "ready" })
-    if (snapshot === undefined) {
+    if (snapshot === undefined || snapshot === null) {
         return undefined
     }
     return summarizeSocial(restaurantId, snapshot, userId)

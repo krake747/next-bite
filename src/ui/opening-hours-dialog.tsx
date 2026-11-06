@@ -36,7 +36,7 @@ export function OpeningHoursDialog({
                     <p className="mb-4 text-sm text-stone-600">{restaurantName}</p>
 
                     <div className="mb-5 flex items-center gap-2">
-                        <Badge variant={openNow ? "success" : "neutral"}>{openStatusLabel(openingHours)}</Badge>
+                        <Badge tone={openNow ? "success" : "neutral"}>{openStatusLabel(openingHours)}</Badge>
                     </div>
 
                     <div className="flex flex-col gap-2">

@@ -25,10 +25,10 @@ export function PopoverTrigger({
     tone,
     className,
     children,
-    ...rest
-}: VariantProps<typeof trigger> & Omit<React.ComponentProps<typeof BasePopover.Trigger>, "render">) {
+    ...props
+}: Readonly<VariantProps<typeof trigger> & React.ComponentProps<typeof BasePopover.Trigger>>) {
     return (
-        <BasePopover.Trigger data-slot="popover-trigger" className={cx(trigger({ tone }), className)} {...rest}>
+        <BasePopover.Trigger data-slot="popover-trigger" className={cx(trigger({ tone }), className)} {...props}>
             {children}
         </BasePopover.Trigger>
     )

@@ -57,14 +57,14 @@ type AvatarProps = VariantProps<typeof avatar> &
         readonly children: React.ReactNode
     }
 
-export function Avatar({ size, ring, className, children, ...rest }: Readonly<AvatarProps>) {
+export function Avatar({ size, ring, className, children, ...props }: Readonly<AvatarProps>) {
     const resolvedSize = size ?? "sm"
     return (
         <AvatarSizeContext value={resolvedSize}>
             <BaseAvatar.Root
                 data-slot="avatar"
                 className={cx(avatar({ size: resolvedSize, ring }), className)}
-                {...rest}
+                {...props}
             >
                 {children}
             </BaseAvatar.Root>
@@ -84,6 +84,7 @@ export function AvatarImage({
 >) {
     return (
         <BaseAvatar.Image
+            data-slot="avatar-image"
             src={src}
             alt={alt}
             className={cx("size-full rounded-full object-cover", className)}
@@ -96,6 +97,7 @@ export function AvatarFallback({ name, className }: Readonly<{ name: string; cla
     const size = use(AvatarSizeContext)
     return (
         <BaseAvatar.Fallback
+            data-slot="avatar-fallback"
             aria-label={name}
             className={cx(
                 "flex size-full items-center justify-center rounded-full bg-tomato-100 text-tomato-700",
@@ -111,6 +113,7 @@ export function AvatarFallback({ name, className }: Readonly<{ name: string; cla
 export function AvatarPresence({ className }: Readonly<{ className?: string | undefined }>) {
     return (
         <span
+            data-slot="avatar-presence"
             aria-hidden="true"
             className={cx(
                 "absolute -right-0.5 -bottom-0.5 size-3 rounded-full bg-success ring-2 ring-surface",

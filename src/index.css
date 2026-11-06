@@ -62,6 +62,8 @@
     --color-destructive: oklch(0.522 0.172 27.78);
     --color-info: oklch(0.567 0.066 244.09);
     --color-ring: var(--color-tomato-600);
+    --color-inverse: oklch(1 0 0);
+    --color-scrim: oklch(0 0 0 / 0.6);
 
     /* Typography */
     --font-sans: "DM Sans Variable", system-ui, sans-serif;

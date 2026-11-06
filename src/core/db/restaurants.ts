@@ -48,7 +48,7 @@ export type RestaurantCoords = {
 
 export type RestaurantImageInput = {
     readonly url: string
-    readonly storageId: string
+    readonly storageId: Id<"_storage">
 }
 
 export type RestaurantUpdateArgs = {
@@ -80,8 +80,8 @@ export type RestaurantPersist = {
     readonly addRestaurant: (args: RestaurantAddArgs) => Promise<Id<"restaurants">>
 }
 
-export function copyStoredImages(
-    images: ReadonlyArray<Readonly<{ url: string; storageId: string }>>,
+function copyStoredImages(
+    images: ReadonlyArray<Readonly<{ url: string; storageId: Id<"_storage"> }>>,
 ): RestaurantImageInput[] {
     return images.map((img) => ({ url: img.url, storageId: img.storageId }))
 }
@@ -161,7 +161,7 @@ export function toAddArgs(row: RestaurantDoc): RestaurantAddArgs {
     }
 }
 
-export function isTempRestaurantId(id: Id<"restaurants">): boolean {
+function isTempRestaurantId(id: Id<"restaurants">): boolean {
     return isTempId(String(id))
 }
 
@@ -231,7 +231,7 @@ export async function resolveRestaurantIdByKey(
     }
 }
 
-export function createRestaurantCollections(syncClient: SyncClient, persist: RestaurantPersist) {
+function createRestaurantCollections(syncClient: SyncClient, persist: RestaurantPersist) {
     const shared = {
         client: syncClient,
         getKey: (item: RestaurantDoc) => item._id,
@@ -278,7 +278,7 @@ export function getSessionCollections(
 
 const USER_SCOPED_QUERY_PREFIXES = ["restaurants:", "friendships:", "social:", "users:", "groups:", "shares:"]
 
-export function isUserScopedQueryKey(queryKey: ReadonlyArray<unknown>): boolean {
+function isUserScopedQueryKey(queryKey: ReadonlyArray<unknown>): boolean {
     const [namespace] = queryKey
     return typeof namespace === "string" && USER_SCOPED_QUERY_PREFIXES.some((prefix) => namespace.startsWith(prefix))
 }

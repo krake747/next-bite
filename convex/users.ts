@@ -2,22 +2,8 @@ import { v } from "convex/values"
 
 import { type Doc } from "./_generated/dataModel"
 import { mutation, query } from "./_generated/server"
-import { authComponent } from "./auth"
-import { formatDisplayName, requireUserId } from "./helpers"
+import { formatDisplayName, readAuthUser, requireUserId } from "./helpers"
 import { imageObjectValidator } from "./validators"
-
-type AuthUserRecord = {
-    name?: string | null | undefined
-    email?: string | null | undefined
-}
-
-async function readAuthUser(ctx: Parameters<typeof authComponent.getAuthUser>[0]): Promise<AuthUserRecord | undefined> {
-    try {
-        return await authComponent.getAuthUser(ctx)
-    } catch {
-        return undefined
-    }
-}
 
 export const ensureProfile = mutation({
     args: {

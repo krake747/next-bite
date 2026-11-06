@@ -68,7 +68,7 @@ function GalleryShell({
     }
 
     return (
-        <DialogBackdrop variant="fullscreen" tone="dark">
+        <DialogBackdrop variant="fullscreen" tone="darkest">
             <DialogPanel
                 size="full"
                 padding="none"
@@ -84,7 +84,7 @@ function GalleryShell({
                     <button
                         type="button"
                         onClick={onClose}
-                        className="rounded-full p-2 text-white hover:bg-surface/20"
+                        className="rounded-full p-2 text-inverse hover:bg-surface/20"
                         aria-label="Close gallery"
                     >
                         <X className="size-6" />

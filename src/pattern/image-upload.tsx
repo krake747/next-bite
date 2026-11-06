@@ -42,7 +42,7 @@ type ImageUploadProps = {
     readonly onImagesChange: (images: ReadonlyArray<Readonly<ImageRecord>>) => void
     readonly disabled?: boolean | undefined
     readonly restaurantId?: Id<"restaurants"> | undefined
-    readonly onRemove?: ((storageId: string) => void) | undefined
+    readonly onRemove?: ((storageId: Id<"_storage">) => void) | undefined
 }
 
 export function ImageUpload(props: Readonly<ImageUploadProps>) {
@@ -238,7 +238,7 @@ function ImagePreview({
                 <button
                     type="button"
                     onClick={onRemove}
-                    className="absolute top-1 right-1 rounded-full bg-destructive p-1 text-white opacity-0 shadow-md transition-opacity duration-150 ease group-hover:opacity-100 hover:bg-destructive/90 focus:opacity-100 focus-visible:opacity-100 active:opacity-100 pointer-coarse:opacity-100"
+                    className="absolute top-1 right-1 rounded-full bg-destructive p-1 text-inverse opacity-0 shadow-md transition-opacity duration-150 ease group-hover:opacity-100 hover:bg-destructive/90 focus:opacity-100 focus-visible:opacity-100 active:opacity-100 pointer-coarse:opacity-100"
                     aria-label="Remove image"
                 >
                     <X className="size-3" />

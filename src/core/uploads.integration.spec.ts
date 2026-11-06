@@ -22,14 +22,15 @@ async function registerUser(t: TestConvexForDataModel<DataModel>, subject: strin
     await asUser(t, subject).mutation(api.users.ensureProfile, { email: `${subject}@example.com`, name: subject })
 }
 
-async function storeBlob(t: TestConvexForDataModel<DataModel>): Promise<string> {
+async function storeBlob(t: TestConvexForDataModel<DataModel>): Promise<Id<"_storage">> {
     const storageId: unknown = await t.run(async (ctx) =>
         ctx.storage.store(new Blob(["pixels"], { type: "image/jpeg" })),
     )
     if (typeof storageId !== "string") {
         throw new TypeError("Expected storage to return an ID string")
     }
-    return storageId
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- test storage mints real storage ids; the backend revalidates the table at every boundary
+    return storageId as Id<"_storage">
 }
 async function createRestaurant(t: TestConvexForDataModel<DataModel>, subject: string): Promise<Id<"restaurants">> {
     return asUser(t, subject).action(api.restaurants.addWithOpeningHours, {
@@ -39,14 +40,18 @@ async function createRestaurant(t: TestConvexForDataModel<DataModel>, subject: s
     })
 }
 
-async function recordUpload(t: TestConvexForDataModel<DataModel>, storageId: string, ownerId: string): Promise<void> {
+async function recordUpload(
+    t: TestConvexForDataModel<DataModel>,
+    storageId: Id<"_storage">,
+    ownerId: string,
+): Promise<void> {
     await t.mutation(internal.uploads.record, { storageId, ownerId })
 }
 
 async function insertRestaurantWithImages(
     t: TestConvexForDataModel<DataModel>,
     subject: string,
-    images: { url: string; storageId: string }[],
+    images: { url: string; storageId: Id<"_storage"> }[],
 ): Promise<Id<"restaurants">> {
     const { restaurantId } = await t.mutation(internal.restaurants._insertRestaurant, {
         ownerId: subject,
@@ -63,7 +68,7 @@ async function attachImage(
     t: TestConvexForDataModel<DataModel>,
     subject: string,
     restaurantId: Id<"restaurants">,
-    storageId: string,
+    storageId: Id<"_storage">,
 ): Promise<void> {
     await asUser(t, subject).mutation(api.restaurants.update, {
         id: restaurantId,
@@ -71,7 +76,7 @@ async function attachImage(
     })
 }
 
-function imageEntry(storageId: string): { url: string; storageId: string } {
+function imageEntry(storageId: Id<"_storage">): { url: string; storageId: Id<"_storage"> } {
     return { url: `https://example.com/${storageId}.jpg`, storageId }
 }
 

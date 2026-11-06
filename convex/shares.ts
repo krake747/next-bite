@@ -3,9 +3,13 @@ import { v } from "convex/values"
 
 import { type DataModel, type Doc, type Id } from "./_generated/dataModel"
 import { mutation, query, type MutationCtx } from "./_generated/server"
-import { requireMembership } from "./groups"
-import { FALLBACK_GROUP_NAME, formatDisplayName, requireUserId } from "./helpers"
-import { requireOwnedRestaurant } from "./restaurants"
+import {
+    FALLBACK_GROUP_NAME,
+    formatDisplayName,
+    requireMembership,
+    requireOwnedRestaurant,
+    requireUserId,
+} from "./helpers"
 import { shareTargetValidator } from "./validators"
 
 type ShareTarget = Doc<"restaurantShares">["target"]

@@ -1,5 +1,7 @@
 import * as v from "valibot"
 
+import { type Id } from "../../convex/_generated/dataModel"
+
 export const RestaurantSchema = v.object({
     name: v.pipe(v.string(), v.minLength(1, "Name is required")),
     cuisine: v.pipe(v.string(), v.minLength(1, "Cuisine is required")),
@@ -19,7 +21,9 @@ export type RestaurantOutput = v.InferOutput<typeof RestaurantSchema>
 
 const imageRecordSchema = v.object({
     url: v.pipe(v.string(), v.minLength(1)),
-    storageId: v.pipe(v.string(), v.minLength(1)),
+    // The upload endpoint returns the storage id as a JSON string. Brand it here at the parse
+    // boundary; the backend revalidates the table on every call, so this proves plumbing only.
+    storageId: v.custom<Id<"_storage">>((value) => typeof value === "string" && value.length > 0),
 })
 
 export type ImageRecord = v.InferOutput<typeof imageRecordSchema>

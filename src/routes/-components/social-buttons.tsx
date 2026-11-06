@@ -12,7 +12,7 @@ export function SocialButtons({ google, github }: Readonly<{ google: boolean; gi
             {google && (
                 <PendingButton
                     type="button"
-                    variant="secondary"
+                    tone="secondary"
                     className="w-full"
                     pending={auth.isLoading}
                     onClick={() => {
@@ -26,7 +26,7 @@ export function SocialButtons({ google, github }: Readonly<{ google: boolean; gi
             {github && (
                 <PendingButton
                     type="button"
-                    variant="secondary"
+                    tone="secondary"
                     className="w-full"
                     pending={auth.isLoading}
                     onClick={() => {

@@ -22,7 +22,7 @@ export function LandingActions() {
             <Button render={<Link to="/signup" viewTransition />} size="lg">
                 Get Started
             </Button>
-            <Button render={<Link to="/login" viewTransition />} variant="secondary" size="lg">
+            <Button render={<Link to="/login" viewTransition />} tone="secondary" size="lg">
                 Sign In
             </Button>
         </div>
