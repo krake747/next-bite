@@ -1,7 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router"
 import { useState } from "react"
 
-import { useRestaurants, useAuth, type Restaurant } from "@core/hooks"
+import { useVisibleRestaurant, useAuth, type Restaurant } from "@core/hooks"
 import {
     emptySocial,
     useAddComment,
@@ -189,22 +189,20 @@ function RestaurantDetail() {
     const { restaurantId } = Route.useParams()
     const navigate = useNavigate()
     const auth = useAuth()
-    const restaurants = useRestaurants()
-    const userId = auth.user?.id ?? null
     // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- single documented boundary conversion from router param
     const restaurantConvexId = restaurantId as unknown as Id<"restaurants">
+    const restaurant = useVisibleRestaurant(restaurantConvexId)
+    const userId = auth.user?.id ?? null
     const restaurantSocial = useSocialForRestaurant(restaurantConvexId, userId)
     const toggleInterest = useToggleInterest()
     const toggleLike = useToggleLike()
     const [showHours, setShowHours] = useState(false)
 
-    const restaurant = restaurants?.find((r) => r._id === restaurantId)
-
-    if (restaurants === undefined) {
+    if (restaurant === undefined || auth.isLoading) {
         return <DetailLoading />
     }
 
-    if (restaurant === undefined) {
+    if (restaurant === null) {
         return <DetailNotFound />
     }
 

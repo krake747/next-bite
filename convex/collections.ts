@@ -6,7 +6,7 @@ import { type Doc, type Id } from "./_generated/dataModel"
 import { mutation, query } from "./_generated/server"
 import { requireMembership } from "./groups"
 import { requireUserId } from "./helpers"
-import { isRestaurantVisibleTo } from "./shares"
+import { isRestaurantVisibleTo } from "./visibility"
 
 type CollectionRow = Doc<"collections">
 

@@ -5,7 +5,7 @@ import { type DataModel, type Doc, type Id } from "./_generated/dataModel"
 import { mutation, query } from "./_generated/server"
 import { authComponent } from "./auth"
 import { FALLBACK_DISPLAY_NAME, formatDisplayName, requireUserId } from "./helpers"
-import { isRestaurantVisibleTo } from "./shares"
+import { isRestaurantVisibleTo } from "./visibility"
 
 async function serverDisplayName(ctx: Parameters<typeof authComponent.getAuthUser>[0]): Promise<string> {
     try {
