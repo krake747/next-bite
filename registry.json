@@ -6,7 +6,7 @@
         {
             "name": "button",
             "type": "registry:ui",
-            "description": "Tomato primary, secondary, outline, ghost, destructive. Small, medium, large, icon. Loading state.",
+            "description": "Tomato primary, secondary, outline, ghost, destructive. Small, medium, large.",
             "files": [{ "path": "src/ui/button.tsx", "type": "registry:ui" }]
         },
         {
@@ -58,10 +58,70 @@
             "files": [{ "path": "src/ui/skeleton.tsx", "type": "registry:ui" }]
         },
         {
+            "name": "icon-button",
+            "type": "registry:ui",
+            "description": "Icon-only button with required accessible label. Neutral, destructive, plain, inverse tones; extra-small to large.",
+            "files": [{ "path": "src/ui/icon-button.tsx", "type": "registry:ui" }]
+        },
+        {
+            "name": "text-link",
+            "type": "registry:ui",
+            "description": "Inline link composing Base UI useRender with a framework-provided render element.",
+            "files": [{ "path": "src/ui/text-link.tsx", "type": "registry:ui" }]
+        },
+        {
+            "name": "brand-icon",
+            "type": "registry:ui",
+            "description": "Solid tomato brand tile in small, medium, and large sizes.",
+            "files": [{ "path": "src/ui/brand-icon.tsx", "type": "registry:ui" }]
+        },
+        {
+            "name": "header",
+            "type": "registry:ui",
+            "description": "Page header shell with display title, subtitle, count badge, and squiggle underline.",
+            "files": [{ "path": "src/ui/header.tsx", "type": "registry:ui" }]
+        },
+        {
+            "name": "search-input",
+            "type": "registry:ui",
+            "description": "Search field with icon and clear button, controlled or uncontrolled.",
+            "files": [{ "path": "src/ui/search-input.tsx", "type": "registry:ui" }]
+        },
+        {
+            "name": "error-banner",
+            "type": "registry:ui",
+            "description": "Alert banner for form and page errors with icon.",
+            "files": [{ "path": "src/ui/error-banner.tsx", "type": "registry:ui" }]
+        },
+        {
+            "name": "opening-hours",
+            "type": "registry:ui",
+            "description": "Today's hours with open-now status; opens the full week on click.",
+            "files": [{ "path": "src/ui/opening-hours.tsx", "type": "registry:ui" }]
+        },
+        {
+            "name": "background-decoration",
+            "type": "registry:ui",
+            "description": "Ambient page background: grain texture with a warm tomato wash.",
+            "files": [{ "path": "src/ui/background-decoration.tsx", "type": "registry:ui" }]
+        },
+        {
             "name": "avatar-group",
             "type": "registry:component",
             "description": "Overlapping friend avatars with overflow count and accessible label.",
-            "files": [{ "path": "src/features/social/avatar-group.tsx", "type": "registry:component" }]
+            "files": [{ "path": "src/pattern/avatar-group.tsx", "type": "registry:component" }]
+        },
+        {
+            "name": "friend-presence",
+            "type": "registry:component",
+            "description": "Display-only active/away dot with screen-reader label.",
+            "files": [{ "path": "src/features/social/friend-presence.tsx", "type": "registry:component" }]
+        },
+        {
+            "name": "social-metadata",
+            "type": "registry:component",
+            "description": "Human-language attribution lines: added-by, want counts, visit counts.",
+            "files": [{ "path": "src/features/social/social-metadata.tsx", "type": "registry:component" }]
         },
         {
             "name": "reaction-bar",

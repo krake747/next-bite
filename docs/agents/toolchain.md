@@ -64,6 +64,11 @@ release. Authenticated journeys run against the dev deployment, not mocks: sync 
 with `npx convex dev --once`, and read backend failures with `npx convex logs --history` — the
 client surfaces only a request ID.
 
+Manual preview: `pnpm build && npx wrangler dev --config e2e/worker.preview.toml --port 5193` serves
+the production bundle. It forces `DEV=false`, so dev-gated routes like `/ds` redirect; use a plain
+dev server when `DEV=true` matters. Dev-SSR 500s are pre-existing React-duplication noise:
+sanity-check `/` before blaming your change.
+
 ## Convex
 
 ```
@@ -98,9 +103,9 @@ deploying; never print secret values.
 The server never holds a session, so anonymous SSR renders public shells only, never private data.
 Proven by the Playwright gate against the Worker preview:
 
-- Public routes render server-side: `/` and `/design-system` plus the Friends, Groups, and You stubs
-  assert headings in raw HTML, with zero client-render fallbacks and zero hydration page errors
-  across the painted journeys.
+- Public routes render server-side: `/` and `/ds` plus the Friends, Groups, and You stubs assert
+  headings in raw HTML, with zero client-render fallbacks and zero hydration page errors across the
+  painted journeys.
 - Restaurant detail renders the loading shell anonymously: no name, notes, photos, or social
   content, with the static details title as the metadata ceiling. Resolvable-but-invisible records
   paint the not-found card once the client confirms no access; unresolvable IDs stay on the shell
