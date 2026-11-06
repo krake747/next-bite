@@ -1,11 +1,11 @@
 import ImagePlus from "lucide-react/icons/image-plus"
 import Upload from "lucide-react/icons/upload"
 import X from "lucide-react/icons/x"
-import { useState, useRef } from "react"
+import { useEffect, useRef, useState } from "react"
 
 import { type Id } from "@convex/_generated/dataModel"
 import { MAX_IMAGES } from "@core/constants"
-import { useUploadImage, useDeleteImage, type ImageRecord } from "@core/hooks"
+import { useCleanupStorage, useUploadImage, useDeleteImage, type ImageRecord } from "@core/hooks"
 import {
     extensionForMime,
     formatFileSize,
@@ -45,13 +45,54 @@ type ImageUploadProps = {
     readonly onRemove?: ((storageId: Id<"_storage">) => void) | undefined
 }
 
+function mergeImages(
+    current: ReadonlyArray<Readonly<ImageRecord>>,
+    additions: ReadonlyArray<Readonly<ImageRecord>>,
+): Readonly<ImageRecord>[] {
+    const known = new Set(current.map((image) => image.storageId))
+    const merged: Readonly<ImageRecord>[] = [...current]
+    for (const image of additions) {
+        if (!known.has(image.storageId)) {
+            known.add(image.storageId)
+            merged.push(image)
+        }
+    }
+    return merged
+}
+
 export function ImageUpload(props: Readonly<ImageUploadProps>) {
     const uploadImage = useUploadImage()
+    const cleanupStorage = useCleanupStorage()
     const deleteImage = useDeleteImage()
     const [isUploading, setIsUploading] = useState(false)
     const [uploadError, setUploadError] = useState<string | null>(null)
     const [isDragging, setIsDragging] = useState(false)
     const fileInputRef = useRef<HTMLInputElement>(null)
+    const batchRef = useRef(0)
+    const mountedRef = useRef(true)
+    const latestImagesRef = useRef(props.images)
+    latestImagesRef.current = props.images
+
+    // A batch is owned by the mount that started it. Closing or unmounting the
+    // dialog invalidates in-flight batches. While mounted, a late completion
+    // still belongs to the draft and merges into the latest gallery; after
+    // unmount it is cleaned up so nothing is stranded.
+    useEffect(() => {
+        return () => {
+            mountedRef.current = false
+            batchRef.current += 1
+        }
+    }, [])
+
+    const handleStaleCompletion = async (result: ImageRecord): Promise<void> => {
+        if (mountedRef.current) {
+            props.onImagesChange(mergeImages(latestImagesRef.current, [result]))
+        } else {
+            await cleanupStorage.mutateAsync({ storageId: result.storageId }).catch((error: unknown) => {
+                console.warn("Failed to cleanup cancelled upload:", result.storageId, error)
+            })
+        }
+    }
 
     const handleFiles = async (files: FileListLike) => {
         const fileArray = Array.from(files).filter((f) => isAcceptedImageType(f.type))
@@ -61,6 +102,10 @@ export function ImageUpload(props: Readonly<ImageUploadProps>) {
             return
         }
 
+        const batch = batchRef.current + 1
+        batchRef.current = batch
+        const isCurrent = () => batchRef.current === batch
+
         setIsUploading(true)
         setUploadError(null)
 
@@ -68,20 +113,30 @@ export function ImageUpload(props: Readonly<ImageUploadProps>) {
 
         try {
             for (const file of filesToProcess) {
+                if (!isCurrent()) {
+                    break
+                }
                 const processed = await processImage(file)
                 const extension = extensionForMime(processed.blob.type)
                 const baseName = file.name.replace(/\.[^.]+$/, "")
                 const processedFileName = baseName + extension
                 const processedFile = new File([processed.blob], processedFileName, { type: processed.blob.type })
                 const result = await uploadImage(processedFile)
+                if (!isCurrent()) {
+                    await handleStaleCompletion(result)
+                    break
+                }
                 newImages.push({ url: result.url, storageId: result.storageId })
+                props.onImagesChange(mergeImages(latestImagesRef.current, newImages))
             }
-
-            props.onImagesChange([...props.images, ...newImages])
         } catch (error) {
-            setUploadError(error instanceof Error ? error.message : "Upload failed")
+            if (isCurrent()) {
+                setUploadError(error instanceof Error ? error.message : "Upload failed")
+            }
         } finally {
-            setIsUploading(false)
+            if (isCurrent()) {
+                setIsUploading(false)
+            }
         }
     }
 
@@ -160,7 +215,7 @@ export function ImageUpload(props: Readonly<ImageUploadProps>) {
             </div>
 
             {props.images.length > 0 && (
-                <div className="grid grid-cols-3 gap-2 sm:grid-cols-4">
+                <div data-slot="image-preview-list" className="grid grid-cols-3 gap-2 sm:grid-cols-4">
                     {props.images.map((image, index) => (
                         <ImagePreview
                             key={image.storageId}
@@ -181,6 +236,7 @@ export function ImageUpload(props: Readonly<ImageUploadProps>) {
                         type="file"
                         multiple
                         accept={IMAGE_ACCEPT}
+                        data-slot="image-upload-input"
                         className="hidden"
                         onChange={handleFileInputChange}
                     />

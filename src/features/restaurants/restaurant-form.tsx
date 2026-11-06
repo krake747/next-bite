@@ -1,4 +1,5 @@
 import { Form, reset, setInput, useForm } from "@formisch/react"
+import { useEffect, useRef } from "react"
 
 import { useAddRestaurantWithHours, useUpdateRestaurant, type Restaurant } from "@core/hooks"
 import { RestaurantSchema, type RestaurantOutput } from "@core/schemas"
@@ -9,8 +10,19 @@ import { LinkField, LocationSection, NameCuisineFields, NotesSection, RatingSect
 import { useRestaurantImages } from "./use-restaurant-images"
 
 export type RestaurantFormProps =
-    | { mode: "add"; onSuccess: () => void; onCancel: () => void }
-    | { mode: "edit"; restaurant: Restaurant; onSuccess: () => void; onCancel: () => void }
+    | {
+          mode: "add"
+          onSuccess: () => void
+          onCancel: () => void
+          onDiscardReady: (discard: () => Promise<void>) => void
+      }
+    | {
+          mode: "edit"
+          restaurant: Restaurant
+          onSuccess: () => void
+          onCancel: () => void
+          onDiscardReady: (discard: () => Promise<void>) => void
+      }
 
 type StripUndefined<T extends Record<string, unknown>> = {
     [K in keyof T as undefined extends T[K] ? K : never]+?: Exclude<T[K], undefined>
@@ -30,6 +42,7 @@ export function RestaurantForm(props: Readonly<RestaurantFormProps>) {
     const gallery = useRestaurantImages(props.mode === "edit" ? props.restaurant.images : [], {
         discardShouldCleanup: props.mode === "add",
     })
+    const submittedRef = useRef(false)
 
     const form = useForm({
         schema: RestaurantSchema,
@@ -49,11 +62,18 @@ export function RestaurantForm(props: Readonly<RestaurantFormProps>) {
             : {}),
     })
 
-    const handleClose = async () => {
-        await gallery.discardChanges()
-        reset(form)
-        props.onCancel()
-    }
+    useEffect(() => {
+        props.onDiscardReady(async () => {
+            // A submitted draft already handed its images to persisted
+            // ownership. Discarding afterwards must never remove them, no
+            // matter when the close runs relative to the submit.
+            if (submittedRef.current) {
+                return
+            }
+            await gallery.discardChanges()
+            reset(form)
+        })
+    }, [props.onDiscardReady, gallery, form])
 
     const handleLocationChange = (address: string, lat?: number, lng?: number) => {
         setInput(form, { path: ["location"], input: address })
@@ -89,6 +109,7 @@ export function RestaurantForm(props: Readonly<RestaurantFormProps>) {
             }
             reset(form)
             gallery.resetImages()
+            submittedRef.current = true
             props.onSuccess()
         } catch (error) {
             console.error(`Error ${props.mode === "add" ? "adding" : "updating"} restaurant:`, error)
@@ -116,7 +137,7 @@ export function RestaurantForm(props: Readonly<RestaurantFormProps>) {
                     type="button"
                     tone="secondary"
                     onClick={() => {
-                        void handleClose()
+                        props.onCancel()
                     }}
                 >
                     Cancel

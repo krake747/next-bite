@@ -1,5 +1,6 @@
 import { Link } from "@tanstack/react-router"
 import UtensilsCrossed from "lucide-react/icons/utensils-crossed"
+import { useRef } from "react"
 
 import { useAuth, type Restaurant } from "@core/hooks"
 import { Button } from "@ui/button"
@@ -16,12 +17,28 @@ export function RestaurantDialog(props: RestaurantDialogProps) {
     const title = props.mode === "add" ? "Add Restaurant" : "Edit Restaurant"
     const gateText = props.mode === "add" ? "Please sign in to add restaurants." : "Please sign in to edit restaurants."
 
+    // Every dialog exit shares one ownership policy: the form's discard runs on
+    // explicit Cancel, backdrop clicks, and Escape alike, so staged uploads are
+    // never stranded by the exit path taken.
+    const discardRef = useRef<() => Promise<void>>(async () => {})
+    const registerDiscard = (discard: () => Promise<void>) => {
+        discardRef.current = discard
+    }
     const close = () => {
-        props.onOpenChange(false)
+        void discardRef.current().then(() => {
+            props.onOpenChange(false)
+        })
+    }
+    const handleOpenChange = (open: boolean) => {
+        if (open) {
+            props.onOpenChange(open)
+        } else {
+            close()
+        }
     }
 
     return (
-        <Dialog show={props.show} onOpenChange={props.onOpenChange}>
+        <Dialog show={props.show} onOpenChange={handleOpenChange}>
             <DialogBackdrop>
                 <DialogPanel size="md" className="max-h-[85vh]">
                     <div className="mb-6 flex items-center gap-3">
@@ -33,13 +50,19 @@ export function RestaurantDialog(props: RestaurantDialogProps) {
 
                     {auth.isAuthenticated ? (
                         props.mode === "add" ? (
-                            <RestaurantForm mode="add" onSuccess={close} onCancel={close} />
+                            <RestaurantForm
+                                mode="add"
+                                onSuccess={close}
+                                onCancel={close}
+                                onDiscardReady={registerDiscard}
+                            />
                         ) : (
                             <RestaurantForm
                                 mode="edit"
                                 restaurant={props.restaurant}
                                 onSuccess={close}
                                 onCancel={close}
+                                onDiscardReady={registerDiscard}
                             />
                         )
                     ) : (
