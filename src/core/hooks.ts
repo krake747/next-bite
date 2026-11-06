@@ -1,5 +1,6 @@
 import { api } from "../../convex/_generated/api"
 import { type Doc, type Id } from "../../convex/_generated/dataModel"
+import { getConvexSessionToken } from "./auth-client"
 import { useAuth } from "./auth-provider"
 import { useConvexQuery, useConvexMutation, useConvexAction } from "./convex-client.tsx"
 import { env } from "./env"
@@ -37,11 +38,15 @@ export const useLookupPlaceIdAndHours = () => useConvexAction(api.restaurants.lo
 
 export function useUploadImage() {
     return async (file: Readonly<File>): Promise<ImageRecord> => {
+        const token = await getConvexSessionToken()
+        if (token === null) {
+            throw new Error("Sign in to upload photos")
+        }
         const uploadUrl = `${env.VITE_CONVEX_SITE_URL}/upload`
 
         const response = await fetch(uploadUrl, {
             method: "POST",
-            headers: { "Content-Type": file.type },
+            headers: { "Content-Type": file.type, Authorization: `Bearer ${token}` },
             body: file,
         })
 

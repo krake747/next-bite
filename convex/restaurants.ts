@@ -491,7 +491,12 @@ export const remove = mutation({
 
         for (const img of restaurant.images) {
             try {
+                const owner = await ctx.runQuery(internal.uploads.ownerByStorage, { storageId: img.storageId })
+                if (owner !== null && owner !== restaurant.ownerId) {
+                    continue
+                }
                 await ctx.storage.delete(asStorageId(img.storageId))
+                await ctx.runMutation(internal.uploads.removeRecord, { storageId: img.storageId })
             } catch (error) {
                 console.warn("Failed to delete orphaned image:", img.storageId, error)
             }
@@ -510,9 +515,20 @@ export const deleteImage = mutation({
     handler: async (ctx, args) => {
         const restaurant = await requireOwnedRestaurant(ctx, args.restaurantId)
 
-        await ctx.storage.delete(asStorageId(args.storageId))
+        const entry = restaurant.images.find((img) => img.storageId === args.storageId)
+        if (!entry || entry.url !== args.imageUrl) {
+            throw new Error("Storage ID is not part of this restaurant")
+        }
 
-        const updatedImages = restaurant.images.filter((img) => img.url !== args.imageUrl)
+        const owner = await ctx.runQuery(internal.uploads.ownerByStorage, { storageId: args.storageId })
+        if (owner !== null && owner !== restaurant.ownerId) {
+            throw new Error("Unauthorized: storage does not belong to you")
+        }
+
+        await ctx.storage.delete(asStorageId(args.storageId))
+        await ctx.runMutation(internal.uploads.removeRecord, { storageId: args.storageId })
+
+        const updatedImages = restaurant.images.filter((img) => img.storageId !== args.storageId)
         if (updatedImages.length !== restaurant.images.length) {
             await ctx.db.patch(args.restaurantId, { images: updatedImages })
         }
@@ -530,9 +546,13 @@ export const cleanupStorage = mutation({
             throw new Error("Unauthorized: authentication required")
         }
 
-        await ctx.storage.delete(asStorageId(args.storageId))
-
         if (args.restaurantId === undefined) {
+            const owner = await ctx.runQuery(internal.uploads.ownerByStorage, { storageId: args.storageId })
+            if (owner === null || owner !== identity.subject) {
+                throw new Error("Unauthorized: storage does not belong to you")
+            }
+            await ctx.storage.delete(asStorageId(args.storageId))
+            await ctx.runMutation(internal.uploads.removeRecord, { storageId: args.storageId })
             return
         }
 
@@ -543,6 +563,19 @@ export const cleanupStorage = mutation({
         if (restaurant.ownerId !== identity.subject) {
             throw new Error("Unauthorized: only the owner can change this restaurant")
         }
+
+        const entry = restaurant.images.find((img) => img.storageId === args.storageId)
+        if (!entry) {
+            throw new Error("Storage ID is not part of this restaurant")
+        }
+
+        const owner = await ctx.runQuery(internal.uploads.ownerByStorage, { storageId: args.storageId })
+        if (owner !== null && owner !== restaurant.ownerId) {
+            throw new Error("Unauthorized: storage does not belong to you")
+        }
+
+        await ctx.storage.delete(asStorageId(args.storageId))
+        await ctx.runMutation(internal.uploads.removeRecord, { storageId: args.storageId })
 
         const updatedImages = restaurant.images.filter((img) => img.storageId !== args.storageId)
         if (updatedImages.length !== restaurant.images.length) {
