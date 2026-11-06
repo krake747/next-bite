@@ -31,9 +31,12 @@ truth; DB is a reactive client view for filtering, sorting, joins, and optimisti
   sign-out or account change abandons the previous session's synced rows, and user-scoped Query
   entries (`restaurants:*`, `friendships:*`, `social:*`) are removed alongside. Shared entries
   (`landing:*`, `auth:*`) survive. Abandoned collections release with their last live query rather
-  than through explicit disposal, which refuses while mounted. Convex-auth readiness means the
-  better-auth session resolved with a user; Convex token arrival follows within the same tick and
-  subscriptions self-heal, so no separate token probe gates reads.
+  than through explicit disposal, which refuses while mounted. Convex-auth readiness means a light
+  authenticated query succeeded through the Convex client, proving the provider installed the token,
+  not merely that a token is fetchable: subscribing earlier runs queries unauthenticated, which
+  errors the sync and permanently poisons TanStack collections. Past a short deadline the gate opens
+  anyway; the backend still enforces every rule. Token expiry mid-session is a known follow-up:
+  collections do not self-heal today and need an error-recovery pass.
 - Inserts carry a persisted client mutation key. The backend dedupes retries inside the insert
   mutation and stores the key on the document; the client resolves the temp row to the synced server
   id by key and never navigates to or mutates against fabricated `optimistic-*` ids. Direct writes

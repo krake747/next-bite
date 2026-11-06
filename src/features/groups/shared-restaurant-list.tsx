@@ -17,7 +17,9 @@ export function SharedRestaurantList({
     onSelect?: ((id: string) => void) | undefined
 }>) {
     if (items.length === 0) {
-        return <p className="px-4 py-3 text-sm text-stone-600">No spots yet. Share somewhere you'd love to try.</p>
+        return (
+            <p className="px-4 py-3 text-sm text-stone-600">No restaurants yet. Share somewhere you'd love to try.</p>
+        )
     }
     return (
         <ul className="divide-y divide-stone-100">

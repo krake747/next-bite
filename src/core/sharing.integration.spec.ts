@@ -144,4 +144,42 @@ describe("sharing and social gating", () => {
             "membership required",
         )
     })
+
+    it("reads group identity plus members for members and nothing for strangers", async () => {
+        const t = setup()
+        await registerUser(t, "anna", "anna@example.com")
+        await registerUser(t, "ben", "ben@example.com")
+        await registerUser(t, "cas", "cas@example.com")
+        const groupId = await asUser(t, "anna").mutation(api.groups.createGroup, { name: "Food Crew" })
+        await asUser(t, "anna").mutation(api.groups.addMember, { groupId, userId: "ben" })
+
+        const view = await asUser(t, "ben").query(api.groups.getGroup, { groupId })
+        expect(view?.group.name).toBe("Food Crew")
+        expect(view?.role).toBe("member")
+        expect(view?.members.map((m) => m.userId).toSorted()).toEqual(["anna", "ben"])
+        expect(await asUser(t, "cas").query(api.groups.getGroup, { groupId })).toBeNull()
+    })
+
+    it("rejects group writes without permission", async () => {
+        const t = setup()
+        await registerUser(t, "anna", "anna@example.com")
+        await registerUser(t, "ben", "ben@example.com")
+        const groupId = await asUser(t, "anna").mutation(api.groups.createGroup, { name: "Food Crew" })
+        await asUser(t, "anna").mutation(api.groups.addMember, { groupId, userId: "ben" })
+        const restaurantId = await createRestaurant(t, "anna")
+
+        await expect(asUser(t, "ben").mutation(api.groups.addMember, { groupId, userId: "anna" })).rejects.toThrow(
+            "only admins",
+        )
+        await expect(asUser(t, "ben").mutation(api.shares.shareWithGroup, { restaurantId, groupId })).rejects.toThrow(
+            "only the owner",
+        )
+        await asUser(t, "anna").mutation(api.shares.shareWithGroup, { restaurantId, groupId })
+        await expect(
+            asUser(t, "ben").mutation(api.shares.unshare, {
+                restaurantId,
+                target: { kind: "group", groupId },
+            }),
+        ).rejects.toThrow("only the owner")
+    })
 })
