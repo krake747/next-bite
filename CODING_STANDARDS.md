@@ -17,7 +17,9 @@ Boolean and enum state that styling, tests, or assistive tech may need renders a
 attributes. Where we own the element, pass it through `useRender` `state:` and let Base UI convert
 it (`state: { slot: "text-link" }` renders `data-slot="text-link"`). Where a Base UI component owns
 the element, match its convention: boolean true renders as the empty string, false omits the
-attribute. Check: the browser spec queries the attribute for both states.
+attribute. Lucide icons ship hidden from assistive tech by default, so decorative icons carry no
+`aria-hidden` prop; only meaningful icons get accessible names, on the parent element. Check: the
+browser spec queries the attribute for both states.
 
 ## Prop types stay flat
 
@@ -34,11 +36,11 @@ A prop no call site passes gets deleted, not documented. A shared component gets
 near-identical JSX exists in three places, not one: the single confirm dialog stays local to its
 caller. Check: grep the prop name; zero production call sites means removal.
 
-## Style: inline exports, `use()`, owned readonly types
+## Style: owned readonly types
 
-`export` sits on the declaration; files end without `export { ... }` lists. Context reads use
-`use()`, never `useContext()`. Owned types carry `readonly` modifiers and `ReadonlyArray<T>`;
-unowned or inline shapes wrap at the use site with `Readonly<>`. Check in review.
+Owned types carry `readonly` modifiers and `ReadonlyArray<T>`; unowned or inline shapes wrap at the
+use site with `Readonly<>`. Inline `export` and `use()` are lint-enforced (see `AGENTS.md`). Check
+in review.
 
 ## Tests assert behavior, not internals
 

@@ -142,6 +142,8 @@ export default defineConfig({
             "nextbite/no-direct-env-read": "error",
             "nextbite/no-manual-memo": "error",
             "nextbite/no-test-timeout": "error",
+            "nextbite/no-use-context": "error",
+            "nextbite/no-export-list": "error",
             "nextbite/no-react-type-imports": "error",
             "nextbite/jsx-spread-last": "error",
             "shadcn/no-restyle": [

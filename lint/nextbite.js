@@ -147,12 +147,58 @@ const jsxSpreadLast = defineRule({
     },
 })
 
+const noUseContext = defineRule({
+    meta: {
+        type: "problem",
+        docs: {
+            description: "Read context with use() instead of useContext().",
+        },
+        messages: {
+            unexpected: "useContext call. Use use(Context) instead.",
+        },
+    },
+    create(context) {
+        return {
+            CallExpression(node) {
+                if (node.callee.type !== "Identifier" || node.callee.name !== "useContext") {
+                    return
+                }
+                context.report({ node: node.callee, messageId: "unexpected" })
+            },
+        }
+    },
+})
+
+const noExportList = defineRule({
+    meta: {
+        type: "problem",
+        docs: {
+            description: "Put export on the declaration; no trailing export specifier lists.",
+        },
+        messages: {
+            unexpected: "Trailing export list. Move export onto each declaration instead.",
+        },
+    },
+    create(context) {
+        return {
+            ExportNamedDeclaration(node) {
+                if (node.source !== null || node.declaration !== null || node.specifiers.length === 0) {
+                    return
+                }
+                context.report({ node, messageId: "unexpected" })
+            },
+        }
+    },
+})
+
 export default definePlugin({
     meta: { name: "nextbite" },
     rules: {
         "no-react-type-imports": noReactTypeImports,
         "no-manual-memo": noManualMemo,
         "no-test-timeout": noTestTimeout,
+        "no-use-context": noUseContext,
+        "no-export-list": noExportList,
         "no-direct-env-read": noDirectEnvRead,
         "jsx-spread-last": jsxSpreadLast,
     },

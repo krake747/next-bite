@@ -50,13 +50,14 @@ when one repeats, move it up to a type, lint, or test in the same change.
 
 | Rule                                                                                     | Enforced by                                                                                |
 | ---------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------ |
-| Env reads only through `src/core/env.ts`                                                 | Judgment only; ADR-0006 binds                                                              |
-| React Compiler owns memoization; no `useMemo`, `useCallback`, `React.memo`               | Judgment only; ADR-0007 binds                                                              |
+| Env reads only through `src/core/env.ts`                                                 | `nextbite/no-direct-env-read` lint; ADR-0006 binds                                         |
+| React Compiler owns memoization; no `useMemo`, `useCallback`, `React.memo`               | `nextbite/no-manual-memo` lint; ADR-0007 binds                                             |
 | Semantic Tailwind tokens only; no raw hex in components; light-only, no `.dark` styles   | Judgment only; ADR-0011 binds                                                              |
 | Base UI primitives only; CVA variants; wrappers own styling, call sites pass layout only | `shadcn/no-restyle` lint                                                                   |
 | Layer imports stay inside `.fallowrc.json` zones                                         | `pnpm fallow audit` (boundary-violation errors)                                            |
 | Commit shape `type(scope): subject`                                                      | lefthook `commit-msg` (`pnpm commitlint`)                                                  |
 | Never `git push --no-verify`; local gate is the PR gate                                  | Judgment only; lefthook `pre-push` runs `pnpm check`                                       |
 | Agents run `pnpm check:arch` before pushing structural changes                           | Judgment only; structural means moving files, new modules, shapes, or imports across zones |
+| `export` on declarations, no trailing lists; `use()` for context                         | `nextbite/no-export-list`, `nextbite/no-use-context` lint                                  |
 | Types over interfaces; never cast types, fix at source                                   | `pnpm lint:ts` plus review                                                                 |
 | No em dashes in prose                                                                    | Judgment only; see `non-negotiables.md`                                                    |
