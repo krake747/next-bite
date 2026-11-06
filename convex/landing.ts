@@ -14,11 +14,11 @@ export const getStats = query({
         recentAdds: v.array(recentAddValidator),
     }),
     handler: async (ctx) => {
-        const restaurants = await ctx.db.query("restaurants").collect()
-        const wants = await ctx.db
-            .query("interests")
-            .collect()
-            .then((rows) => rows.filter((row) => row.status === "want"))
+        const [restaurants, interests] = await Promise.all([
+            ctx.db.query("restaurants").collect(),
+            ctx.db.query("interests").collect(),
+        ])
+        const wants = interests.filter((row) => row.status === "want")
 
         const byCuisine = new Map<string, number>()
         for (const restaurant of restaurants) {

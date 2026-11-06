@@ -122,9 +122,7 @@ export function useAuthStore() {
         try {
             await attempt()
         } catch (err) {
-            if (state.error === null || state.error === "") {
-                dispatch({ type: "SET_ERROR", error: err instanceof Error ? err.message : fallbackMessage })
-            }
+            dispatch({ type: "SET_ERROR", error: err instanceof Error ? err.message : fallbackMessage })
             throw err
         } finally {
             dispatch({ type: "SET_LOADING", isLoading: false })

@@ -66,6 +66,13 @@ export default defineConfig({
                 rules: ["react-doctor/rendering-hydration-no-flicker"],
             },
             {
+                // Both effects are mount-once by design: the store subscribe
+                // and the Convex client proxy are unstable across renders, so
+                // listing them would re-subscribe in a loop.
+                files: ["src/core/auth-provider.tsx", "src/core/convex-client.tsx"],
+                rules: ["react-doctor/exhaustive-deps"],
+            },
+            {
                 // Auth-first is fail-closed; validation errors must not leak to
                 // unauthenticated callers.
                 files: ["convex/users.ts"],

@@ -114,15 +114,17 @@ export function RatingSection({ form }: Readonly<{ form: RestaurantFormStore }>)
         <Field of={form} path={["rating"]}>
             {() => (
                 <FieldWrapper errors={ratingField.errors}>
-                    <label className={fieldLabel()}>Rating</label>
-                    <div className="mt-2">
-                        <EmojiRating
-                            rating={value}
-                            onRate={(rating) => {
-                                setInput(form, { path: ["rating"], input: rating })
-                            }}
-                        />
-                    </div>
+                    <fieldset>
+                        <legend className={fieldLabel()}>Rating</legend>
+                        <div className="mt-2">
+                            <EmojiRating
+                                rating={value}
+                                onRate={(rating) => {
+                                    setInput(form, { path: ["rating"], input: rating })
+                                }}
+                            />
+                        </div>
+                    </fieldset>
                 </FieldWrapper>
             )}
         </Field>

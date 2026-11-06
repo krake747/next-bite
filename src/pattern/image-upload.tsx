@@ -113,7 +113,7 @@ export function ImageUpload(props: Readonly<ImageUploadProps>) {
     }
 
     const handleClick = () => {
-        if (props.disabled === true) {
+        if (props.disabled === true || isUploading) {
             return
         }
         fileInputRef.current?.click()
@@ -153,7 +153,7 @@ export function ImageUpload(props: Readonly<ImageUploadProps>) {
     return (
         <div className="space-y-4">
             <div className="flex items-center justify-between">
-                <label className="text-sm font-medium text-stone-700">Images</label>
+                <span className="text-sm font-medium text-stone-700">Images</span>
                 <span className="text-xs text-stone-600">
                     {props.images.length}/{MAX_IMAGES}
                 </span>
@@ -185,14 +185,15 @@ export function ImageUpload(props: Readonly<ImageUploadProps>) {
                         className="hidden"
                         onChange={handleFileInputChange}
                     />
-                    <div
+                    <button
+                        type="button"
                         onClick={handleClick}
                         onDragEnter={handleDragEnter}
                         onDragLeave={handleDragLeave}
                         onDragOver={handleDragOver}
                         onDrop={handleDrop}
                         className={cx(
-                            "flex cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed p-6 transition-all",
+                            "flex w-full cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed p-6 transition-colors",
                             isDragging
                                 ? "border-tomato-500 bg-tomato-50"
                                 : "border-stone-300 hover:border-stone-400 hover:bg-stone-50",
@@ -210,7 +211,7 @@ export function ImageUpload(props: Readonly<ImageUploadProps>) {
                         <span className="mt-1 text-xs text-stone-600">
                             {IMAGE_TYPE_LABEL} up to {formatFileSize(MAX_FILE_SIZE)}
                         </span>
-                    </div>
+                    </button>
                 </>
             )}
 

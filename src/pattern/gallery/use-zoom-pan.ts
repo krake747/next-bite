@@ -100,13 +100,10 @@ export function useZoomPan(resetToken: number) {
     }
 
     const zoomOut = () => {
-        setZoom((z) => {
-            const next = Math.max(z - ZOOM_STEP, MIN_ZOOM)
-            if (next === MIN_ZOOM) {
-                setPan({ x: 0, y: 0 })
-            }
-            return next
-        })
+        if (zoom - ZOOM_STEP <= MIN_ZOOM) {
+            setPan({ x: 0, y: 0 })
+        }
+        setZoom((z) => Math.max(z - ZOOM_STEP, MIN_ZOOM))
     }
 
     const rotate = () => {
