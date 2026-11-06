@@ -22,10 +22,13 @@ export default defineConfig({
     webServer:
         process.env["E2E_NO_SERVER"] === undefined
             ? {
-                  command: "pnpm dev --port 5193",
+                  // Build the production Worker bundle, then serve it locally. The gate proves
+                  // the built SSR boundary (single React, clean hydration). Point E2E_BASE_URL
+                  // at a dev server with E2E_NO_SERVER=1 set when iterating quickly.
+                  command: "pnpm build && wrangler dev --config e2e/worker.preview.toml --port 5193",
                   url: "http://localhost:5193/",
-                  reuseExistingServer: true,
-                  timeout: 120000,
+                  reuseExistingServer: false,
+                  timeout: 300000,
               }
             : undefined,
 })

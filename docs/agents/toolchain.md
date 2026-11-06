@@ -51,13 +51,16 @@ pnpm test:unit            # hooks and isolated UI
 pnpm test:browser         # full interaction components
 pnpm test:integration     # route-level and backend contracts
 pnpm test:watch           # Vitest watch mode
-pnpm test:e2e             # Playwright smoke (local gate, needs browsers)
+pnpm test:e2e             # Playwright gate on a local Worker preview (needs browsers plus wrangler)
 ```
 
-Tiers live in `vite.config.ts` projects. See `testing.md`. The Playwright smoke suite lives in
-`e2e/` with config in `playwright.config.ts`. Install browsers once with
-`npx playwright install chromium --only-shell`, then run `pnpm test:e2e`. It boots the dev server
-itself and stays out of the push gate and CI by design; run it on demand and before release.
+Tiers live in `vite.config.ts` projects. See `testing.md`. The Playwright suite lives in `e2e/` with
+config in `playwright.config.ts`. Install browsers once with
+`npx playwright install chromium --only-shell`, then run `pnpm test:e2e`. It builds the production
+Worker bundle and serves it with wrangler on port 5193, so the suite proves the built SSR boundary
+rather than the dev server. Point `E2E_BASE_URL` at a dev server with `E2E_NO_SERVER=1` set when
+iterating quickly. It stays out of the push gate and CI by design; run it on demand and before
+release.
 
 ## Convex
 
@@ -76,8 +79,10 @@ pnpm deploy    # cf deploy (builds, then uploads dist/ as Worker assets)
 ```
 
 Hosting is an asset-only Cloudflare Worker with SPA fallback, configured in `cloudflare.config.ts`.
-`VITE_*` values bake in at build time. The `cf` build does not read `.env.production.local`, so
-export the values in your shell first:
+Validated runtime settings: worker name `next-bite`, compatibility date `2026-11-03`, server entry
+`src/server.ts` (TanStack Start handler), assets with single-page-application fallback. `VITE_*`
+values bake in at build time. The `cf` build does not read `.env.production.local`, so export the
+values in your shell first:
 
 ```
 set -a; . ./.env.production.local; set +a; pnpm deploy
@@ -85,6 +90,22 @@ set -a; . ./.env.production.local; set +a; pnpm deploy
 
 Deploying needs `cf auth login` or `CLOUDFLARE_API_TOKEN`. See ADR-0008. Ask a human before
 deploying; never print secret values.
+
+## Anonymous SSR boundary
+
+The server never holds a session, so anonymous SSR renders public shells only, never private data.
+Proven by the Playwright gate against the Worker preview:
+
+- Public routes render server-side: `/` and `/design-system` plus the Friends, Groups, and You stubs
+  assert headings in raw HTML, with zero client-render fallbacks and zero hydration page errors
+  across the painted journeys.
+- Restaurant detail renders the loading shell anonymously: no name, notes, photos, or social
+  content, with the static details title as the metadata ceiling. Resolvable-but-invisible records
+  paint the not-found card once the client confirms no access; unresolvable IDs stay on the shell
+  because the query rejects.
+- Auth state starts unknown on both server and first client render (`isLoading: true`), so hydration
+  matches and resolved auth arrives as a normal post-hydration update. Do not gate children behind
+  client-only placeholders in `AuthProvider`; it breaks hydration on every page.
 
 ## Release
 

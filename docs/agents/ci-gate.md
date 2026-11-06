@@ -28,4 +28,5 @@ file holds the rest.
 - Run `pnpm check` before every push. Lefthook `pre-push` runs the same gate. `pnpm check:full`
   (gate plus `check:arch` plus `build`) is the definition of done; agents run `pnpm check:arch`
   themselves before pushing structural changes (moving files, new modules, shapes, or imports across
-  zones).
+  zones). `pnpm test:e2e` is the on-demand Worker-preview gate: run it before release and whenever
+  the SSR boundary or auth shell changes. It stays out of the push gate and CI by design.
