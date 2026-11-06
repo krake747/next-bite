@@ -34,8 +34,15 @@ export default defineSchema({
         rating: v.optional(v.number()),
         images: v.array(restaurantImageValidator),
         visibility: v.union(v.literal("private"), v.literal("shared")),
+        clientMutationId: v.optional(v.string()),
         createdAt: v.number(),
     }).index("by_owner", ["ownerId"]),
+    clientMutations: defineTable({
+        key: v.string(),
+        userId: v.string(),
+        restaurantId: v.id("restaurants"),
+        createdAt: v.number(),
+    }).index("by_user_key", ["userId", "key"]),
     interests: defineTable({
         ...socialFields,
         status: v.union(v.literal("want"), v.literal("been")),
