@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useRef, useState } from "react"
+import { createContext, use, useEffect, useRef, useState } from "react"
 
 type GalleryMode = "grid" | "lightbox"
 
@@ -19,7 +19,7 @@ type GalleryViewerValue = {
 const GalleryViewerContext = createContext<GalleryViewerValue | null>(null)
 
 export function useGalleryViewer(): GalleryViewerValue {
-    const value = useContext(GalleryViewerContext)
+    const value = use(GalleryViewerContext)
     if (value === null) {
         throw new Error("useGalleryViewer must be used inside GalleryViewer")
     }
@@ -55,7 +55,7 @@ export function GalleryViewer({
     }
 
     const openLightbox = (index: number) => {
-        setCurrentIndex(index)
+        select(index)
         setMode("lightbox")
     }
 

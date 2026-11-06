@@ -2,7 +2,7 @@ import Images from "lucide-react/icons/images"
 import Utensils from "lucide-react/icons/utensils"
 import { useState } from "react"
 
-import { type GalleryPhoto } from "@features/social/photo-gallery"
+import { type GalleryPhoto, photoUrls } from "@pattern/gallery/photos"
 import { ImageGalleryModal } from "@pattern/image-gallery-modal"
 import { LazyImage } from "@pattern/lazy-image"
 import { Badge } from "@ui/badge"
@@ -21,7 +21,7 @@ export function RestaurantGallery({
     const [showGallery, setShowGallery] = useState(false)
     const cover = photos[0]?.url
     const hasImages = photos.length > 0
-    const urls = photos.map((photo) => photo.url)
+    const urls = photoUrls(photos)
 
     return (
         <>

@@ -53,9 +53,14 @@ export function RestaurantCard({
     const enrichment = restaurant.address.enrichment
     const hasPlaceId = enrichment?.placeId !== undefined && enrichment?.placeId !== ""
 
-    const handleRefreshHours = () => {
+    const runHoursLookup = (lookup: {
+        mutate: (
+            args: { restaurantId: Restaurant["_id"] },
+            opts: { onError: () => void; onSettled: () => void },
+        ) => void
+    }) => {
         setIsRefreshing(true)
-        refreshOpeningHours.mutate(
+        lookup.mutate(
             { restaurantId: restaurant._id },
             {
                 onError: () => {},
@@ -66,17 +71,12 @@ export function RestaurantCard({
         )
     }
 
+    const handleRefreshHours = () => {
+        runHoursLookup(refreshOpeningHours)
+    }
+
     const handleFindHours = () => {
-        setIsRefreshing(true)
-        lookupPlaceIdAndHours.mutate(
-            { restaurantId: restaurant._id },
-            {
-                onError: () => {},
-                onSettled: () => {
-                    setIsRefreshing(false)
-                },
-            },
-        )
+        runHoursLookup(lookupPlaceIdAndHours)
     }
 
     const handleDelete = () => {
@@ -195,7 +195,9 @@ export function RestaurantCard({
                         restaurant={restaurant}
                     />
                 )}
-                <RestaurantCardRating rating={restaurant.rating} onRate={handleRate} />
+                <div className="px-5 py-2 md:px-4 md:py-2">
+                    <EmojiRating rating={restaurant.rating} onRate={handleRate} />
+                </div>
             </Card>
 
             <EditRestaurantDialog
@@ -298,20 +300,6 @@ function RestaurantCardMap({
                     <p className="mt-2 text-center text-xs text-stone-600">Click map to get directions</p>
                 </div>
             )}
-        </div>
-    )
-}
-
-function RestaurantCardRating({
-    rating,
-    onRate,
-}: Readonly<{
-    rating: number | undefined
-    onRate: (rating: number) => void | Promise<void>
-}>) {
-    return (
-        <div className="px-5 py-2 md:px-4 md:py-2">
-            <EmojiRating rating={rating} onRate={onRate} />
         </div>
     )
 }

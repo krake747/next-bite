@@ -1,4 +1,4 @@
-import { type AvatarMember } from "@features/social/avatar-group"
+import { type AvatarMember } from "@pattern/avatar-group"
 import { LazyImage } from "@pattern/lazy-image"
 
 import { GroupMembers } from "./group-members"

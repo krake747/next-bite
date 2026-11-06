@@ -1,14 +1,15 @@
 import { type ConvexClient } from "convex/browser"
 import { getFunctionName } from "convex/server"
 
+import { convexArgsKey } from "../convex-client"
+
 export type SeedMap = Map<string, unknown>
 export type MutationCall = { fn: string; args: unknown }
 
 export function seedKey(fn: string, args: unknown): string {
-    const raw = JSON.stringify(args) ?? "no-args"
     // Subscriptions spread args ({...undefined} is {}), while the cache keys the unspread
     // value. No caller passes an explicit {}, so both spellings address the same seed.
-    return `${fn}|${raw === "{}" ? "no-args" : raw}`
+    return `${fn}|${convexArgsKey(args)}`
 }
 
 // Test-only Convex client: serves seeded query results by function path plus args and records

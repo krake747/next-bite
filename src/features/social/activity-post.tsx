@@ -1,6 +1,6 @@
+import { AvatarGroup, type AvatarMember } from "@pattern/avatar-group"
 import { LazyImage } from "@pattern/lazy-image"
 
-import { AvatarGroup, type AvatarMember } from "./avatar-group"
 import { ReactionBar } from "./reaction-bar"
 import { SocialMetadata } from "./social-metadata"
 

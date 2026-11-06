@@ -40,14 +40,12 @@ type FileInputEvent = Readonly<{
 type ImageUploadProps = {
     readonly images: ReadonlyArray<Readonly<ImageRecord>>
     readonly onImagesChange: (images: ReadonlyArray<Readonly<ImageRecord>>) => void
-    readonly maxImages?: number | undefined
     readonly disabled?: boolean | undefined
     readonly restaurantId?: Id<"restaurants"> | undefined
     readonly onRemove?: ((storageId: string) => void) | undefined
 }
 
 export function ImageUpload(props: Readonly<ImageUploadProps>) {
-    const maxImages = props.maxImages ?? MAX_IMAGES
     const uploadImage = useUploadImage()
     const deleteImage = useDeleteImage()
     const [isUploading, setIsUploading] = useState(false)
@@ -57,7 +55,7 @@ export function ImageUpload(props: Readonly<ImageUploadProps>) {
 
     const handleFiles = async (files: FileListLike) => {
         const fileArray = Array.from(files).filter((f) => isAcceptedImageType(f.type))
-        const remainingSlots = maxImages - props.images.length
+        const remainingSlots = MAX_IMAGES - props.images.length
         const filesToProcess = fileArray.slice(0, remainingSlots)
         if (filesToProcess.length === 0) {
             return
@@ -150,14 +148,14 @@ export function ImageUpload(props: Readonly<ImageUploadProps>) {
         }
     }
 
-    const canAddMore = props.images.length < maxImages
+    const canAddMore = props.images.length < MAX_IMAGES
 
     return (
         <div className="space-y-4">
             <div className="flex items-center justify-between">
                 <label className="text-sm font-medium text-stone-700">Images</label>
                 <span className="text-xs text-stone-600">
-                    {props.images.length}/{maxImages}
+                    {props.images.length}/{MAX_IMAGES}
                 </span>
             </div>
 

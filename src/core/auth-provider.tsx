@@ -1,5 +1,5 @@
 import { ConvexClient, type AuthTokenFetcher } from "convex/browser"
-import { useState, useEffect, createContext, useContext } from "react"
+import { useState, useEffect, createContext, use } from "react"
 
 import { ConvexBetterAuthProvider } from "@convex-dev/better-auth/react"
 
@@ -33,15 +33,15 @@ const serverAuthStore: AuthStore = {
     signOut: noopServerAuthStep,
 }
 
-function useAuth() {
-    const ctx = useContext(AuthContext)
+export function useAuth() {
+    const ctx = use(AuthContext)
     if (!ctx) {
         throw new Error("useAuth must be used within AuthProvider")
     }
     return ctx
 }
 
-function AuthProvider({ children }: Readonly<{ children: React.ReactNode }>) {
+export function AuthProvider({ children }: Readonly<{ children: React.ReactNode }>) {
     const [pair] = useState(() => {
         if (typeof window === "undefined") {
             return null
@@ -80,5 +80,3 @@ function AuthProvider({ children }: Readonly<{ children: React.ReactNode }>) {
         </ConvexBetterAuthProvider>
     )
 }
-
-export { AuthProvider, useAuth }

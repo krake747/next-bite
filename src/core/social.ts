@@ -1,8 +1,8 @@
 import { api } from "../../convex/_generated/api"
 import { type Id } from "../../convex/_generated/dataModel"
 import { useConvexMutation, useConvexQuery } from "./convex-client.tsx"
-import { isTempRestaurantId } from "./db/restaurants"
 import { useSessionStatus } from "./hooks"
+import { isTempId } from "./temp-ids"
 
 export type InterestInput = {
     readonly restaurantId: string
@@ -108,7 +108,7 @@ export function feedTextFor(name: string, notes: string | undefined): string {
 }
 
 export function withoutTempIds(ids: ReadonlyArray<Id<"restaurants">>): Id<"restaurants">[] {
-    return ids.filter((id) => !isTempRestaurantId(id))
+    return ids.filter((id) => !isTempId(String(id)))
 }
 
 export function useSocialSummaries(

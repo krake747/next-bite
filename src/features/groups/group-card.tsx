@@ -1,4 +1,4 @@
-import { type AvatarMember } from "@features/social/avatar-group"
+import { type AvatarMember } from "@pattern/avatar-group"
 import { Card } from "@ui/card"
 
 import { GroupHeader } from "./group-header"

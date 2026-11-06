@@ -43,12 +43,13 @@ function GalleryShell({
     onClose: () => void
 }>) {
     const viewer = useGalleryViewer()
+    const select = viewer.select
 
     useEffect(() => {
         if (show) {
-            viewer.select(initialIndex ?? 0)
+            select(initialIndex ?? 0)
         }
-    }, [show, initialIndex, viewer])
+    }, [show, initialIndex, select])
 
     const handleKeyDown = (e: React.KeyboardEvent) => {
         if (e.key === "ArrowLeft") {

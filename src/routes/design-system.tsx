@@ -8,12 +8,12 @@ import { EmptyRestaurantsState } from "@features/restaurants/empty-restaurants-s
 import { RestaurantHeader } from "@features/restaurants/restaurant-header"
 import { RestaurantInterestButton } from "@features/restaurants/restaurant-interest-button"
 import { ActivityPost } from "@features/social/activity-post"
-import { AvatarGroup } from "@features/social/avatar-group"
 import { CommentList } from "@features/social/comment-list"
 import { FriendPresence } from "@features/social/friend-presence"
 import { PhotoGallery } from "@features/social/photo-gallery"
 import { ReactionBar } from "@features/social/reaction-bar"
 import { SocialMetadata } from "@features/social/social-metadata"
+import { AvatarGroup } from "@pattern/avatar-group"
 import { PageContainer } from "@routes/-layouts/page-container"
 import { PageLayout } from "@routes/-layouts/page-layout"
 import { Avatar } from "@ui/avatar"
@@ -407,7 +407,6 @@ function ActivitySection() {
                         { url: "https://picsum.photos/seed/nextbite2/400", author: "Priya" },
                         { url: "https://picsum.photos/seed/nextbite3/400" },
                     ]}
-                    onAddPhoto={() => {}}
                 />
             </div>
         </Section>

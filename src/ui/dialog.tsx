@@ -6,17 +6,15 @@ import { focusRing } from "@ui/variants"
 
 export function Dialog({
     show,
-    defaultShow,
     onOpenChange,
     children,
 }: Readonly<{
     show?: boolean | undefined
-    defaultShow?: boolean | undefined
     onOpenChange: (open: boolean) => void
     children?: React.ReactNode | undefined
 }>) {
     return (
-        <BaseDialog.Root open={show} defaultOpen={defaultShow} onOpenChange={onOpenChange}>
+        <BaseDialog.Root open={show} onOpenChange={onOpenChange}>
             <BaseDialog.Portal>{children}</BaseDialog.Portal>
         </BaseDialog.Root>
     )

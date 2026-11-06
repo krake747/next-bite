@@ -2,8 +2,9 @@ import { render, screen } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import { describe, expect, it, vi } from "vitest"
 
+import { AvatarGroup } from "@pattern/avatar-group"
+
 import { ActivityPost } from "./activity-post"
-import { AvatarGroup } from "./avatar-group"
 import { CommentList } from "./comment-list"
 import { FriendPresence } from "./friend-presence"
 import { PhotoGallery } from "./photo-gallery"

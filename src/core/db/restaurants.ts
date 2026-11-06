@@ -5,6 +5,8 @@ import { type ConvexClient } from "convex/browser"
 import { api } from "@convex/_generated/api"
 import { type Doc, type Id } from "@convex/_generated/dataModel"
 
+import { assertRealId, isTempId, TEMP_ID_PREFIX } from "../temp-ids"
+
 function mergeDetailsPreview(
     existing: RestaurantDoc["details"],
     input: Readonly<{ notes?: string | undefined; link?: string | undefined }>,
@@ -78,6 +80,12 @@ export type RestaurantPersist = {
     readonly addRestaurant: (args: RestaurantAddArgs) => Promise<Id<"restaurants">>
 }
 
+export function copyStoredImages(
+    images: ReadonlyArray<Readonly<{ url: string; storageId: string }>>,
+): RestaurantImageInput[] {
+    return images.map((img) => ({ url: img.url, storageId: img.storageId }))
+}
+
 export function persistCallerFor(client: ConvexClient): RestaurantPersist {
     return {
         updateRestaurant: async (args) => {
@@ -111,7 +119,7 @@ export function applyUpdateArgsToDraft(draft: RestaurantDoc, args: RestaurantUpd
         draft.rating = args.rating
     }
     if (args.images !== undefined) {
-        draft.images = args.images.map((img) => ({ url: img.url, storageId: img.storageId }))
+        draft.images = copyStoredImages(args.images)
     }
     if (args.visibility !== undefined) {
         draft.visibility = args.visibility
@@ -130,7 +138,7 @@ export function toUpdateArgs(row: RestaurantDoc): RestaurantUpdateArgs {
         ...(row.details?.notes !== undefined ? { notes: row.details.notes } : {}),
         ...(row.details?.link !== undefined ? { link: row.details.link } : {}),
         ...(row.rating !== undefined ? { rating: row.rating } : {}),
-        images: row.images.map((img) => ({ url: img.url, storageId: img.storageId })),
+        images: copyStoredImages(row.images),
         visibility: row.visibility,
     }
 }
@@ -145,23 +153,19 @@ export function toAddArgs(row: RestaurantDoc): RestaurantAddArgs {
         ...(row.address.enrichment?.coords !== undefined
             ? { coords: { lat: row.address.enrichment.coords.lat, lng: row.address.enrichment.coords.lng } }
             : {}),
-        images: row.images.map((img) => ({ url: img.url, storageId: img.storageId })),
+        images: copyStoredImages(row.images),
         ...(row.clientMutationId !== undefined ? { clientMutationId: row.clientMutationId } : {}),
     }
 }
 
-const TEMP_ID_PREFIX = "optimistic-"
-
 export function isTempRestaurantId(id: Id<"restaurants">): boolean {
-    return String(id).startsWith(TEMP_ID_PREFIX)
+    return isTempId(String(id))
 }
 
 // Optimistic rows carry fabricated ids that the backend will reject. Nothing navigates to or
 // mutates against them: inserts resolve to the synced server id, and direct writes refuse them.
 export function assertRealRestaurantId(id: Id<"restaurants">): void {
-    if (isTempRestaurantId(id)) {
-        throw new Error("Restaurant is still syncing; try again in a moment")
-    }
+    assertRealId(String(id))
 }
 
 export type TempRestaurantInput = RestaurantAddArgs &
@@ -190,7 +194,7 @@ export function buildTempRestaurant(input: TempRestaurantInput): RestaurantDoc {
                   },
               }
             : {}),
-        images: (input.images ?? []).map((img) => ({ url: img.url, storageId: img.storageId })),
+        images: copyStoredImages(input.images ?? []),
         visibility: "private",
         clientMutationId: input.clientMutationId,
         createdAt: now,

@@ -1,23 +1,18 @@
-import Camera from "lucide-react/icons/camera"
 import { useState } from "react"
 
+import { photoUrls, type GalleryPhoto } from "@pattern/gallery/photos"
 import { ImageGalleryModal } from "@pattern/image-gallery-modal"
 import { LazyImage } from "@pattern/lazy-image"
 
-export type GalleryPhoto = {
-    readonly url: string
-    readonly author?: string | undefined
-}
+export type { GalleryPhoto } from "@pattern/gallery/photos"
 
 export function PhotoGallery({
     photos,
-    onAddPhoto,
 }: Readonly<{
     photos: ReadonlyArray<GalleryPhoto>
-    onAddPhoto?: (() => void) | undefined
 }>) {
     const [viewerIndex, setViewerIndex] = useState<number | null>(null)
-    const urls = photos.map((photo) => photo.url)
+    const urls = photoUrls(photos)
 
     if (photos.length === 0) {
         return null
@@ -59,16 +54,6 @@ export function PhotoGallery({
                     className="mt-2 cursor-pointer text-sm font-medium text-tomato-700 hover:text-tomato-600"
                 >
                     View all {photos.length} photos
-                </button>
-            )}
-            {onAddPhoto !== undefined && (
-                <button
-                    type="button"
-                    onClick={onAddPhoto}
-                    className="mt-2 inline-flex cursor-pointer items-center gap-1.5 text-sm font-medium text-tomato-700 hover:text-tomato-600"
-                >
-                    <Camera className="size-4" aria-hidden="true" />
-                    Add your photo
                 </button>
             )}
             {viewerIndex !== null && (
