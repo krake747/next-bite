@@ -375,6 +375,10 @@ export default defineConfig({
             },
         ],
     },
+    staged: {
+        "*.{ts,tsx,js,jsx,json,css,md}": "vp fmt --no-error-on-unmatched-pattern",
+        "*.{ts,tsx}": "vp lint --no-error-on-unmatched-pattern --fix",
+    },
     resolve: {
         tsconfigPaths: true,
     },

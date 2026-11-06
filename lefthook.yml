@@ -1,22 +1,23 @@
 pre-commit:
-  parallel: true
   commands:
-    fmt:
-      glob: "*.{ts,tsx,js,jsx,json,css,md}"
-      run: pnpm exec vp fmt --no-error-on-unmatched-pattern {staged_files}
-      stage_fixed: true
+    staged:
+      run: pnpm exec vp staged --fail-on-changes --no-concurrent
     types:
       glob: "*.{ts,tsx}"
       run: pnpm exec tsc -b --noEmit
-    lint:
-      glob: "*.{ts,tsx}"
-      run: pnpm exec vp lint --no-error-on-unmatched-pattern --fix {staged_files}
-      stage_fixed: true
 commit-msg:
   commands:
     commitlint:
       run: pnpm exec commitlint --edit {1}
 pre-push:
   commands:
-    check:
-      run: pnpm check
+    fmt-check:
+      run: pnpm fmt:check
+    lint:
+      run: pnpm lint
+    types:
+      run: pnpm lint:ts
+    test:
+      run: pnpm test
+    arch:
+      run: pnpm check:arch
