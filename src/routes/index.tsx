@@ -158,15 +158,12 @@ function HomeFeed({
 
 function HomeDiscover({
     restaurants,
-    sortOrder,
-    onSortChange,
     actions,
 }: Readonly<{
     restaurants: ReadonlyArray<Restaurant>
-    sortOrder: "added" | "name"
-    onSortChange: (order: "added" | "name") => void
     actions: SocialActions
 }>) {
+    const [sortOrder, setSortOrder] = useState<"added" | "name">("added")
     const filterState = useFilterState()
     const filtered = filterRestaurants(restaurants, filterState.filter, filterState.search, sortOrder)
     // Friend pills only appear for accounts actually present in this list.
@@ -189,7 +186,7 @@ function HomeDiscover({
                         filterState.setSearch(value)
                     }}
                     sortOrder={sortOrder}
-                    onSortChange={onSortChange}
+                    onSortChange={setSortOrder}
                     matchingIds={matchingIds}
                 >
                     <HomeActions />
@@ -291,7 +288,6 @@ function Home() {
     const restaurantListState = restaurants ?? []
     const feed = orderFeedByRecency(feedRestaurants ?? [])
     const actions = useSocialActions([...feed, ...restaurantListState])
-    const [sortOrder, setSortOrder] = useState<"added" | "name">("added")
 
     if (!actions.auth.isAuthenticated) {
         return <SignedOutHome />
@@ -330,12 +326,7 @@ function Home() {
                             <HomeFeed feed={feed} actions={actions} />
                         </div>
                         <div className="min-w-0 lg:col-span-3">
-                            <HomeDiscover
-                                restaurants={restaurantListState}
-                                sortOrder={sortOrder}
-                                onSortChange={setSortOrder}
-                                actions={actions}
-                            />
+                            <HomeDiscover restaurants={restaurantListState} actions={actions} />
                         </div>
                     </div>
                 )}
