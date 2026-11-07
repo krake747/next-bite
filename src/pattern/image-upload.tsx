@@ -60,10 +60,9 @@ function mergeImages(
     return merged
 }
 
-function prepareFilesList(files: FileListLike, existingCount: number, maxFiles: number): File[] | null {
+function prepareFilesList(files: FileListLike, existingCount: number, maxFiles: number): File[] {
     const accepted = Array.from(files).filter((file) => isAcceptedImageType(file.type))
-    const batch = accepted.slice(0, Math.max(0, maxFiles - existingCount))
-    return batch.length > 0 ? batch : null
+    return accepted.slice(0, Math.max(0, maxFiles - existingCount))
 }
 
 function toUploadError(error: unknown): FormError {
@@ -125,7 +124,7 @@ export function ImageUpload(props: Readonly<ImageUploadProps>) {
 
     const handleFiles = async (files: FileListLike) => {
         const filesToProcess = prepareFilesList(files, props.images.length, props.maxFiles ?? MAX_IMAGES)
-        if (filesToProcess === null) {
+        if (filesToProcess.length === 0) {
             return
         }
 

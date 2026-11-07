@@ -127,7 +127,11 @@ export const getSummaries = query({
                     return null
                 }
                 const { interests, likes, comments } = await collectSocialFor(ctx.db, restaurantId)
-                const counts = countReactions(interests, likes, userId)
+                const counts = countReactions(
+                    interests,
+                    likes,
+                    userId === null ? { kind: "signed-out" } : { kind: "signed-in", id: userId },
+                )
                 return {
                     restaurantId,
                     wantCount: counts.wantCount,

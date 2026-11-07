@@ -12,6 +12,7 @@ import {
     useToggleLike,
     type RestaurantSocial,
 } from "@core/social"
+import { type Viewer } from "@core/social-counts"
 import { ShareToGroupDialog } from "@features/groups/share-to-group-dialog"
 import { PlanMealSection } from "@features/plans/meal-plans"
 import { RestaurantGallery } from "@features/restaurants/restaurant-gallery"
@@ -261,8 +262,10 @@ function RestaurantDetail() {
     // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- single documented boundary conversion from router param
     const restaurantConvexId = restaurantId as unknown as Id<"restaurants">
     const restaurantQuery = useVisibleRestaurant(restaurantConvexId)
-    const userId = auth.user?.id ?? null
-    const restaurantSocial = useSocialForRestaurant(restaurantConvexId, userId)
+    const signedInUserId = auth.user?.id
+    const viewer: Viewer =
+        signedInUserId === undefined ? { kind: "signed-out" } : { kind: "signed-in", id: signedInUserId }
+    const restaurantSocial = useSocialForRestaurant(restaurantConvexId, viewer)
 
     if (restaurantQuery.isPending || auth.isLoading) {
         return <DetailLoading />

@@ -4,7 +4,7 @@ import { ImageGalleryModal } from "@pattern/image-gallery-modal"
 
 import { photoUrls, type GalleryPhoto } from "./photos"
 
-export type LightboxSelection = { readonly kind: "closed" } | { readonly kind: "open"; readonly index: number }
+type LightboxSelection = { readonly kind: "closed" } | { readonly kind: "open"; readonly index: number }
 
 export function useLightbox(photos: ReadonlyArray<GalleryPhoto>) {
     const [selection, setSelection] = useState<LightboxSelection>({ kind: "closed" })

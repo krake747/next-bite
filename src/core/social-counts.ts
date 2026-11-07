@@ -17,19 +17,21 @@ export type ReactionCounts = {
     readonly interestedNames: string[]
 }
 
+export type Viewer = { readonly kind: "signed-in"; readonly id: string } | { readonly kind: "signed-out" }
+
 export function countReactions(
     interests: ReadonlyArray<ReactionInterest>,
     likes: ReadonlyArray<ReactionLike>,
-    userId: string | null,
+    viewer: Viewer,
 ): ReactionCounts {
     const wants = interests.filter((interest) => interest.status === "want")
     const beens = interests.filter((interest) => interest.status === "been")
     return {
         wantCount: wants.length,
         beenCount: beens.length,
-        wanted: userId === null ? false : wants.some((interest) => interest.userId === userId),
+        wanted: viewer.kind === "signed-in" ? wants.some((interest) => interest.userId === viewer.id) : false,
         likeCount: likes.length,
-        liked: userId === null ? false : likes.some((like) => like.userId === userId),
+        liked: viewer.kind === "signed-in" ? likes.some((like) => like.userId === viewer.id) : false,
         interestedNames: interests.map((interest) => interest.displayName),
     }
 }

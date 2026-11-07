@@ -3,7 +3,7 @@ import { type Id } from "@convex/_generated/dataModel"
 
 import { useConvexMutation, useConvexQuery } from "./convex-client.tsx"
 import { useSessionStatus } from "./session"
-import { countReactions } from "./social-counts"
+import { countReactions, type Viewer } from "./social-counts"
 import { isTempId } from "./temp-ids"
 
 export type InterestInput = {
@@ -75,18 +75,14 @@ export const emptySocial: RestaurantSocial = {
     comments: [],
 }
 
-export function summarizeSocial(
-    restaurantId: string,
-    snapshot: SocialSnapshot,
-    userId: string | null,
-): RestaurantSocial {
+export function summarizeSocial(restaurantId: string, snapshot: SocialSnapshot, viewer: Viewer): RestaurantSocial {
     const interests = snapshot.interests.filter((interest) => interest.restaurantId === restaurantId)
     const likes = snapshot.likes.filter((like) => like.restaurantId === restaurantId)
     const comments = snapshot.comments
         .filter((comment) => comment.restaurantId === restaurantId)
         .toSorted((a, b) => a.createdAt - b.createdAt)
     return {
-        ...countReactions(interests, likes, userId),
+        ...countReactions(interests, likes, viewer),
         comments,
     }
 }
@@ -124,16 +120,13 @@ export function useSocialSummaries(
     return new Map(summaries.flatMap((summary) => (summary === null ? [] : [[summary.restaurantId, summary] as const])))
 }
 
-export function useSocialForRestaurant(
-    restaurantId: Id<"restaurants">,
-    userId: string | null,
-): RestaurantSocial | undefined {
+export function useSocialForRestaurant(restaurantId: Id<"restaurants">, viewer: Viewer): RestaurantSocial | undefined {
     const status = useSessionStatus()
     const snapshot = useConvexQuery(api.social.getForRestaurant, { restaurantId }, { skip: status.kind !== "ready" })
     if (snapshot === undefined || snapshot === null) {
         return undefined
     }
-    return summarizeSocial(restaurantId, snapshot, userId)
+    return summarizeSocial(restaurantId, snapshot, viewer)
 }
 
 export const useToggleInterest = () => useConvexMutation(api.social.toggleInterest)

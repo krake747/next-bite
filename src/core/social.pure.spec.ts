@@ -30,7 +30,7 @@ describe("withoutTempIds", () => {
 
 describe("summarizeSocial", () => {
     test("aggregates counts, personal state, and chronological comments", () => {
-        const summary = summarizeSocial("aaa", snapshot, "u1")
+        const summary = summarizeSocial("aaa", snapshot, { kind: "signed-in", id: "u1" })
         expect(summary.wantCount).toBe(1)
         expect(summary.beenCount).toBe(1)
         expect(summary.wanted).toBe(true)
@@ -41,7 +41,7 @@ describe("summarizeSocial", () => {
     })
 
     test("isolates restaurants and treats guests as non-participants", () => {
-        expect(summarizeSocial("bbb", snapshot, null)).toEqual({
+        expect(summarizeSocial("bbb", snapshot, { kind: "signed-out" })).toEqual({
             wantCount: 0,
             beenCount: 0,
             wanted: false,
@@ -53,7 +53,7 @@ describe("summarizeSocial", () => {
     })
 
     test("marks others as non-participants", () => {
-        const summary = summarizeSocial("aaa", snapshot, "u9")
+        const summary = summarizeSocial("aaa", snapshot, { kind: "signed-in", id: "u9" })
         expect(summary.wanted).toBe(false)
         expect(summary.liked).toBe(false)
         expect(summary.wantCount).toBe(1)

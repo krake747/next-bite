@@ -49,7 +49,6 @@ http.route({
     path: "/upload",
     method: "POST",
     handler: httpAction(async (ctx, request) => {
-        console.log("Upload request received, content-type:", request.headers.get("content-type"))
         try {
             const identity = await ctx.auth.getUserIdentity()
             if (!identity) {
@@ -57,11 +56,9 @@ http.route({
             }
 
             const blob = await request.blob()
-            console.log("Blob received, size:", blob.size, "type:", blob.type)
 
             const rejected = validateUploadBlob(blob)
             if (rejected !== null) {
-                console.log("Validation failed:", rejected.message)
                 return jsonResponse(request, rejected.status, { error: rejected.message })
             }
 
