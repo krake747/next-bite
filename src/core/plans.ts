@@ -7,24 +7,20 @@ import { useSessionStatus } from "./session"
 export const useCreatePlan = () => useConvexMutation(api.plans.createPlan)
 export const useUpdatePlanStatus = () => useConvexMutation(api.plans.updatePlanStatus)
 
-export function usePlansForGroup(groupId: Id<"groups"> | null | undefined) {
+export function usePlansForGroup(groupId: Id<"groups"> | undefined) {
     const status = useSessionStatus()
-    const skip = status.kind !== "ready" || groupId === null || groupId === undefined
-    return useConvexQuery(
-        api.plans.listPlansForGroup,
-        skip || groupId === null || groupId === undefined ? undefined : { groupId },
-        {
-            skip,
-        },
-    )
+    const skip = status.kind !== "ready" || groupId === undefined
+    return useConvexQuery(api.plans.listPlansForGroup, skip || groupId === undefined ? undefined : { groupId }, {
+        skip,
+    })
 }
 
-export function usePlansForRestaurant(restaurantId: Id<"restaurants"> | null | undefined) {
+export function usePlansForRestaurant(restaurantId: Id<"restaurants"> | undefined) {
     const status = useSessionStatus()
-    const skip = status.kind !== "ready" || restaurantId === null || restaurantId === undefined
+    const skip = status.kind !== "ready" || restaurantId === undefined
     return useConvexQuery(
         api.plans.listPlansForRestaurant,
-        skip || restaurantId === null || restaurantId === undefined ? undefined : { restaurantId },
+        skip || restaurantId === undefined ? undefined : { restaurantId },
         {
             skip,
         },

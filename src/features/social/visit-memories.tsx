@@ -11,7 +11,7 @@ import { PhotoGallery } from "./photo-gallery"
 
 export function VisitMemories({ restaurantId }: Readonly<{ restaurantId: Id<"restaurants"> }>) {
     const auth = useAuth()
-    const memories = useVisitMemories(auth.isAuthenticated ? restaurantId : null)
+    const memories = useVisitMemories(auth.isAuthenticated ? restaurantId : undefined)
     const addVisitMemory = useAddVisitMemory()
     const cleanupStorage = useCleanupStorage()
     const [staged, setStaged] = useState<ReadonlyArray<ImageRecord>>([])

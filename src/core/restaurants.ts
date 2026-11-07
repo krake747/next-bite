@@ -100,9 +100,9 @@ function useOwnerOrFeed(kind: "owner" | "feed"): ReadonlyArray<Doc<"restaurants"
 export const useRestaurants = () => useOwnerOrFeed("owner")
 export const useFeedRestaurants = () => useOwnerOrFeed("feed")
 
-export const useVisitMemories = (restaurantId: Id<"restaurants"> | null | undefined) => {
+export const useVisitMemories = (restaurantId: Id<"restaurants"> | undefined) => {
     const status = useSessionStatus()
-    const skip = status.kind !== "ready" || restaurantId === null || restaurantId === undefined
+    const skip = status.kind !== "ready" || restaurantId === undefined
     return useConvexQuery(api.restaurants.listVisitMemories, skip ? undefined : { restaurantId }, { skip })
 }
 
