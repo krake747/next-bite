@@ -2,7 +2,7 @@ import { convexCollectionOptions } from "@tanstack/convex-db-collection"
 import { createCollection } from "@tanstack/db"
 import { type ConvexReactClient } from "convex/react"
 
-import { type Doc, type Id } from "@api/data.model"
+import { type Doc, type Id, toId } from "@api/data.model"
 import { api } from "@api/endpoints"
 import { sleep } from "@core/async"
 import { mergeDetails, mergeEnrichment } from "@core/restaurant.details"
@@ -151,8 +151,8 @@ export type TempRestaurantInput = RestaurantAddArgs &
 
 export function buildTempRestaurant(input: TempRestaurantInput): RestaurantDoc {
     const now = Date.now()
-    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- client-only placeholder id replaced by the server row on sync
-    const tempId = `${TEMP_ID_PREFIX}${crypto.randomUUID()}` as unknown as Id<"restaurants">
+    // Client-only placeholder id replaced by the server row on sync.
+    const tempId = toId<"restaurants">(`${TEMP_ID_PREFIX}${crypto.randomUUID()}`)
     return {
         _id: tempId,
         _creationTime: now,

@@ -5,7 +5,7 @@ import { Suspense, useState } from "react"
 import { hasCachedSession } from "@api/auth.store"
 import { useSuspenseConvexQuery } from "@api/convex.client"
 import { convexQueryOptions } from "@api/convex.options"
-import { type Id } from "@api/data.model"
+import { toId } from "@api/data.model"
 import { api } from "@api/endpoints"
 import { type Restaurant } from "@core/restaurants"
 import { useAuth } from "@core/session"
@@ -43,8 +43,7 @@ export const Route = createFileRoute("/restaurants/$restaurantId")({
     component: RestaurantDetail,
     errorComponent: RestaurantDetailError,
     loader: ({ context, params }) => {
-        // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- single documented boundary conversion from router param
-        const restaurantId = params.restaurantId as unknown as Id<"restaurants">
+        const restaurantId = toId<"restaurants">(params.restaurantId)
         // Public detail warms for everyone; the social snapshot only when a
         // session exists. Failures stay silent: the Suspense view refetches.
         void context.queryClient.query(convexQueryOptions(api.restaurants.getById, { id: restaurantId })).catch(noop)
@@ -70,10 +69,7 @@ function RestaurantDetailError({ reset }: Readonly<{ reset: () => void }>) {
     )
 }
 
-function asCommentId(id: string): Id<"comments"> {
-    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- single documented boundary conversion from SocialComment ids
-    return id as unknown as Id<"comments">
-}
+const asCommentId = toId<"comments">
 
 function DetailHero({
     restaurant,
@@ -295,8 +291,7 @@ function DetailShare({ restaurant }: Readonly<{ restaurant: Restaurant }>) {
 function RestaurantDetailView() {
     const { restaurantId } = Route.useParams()
     const auth = useAuth()
-    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- single documented boundary conversion from router param
-    const restaurantConvexId = restaurantId as unknown as Id<"restaurants">
+    const restaurantConvexId = toId<"restaurants">(restaurantId)
     const restaurant = useSuspenseConvexQuery(api.restaurants.getById, { id: restaurantConvexId })
     const signedInUserId = auth.user?.id
     const viewer: Viewer =

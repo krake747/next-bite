@@ -5,7 +5,7 @@ import { Suspense, useState } from "react"
 import { hasCachedSession } from "@api/auth.store"
 import { useSuspenseConvexQuery } from "@api/convex.client"
 import { convexQueryOptions } from "@api/convex.options"
-import { type Doc, type Id } from "@api/data.model"
+import { type Doc, type Id, toId } from "@api/data.model"
 import { api } from "@api/endpoints"
 import { useCreateInvite, useRevokeInvite, useShareWithGroup, useUnshare } from "@core/groups"
 import { clearError, errorFrom, type FormError } from "@core/outcome"
@@ -31,8 +31,7 @@ export const Route = createFileRoute("/groups/$groupId")({
         if (!hasCachedSession()) {
             return null
         }
-        // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- single documented boundary conversion from router param
-        const groupId = params.groupId as unknown as Id<"groups">
+        const groupId = toId<"groups">(params.groupId)
         // Best-effort warm-up only: the Suspense view below refetches on its own
         // when this has not landed, so a failed warm-up stays silent by design.
         void context.queryClient.query(convexQueryOptions(api.groups.getGroup, { groupId })).catch(noop)
@@ -265,8 +264,7 @@ function GroupInviteSection({ groupId }: Readonly<{ groupId: Id<"groups"> }>) {
 }
 function GroupDetailView() {
     const { groupId } = Route.useParams()
-    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- single documented boundary conversion from router param
-    const groupConvexId = groupId as unknown as Id<"groups">
+    const groupConvexId = toId<"groups">(groupId)
     const auth = useAuth()
     const group = useSuspenseConvexQuery(api.groups.getGroup, { groupId: groupConvexId })
     const restaurants = useSuspenseConvexQuery(api.shares.listForGroup, { groupId: groupConvexId })
