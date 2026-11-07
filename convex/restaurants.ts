@@ -14,7 +14,7 @@ import { internal } from "./_generated/api"
 import { type Doc, type Id } from "./_generated/dataModel"
 import { query, mutation, action, internalQuery, internalMutation, type MutationCtx } from "./_generated/server"
 import { googleMapsApiKey } from "./env"
-import { requireUserId, requireOwnedRestaurant, formatDisplayName } from "./helpers"
+import { requireOwnedRestaurant, formatDisplayName, adjustStatsCounters, requireUserId } from "./helpers"
 import { coordsValidator, enrichmentValidator, openingHoursValidator, restaurantImageValidator } from "./validators"
 import { isRestaurantVisibleTo } from "./visibility"
 
@@ -313,6 +313,7 @@ export const _insertRestaurant = internalMutation({
                 createdAt: Date.now(),
             })
         }
+        await adjustStatsCounters(ctx, { restaurants: 1, cuisines: { [args.cuisine]: 1 } })
         return { restaurantId, duplicate: false }
     },
 })
@@ -664,6 +665,9 @@ export const update = mutation({
 
         const details = mergeDetails(restaurant.details, { notes: args.notes, link: args.link })
         const enrichment = mergeEnrichment(restaurant.address.enrichment, args.coords)
+        if (args.cuisine !== undefined && args.cuisine !== restaurant.cuisine) {
+            await adjustStatsCounters(ctx, { cuisines: { [restaurant.cuisine]: -1, [args.cuisine]: 1 } })
+        }
 
         if (args.images !== undefined) {
             const images = args.images
@@ -712,6 +716,7 @@ export const remove = mutation({
         }
 
         await ctx.db.delete(args.id)
+        await adjustStatsCounters(ctx, { restaurants: -1, cuisines: { [restaurant.cuisine]: -1 } })
     },
 })
 

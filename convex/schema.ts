@@ -36,7 +36,9 @@ export default defineSchema({
         visibility: v.union(v.literal("private"), v.literal("shared")),
         clientMutationId: v.optional(v.string()),
         createdAt: v.number(),
-    }).index("by_owner", ["ownerId"]),
+    })
+        .index("by_owner", ["ownerId"])
+        .index("by_created", ["createdAt"]),
     clientMutations: defineTable({
         key: v.string(),
         userId: v.string(),
@@ -151,5 +153,14 @@ export default defineSchema({
         byteSize: v.optional(v.number()),
         createdAt: v.number(),
     }).index("by_storage", ["storageId"]),
+    // Denormalized landing aggregates, maintained on every restaurant and
+    // interest write so the public getStats query stays O(1). Deployments that
+    // predate this table fall back to a live computation in landing.getStats.
+    statsCounters: defineTable({
+        key: v.string(),
+        restaurantCount: v.number(),
+        wantCount: v.number(),
+        cuisineCounts: v.record(v.string(), v.number()),
+    }).index("by_key", ["key"]),
     // Better Auth tables will be added by the convex component
 })

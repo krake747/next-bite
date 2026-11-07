@@ -5,7 +5,7 @@ import { countReactions } from "../src/core/social-counts"
 import { type DataModel, type Doc, type Id } from "./_generated/dataModel"
 import { mutation, query } from "./_generated/server"
 import { authComponent } from "./auth"
-import { formatDisplayName, readAuthUser, requireUserId } from "./helpers"
+import { formatDisplayName, readAuthUser, requireUserId, adjustStatsCounters } from "./helpers"
 import { isRestaurantVisibleTo } from "./visibility"
 
 async function serverDisplayName(ctx: Parameters<typeof authComponent.getAuthUser>[0]): Promise<string> {
@@ -156,18 +156,26 @@ export const toggleInterest = mutation({
         if (existing) {
             if (existing.status === args.status) {
                 await ctx.db.delete(existing._id)
+                if (existing.status === "want") {
+                    await adjustStatsCounters(ctx, { wants: -1 })
+                }
                 return null
             }
             await ctx.db.patch(existing._id, { status: args.status, displayName: name, updatedAt: Date.now() })
+            await adjustStatsCounters(ctx, { wants: args.status === "want" ? 1 : -1 })
             return existing._id
         }
-        return ctx.db.insert("interests", {
+        const interestId = await ctx.db.insert("interests", {
             restaurantId: args.restaurantId,
             userId,
             displayName: name,
             status: args.status,
             updatedAt: Date.now(),
         })
+        if (args.status === "want") {
+            await adjustStatsCounters(ctx, { wants: 1 })
+        }
+        return interestId
     },
 })
 

@@ -44,4 +44,38 @@ describe("landing stats", () => {
             expect(Object.keys(recent).toSorted()).toEqual(["createdAt", "cuisine", "name"])
         }
     })
+
+    test("tracks writes through the counters", async () => {
+        const t = setup()
+        await asUser(t, "anna").mutation(api.users.ensureProfile, { email: "anna@example.com", name: "anna" })
+        const firstId = await asUser(t, "anna").action(api.restaurants.addWithOpeningHours, {
+            name: "Trattoria Verde",
+            cuisine: "Italian",
+            addressLabel: "Luxembourg City",
+        })
+        await asUser(t, "anna").action(api.restaurants.addWithOpeningHours, {
+            name: "Sushi Bar",
+            cuisine: "Japanese",
+            addressLabel: "Luxembourg City",
+        })
+
+        await asUser(t, "anna").mutation(api.social.toggleInterest, { restaurantId: firstId, status: "want" })
+        const wanted = await t.query(api.landing.getStats, {})
+        expect(wanted.totalRestaurants).toBe(2)
+        expect(wanted.totalWants).toBe(1)
+
+        await asUser(t, "anna").mutation(api.social.toggleInterest, { restaurantId: firstId, status: "want" })
+        const unwanted = await t.query(api.landing.getStats, {})
+        expect(unwanted.totalWants).toBe(0)
+
+        await asUser(t, "anna").mutation(api.restaurants.update, { id: firstId, cuisine: "French" })
+        const renamed = await t.query(api.landing.getStats, {})
+        expect(renamed.topCuisines).toContainEqual({ cuisine: "French", count: 1 })
+        expect(renamed.topCuisines).not.toContainEqual({ cuisine: "Italian", count: 1 })
+
+        await asUser(t, "anna").mutation(api.restaurants.remove, { id: firstId })
+        const afterRemove = await t.query(api.landing.getStats, {})
+        expect(afterRemove.totalRestaurants).toBe(1)
+        expect(afterRemove.topCuisines).toEqual([{ cuisine: "Japanese", count: 1 }])
+    })
 })
