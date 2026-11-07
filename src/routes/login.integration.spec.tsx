@@ -1,4 +1,3 @@
-import { QueryClient } from "@tanstack/react-query"
 import { RouterProvider, createMemoryHistory, createRouter, type AnyRouter } from "@tanstack/react-router"
 import { act, fireEvent, render, screen, waitFor } from "@testing-library/react"
 import { useSyncExternalStore } from "react"
@@ -120,15 +119,15 @@ function seedAuthMethods(): void {
 }
 
 async function mountAt(path: string): Promise<AnyRouter> {
-    const queryClient = new QueryClient()
+    const backend = createSeededClient({ seeds: querySeeds })
     const router = createRouter({
         routeTree,
         history: createMemoryHistory({ initialEntries: [path] }),
-        context: { queryClient },
+        context: { queryClient: backend.queryClient },
     })
     await router.load()
     render(
-        <ConvexProvider client={createSeededClient({ seeds: querySeeds }).client}>
+        <ConvexProvider client={backend.client}>
             <RouterProvider router={router} />
         </ConvexProvider>,
     )

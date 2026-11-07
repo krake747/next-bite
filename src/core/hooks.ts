@@ -1,6 +1,6 @@
 import { useLiveQuery } from "@tanstack/react-db"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
-import { type ConvexClient } from "convex/browser"
+import { type ConvexReactClient } from "convex/react"
 import { useEffect, useRef } from "react"
 
 import { api } from "@convex/_generated/api"
@@ -14,7 +14,7 @@ import {
     applyUpdateArgsToDraft,
     assertRealRestaurantId,
     buildTempRestaurant,
-    clearUserScopedQueries,
+    claimSessionCache,
     dropSessionCollections,
     getSessionCollections,
     persistCallerFor,
@@ -33,7 +33,7 @@ function useSessionSyncRecovery(
     input: Readonly<{
         gated: boolean
         sessionKey: string | null
-        client: ConvexClient | null
+        client: ConvexReactClient | null
         isLoadingError: boolean
         isSyncError: boolean
         status: string
@@ -65,12 +65,15 @@ function useOwnerOrFeed(kind: "owner" | "feed"): ReadonlyArray<Doc<"restaurants"
     const client = useConvexClient()
     const queryClient = useQueryClient()
     useEffect(() => {
-        // Any session transition, including first mount, drops the previous session's user-scoped
-        // query entries. The query cache is client-populated only (no SSR dehydration), so
-        // clearing on mount is a no-op for fresh clients.
-        clearUserScopedQueries((filters) => {
-            queryClient.removeQueries(filters)
-        })
+        // Evict only when a ready session takes over a cache owned by another session. Skips
+        // probing mounts and owner matches, so components that mount on loaded data keep it.
+        claimSessionCache(
+            (filters) => {
+                queryClient.removeQueries(filters)
+            },
+            queryClient,
+            sessionKey,
+        )
     }, [queryClient, sessionKey])
     const gated = sessionKey === null || client === null
     const collections =

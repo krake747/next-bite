@@ -1,4 +1,3 @@
-import { QueryClient } from "@tanstack/react-query"
 import { RouterProvider, createMemoryHistory, createRouter } from "@tanstack/react-router"
 import { fireEvent, render, screen, waitFor } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
@@ -49,13 +48,6 @@ vi.mock("@core/auth-provider", async (importOriginal) => {
 })
 
 async function renderAt(path: string): Promise<void> {
-    const queryClient = new QueryClient()
-    const router = createRouter({
-        routeTree,
-        history: createMemoryHistory({ initialEntries: [path] }),
-        context: { queryClient },
-    })
-    await router.load()
     // The signed-out home reads the landing aggregate; unseeded queries fall back to an empty
     // list, which is not the aggregate shape, so seed it explicitly.
     const seeds = new Map<string, unknown>([
@@ -64,8 +56,15 @@ async function renderAt(path: string): Promise<void> {
             { totalRestaurants: 0, totalWants: 0, topCuisines: [], recentAdds: [] },
         ],
     ])
+    const backend = createSeededClient({ seeds })
+    const router = createRouter({
+        routeTree,
+        history: createMemoryHistory({ initialEntries: [path] }),
+        context: { queryClient: backend.queryClient },
+    })
+    await router.load()
     render(
-        <ConvexProvider client={createSeededClient({ seeds }).client}>
+        <ConvexProvider client={backend.client}>
             <RouterProvider router={router} />
         </ConvexProvider>,
     )

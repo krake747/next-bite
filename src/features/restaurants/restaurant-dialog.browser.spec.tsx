@@ -1,4 +1,4 @@
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
+import { QueryClientProvider } from "@tanstack/react-query"
 import { fireEvent, render, screen, waitFor } from "@testing-library/react"
 import { act } from "@testing-library/react"
 import { describe, expect, test, vi } from "vitest"
@@ -100,10 +100,10 @@ const addMutate = vi.fn<(args: RestaurantAddArgs) => Promise<unknown>>()
 let submitGate: Deferred<unknown> | null = null
 
 function renderDialog(onOpenChange: (open: boolean) => void): void {
-    const queryClient = new QueryClient()
+    const backend = createSeededClient({ calls: mutationCalls })
     render(
-        <QueryClientProvider client={queryClient}>
-            <ConvexProvider client={createSeededClient({ calls: mutationCalls }).client}>
+        <QueryClientProvider client={backend.queryClient}>
+            <ConvexProvider client={backend.client}>
                 <RestaurantDialog mode="add" show onOpenChange={onOpenChange} />
             </ConvexProvider>
         </QueryClientProvider>,

@@ -1,6 +1,6 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import { renderHook } from "@testing-library/react"
-import { ConvexClient } from "convex/browser"
+import { type ConvexReactClient } from "convex/react"
 import { describe, expect, test, vi } from "vitest"
 
 import { type Id } from "@convex/_generated/dataModel"
@@ -26,7 +26,7 @@ import { createSeededClient } from "./seeded-client"
 
 const SESSION = "user-1"
 
-let injectedClient: ConvexClient | null = null
+let injectedClient: ConvexReactClient | null = null
 
 vi.mock("../convex-client", async (importOriginal) => {
     const original = await importOriginal<typeof import("../convex-client")>()
@@ -36,18 +36,39 @@ vi.mock("../convex-client", async (importOriginal) => {
 // Hooks under test read the injected seeded client, so the provider-owned client never
 // serves data. Stub it to a non-connecting shape: the real client dials the test URL and
 // its async connection fatals escape as unhandled errors that fail the suite.
-vi.mock("convex/browser", () => ({
-    ConvexClient: class {
-        setAuthCalls: unknown[] = []
-        setAuth(fetchToken: unknown): void {
-            this.setAuthCalls.push(fetchToken)
-        }
-    },
-}))
+vi.mock("convex/react", async (importOriginal) => {
+    const original = await importOriginal<typeof import("convex/react")>()
+    return {
+        ...original,
+        ConvexReactClient: class {
+            setAuthCalls: unknown[] = []
+            clearedAuthCalls = 0
+            watchCalls: unknown[][] = []
+            setAuth(fetchToken: unknown): void {
+                this.setAuthCalls.push(fetchToken)
+            }
+            clearAuth(): void {
+                this.clearedAuthCalls += 1
+            }
+            watchQuery(...args: unknown[]): {
+                localQueryResult: () => unknown
+                onUpdate: (receive: (value: never) => void) => () => void
+            } {
+                this.watchCalls.push(args)
+                // The provider-owned client never serves data; the adapter only needs the
+                // subscription shape to exist when specs seed convex namespaced cache entries.
+                return {
+                    localQueryResult: (): null => null,
+                    onUpdate: () => (): void => {},
+                }
+            }
+        },
+    }
+})
 
 function injectSyncClient(syncClient: unknown): void {
     // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- test-only sync client standing in for the Convex subscription surface
-    injectedClient = syncClient as ConvexClient
+    injectedClient = syncClient as ConvexReactClient
 }
 
 const { tokenMock } = vi.hoisted(() => ({
@@ -370,25 +391,25 @@ describe("restaurant collections", () => {
 
     test("clears user-scoped queries while keeping shared ones", () => {
         const queryClient = new QueryClient()
-        queryClient.setQueryData(["restaurants:get", "{}"], [{ name: "Stale" }])
-        queryClient.setQueryData(["friendships:listFriends", "{}"], [])
-        queryClient.setQueryData(["social:getSummaries", "{}"], [])
-        queryClient.setQueryData(["users:getMe", "{}"], { status: "onboarding" })
-        queryClient.setQueryData(["groups:listMyGroups", "{}"], [])
-        queryClient.setQueryData(["landing:getStats", "{}"], { count: 1 })
-        queryClient.setQueryData(["auth:getAuthMethods", "{}"], { password: true })
+        queryClient.setQueryData(["convexQuery", "restaurants:get", {}], [{ name: "Stale" }])
+        queryClient.setQueryData(["convexQuery", "friendships:listFriends", {}], [])
+        queryClient.setQueryData(["convexQuery", "social:getSummaries", {}], [])
+        queryClient.setQueryData(["convexQuery", "users:getMe", {}], { status: "onboarding" })
+        queryClient.setQueryData(["convexQuery", "groups:listMyGroups", {}], [])
+        queryClient.setQueryData(["convexQuery", "landing:getStats", {}], { count: 1 })
+        queryClient.setQueryData(["convexQuery", "auth:getAuthMethods", {}], { password: true })
 
         clearUserScopedQueries((filters) => {
             queryClient.removeQueries(filters)
         })
 
-        expect(queryClient.getQueryData(["restaurants:get", "{}"])).toBeUndefined()
-        expect(queryClient.getQueryData(["friendships:listFriends", "{}"])).toBeUndefined()
-        expect(queryClient.getQueryData(["social:getSummaries", "{}"])).toBeUndefined()
-        expect(queryClient.getQueryData(["users:getMe", "{}"])).toBeUndefined()
-        expect(queryClient.getQueryData(["groups:listMyGroups", "{}"])).toBeUndefined()
-        expect(queryClient.getQueryData(["landing:getStats", "{}"])).toEqual({ count: 1 })
-        expect(queryClient.getQueryData(["auth:getAuthMethods", "{}"])).toEqual({ password: true })
+        expect(queryClient.getQueryData(["convexQuery", "restaurants:get", {}])).toBeUndefined()
+        expect(queryClient.getQueryData(["convexQuery", "friendships:listFriends", {}])).toBeUndefined()
+        expect(queryClient.getQueryData(["convexQuery", "social:getSummaries", {}])).toBeUndefined()
+        expect(queryClient.getQueryData(["convexQuery", "users:getMe", {}])).toBeUndefined()
+        expect(queryClient.getQueryData(["convexQuery", "groups:listMyGroups", {}])).toBeUndefined()
+        expect(queryClient.getQueryData(["convexQuery", "landing:getStats", {}])).toEqual({ count: 1 })
+        expect(queryClient.getQueryData(["convexQuery", "auth:getAuthMethods", {}])).toEqual({ password: true })
     })
 
     test("returns collection rows from the restaurants hook", async () => {
@@ -559,34 +580,31 @@ describe("restaurant collections", () => {
         const backend = createSeededClient({ liveRows: [restaurantFixture()] })
         injectSyncClient(backend.client)
         const queryClient = new QueryClient()
+        const wrapper = ({ children }: Readonly<{ children: React.ReactNode }>) => (
+            <QueryClientProvider client={queryClient}>
+                <AuthProvider>{children}</AuthProvider>
+            </QueryClientProvider>
+        )
 
-        const { unmount } = renderHook(() => useRestaurants(), {
-            wrapper: ({ children }: Readonly<{ children: React.ReactNode }>) => (
-                <QueryClientProvider client={queryClient}>
-                    <AuthProvider>{children}</AuthProvider>
-                </QueryClientProvider>
-            ),
-        })
+        const first = renderHook(() => useRestaurants(), { wrapper })
         await vi.waitFor(() => {
-            expect(queryClient.getQueryData(["social:getSummaries", "{}"])).toBeUndefined()
+            expect(first.result.current?.map((r) => r.name)).toEqual(["Trattoria Verde"])
         })
-        queryClient.setQueryData(["restaurants:get", "{}"], [{ name: "Stale" }])
-        queryClient.setQueryData(["users:getMe", "{}"], { status: "onboarding" })
-        queryClient.setQueryData(["landing:getStats", "{}"], { count: 1 })
-        unmount()
-        vi.mocked(authClient.getSession).mockResolvedValue({ data: { user: null }, error: null })
+        queryClient.setQueryData(["convexQuery", "restaurants:get", {}], [{ name: "Stale" }])
+        queryClient.setQueryData(["convexQuery", "users:getMe", {}], { status: "onboarding" })
+        queryClient.setQueryData(["convexQuery", "landing:getStats", {}], { count: 1 })
+        first.unmount()
+        vi.mocked(authClient.getSession).mockResolvedValue({
+            data: { user: { id: "ben", email: "ben@example.com", name: "Ben" } },
+            error: null,
+        })
 
-        renderHook(() => useRestaurants(), {
-            wrapper: ({ children }: Readonly<{ children: React.ReactNode }>) => (
-                <QueryClientProvider client={queryClient}>
-                    <AuthProvider>{children}</AuthProvider>
-                </QueryClientProvider>
-            ),
-        })
+        renderHook(() => useRestaurants(), { wrapper })
         await vi.waitFor(() => {
-            expect(queryClient.getQueryData(["restaurants:get", "{}"])).toBeUndefined()
+            expect(queryClient.getQueryData(["convexQuery", "restaurants:get", {}])).toBeUndefined()
         })
-        expect(queryClient.getQueryData(["landing:getStats", "{}"])).toEqual({ count: 1 })
+        expect(queryClient.getQueryData(["convexQuery", "users:getMe", {}])).toBeUndefined()
+        expect(queryClient.getQueryData(["convexQuery", "landing:getStats", {}])).toEqual({ count: 1 })
     })
 
     describe("collection recovery", () => {

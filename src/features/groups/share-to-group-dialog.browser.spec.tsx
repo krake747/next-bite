@@ -1,4 +1,4 @@
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
+import { QueryClientProvider } from "@tanstack/react-query"
 import { fireEvent, render, screen, waitFor } from "@testing-library/react"
 import { describe, expect, test, vi } from "vitest"
 
@@ -55,12 +55,10 @@ vi.mock("@core/auth-provider", async (importOriginal) => {
 const restaurantId = "r1" as unknown as Id<"restaurants">
 
 function renderDialog(): void {
-    const queryClient = new QueryClient()
+    const backend = createSeededClient({ seeds: querySeeds, calls: mutationCalls, mutateResult: "s1" })
     render(
-        <QueryClientProvider client={queryClient}>
-            <ConvexProvider
-                client={createSeededClient({ seeds: querySeeds, calls: mutationCalls, mutateResult: "s1" }).client}
-            >
+        <QueryClientProvider client={backend.queryClient}>
+            <ConvexProvider client={backend.client}>
                 <ShareToGroupDialog
                     restaurantId={restaurantId}
                     restaurantName="Trattoria Verde"

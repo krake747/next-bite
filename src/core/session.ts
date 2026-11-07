@@ -1,4 +1,4 @@
-import { type ConvexClient } from "convex/browser"
+import { type ConvexReactClient } from "convex/react"
 import { useEffect, useState, useSyncExternalStore } from "react"
 
 import { api } from "@convex/_generated/api"
@@ -8,7 +8,7 @@ import { getConvexSessionToken } from "./auth-client"
 import { useAuth as useAuthSource } from "./auth-provider"
 import { useConvexClient } from "./convex-client.tsx"
 
-async function probeConvexAuth(client: ConvexClient): Promise<boolean> {
+async function probeConvexAuth(client: ConvexReactClient): Promise<boolean> {
     const token = await getConvexSessionToken()
     if (token === null) {
         return false
@@ -25,7 +25,7 @@ export const CONVEX_AUTH_TIMEOUT_MS = 10000
 export const CONVEX_AUTH_POLL_MS = 500
 
 async function settleConvexAuth(
-    client: ConvexClient,
+    client: ConvexReactClient,
     isCancelled: () => boolean,
     timeoutMs: number = CONVEX_AUTH_TIMEOUT_MS,
 ): Promise<boolean> {

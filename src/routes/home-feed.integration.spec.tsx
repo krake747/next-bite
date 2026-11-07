@@ -1,4 +1,3 @@
-import { QueryClient } from "@tanstack/react-query"
 import { RouterProvider, createMemoryHistory, createRouter } from "@tanstack/react-router"
 import { fireEvent, render, screen, within, waitFor } from "@testing-library/react"
 import { describe, expect, test, vi } from "vitest"
@@ -64,16 +63,16 @@ async function renderHome(
     feed: ReadonlyArray<RestaurantDoc>,
     friends: ReadonlyArray<{ authUserId: string; name: string }> = [],
 ): Promise<void> {
-    const queryClient = new QueryClient()
+    const seeds = new Map<string, unknown>([[seedKey("friendships:listFriends", undefined), friends]])
+    const backend = createSeededClient({ seeds, liveRows: feed })
     const router = createRouter({
         routeTree,
         history: createMemoryHistory({ initialEntries: ["/"] }),
-        context: { queryClient },
+        context: { queryClient: backend.queryClient },
     })
     await router.load()
-    const seeds = new Map<string, unknown>([[seedKey("friendships:listFriends", undefined), friends]])
     render(
-        <ConvexProvider client={createSeededClient({ seeds, liveRows: feed }).client}>
+        <ConvexProvider client={backend.client}>
             <RouterProvider router={router} />
         </ConvexProvider>,
     )

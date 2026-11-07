@@ -1,4 +1,4 @@
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
+import { QueryClientProvider } from "@tanstack/react-query"
 import { fireEvent, render, screen, waitFor } from "@testing-library/react"
 import { describe, expect, test, vi } from "vitest"
 
@@ -76,12 +76,12 @@ vi.mock("@core/hooks", async (importOriginal) => {
 })
 
 function renderMemories(): void {
-    const queryClient = new QueryClient()
+    const backend = createSeededClient({})
     // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- test-only restaurant id
     const restaurantId = "r1" as unknown as Id<"restaurants">
     render(
-        <QueryClientProvider client={queryClient}>
-            <ConvexProvider client={createSeededClient({}).client}>
+        <QueryClientProvider client={backend.queryClient}>
+            <ConvexProvider client={backend.client}>
                 <VisitMemories restaurantId={restaurantId} />
             </ConvexProvider>
         </QueryClientProvider>,

@@ -1,5 +1,8 @@
-import { type ConvexClient } from "convex/browser"
+import { QueryClient } from "@tanstack/react-query"
+import { type ConvexReactClient } from "convex/react"
 import { getFunctionName } from "convex/server"
+
+import { ConvexQueryClient } from "@convex-dev/react-query"
 
 import { convexArgsKey } from "../convex-client"
 
@@ -18,6 +21,12 @@ export type SeededClientOptions = {
     readonly queryHook?: (() => Promise<unknown>) | undefined
 }
 
+type Receiver = {
+    key: string
+    receive: (value: unknown) => void
+    current: unknown
+}
+
 // Test-only Convex client: serves seeded query results by function path plus args and records
 // mutations by function path. Stands in for the Convex subscription surface where the real
 // AuthProvider would otherwise shadow injected values with a live client. Queries without a
@@ -28,11 +37,8 @@ export function createSeededClient(options: SeededClientOptions = {}) {
     const calls = options.calls ?? []
     const mutateResult = options.mutateResult ?? "m1"
     let liveRows: ReadonlyArray<unknown> = options.liveRows === undefined ? [] : [...options.liveRows]
-    const receivers = new Set<{
-        key: string
-        receive: (value: unknown) => void
-        current: unknown
-    }>()
+    const receivers = new Set<Receiver>()
+    const watchReceivers = new Set<Receiver>()
     const failers = new Map<string, Set<(error: unknown) => void>>()
 
     const valueFor = (key: string): unknown => {
@@ -41,6 +47,11 @@ export function createSeededClient(options: SeededClientOptions = {}) {
             return structuredClone(seeded)
         }
         return structuredClone([...liveRows])
+    }
+
+    function nameOf(ref: unknown): string {
+        // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- test-only function reference shaped to the Convex subscription surface
+        return typeof ref === "string" ? ref : getFunctionName(ref as never)
     }
 
     const trackFailureHandler = (key: string, onError: ((error: unknown) => void) | undefined): void => {
@@ -69,9 +80,8 @@ export function createSeededClient(options: SeededClientOptions = {}) {
             receive: (result: unknown) => void,
             onError?: (error: unknown) => void,
         ) => {
-            // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- test-only function reference shaped to the Convex subscription surface
-            const key = seedKey(getFunctionName(ref as never), args)
-            const entry = { key, receive, current: valueFor(key) }
+            const key = seedKey(nameOf(ref), args)
+            const entry: Receiver = { key, receive, current: valueFor(key) }
             receivers.add(entry)
             trackFailureHandler(key, onError)
             receive(entry.current)
@@ -84,21 +94,38 @@ export function createSeededClient(options: SeededClientOptions = {}) {
                 getCurrentValue: () => entry.current,
             })
         },
+        watchQuery: (ref: unknown, args?: unknown) => {
+            const key = seedKey(nameOf(ref), args ?? {})
+            const entry: Receiver = {
+                key,
+                receive: () => {},
+                current: valueFor(key),
+            }
+            watchReceivers.add(entry)
+            const forget = () => {
+                watchReceivers.delete(entry)
+            }
+            return {
+                localQueryResult: () => entry.current,
+                onUpdate: (receive: (value: unknown) => void) => {
+                    entry.receive = receive
+                    return Object.assign(forget, { unsubscribe: forget })
+                },
+            }
+        },
         // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- test-only query stub standing in for client.query
-        query: (async () => {
+        query: (async (ref: unknown, args: unknown) => {
             if (options.queryHook !== undefined) {
                 return options.queryHook()
             }
-            await Promise.resolve()
-            return []
-        }) as ConvexClient["query"],
+            return valueFor(seedKey(nameOf(ref), args ?? {}))
+        }) as ConvexReactClient["query"],
         // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- test-only mutation recorder standing in for client.mutation
         mutation: (async (ref: unknown, args: unknown) => {
             await Promise.resolve()
-            // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- test-only function reference shaped to the Convex subscription surface
-            calls.push({ fn: getFunctionName(ref as never), args })
+            calls.push({ fn: nameOf(ref), args })
             return mutateResult
-        }) as ConvexClient["mutation"],
+        }) as ConvexReactClient["mutation"],
     }
 
     const pushState = (rows: ReadonlyArray<unknown>, key?: string): void => {
@@ -107,7 +134,7 @@ export function createSeededClient(options: SeededClientOptions = {}) {
         } else {
             seeds.set(key, [...rows])
         }
-        for (const entry of receivers) {
+        for (const entry of [...receivers, ...watchReceivers]) {
             const matches = key === undefined ? !seeds.has(entry.key) : entry.key === key
             if (matches) {
                 entry.current = valueFor(entry.key)
@@ -127,11 +154,26 @@ export function createSeededClient(options: SeededClientOptions = {}) {
         }
     }
 
+    const convexQueryClient = new ConvexQueryClient(
+        // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- test-only sync client standing in for the Convex subscription surface
+        syncClient as unknown as ConvexReactClient,
+    )
+    const queryClient = new QueryClient({
+        defaultOptions: {
+            queries: {
+                queryKeyHashFn: convexQueryClient.hashFn(),
+                queryFn: convexQueryClient.queryFn(),
+            },
+        },
+    })
+    convexQueryClient.connect(queryClient)
+
     return {
         // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- test-only sync client standing in for the Convex subscription surface
-        client: syncClient as unknown as ConvexClient,
+        client: syncClient as unknown as ConvexReactClient,
+        queryClient,
         pushState,
-        subscriberCount: (): number => receivers.size,
+        subscriberCount: (): number => receivers.size + watchReceivers.size,
         failSync,
     }
 }

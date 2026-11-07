@@ -1,4 +1,4 @@
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
+import { QueryClientProvider } from "@tanstack/react-query"
 import { fireEvent, render, screen, waitFor } from "@testing-library/react"
 import { act } from "@testing-library/react"
 import { useState } from "react"
@@ -84,10 +84,10 @@ function Harness() {
 }
 
 function renderHarness() {
-    const queryClient = new QueryClient()
+    const backend = createSeededClient({ calls: mutationCalls })
     return render(
-        <QueryClientProvider client={queryClient}>
-            <ConvexProvider client={createSeededClient({ calls: mutationCalls }).client}>
+        <QueryClientProvider client={backend.queryClient}>
+            <ConvexProvider client={backend.client}>
                 <Harness />
             </ConvexProvider>
         </QueryClientProvider>,

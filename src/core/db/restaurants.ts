@@ -1,6 +1,6 @@
 import { convexCollectionOptions } from "@tanstack/convex-db-collection"
 import { createCollection } from "@tanstack/db"
-import { type ConvexClient } from "convex/browser"
+import { type ConvexReactClient } from "convex/react"
 
 import { api } from "@convex/_generated/api"
 import { type Doc, type Id } from "@convex/_generated/dataModel"
@@ -13,7 +13,7 @@ const SYNC_RESOLVE_POLL_MS = 50
 
 export type RestaurantDoc = Doc<"restaurants">
 
-export type SyncClient = Pick<ConvexClient, "onUpdate">
+export type SyncClient = Pick<ConvexReactClient, "watchQuery">
 
 export type RestaurantCoords = {
     readonly lat: number
@@ -67,7 +67,7 @@ function coordsArg(coords: RestaurantCoords | undefined): { coords: RestaurantCo
     return { coords: { lat: coords.lat, lng: coords.lng } }
 }
 
-export function persistCallerFor(client: ConvexClient): RestaurantPersist {
+export function persistCallerFor(client: ConvexReactClient): RestaurantPersist {
     return {
         updateRestaurant: async (args) => {
             await client.mutation(api.restaurants.update, args)
@@ -293,12 +293,39 @@ const USER_SCOPED_QUERY_PREFIXES = [
 ]
 
 function isUserScopedQueryKey(queryKey: ReadonlyArray<unknown>): boolean {
-    const [namespace] = queryKey
-    return typeof namespace === "string" && USER_SCOPED_QUERY_PREFIXES.some((prefix) => namespace.startsWith(prefix))
+    // Runtime keys from @convex-dev/react-query are ["convexQuery", "module:function", args].
+    const fn = queryKey[0] === "convexQuery" ? queryKey[1] : undefined
+    return typeof fn === "string" && USER_SCOPED_QUERY_PREFIXES.some((prefix) => fn.startsWith(prefix))
 }
 
 export function clearUserScopedQueries(
     removeQueries: (filters: { predicate: (query: { queryKey: ReadonlyArray<unknown> }) => boolean }) => void,
 ): void {
     removeQueries({ predicate: (query) => isUserScopedQueryKey(query.queryKey) })
+}
+
+// The TanStack Query cache is shared across sessions in one tab, so user-scoped entries must be
+// evicted when the owning session changes. Eviction runs only for ready sessions whose key
+// differs from the recorded owner: mount-time runs while probing must not wipe the cache,
+// because components that mount on loaded data (gated on collections) would unmount on the
+// eviction and remount on the refetch in a loop. Rendered data now lives in the cache (the
+// official adapter), unlike the previous hand-rolled adapter that kept it in component state.
+const sessionCacheOwners = new WeakMap<object, string>()
+
+export function claimSessionCache(
+    removeQueries: (filters: { predicate: (query: { queryKey: ReadonlyArray<unknown> }) => boolean }) => void,
+    queryClient: object,
+    sessionKey: string | null,
+): void {
+    if (sessionKey === null) {
+        return
+    }
+    const owner = sessionCacheOwners.get(queryClient)
+    if (owner === sessionKey) {
+        return
+    }
+    if (owner !== undefined) {
+        clearUserScopedQueries(removeQueries)
+    }
+    sessionCacheOwners.set(queryClient, sessionKey)
 }

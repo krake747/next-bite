@@ -1,15 +1,16 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query"
-import { ConvexClient } from "convex/browser"
+import { useMutation, useQuery } from "@tanstack/react-query"
+import { type ConvexReactClient } from "convex/react"
 import { type FunctionArgs, type FunctionReference, type FunctionReturnType } from "convex/server"
-import { getFunctionName } from "convex/server"
-import { createContext, use, useState, useEffect } from "react"
+import { createContext, use } from "react"
 
-const ConvexContext = createContext<ConvexClient | null>(null)
+import { convexQuery } from "@convex-dev/react-query"
+
+const ConvexContext = createContext<ConvexReactClient | null>(null)
 
 export function ConvexProvider({
     client,
     children,
-}: Readonly<{ client: ConvexClient | null; children: React.ReactNode }>) {
+}: Readonly<{ client: ConvexReactClient | null; children: React.ReactNode }>) {
     return <ConvexContext.Provider value={client}>{children}</ConvexContext.Provider>
 }
 
@@ -18,44 +19,22 @@ export function convexArgsKey(args: unknown): string {
     return raw === "{}" ? "no-args" : raw
 }
 
-export function convexQueryKey<Query extends FunctionReference<"query">>(
-    query: Query,
-    args: FunctionArgs<Query> | undefined,
-): readonly [string, string] {
-    // Convex function references are fresh proxies on every access with no
-    // enumerable identity, so every reference hashes the same under TanStack
-    // Query. The function path keeps cache entries apart and keeps the
-    // subscription effect from refiring on every render.
-    return [getFunctionName(query), convexArgsKey(args)]
-}
-
 export function useConvexQuery<Query extends FunctionReference<"query">>(
     query: Query,
     args?: FunctionArgs<Query>,
     options?: Readonly<{ skip?: boolean | undefined }>,
 ): FunctionReturnType<Query> | undefined {
     const client = use(ConvexContext)
-    const queryClient = useQueryClient()
-    const [namespace, argsKey] = convexQueryKey(query, args)
-    const queryKey = [namespace, argsKey] as const
-    const skip = options?.skip ?? false
-
-    const [data, setData] = useState<FunctionReturnType<Query> | undefined>(() => {
-        return skip ? undefined : queryClient.getQueryData<FunctionReturnType<Query>>(queryKey)
+    // Null client means server render (or a tree without a provider): stay
+    // disabled so no queryFn is needed, matching the old loading state.
+    const skip = options?.skip ?? client === null
+    const shaped = convexQuery(query, (args ?? {}) as FunctionArgs<Query>)
+    const result = useQuery({
+        queryKey: shaped.queryKey,
+        staleTime: shaped.staleTime ?? Infinity,
+        enabled: !skip,
     })
-
-    useEffect(() => {
-        const unsub =
-            skip || client === null
-                ? undefined
-                : client.onUpdate(query, { ...args }, (value) => {
-                      queryClient.setQueryData<FunctionReturnType<Query>>(queryKey, value)
-                      setData(value)
-                  })
-        return unsub
-    }, [namespace, argsKey, client, skip])
-
-    return skip ? undefined : data
+    return skip ? undefined : result.data
 }
 
 export function useConvexMutation<Mutation extends FunctionReference<"mutation">>(mutation: Mutation) {
@@ -86,6 +65,6 @@ export function useConvexAction<Action extends FunctionReference<"action">>(acti
     })
 }
 
-export function useConvexClient(): ConvexClient | null {
+export function useConvexClient(): ConvexReactClient | null {
     return use(ConvexContext)
 }

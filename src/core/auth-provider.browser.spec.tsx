@@ -1,3 +1,4 @@
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import { render, screen, waitFor } from "@testing-library/react"
 import { describe, expect, test, vi } from "vitest"
 
@@ -7,20 +8,28 @@ type FetchToken = (options: { forceRefreshToken: boolean }) => Promise<string | 
 
 const { constructed } = vi.hoisted(() => ({ constructed: [] as { fetchTokens: FetchToken[] }[] }))
 
-// The provider owns a ConvexClient, but the suite never dials a backend: stub the client to a
+// The provider owns a ConvexReactClient, but the suite never dials a backend: stub the client to a
 // non-connecting shape that records its auth wiring. Hooks under test read the injected seeded
 // client, so this stub only silences the provider-owned connection.
-vi.mock("convex/browser", () => ({
-    ConvexClient: class {
-        fetchTokens: FetchToken[] = []
-        constructor() {
-            constructed.push(this)
-        }
-        setAuth(fetchToken: FetchToken): void {
-            this.fetchTokens.push(fetchToken)
-        }
-    },
-}))
+vi.mock("convex/react", async (importOriginal) => {
+    const original = await importOriginal<typeof import("convex/react")>()
+    return {
+        ...original,
+        ConvexReactClient: class {
+            fetchTokens: FetchToken[] = []
+            clearedAuthCalls = 0
+            constructor() {
+                constructed.push(this)
+            }
+            setAuth(fetchToken: FetchToken): void {
+                this.fetchTokens.push(fetchToken)
+            }
+            clearAuth(): void {
+                this.clearedAuthCalls += 1
+            }
+        },
+    }
+})
 
 vi.mock("./auth-client", () => ({
     authClient: {
@@ -50,9 +59,11 @@ vi.mock("./auth-client", () => ({
 describe("AuthProvider", () => {
     test("provides the Better Auth session token to the Convex client", async () => {
         render(
-            <AuthProvider>
-                <p>ready</p>
-            </AuthProvider>,
+            <QueryClientProvider client={new QueryClient()}>
+                <AuthProvider>
+                    <p>ready</p>
+                </AuthProvider>
+            </QueryClientProvider>,
         )
         await waitFor(() => {
             expect(screen.getByText("ready")).toBeInTheDocument()

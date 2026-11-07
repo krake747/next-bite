@@ -1,4 +1,3 @@
-import { QueryClient } from "@tanstack/react-query"
 import { RouterProvider, createMemoryHistory, createRouter } from "@tanstack/react-router"
 import { fireEvent, render, screen, waitFor, within } from "@testing-library/react"
 import { describe, expect, test, vi } from "vitest"
@@ -55,17 +54,15 @@ function seedQuery(fn: string, args: unknown, value: unknown): void {
 }
 
 async function renderAt(path: string): Promise<void> {
-    const queryClient = new QueryClient()
+    const backend = createSeededClient({ seeds: querySeeds, calls: mutationCalls, mutateResult: "g9" })
     const router = createRouter({
         routeTree,
         history: createMemoryHistory({ initialEntries: [path] }),
-        context: { queryClient },
+        context: { queryClient: backend.queryClient },
     })
     await router.load()
     render(
-        <ConvexProvider
-            client={createSeededClient({ seeds: querySeeds, calls: mutationCalls, mutateResult: "g9" }).client}
-        >
+        <ConvexProvider client={backend.client}>
             <RouterProvider router={router} />
         </ConvexProvider>,
     )

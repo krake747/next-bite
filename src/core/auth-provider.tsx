@@ -1,7 +1,9 @@
-import { ConvexClient, type AuthTokenFetcher } from "convex/browser"
+import { useQueryClient, type QueryClient } from "@tanstack/react-query"
+import { ConvexReactClient } from "convex/react"
 import { useState, useEffect, createContext, use } from "react"
 
 import { ConvexBetterAuthProvider } from "@convex-dev/better-auth/react"
+import { ConvexQueryClient } from "@convex-dev/react-query"
 
 import { authClient } from "./auth-client"
 import { useAuthStore } from "./auth-store"
@@ -41,26 +43,35 @@ export function useAuth() {
     return ctx
 }
 
+type ConvexPair = {
+    readonly client: ConvexReactClient
+    readonly convexQueryClient: ConvexQueryClient
+}
+
+const connectedQueryClients = new WeakMap<QueryClient, ConvexPair>()
+
 export function AuthProvider({ children }: Readonly<{ children: React.ReactNode }>) {
-    const [pair] = useState(() => {
+    const queryClient = useQueryClient()
+    const [pair] = useState<ConvexPair | null>(() => {
         if (typeof window === "undefined") {
             return null
         }
-        const client = new ConvexClient(env.VITE_CONVEX_URL)
-        return {
-            client,
-            authed: {
-                setAuth: (fetchToken: AuthTokenFetcher) => {
-                    client.setAuth(fetchToken)
-                },
-                clearAuth: () => {
-                    client.setAuth(async () => {
-                        await Promise.resolve()
-                        return null
-                    })
-                },
-            },
+        const hit = connectedQueryClients.get(queryClient)
+        if (hit !== undefined) {
+            return hit
         }
+        const client = new ConvexReactClient(env.VITE_CONVEX_URL)
+        const convexQueryClient = new ConvexQueryClient(client)
+        queryClient.setDefaultOptions({
+            queries: {
+                queryKeyHashFn: convexQueryClient.hashFn(),
+                queryFn: convexQueryClient.queryFn(),
+            },
+        })
+        convexQueryClient.connect(queryClient)
+        const created = { client, convexQueryClient }
+        connectedQueryClients.set(queryClient, created)
+        return created
     })
     const store = useAuthStore()
 
@@ -73,7 +84,7 @@ export function AuthProvider({ children }: Readonly<{ children: React.ReactNode 
     }
 
     return (
-        <ConvexBetterAuthProvider client={pair.authed} authClient={authClient}>
+        <ConvexBetterAuthProvider client={pair.client} authClient={authClient}>
             <ConvexProvider client={pair.client}>
                 <AuthContext.Provider value={store}>{children}</AuthContext.Provider>
             </ConvexProvider>

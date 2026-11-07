@@ -1,4 +1,4 @@
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
+import { QueryClientProvider } from "@tanstack/react-query"
 import { fireEvent, render, screen, waitFor } from "@testing-library/react"
 import { describe, expect, test, vi } from "vitest"
 
@@ -51,10 +51,10 @@ vi.mock("@core/hooks", async (importOriginal) => {
 })
 
 function renderAvatar(avatarUrl: string | null): void {
-    const queryClient = new QueryClient()
+    const backend = createSeededClient({})
     render(
-        <QueryClientProvider client={queryClient}>
-            <ConvexProvider client={createSeededClient({}).client}>
+        <QueryClientProvider client={backend.queryClient}>
+            <ConvexProvider client={backend.client}>
                 <AvatarSection avatarUrl={avatarUrl} />
             </ConvexProvider>
         </QueryClientProvider>,
