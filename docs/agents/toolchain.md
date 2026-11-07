@@ -95,7 +95,7 @@ values in your shell first:
 set -a; . ./.env.production.local; set +a; pnpm deploy
 ```
 
-Deploying needs `cf auth login` or `CLOUDFLARE_API_TOKEN`. See ADR-0007. Ask a human before
+Deploying needs `cf auth login` or `CLOUDFLARE_API_TOKEN`. See ADR-0013. Ask a human before
 deploying; never print secret values.
 
 ## Anonymous SSR boundary
@@ -118,7 +118,7 @@ Proven by the Playwright gate against the Worker preview:
 
 Releases ship from `main` via the manual `release.yml` workflow (`workflow_dispatch` with
 `patch`/`minor`/`major` plus a dry-run flag). It gates on PR CI, builds, deploys with `cf`, then
-tags and publishes a GitHub Release. See ADR-0008.
+tags and publishes a GitHub Release. See ADR-0014.
 
 ## Verification chain
 

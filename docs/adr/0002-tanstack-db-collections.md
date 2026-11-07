@@ -1,6 +1,6 @@
 # TanStack DB reactive collections
 
-TanStack Query remains the data path today (ADR-0002). When Phase 3 starts, collections come from
+TanStack Query remains the data path today (ADR-0001). When Phase 3 starts, collections come from
 TanStack DB with the Convex adapter (`@tanstack/db`, `@tanstack/react-db`,
 `@tanstack/convex-db-collection`, all at 1.0.0-rc.1.3 at audit time). Convex stays the source of
 truth; DB is a reactive client view for filtering, sorting, joins, and optimistic updates.

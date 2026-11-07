@@ -184,7 +184,7 @@ export type SyncedRows = {
 }
 
 // A timed-out wait is not proof of failure: the row may already exist
-// server-side (see ADR-0014). Callers distinguish this from definitive errors
+// server-side (see ADR-0002). Callers distinguish this from definitive errors
 // to offer checking and retry on the same mutation key instead of minting a
 // new identity that could duplicate the row.
 export class SyncTimeoutError extends Error {

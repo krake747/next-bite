@@ -458,7 +458,7 @@ export default defineConfig({
             },
             {
                 // happy-dom today; swap only this project's environment when the real-browser
-                // runner lands (ADR-0004). Keep include plus timeouts tier scoped.
+                // runner lands (ADR-0011). Keep include plus timeouts tier scoped.
                 test: {
                     name: "browser",
                     environment: "happy-dom",

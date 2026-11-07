@@ -51,9 +51,9 @@ when one repeats, move it up to a type, lint, or test in the same change.
 
 | Rule                                                                                     | Enforced by                                                                                |
 | ---------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------ |
-| Env reads only through `src/core/env.ts`                                                 | `nextbite/no-direct-env-read` lint; ADR-0005 binds                                         |
-| React Compiler owns memoization; no `useMemo`, `useCallback`, `React.memo`               | `nextbite/no-manual-memo` lint; ADR-0006 binds                                             |
-| Semantic Tailwind tokens only; no raw hex in components; light-only, no `.dark` styles   | Judgment only; ADR-0010 binds                                                              |
+| Env reads only through `src/core/env.ts`                                                 | `nextbite/no-direct-env-read` lint; ADR-0010 binds                                         |
+| React Compiler owns memoization; no `useMemo`, `useCallback`, `React.memo`               | `nextbite/no-manual-memo` lint; ADR-0009 binds                                             |
+| Semantic Tailwind tokens only; no raw hex in components; light-only, no `.dark` styles   | Judgment only; ADR-0019 binds                                                              |
 | Base UI primitives only; CVA variants; wrappers own styling, call sites pass layout only | `shadcn/no-restyle` lint                                                                   |
 | Layer imports stay inside `.fallowrc.json` zones                                         | `pnpm fallow audit` (boundary-violation errors)                                            |
 | Commit shape `type(scope): subject`                                                      | lefthook `commit-msg` (`pnpm commitlint`)                                                  |

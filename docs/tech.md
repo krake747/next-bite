@@ -14,15 +14,15 @@ Owners: `package.json` for versions, `convex/schema.ts` for data, `src/core/env.
 | UI framework  | React 19                                           | `package.json`                                        |
 | App framework | TanStack Start                                     | `src/server.ts`, `src/router.tsx`                     |
 | Routing       | TanStack Router                                    | `src/routes/`, `src/routeTree.gen.ts`                 |
-| Client data   | TanStack Query today, TanStack DB collections next | ADR-0002, ADR-0014                                    |
+| Client data   | TanStack Query today, TanStack DB collections next | ADR-0001, ADR-0002                                    |
 | Backend       | Convex                                             | `convex/`, `convex/schema.ts`                         |
-| Auth          | Better Auth plus Convex integration                | `convex/auth.ts`, `src/core/auth-client.ts`, ADR-0015 |
-| File storage  | Convex File Storage                                | ADR-0016                                              |
-| Email         | Mailgun EU over HTTPS                              | ADR-0017                                              |
-| Hosting       | Cloudflare Workers                                 | `cloudflare.config.ts`, ADR-0007                      |
-| AI            | TanStack AI as extension only                      | ADR-0018                                              |
+| Auth          | Better Auth plus Convex integration                | `convex/auth.ts`, `src/core/auth-client.ts`, ADR-0005 |
+| File storage  | Convex File Storage                                | ADR-0015                                              |
+| Email         | Mailgun EU over HTTPS                              | ADR-0016                                              |
+| Hosting       | Cloudflare Workers                                 | `cloudflare.config.ts`, ADR-0013                      |
+| AI            | TanStack AI as extension only                      | ADR-0017                                              |
 | Styling       | Tailwind CSS v4                                    | `src/index.css`                                       |
-| Components    | Base UI plus CVA                                   | ADR-0001, `src/ui/`                                   |
+| Components    | Base UI plus CVA                                   | ADR-0018, `src/ui/`                                   |
 | Icons         | Lucide                                             | `package.json`                                        |
 
 ## Repository layers
@@ -38,7 +38,7 @@ Owner: `.fallowrc.json` for zones, `AGENTS.md` for the layer summary.
 
 ## Rendering
 
-Owner: `src/routes/`, ADR-0009.
+Owner: `src/routes/`, ADR-0006.
 
 - Public routes (`/`, `/restaurants/$id`, `/invite/$token`): SSR with metadata.
 - Authenticated social routes (`/feed`, `/groups/$id`, `/friends`, `/settings`): client side with
@@ -49,7 +49,7 @@ Owner: `src/routes/`, ADR-0009.
 
 ## Data flow
 
-Owner: `convex/`, ADR-0014.
+Owner: `convex/`, ADR-0002.
 
 1. Convex query defines the authorized scope.
 2. TanStack DB collection subscribes through the Convex adapter where local composition pays off.
@@ -60,7 +60,7 @@ Convex is the source of truth. TanStack DB is a reactive view, not a second data
 
 ## Authentication
 
-Owner: `convex/auth.ts`, `src/core/auth-client.ts`, ADR-0015.
+Owner: `convex/auth.ts`, `src/core/auth-client.ts`, ADR-0005.
 
 - Better Auth owns identity and sessions. Convex owns profiles and authorization.
 - Methods: Google OAuth, then email OTP. Invitation-first flow preserves invite context across auth
@@ -71,11 +71,11 @@ Owner: `convex/auth.ts`, `src/core/auth-client.ts`, ADR-0015.
 ## Storage, email, AI
 
 - Storage: Convex File Storage with metadata in Convex docs. Bearer URLs are not authorization. See
-  ADR-0016.
+  ADR-0015.
 - Email: Mailgun EU over HTTPS from server code only. Provider interface in `src/core`. See
-  ADR-0017.
+  ADR-0016.
 - AI: TanStack AI behind Start routes, typed tools, Convex-enforced authorization, approval for
-  consequential actions. Core app works without AI. See ADR-0018.
+  consequential actions. Core app works without AI. See ADR-0017.
 
 ## Testing
 
@@ -106,7 +106,7 @@ Missing for the target, install when its phase starts (no install in this change
 | `@tanstack/ai`                                                         | 1.2.0                            | Phase 6 AI extension      |
 | `playwright` plus `e2e/` config                                        | 1.65.0                           | Phase 7 critical journeys |
 
-No Mailgun SDK needed: call the HTTPS API from server code per ADR-0017.
+No Mailgun SDK needed: call the HTTPS API from server code per ADR-0016.
 
 Note: TanStack DB is still a release candidate. Pin exact versions when Phase 3 starts and re-check
 the adapter docs before adopting.
