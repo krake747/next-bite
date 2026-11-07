@@ -21,8 +21,8 @@ async function probeConvexAuth(client: ConvexReactClient): Promise<boolean> {
     }
 }
 
-export const CONVEX_AUTH_TIMEOUT_MS = 10000
-export const CONVEX_AUTH_POLL_MS = 500
+const CONVEX_AUTH_TIMEOUT_MS = 10000
+const CONVEX_AUTH_POLL_MS = 500
 
 async function settleConvexAuth(
     client: ConvexReactClient,

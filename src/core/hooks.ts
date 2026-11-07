@@ -32,7 +32,7 @@ import { env } from "./env"
 import { parseImageRecord, type ImageRecord } from "./schemas"
 import { retrySessionGate, useSessionKey, useSessionStatus } from "./session"
 
-export { CONVEX_AUTH_TIMEOUT_MS, retrySessionGate, useSessionKey, useSessionStatus } from "./session"
+export { useSessionStatus } from "./session"
 export type { SessionStatus } from "./session"
 
 function useSessionSyncRecovery(
@@ -231,7 +231,7 @@ export function usePlansForRestaurant(restaurantId: Id<"restaurants"> | null | u
 }
 
 export function useInvitePreview(token: string | null | undefined) {
-    return useConvexQuery(api.invitations.getInvite, token ? { token } : undefined, {
+    return useConvexQuery(api.invitations.getInvite, token ? { token, now: Date.now() } : undefined, {
         skip: token === null || token === undefined || token === "",
     })
 }

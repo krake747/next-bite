@@ -14,7 +14,7 @@
         "boundary-violation": "error"
     },
     "ignoreDependencies": ["@fontsource-variable/*", "@types/google.maps"],
-    "ignoreFindings": ["cloudflare.config.ts"],
+    "ignoreFindings": ["cloudflare.config.ts", "doctor.config.ts"],
     "boundaries": {
         "zones": [
             { "name": "core", "patterns": ["src/core/**"] },
@@ -24,6 +24,7 @@
             { "name": "features-restaurants", "patterns": ["src/features/restaurants/**"] },
             { "name": "features-social", "patterns": ["src/features/social/**"] },
             { "name": "features-groups", "patterns": ["src/features/groups/**"] },
+            { "name": "features-plans", "patterns": ["src/features/plans/**"] },
             { "name": "routes", "patterns": ["src/routes/**"] },
             { "name": "convex", "patterns": ["convex/**"] }
         ],
@@ -38,6 +39,7 @@
             },
             { "from": "features-social", "allow": ["core", "ui", "pattern", "features", "convex"] },
             { "from": "features-groups", "allow": ["core", "ui", "pattern", "features", "features-social", "convex"] },
+            { "from": "features-plans", "allow": ["core", "ui", "pattern", "features", "convex"] },
             {
                 "from": "routes",
                 "allow": [
@@ -48,6 +50,7 @@
                     "features-restaurants",
                     "features-social",
                     "features-groups",
+                    "features-plans",
                     "convex",
                     "routes"
                 ]

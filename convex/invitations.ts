@@ -44,6 +44,7 @@ export const getInvite = query({
     // status is computed here so previews stay honest without a write.
     args: {
         token: v.string(),
+        now: v.number(),
     },
     handler: async (ctx, args) => {
         const invite = await ctx.db
@@ -56,7 +57,7 @@ export const getInvite = query({
         if (invite.status === "revoked") {
             throw new Error("Invitation revoked")
         }
-        if (invite.status === "expired" || Date.now() > invite.expiresAt) {
+        if (invite.status === "expired" || args.now > invite.expiresAt) {
             throw new Error("Invitation expired")
         }
         if (invite.target.kind === "group") {

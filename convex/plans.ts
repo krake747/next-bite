@@ -125,7 +125,7 @@ export const listPlansForGroup = query({
         const plans = await ctx.db
             .query("plans")
             .withIndex("by_group", (q) => q.eq("groupId", args.groupId))
-            .collect()
+            .take(200)
         return Promise.all(
             plans
                 .toSorted((a, b) => a.date - b.date)

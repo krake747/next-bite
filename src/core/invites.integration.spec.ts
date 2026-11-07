@@ -67,7 +67,7 @@ describe("reusable group invite links", () => {
         await asUser(t, "anna").mutation(api.invitations.revokeInvite, { token })
 
         await expect(asUser(t, "cas").mutation(api.invitations.acceptInvite, { token })).rejects.toThrow("revoked")
-        await expect(t.query(api.invitations.getInvite, { token })).rejects.toThrow("revoked")
+        await expect(t.query(api.invitations.getInvite, { token, now: Date.now() })).rejects.toThrow("revoked")
 
         const benGroups = await asUser(t, "ben").query(api.groups.listMyGroups, {})
         expect(benGroups).toHaveLength(1)
@@ -122,7 +122,7 @@ describe("reusable group invite links", () => {
         vi.useFakeTimers()
         try {
             vi.setSystemTime(Date.now() + 8 * 24 * 60 * 60 * 1000)
-            await expect(t.query(api.invitations.getInvite, { token })).rejects.toThrow("expired")
+            await expect(t.query(api.invitations.getInvite, { token, now: Date.now() })).rejects.toThrow("expired")
             await expect(asUser(t, "ben").mutation(api.invitations.acceptInvite, { token })).rejects.toThrow("expired")
         } finally {
             vi.useRealTimers()
