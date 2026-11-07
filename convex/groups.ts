@@ -1,8 +1,51 @@
 import { v } from "convex/values"
 
-import { mutation, query } from "./_generated/server"
+import { internal } from "./_generated/api"
+import { type Doc, type Id } from "./_generated/dataModel"
+import { mutation, query, type MutationCtx } from "./_generated/server"
 import { formatDisplayName, requireMembership, requireUserId } from "./helpers"
 import { imageObjectValidator } from "./validators"
+
+type GroupImageInput = {
+    readonly url: string
+    readonly storageId: Id<"_storage">
+    readonly width?: number | undefined
+    readonly height?: number | undefined
+}
+
+// Group headers carry the same server-derived attribution as restaurant photos and avatars:
+// ownership is verified against the upload record and the URL, MIME type, and byte size
+// come from the platform, never from client claims. Client-reported dimensions pass through
+// as untrusted display hints. Unlike restaurant photos the image is not attached to a
+// restaurant, so no association is recorded.
+async function resolveGroupImage(
+    ctx: MutationCtx,
+    ownerId: string,
+    image: GroupImageInput,
+): Promise<NonNullable<Doc<"groups">["image"]>> {
+    const record = await ctx.runQuery(internal.uploads.lookupByStorage, { storageId: image.storageId })
+    if (!record || record.ownerId !== ownerId) {
+        throw new Error("Unauthorized: storage does not belong to you")
+    }
+    if (record.restaurantId !== null) {
+        throw new Error("Storage is already attached to a restaurant")
+    }
+    const profile = await ctx.db
+        .query("profiles")
+        .withIndex("by_auth_user", (q) => q.eq("authUserId", ownerId))
+        .unique()
+    const url = (await ctx.storage.getUrl(image.storageId)) ?? image.url
+    return {
+        url,
+        storageId: image.storageId,
+        ownerId,
+        displayName: formatDisplayName(profile?.name),
+        ...(record.mimeType !== null ? { mimeType: record.mimeType } : {}),
+        ...(record.byteSize !== null ? { byteSize: record.byteSize } : {}),
+        ...(image.width !== undefined ? { width: image.width } : {}),
+        ...(image.height !== undefined ? { height: image.height } : {}),
+    }
+}
 
 export const createGroup = mutation({
     args: {
@@ -15,10 +58,11 @@ export const createGroup = mutation({
         if (name === "") {
             throw new Error("Group name is required")
         }
+        const image = args.image !== undefined ? await resolveGroupImage(ctx, userId, args.image) : undefined
         const groupId = await ctx.db.insert("groups", {
             ownerId: userId,
             name,
-            ...(args.image !== undefined ? { image: args.image } : {}),
+            ...(image !== undefined ? { image } : {}),
             createdAt: Date.now(),
         })
         await ctx.db.insert("groupMembers", { groupId, userId, role: "admin", joinedAt: Date.now() })
