@@ -18,16 +18,14 @@ export const badge = cva({
     },
 })
 
-type BadgeProps = VariantProps<typeof badge> & {
-    readonly className?: string
-    readonly children?: React.ReactNode
-}
+type BadgeProps = VariantProps<typeof badge> & useRender.ComponentProps<"span">
 
-export function Badge({ tone, className, children }: Readonly<BadgeProps>) {
+export function Badge({ tone, className, children, ...props }: Readonly<BadgeProps>) {
     return useRender({
         defaultTagName: "span",
         state: { slot: "badge", variant: tone ?? "neutral" },
         props: {
+            ...props,
             className: cx(badge({ tone }), className),
             children,
         },

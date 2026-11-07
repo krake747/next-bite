@@ -10,27 +10,27 @@ export function Tabs({
     defaultValue,
     onValueChange,
     children,
-}: Readonly<{
-    value?: TabsValue | undefined
-    defaultValue?: TabsValue | undefined
-    onValueChange?: ((value: TabsValue) => void) | undefined
-    children?: React.ReactNode | undefined
-}>) {
+    ...props
+}: Readonly<
+    Omit<React.ComponentProps<typeof BaseTabs.Root>, "value" | "defaultValue" | "onValueChange"> & {
+        readonly value?: TabsValue | undefined
+        readonly defaultValue?: TabsValue | undefined
+        readonly onValueChange?: ((value: TabsValue) => void) | undefined
+    }
+>) {
     return (
-        <BaseTabs.Root value={value} defaultValue={defaultValue} onValueChange={onValueChange}>
+        <BaseTabs.Root value={value} defaultValue={defaultValue} onValueChange={onValueChange} {...props}>
             {children}
         </BaseTabs.Root>
     )
 }
 
-export function TabsList({
-    className,
-    children,
-}: Readonly<{ className?: string | undefined; children?: React.ReactNode | undefined }>) {
+export function TabsList({ className, children, ...props }: Readonly<React.ComponentProps<typeof BaseTabs.List>>) {
     return (
         <BaseTabs.List
             data-slot="tabs-list"
             className={cx("inline-flex items-center gap-1 rounded-control bg-stone-100 p-1", className)}
+            {...props}
         >
             {children}
         </BaseTabs.List>
@@ -42,12 +42,12 @@ export function TabsTab({
     disabled,
     className,
     children,
-}: Readonly<{
-    value: TabsValue
-    disabled?: boolean | undefined
-    className?: string | undefined
-    children?: React.ReactNode | undefined
-}>) {
+    ...props
+}: Readonly<
+    Omit<React.ComponentProps<typeof BaseTabs.Tab>, "value"> & {
+        readonly value: TabsValue
+    }
+>) {
     return (
         <BaseTabs.Tab
             value={value}
@@ -61,6 +61,7 @@ export function TabsTab({
                 "disabled:cursor-not-allowed disabled:bg-transparent disabled:text-muted-foreground",
                 className,
             )}
+            {...props}
         >
             {children}
         </BaseTabs.Tab>
@@ -71,13 +72,14 @@ export function TabsPanel({
     value,
     className,
     children,
-}: Readonly<{
-    value: TabsValue
-    className?: string | undefined
-    children?: React.ReactNode | undefined
-}>) {
+    ...props
+}: Readonly<
+    Omit<React.ComponentProps<typeof BaseTabs.Panel>, "value"> & {
+        readonly value: TabsValue
+    }
+>) {
     return (
-        <BaseTabs.Panel value={value} data-slot="tabs-panel" className={cx("pt-4 outline-none", className)}>
+        <BaseTabs.Panel value={value} data-slot="tabs-panel" className={cx("pt-4 outline-none", className)} {...props}>
             {children}
         </BaseTabs.Panel>
     )

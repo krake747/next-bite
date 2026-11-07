@@ -96,7 +96,7 @@ vi.mock("../auth.client", () => ({
     },
     getConvexSessionToken: async () => {
         const { data } = await tokenMock()
-        return typeof data?.token === "string" ? data.token : null
+        return data?.token ?? null
     },
 }))
 

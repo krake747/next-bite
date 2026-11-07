@@ -3,8 +3,8 @@ import { Popover as BasePopover } from "@base-ui/react/popover"
 import { cva, cx, type VariantProps } from "@ui/cva.config"
 import { focusRing } from "@ui/variants"
 
-export function Popover({ children }: Readonly<{ children?: React.ReactNode | undefined }>) {
-    return <BasePopover.Root>{children}</BasePopover.Root>
+export function Popover({ children, ...props }: Readonly<React.ComponentProps<typeof BasePopover.Root>>) {
+    return <BasePopover.Root {...props}>{children}</BasePopover.Root>
 }
 
 const trigger = cva({
@@ -34,18 +34,18 @@ export function PopoverTrigger({
     )
 }
 
-type PopoverPanelProps = Readonly<{
-    className?: string | undefined
-    children?: React.ReactNode | undefined
-    side?: "top" | "bottom" | "left" | "right" | undefined
-    align?: "start" | "center" | "end" | undefined
-    sideOffset?: number | undefined
-}>
+type PopoverPanelProps = Readonly<
+    Omit<React.ComponentProps<typeof BasePopover.Positioner>, "children" | "className" | "sideOffset"> & {
+        readonly className?: string | undefined
+        readonly children?: React.ReactNode | undefined
+        readonly sideOffset?: number | undefined
+    }
+>
 
-export function PopoverPanel({ className, children, side, align, sideOffset }: PopoverPanelProps) {
+export function PopoverPanel({ className, children, sideOffset, ...props }: PopoverPanelProps) {
     return (
         <BasePopover.Portal>
-            <BasePopover.Positioner side={side} align={align} sideOffset={sideOffset ?? 4}>
+            <BasePopover.Positioner sideOffset={sideOffset ?? 4} {...props}>
                 <BasePopover.Popup
                     data-slot="popover-panel"
                     className={cx(

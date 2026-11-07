@@ -8,13 +8,15 @@ export function Dialog({
     show,
     onOpenChange,
     children,
-}: Readonly<{
-    show?: boolean | undefined
-    onOpenChange: (open: boolean) => void
-    children?: React.ReactNode | undefined
-}>) {
+    ...props
+}: Readonly<
+    Omit<React.ComponentProps<typeof BaseDialog.Root>, "open" | "children"> & {
+        readonly show?: boolean | undefined
+        readonly children?: React.ReactNode | undefined
+    }
+>) {
     return (
-        <BaseDialog.Root open={show} onOpenChange={onOpenChange}>
+        <BaseDialog.Root open={show} onOpenChange={onOpenChange} {...props}>
             <BaseDialog.Portal>{children}</BaseDialog.Portal>
         </BaseDialog.Root>
     )
@@ -149,9 +151,18 @@ export function DialogCloseButton({
 export function DialogAction({
     render,
     children,
-}: Readonly<{ render?: React.ReactElement | undefined; children?: React.ReactNode | undefined }>) {
-    if (render !== undefined) {
-        return <BaseDialog.Close data-slot="dialog-action" render={render} />
+    ...props
+}: Readonly<
+    Omit<React.ComponentProps<typeof BaseDialog.Close>, "render"> & {
+        readonly render?: React.ReactElement | undefined
     }
-    return <BaseDialog.Close data-slot="dialog-action">{children}</BaseDialog.Close>
+>) {
+    if (render !== undefined) {
+        return <BaseDialog.Close data-slot="dialog-action" render={render} {...props} />
+    }
+    return (
+        <BaseDialog.Close data-slot="dialog-action" {...props}>
+            {children}
+        </BaseDialog.Close>
+    )
 }

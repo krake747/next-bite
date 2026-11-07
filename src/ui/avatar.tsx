@@ -93,7 +93,15 @@ export function AvatarImage({
     )
 }
 
-export function AvatarFallback({ name, className }: Readonly<{ name: string; className?: string | undefined }>) {
+export function AvatarFallback({
+    name,
+    className,
+    ...props
+}: Readonly<
+    Omit<React.ComponentProps<typeof BaseAvatar.Fallback>, "children"> & {
+        readonly name: string
+    }
+>) {
     const size = use(AvatarSizeContext)
     return (
         <BaseAvatar.Fallback
@@ -104,13 +112,14 @@ export function AvatarFallback({ name, className }: Readonly<{ name: string; cla
                 fallbackText({ size }),
                 className,
             )}
+            {...props}
         >
             {initials(name)}
         </BaseAvatar.Fallback>
     )
 }
 
-export function AvatarPresence({ className }: Readonly<{ className?: string | undefined }>) {
+export function AvatarPresence({ className, ...props }: Readonly<React.ComponentProps<"span">>) {
     return (
         <span
             data-slot="avatar-presence"
@@ -119,6 +128,7 @@ export function AvatarPresence({ className }: Readonly<{ className?: string | un
                 "absolute -right-0.5 -bottom-0.5 size-3 rounded-full bg-success ring-2 ring-surface",
                 className,
             )}
+            {...props}
         />
     )
 }
