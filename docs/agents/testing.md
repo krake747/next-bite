@@ -38,7 +38,9 @@ Tiers are picked by filename suffix. `pnpm test` runs them all; scope with `pnpm
 Run tests only for files you change. `pnpm test:affected` selects the affected tests from the
 recorded dependencies (seed it once with `pnpm test`); scope further with `--project <tier>` when
 you know it. If the selection looks stale, `pnpm exec vitest run --clearCache` resets the records.
-Run the full suite only when asked.
+Two blind spots: the browser tier always runs (no per-file records in browser mode) and the seven
+route specs always run (a virtual HMR dependency never resolves), so the loop saves roughly half the
+suite, not all of it. Run the full suite only when asked.
 
 ## Unit tests
 
