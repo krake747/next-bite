@@ -1,21 +1,22 @@
-# Manual release pipeline with semver tags
+# ADR-0014: Manual release pipeline with semver tags
 
-Releases ship from `main` through a manual `workflow_dispatch` pipeline
-(`.github/workflows/release.yml`). Dispatching with `patch`, `minor`, or `major` computes the next
-`vX.Y.Z` tag from the latest tag, waits for PR CI green on the dispatched SHA, builds, deploys the
-Worker with `cf`, then pushes the tag and publishes a GitHub Release. A dry run builds and dry-runs
-the deploy without tagging or releasing.
+Date: 2026-11-03
 
-**Considered Options**
+Status: Accepted
 
-- **Release on every push**: Rejected because deploys stamp public URLs and bake production env;
-  they stay a deliberate act until the v2 line stabilizes on `main`.
-- **Manual dispatch with semver tags**: Chosen for explicit versioning, a CI gate per release, and
-  one-click dry runs.
+## Context
 
-**Consequences**
+Deploys stamp public URLs and bake production environment, so they stay a deliberate act until the
+line stabilizes. Releases still need explicit versioning, a gate per release, and one-click dry
+runs.
 
-- `package.json` stays unversioned; git tags plus GitHub Releases own the version history.
-- The pipeline needs repository secrets: `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`,
-  `VITE_CONVEX_URL`, `VITE_CONVEX_SITE_URL`, and `VITE_GOOGLE_MAPS_API_KEY`.
-- Runs only when dispatched; nothing deploys automatically.
+## Decision
+
+Manual dispatch with patch, minor, or major computing the next tag from the latest tag. Dispatch
+waits for CI green on the dispatched commit, then builds, deploys, tags, and publishes a release; a
+dry run builds without tagging or releasing. Rejected: release on every push.
+
+## Consequences
+
+Tags plus releases own the version history; nothing deploys automatically. The pipeline needs
+platform, account, and app-environment secrets. Runs only when dispatched.

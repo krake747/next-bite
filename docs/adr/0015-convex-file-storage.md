@@ -1,38 +1,29 @@
-# Convex File Storage for application images
+# ADR-0015: Convex File Storage for application images
 
-Restaurant photos, avatars, group images, and meal photos use Convex File Storage. Flow: the client
-uploads the raw blob to the authenticated `POST /upload` HTTP endpoint, the server stores it and
-records server-observed metadata (owner, MIME type, byte size) in the `uploads` table, and callers
-attach storage IDs by reference. Display URLs resolve at render time. Dimension hints (width,
-height) are client-reported and untrusted; every trust decision (ownership, association, MIME type,
-byte size) comes from the server record or profile, never from client claims.
+Date: 2026-11-05
 
-**Considered Options**
+Status: Accepted
 
-- **R2 now**: Rejected. No current need for access-controlled delivery, transforms, or independent
-  storage scaling. Revisit when one of those becomes concrete.
-- **Raw URLs as authorization**: Rejected. Convex file URLs are bearer-accessible; application
-  permission checks stay in backend functions.
-- **Signed upload URLs**: Deferred. The authenticated HTTP-blob path is intentional for now: the
-  endpoint enforces auth, content type, and size before storing, and the upload record is written by
-  a server mutation reading the `_storage` system table. Revisit signed URLs if uploads move off the
-  Convex HTTP path or need direct-to-storage bandwidth.
+## Context
 
-**CORS**
+Restaurant photos, avatars, group images, and meal photos need ownership, association, and
+permission checks. Bearer-accessible file URLs authorize nobody, so possession of a URL can never
+prove the right to see or attach the file.
 
-The upload endpoint is browser-facing cross-origin, so it reflects only trusted origins. Set the
-`APP_ORIGINS` Convex env var to a comma-separated allowlist of app origins (web and mobile must both
-be listed if they call the endpoint from a browser context). Loopback origins (`localhost`,
-`127.0.0.1`, `::1`) are always trusted so local development works with zero config. Every other
-browser origin gets no CORS headers and the browser blocks the response. Non-browser callers send no
-`Origin` and are unaffected. Deploying without `APP_ORIGINS` set breaks browser uploads in
-production: the failure is loud (no ACAO header) rather than silent.
+## Decision
 
-**Consequences**
+The client uploads the raw blob to an authenticated endpoint; the server stores it and records
+server-observed metadata (owner, type, size), and callers attach storage IDs by reference. Display
+URLs resolve at render time. Dimension hints are client-reported and untrusted: every trust decision
+(ownership, association, type, size) comes from the server record, never from client claims.
+Rejected: moving to object storage now (no need for transforms or independent scaling yet), and raw
+URLs as authorization. Deferred: signed upload URLs.
 
-- Ownership and associations live in Convex docs, not in URL possession.
-- Upload, validation, and cleanup paths need integration tests before production.
-- Attribution metadata (owner, display name, MIME type, byte size) is denormalized onto image
-  entries at attach time from the server record; client-sent identity fields are overwritten.
-- Friend visit memories attach to the viewed restaurant through the same ownership checks as owner
-  uploads, and are visible only where the restaurant itself is visible.
+## Consequences
+
+Ownership and associations live in documents, not in URL possession. Attribution metadata is
+denormalized onto entries at attach time from the server record; client-sent identity fields are
+overwritten. Upload, validation, and cleanup paths need integration tests before production. The
+browser-facing endpoint reflects only trusted origins; loopback stays trusted so local development
+works with zero config, and a missing production allowlist breaks uploads loudly rather than
+silently.

@@ -1,22 +1,22 @@
-# Vite+ toolchain with co-located config
+# ADR-0008: Vite+ toolchain with co-located config
 
-Next Bite ran vanilla Vite 8 with fmt/lint config scattered across dotfiles and no push gate. We
-migrated to the Vite+ (`vp`) toolchain with `vite-plus-core`, pnpm 12, and Node 26 to match the
-reference setup in `captain/endeavour`: `fmt` and `lint` config now lives in `vite.config.ts`, and
-`test` projects move there too. `oxlint`, `oxfmt`, and the Babel React Compiler preset left the
-dependency list; the compiler runs natively via `@vitejs/plugin-react` plus `oxc-transform-react`.
+Date: 2026-11-03
 
-**Considered Options**
+Status: Accepted
 
-- **Stay on vanilla Vite 8**: Rejected because it keeps the Babel compiler bridge and the scattered
-  dotfiles, diverging from the reference toolchain we want to track.
-- **Adopt Vite+**: Chosen for one toolchain owner (`vp` delegates packages to `pnpm`), one config
-  file, and the native compiler path.
+## Context
 
-**Consequences**
+Formatter and linter config scattered across dotfiles, no push gate, and a compiler bridge in the
+build. The reference setup tracks a single toolchain owner with config in one place.
 
-- `pnpm dev`, `pnpm build`, `pnpm fmt`, and `pnpm lint` all run through `vp`.
-- Gate tiers: `pnpm check` (everyday), `pnpm check:arch` (fallow), `pnpm check:full` (everything
-  plus build). The lefthook pre-push hook runs `pnpm check`; CI runs `check:full` via
-  `voidzero-dev/setup-vp`.
-- Conventional commits enforced by commitlint in the `commit-msg` hook.
+## Decision
+
+Adopt the Vite+ toolchain: formatter and linter config co-located with the test projects, the native
+compiler path, and conventional commits enforced in the commit hook. Rejected: staying on the
+vanilla setup, which keeps the compiler bridge and the scattered config.
+
+## Consequences
+
+One toolchain owner for dev, build, format, lint, and test. Tiered gates run everyday checks
+locally, architecture checks before structural pushes, and the full suite in CI; the pre-push hook
+runs the everyday gate. Version history stays out of the manifest: tags plus releases own it.

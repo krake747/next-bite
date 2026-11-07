@@ -1,21 +1,25 @@
-# Better Auth Google OAuth and email OTP with invitation-first flow
+# ADR-0005: Auth methods and invitation-first flow
 
-Current state is email and password through Better Auth plus the Convex integration
-(`convex/auth.ts`, `src/core/auth-client.ts`). The target adds Google OAuth first, then email OTP,
-with an invitation-first flow: invite context survives auth redirects, missing profile fields are
-collected after auth, and acceptance is idempotent.
+Date: 2026-11-05
 
-**Considered Options**
+Status: Accepted
 
-- **Password only**: Rejected because invites convert better with OAuth and OTP; passwords stay as
-  fallback, not the primary path.
-- **Client-resolved identity**: Rejected. A Better Auth session never implies Convex auth readiness,
-  and backend functions derive the user from authenticated context, never from client-provided IDs.
-- **Invite token in client state only**: Rejected because redirects drop it. Persist the pending
-  invite across the auth round trip and validate it server side on accept.
+## Context
 
-**Consequences**
+Invites must survive auth redirects, missing profile fields get collected after auth, and acceptance
+must be idempotent. Above all, backend identity must never come from client claims: a client session
+alone never implies backend auth readiness.
 
-- One centrally configured Better Auth client; official Convex integration only.
-- Trusted origins and redirects validated; test SSR, session refresh, sign-in, and sign-out.
-- Invitation acceptance lives in a single Convex mutation so retries are safe.
+## Decision
+
+Password stays as fallback, not the primary path: invites convert better with OAuth first, then
+email OTP. Invite context persists across the auth round trip and validates server side on accept;
+acceptance lives in a single mutation so retries are safe. Backend functions derive the user from
+authenticated context, never from client-provided ids. Client-resolved identity was ruled out for
+exactly that reason, as was keeping invite state client-side only (redirects drop it).
+
+## Consequences
+
+One centrally configured auth client with the official backend integration. Trusted origins and
+redirects are validated. Invitation acceptance is retry-safe, and every backend rule keeps enforcing
+against the authenticated user.

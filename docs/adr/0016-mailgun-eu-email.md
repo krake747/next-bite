@@ -1,21 +1,23 @@
-# Mailgun EU for transactional email
+# ADR-0016: Mailgun EU for transactional email
 
-Transactional email (OTP, verification, group and friend invitations, notifications) goes through
-Mailgun EU over its HTTPS API, called from server-side code only. Suggested sender domain
-`mg.nextbite.kevinkraemer.com` with sender `login@mg.nextbite.kevinkraemer.com`; both are proposals
-until DNS and Mailgun setup confirm them. Delivery sits behind a small provider interface in
-`src/core` so Better Auth OTP callbacks and invite flows share one seam.
+Date: 2026-11-05
 
-**Considered Options**
+Status: Accepted
 
-- **Client-side send**: Rejected. API credentials stay in server secrets.
-- **Mailgun SDK dependency**: Rejected for now. Plain HTTPS calls keep the surface small; adopt the
-  SDK only if retry, batch, or webhook needs justify it.
-- **Non-EU region**: Rejected by default for EU data-processing posture; verify terms before
-  production.
+## Context
 
-**Consequences**
+One-time codes, verification, invitations, and notifications need a server-side sender with an EU
+data-processing posture, shared by the auth callbacks and the invite flows through one seam.
 
-- No email credentials in client bundles; server functions own the send path.
-- Verify free-tier limits and EU processing terms before launch.
-- Invitation emails carry signed tokens validated by the acceptance mutation.
+## Decision
+
+Send through the EU-region HTTPS API from server-side code only, behind a small provider interface.
+The sender domain is a proposal until DNS and setup confirm it. Rejected: client-side sending
+(credentials stay in server secrets), the SDK dependency (plain HTTPS keeps the surface small; adopt
+it only if retry, batch, or webhook needs justify it), and non-EU regions by default.
+
+## Consequences
+
+No email credentials in client bundles; server functions own the send path. Free-tier limits and
+processing terms need verification before launch. Invitation emails carry signed tokens that the
+acceptance mutation validates.

@@ -1,23 +1,27 @@
-# TanStack Query for Convex data fetching
+# ADR-0001: TanStack Query for Convex data fetching
 
-An earlier prototype used a custom 35-line wrapper bridging Convex's `onUpdate` callbacks into
-signals. For React, we chose TanStack Query over porting the thin wrapper. TanStack Query provides
-standardized loading/error/data states, mutation lifecycle management (isPending, onSuccess,
-optimistic updates, cache invalidation), and cache deduplication — multiple consumers of the same
-Convex query share one subscription. The trade-off is losing signal-style fine-grained reactivity
-per field, but the app's data shape (small, flat restaurant/friend lists) makes full-component
-re-renders acceptable.
+Date: 2026-07-19
 
-**Considered Options**
+Status: Accepted
 
-- **Port the thin wrapper**: Use `useSyncExternalStore` to bridge Convex subscriptions into React
-  state. Rejected because it requires manual handling of loading/error states and provides no
-  mutation lifecycle.
-- **Convex's own React hooks (`convex/react`)**: Rejected because they would couple the app to
-  Convex's specific reactive pattern rather than a standardized data-fetching layer.
+## Context
 
-**Consequences**
+Backend state arrives over Convex subscriptions, but screens need more than fresh values: loading
+and error states, a mutation lifecycle with optimistic updates, and shared subscriptions so repeated
+reads of the same query do not multiply traffic. The question is whether to standardize on a
+data-fetching library or bridge subscriptions into React by hand.
 
-- Additional dependency: `@tanstack/react-query` (~24KB gzipped, already in the TanStack ecosystem
-  via Router).
-- Convex subscription ref-counting needed to clean up when the last observer unmounts.
+## Decision
+
+Standardize on TanStack Query. A hand-rolled bridge was ruled out: it re-implements loading and
+error handling per screen and provides no mutation lifecycle. The backend's own React hooks were
+ruled out: they couple every screen to one backend's reactive pattern instead of a neutral data
+layer. Accepted tradeoff: coarser reactivity than per-field signals; full-component re-renders are
+acceptable for small, flat lists.
+
+## Consequences
+
+Every read gets loading, error, and data states plus cache deduplication for free. Mutation
+lifecycle (pending flags, optimistic updates, invalidation) is uniform across the app. The cost is a
+second reactive model alongside backend subscriptions, which must be kept in sync and released when
+the last observer unmounts.

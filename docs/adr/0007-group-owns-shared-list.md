@@ -1,21 +1,22 @@
-# Group owns the shared list
+# ADR-0007: Group owns the shared list
 
-A group is its shared collection. There is no separate personal collection entity: the `collections`
-and `collectionItems` tables and the `collections` backend module were deleted, and preview data
-starts clean with no migration.
+Date: 2026-11-06
 
-**Considered Options**
+Status: Accepted
 
-- **Keep independent collections alongside groups**: Rejected because two list models split the
-  product and every group list needed a parallel collection.
-- **Migrate collection rows into groups**: Rejected because no shipped data depends on the old
-  model; the v2 line had not released.
-- **Drop and read groups through shares**: Accepted. Membership plus restaurant-to-group shares
-  already governed access; the only missing read was listing a group's places.
+## Context
 
-**Consequences**
+A group is its shared collection. A parallel collections model split the product: every group list
+needed a parallel collection, so two list models governed the same places.
 
-- `shares.shareWithGroup` records the target group id alongside the share target so
-  `shares.listForGroup` stays indexed. Member-only reads; strangers are rejected.
-- Group lists render from `shares.listForGroup`, never from a second surface.
-- Feed and detail keep resolving through the shared visibility check.
+## Decision
+
+There is no separate collections entity. Membership plus restaurant-to-group shares govern access,
+and listing a group's places reads through shares. Rejected: keeping independent collections
+alongside groups, and migrating old rows (no shipped data depended on the old model, so it was
+deleted with a clean preview and no migration).
+
+## Consequences
+
+Group lists render from the shares read, never from a second surface. Reads are member-only;
+strangers are rejected. Feed and detail keep resolving through the shared visibility check.

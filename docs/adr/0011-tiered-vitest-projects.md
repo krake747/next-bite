@@ -1,21 +1,23 @@
-# Tiered Vitest projects on happy-dom
+# ADR-0011: Tiered Vitest projects
 
-All tests shared one flat `jsdom` project with `*.test.*` names and a global setup file. We adopted
-filename-suffix tiers (`*.pure.spec`, `*.spec`, `*.browser.spec`, `*.integration.spec`) backed by
-Vitest projects on `happy-dom`, with per-project timeouts in `vite.config.ts` and an MSW lifecycle
-seam in `src/vitest.setup.ts` for HTTP-boundary control. Pure logic runs in node with no setup file
-and stays fast.
+Date: 2026-11-03
 
-**Considered Options**
+Status: Accepted
 
-- **Keep flat `.test.*` on jsdom**: Rejected because one environment and one setup file hides which
-  tests need a DOM and gives HTTP-touching specs no boundary control.
-- **Tiered projects**: Chosen so scope follows the filename: `pnpm test:pure`, `test:unit`,
-  `test:browser`, and `test:integration` run independently, and timeouts live in config instead of
-  `vi.setConfig` calls in spec files.
+## Context
 
-**Consequences**
+All tests shared one flat project with one environment and one setup file, which hid which tests
+need a DOM and gave HTTP-touching specs no boundary control.
 
-- New specs must use the suffix matching their scope; the unit project excludes the suffixed tiers.
-- Browser specs run under happy-dom today; that project is the seam for a real-browser runner later.
-- The MSW server starts with `onUnhandledFrame: "error"`, so unexpected network access fails loudly.
+## Decision
+
+Filename-suffix tiers backed by per-tier projects with per-tier timeouts and an HTTP-boundary seam:
+pure logic runs without a DOM and stays fast, the rest run against a lightweight DOM. Rejected: flat
+names on a single DOM project, where timeouts live in spec files and network access has no choke
+point.
+
+## Consequences
+
+Scope follows the filename, and each tier runs independently. Timeouts live in config, not in spec
+files. The browser tier is the seam for a real-browser runner later. The HTTP seam starts with
+unexpected network access failing loudly, so specs declare the traffic they touch.

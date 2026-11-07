@@ -1,25 +1,23 @@
-# CVA axis naming: tone is color, variant is structure
+# ADR-0021: CVA axis naming
 
-Component variants used two names for the color axis (`variant` in Button and Badge, `tone` in
-IconButton, Dialog parts, and PopoverTrigger), and overloaded `variant` for layout in
-DialogBackdrop. Call sites had to memorize per-component vocabulary, and the `dark` tone key read
-like dark mode.
+Date: 2026-11-06
 
-**Considered Options**
+Status: Accepted
 
-- **Color stays `variant`, layout renames**: Rejected because DialogBackdrop already pairs a layout
-  `variant` with a color axis, so one of them moves either way, and the majority of components plus
-  all multi-axis components already speak `tone` for color.
-- **`tone` names the color axis, `variant` names structure and layout, `size` keeps size**:
-  Accepted. Every color choice reads `tone`, every structural choice (backdrop overlay versus
-  fullscreen) reads `variant`. Rendered state attributes keep their own names: Badge still reports
-  `data-variant`, which names variant state, not the prop.
+## Context
 
-**Consequences**
+Components used two names for the color axis while overloading one of them for layout, so call sites
+memorized per-component vocabulary to express the same choices.
 
-- Button and Badge rename their color axis from `variant` to `tone`; every other component already
-  complies. Callers pass `tone` for color on all primitives.
-- New components follow the same three axes and pick existing value names before inventing new ones.
-  Reviewers reject new color axes under any other name.
-- `docs/agents/testing.md` query conventions are unaffected: slots and state attributes do not move
-  with this rename.
+## Decision
+
+`tone` names the color axis, `variant` names structure and layout, `size` keeps size. Every color
+choice reads `tone`, every structural choice reads `variant`. Rejected: keeping color on `variant`,
+which forces the one layout-overloaded component to stay inconsistent while every other component
+and all multi-axis components already speak `tone`.
+
+## Consequences
+
+New components follow the same three axes and pick existing value names before inventing new ones;
+reviewers reject new color axes under any other name. Rendered state attributes keep their own
+names, which describe state, not props.
