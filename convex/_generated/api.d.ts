@@ -9,6 +9,7 @@
  */
 
 import type * as auth from "../auth.js";
+import type * as cors from "../cors.js";
 import type * as email from "../email.js";
 import type * as env from "../env.js";
 import type * as friendships from "../friendships.js";
@@ -34,6 +35,7 @@ import type {
 
 declare const fullApi: ApiFromModules<{
   auth: typeof auth;
+  cors: typeof cors;
   email: typeof email;
   env: typeof env;
   friendships: typeof friendships;
