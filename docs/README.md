@@ -40,10 +40,8 @@ Long-lived explanations of this project's architecture and technical decisions.
 - [0017](adr/0017-mailgun-eu-email.md): Mailgun EU transactional email.
 - [0018](adr/0018-tanstack-ai-extension.md): TanStack AI as optional extension.
 - [0019](adr/0019-group-owns-shared-list.md): group owns the shared list, no separate entity.
-- [0020](adr/0020-black-box-testing.md): black-box testing, observable behavior only.
-- [0021](adr/0021-no-tautological-tests.md): every test must be able to fail.
-- [0022](adr/0022-third-party-libraries-assumed-correct.md): third-party libraries assumed correct,
-  stub at the boundary.
-- [0023](adr/0023-cva-axis-naming.md): CVA axis naming, tone is color, variant is structure.
-- [0024](adr/0024-backend-function-shapes.md): backend function shapes, nulls, guards, verbs.
-- [0025](adr/0025-suspense-first-data-fetching.md): Suspense-first data fetching.
+- [0020](adr/0020-testing-standards.md): testing standards, black-box specs, no tautological tests,
+  third-party libraries assumed correct.
+- [0021](adr/0021-cva-axis-naming.md): CVA axis naming, tone is color, variant is structure.
+- [0022](adr/0022-backend-function-shapes.md): backend function shapes, nulls, guards, verbs.
+- [0023](adr/0023-suspense-first-data-fetching.md): Suspense-first data fetching.
