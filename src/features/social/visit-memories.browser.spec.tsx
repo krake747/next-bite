@@ -20,6 +20,13 @@ let signedIn = true
 let scriptedMemories: ScriptedMemory[] | undefined = []
 const addMutate = vi.fn<() => Promise<unknown>>()
 
+vi.mock("@core/auth-client", () => ({
+    getConvexSessionToken: async () => {
+        await Promise.resolve()
+        return "test-token"
+    },
+}))
+
 vi.mock("@core/image-utils", async (importOriginal) => {
     const original = await importOriginal<typeof import("@core/image-utils")>()
     return {

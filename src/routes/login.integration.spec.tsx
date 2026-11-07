@@ -69,6 +69,17 @@ async function noop(): Promise<void> {
     await Promise.resolve()
 }
 
+vi.mock("@core/auth-client", async (importOriginal) => {
+    const original = await importOriginal<typeof import("@core/auth-client")>()
+    return {
+        ...original,
+        getConvexSessionToken: vi.fn<() => Promise<string | null>>(async () => {
+            await Promise.resolve()
+            return "test-token"
+        }),
+    }
+})
+
 vi.mock("@core/auth-provider", async (importOriginal) => {
     const original = await importOriginal<typeof import("@core/auth-provider")>()
     return {

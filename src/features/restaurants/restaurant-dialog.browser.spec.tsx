@@ -55,6 +55,13 @@ vi.mock("@core/image-utils", async (importOriginal) => {
     }
 })
 
+vi.mock("@core/auth-client", () => ({
+    getConvexSessionToken: async () => {
+        await Promise.resolve()
+        return "test-token"
+    },
+}))
+
 vi.mock("@core/hooks", async (importOriginal) => {
     const original = await importOriginal<typeof import("@core/hooks")>()
     return {

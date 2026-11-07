@@ -13,6 +13,13 @@ const storageId = (value: string): Id<"_storage"> => value as unknown as Id<"_st
 
 const updateMutate = vi.fn<() => Promise<unknown>>()
 
+vi.mock("@core/auth-client", () => ({
+    getConvexSessionToken: async () => {
+        await Promise.resolve()
+        return "test-token"
+    },
+}))
+
 vi.mock("@core/image-utils", async (importOriginal) => {
     const original = await importOriginal<typeof import("@core/image-utils")>()
     return {
