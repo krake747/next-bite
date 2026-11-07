@@ -2,7 +2,7 @@ import { fireEvent, render, screen, waitFor } from "@testing-library/react"
 import { describe, expect, test, vi } from "vitest"
 
 import { ConvexProvider } from "@api/convex-client"
-import { createSeededClient } from "@core/db/seeded-client"
+import { createSeededClient } from "@api/db/seeded-client"
 import { useSessionStatus } from "@core/hooks"
 
 type TestUser = { id: string; email: string; name: string }
@@ -18,16 +18,16 @@ const getTokenMock = vi.fn<() => Promise<string | null>>(async () => {
     return tokenValue
 })
 
-vi.mock("@core/auth-client", async (importOriginal) => {
-    const original = await importOriginal<typeof import("@core/auth-client")>()
+vi.mock("@api/auth-client", async (importOriginal) => {
+    const original = await importOriginal<typeof import("@api/auth-client")>()
     return {
         ...original,
         getConvexSessionToken: async () => getTokenMock(),
     }
 })
 
-vi.mock("@core/auth-provider", async (importOriginal) => {
-    const original = await importOriginal<typeof import("@core/auth-provider")>()
+vi.mock("@api/auth-provider", async (importOriginal) => {
+    const original = await importOriginal<typeof import("@api/auth-provider")>()
     const noop = async () => {
         await Promise.resolve()
     }

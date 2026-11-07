@@ -3,8 +3,8 @@ import { fireEvent, render, screen, waitFor } from "@testing-library/react"
 import { describe, expect, test, vi } from "vitest"
 
 import { ConvexProvider } from "@api/convex-client"
+import { createSeededClient } from "@api/db/seeded-client"
 import { type Id } from "@convex/_generated/dataModel"
-import { createSeededClient } from "@core/db/seeded-client"
 
 import { AvatarSection } from "./you"
 
@@ -13,7 +13,7 @@ const storageId = (value: string): Id<"_storage"> => value as unknown as Id<"_st
 
 const updateMutate = vi.fn<() => Promise<unknown>>()
 
-vi.mock("@core/auth-client", () => ({
+vi.mock("@api/auth-client", () => ({
     getConvexSessionToken: async () => {
         await Promise.resolve()
         return "test-token"

@@ -5,10 +5,10 @@ import { useState, useEffect, createContext, use } from "react"
 import { ConvexProvider } from "@api/convex-client"
 import { ConvexBetterAuthProvider } from "@convex-dev/better-auth/react"
 import { ConvexQueryClient } from "@convex-dev/react-query"
+import { env } from "@core/env"
 
 import { authClient } from "./auth-client"
 import { useAuthStore } from "./auth-store"
-import { env } from "./env"
 
 type AuthStore = ReturnType<typeof useAuthStore>
 

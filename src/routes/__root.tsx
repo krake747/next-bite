@@ -5,7 +5,7 @@ import { HeadContent, Outlet, Scripts, createRootRouteWithContext } from "@tanst
 import { APIProvider } from "@vis.gl/react-google-maps"
 import { StrictMode, Suspense } from "react"
 
-import { AuthProvider } from "@core/auth-provider"
+import { AuthProvider } from "@api/auth-provider"
 import { env } from "@core/env"
 import { useEnsureProfile } from "@core/hooks"
 import { SessionTimeoutNotice } from "@routes/-components/session-timeout-notice"

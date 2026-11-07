@@ -4,9 +4,9 @@ import { act } from "@testing-library/react"
 import { describe, expect, test, vi } from "vitest"
 
 import { ConvexProvider } from "@api/convex-client"
+import { SyncTimeoutError, type RestaurantAddArgs } from "@api/db/restaurants"
+import { createSeededClient, type MutationCall } from "@api/db/seeded-client"
 import { type Id } from "@convex/_generated/dataModel"
-import { SyncTimeoutError, type RestaurantAddArgs } from "@core/db/restaurants"
-import { createSeededClient, type MutationCall } from "@core/db/seeded-client"
 import { type ImageRecord } from "@core/hooks"
 
 import { RestaurantDialog } from "./restaurant-dialog"
@@ -55,7 +55,7 @@ vi.mock("@core/image-utils", async (importOriginal) => {
     }
 })
 
-vi.mock("@core/auth-client", () => ({
+vi.mock("@api/auth-client", () => ({
     getConvexSessionToken: async () => {
         await Promise.resolve()
         return "test-token"
@@ -71,8 +71,8 @@ vi.mock("@core/hooks", async (importOriginal) => {
     }
 })
 
-vi.mock("@core/auth-provider", async (importOriginal) => {
-    const original = await importOriginal<typeof import("@core/auth-provider")>()
+vi.mock("@api/auth-provider", async (importOriginal) => {
+    const original = await importOriginal<typeof import("@api/auth-provider")>()
     const noop = async () => {
         await Promise.resolve()
     }

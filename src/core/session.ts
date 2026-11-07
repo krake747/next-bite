@@ -1,12 +1,12 @@
 import { type ConvexReactClient } from "convex/react"
 import { useEffect, useState, useSyncExternalStore } from "react"
 
+import { getConvexSessionToken } from "@api/auth-client"
+import { useAuth as useAuthSource } from "@api/auth-provider"
 import { useConvexClient } from "@api/convex-client"
 import { api } from "@api/endpoints"
 
 import { sleep } from "./async"
-import { getConvexSessionToken } from "./auth-client"
-import { useAuth as useAuthSource } from "./auth-provider"
 
 async function probeConvexAuth(client: ConvexReactClient): Promise<boolean> {
     const token = await getConvexSessionToken()

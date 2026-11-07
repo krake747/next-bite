@@ -2,12 +2,13 @@ import { renderHook } from "@testing-library/react"
 import { http, HttpResponse } from "msw"
 import { describe, expect, test, vi } from "vitest"
 
+import { getConvexSessionToken } from "@api/auth-client"
+
 import { server } from "../vitest.msw.setup"
-import { getConvexSessionToken } from "./auth-client"
 import { useUploadImage } from "./hooks"
 
-vi.mock("./auth-client", async (importOriginal) => {
-    const original = await importOriginal<typeof import("./auth-client")>()
+vi.mock("@api/auth-client", async (importOriginal) => {
+    const original = await importOriginal<typeof import("@api/auth-client")>()
     return { ...original, getConvexSessionToken: vi.fn<() => Promise<string | null>>() }
 })
 

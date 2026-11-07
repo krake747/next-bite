@@ -5,8 +5,8 @@ import { useState } from "react"
 import { describe, expect, test, vi } from "vitest"
 
 import { ConvexProvider } from "@api/convex-client"
+import { createSeededClient, type MutationCall } from "@api/db/seeded-client"
 import { type Id } from "@convex/_generated/dataModel"
-import { createSeededClient, type MutationCall } from "@core/db/seeded-client"
 import { type ImageRecord } from "@core/hooks"
 import { ImageUpload } from "@pattern/image-upload"
 
@@ -36,7 +36,7 @@ let uploadImpl: (file: Readonly<File>) => Promise<ImageRecord> = async () => {
     throw new Error("uploadImpl not set")
 }
 
-vi.mock("@core/auth-client", () => ({
+vi.mock("@api/auth-client", () => ({
     getConvexSessionToken: async () => {
         await Promise.resolve()
         return "test-token"

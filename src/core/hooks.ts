@@ -3,6 +3,8 @@ import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { type ConvexReactClient } from "convex/react"
 import { useEffect, useRef } from "react"
 
+import { getConvexSessionToken } from "@api/auth-client"
+import { useAuth as useAuthSource } from "@api/auth-provider"
 import {
     useConvexClient,
     useConvexQuery,
@@ -11,11 +13,6 @@ import {
     useConvexAction,
 } from "@api/convex-client"
 import { type Doc, type Id } from "@api/data-model"
-import { api } from "@api/endpoints"
-
-import { getConvexSessionToken } from "./auth-client"
-import { useAuth as useAuthSource } from "./auth-provider"
-import { FALLBACK_DISPLAY_NAME } from "./constants"
 import {
     applyUpdateArgsToDraft,
     assertRealRestaurantId,
@@ -27,7 +24,10 @@ import {
     resolveRestaurantIdByKey,
     type RestaurantAddArgs,
     type RestaurantUpdateArgs,
-} from "./db/restaurants"
+} from "@api/db/restaurants"
+import { api } from "@api/endpoints"
+
+import { FALLBACK_DISPLAY_NAME } from "./constants"
 import { env } from "./env"
 import { parseImageRecord, type ImageRecord } from "./schemas"
 import { retrySessionGate, useSessionKey, useSessionStatus } from "./session"

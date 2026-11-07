@@ -4,10 +4,9 @@ import { type ConvexReactClient } from "convex/react"
 
 import { type Doc, type Id } from "@api/data-model"
 import { api } from "@api/endpoints"
-
-import { sleep } from "../async"
-import { mergeDetails, mergeEnrichment } from "../restaurant-details"
-import { assertRealId, isTempId, TEMP_ID_PREFIX } from "../temp-ids"
+import { sleep } from "@core/async"
+import { mergeDetails, mergeEnrichment } from "@core/restaurant-details"
+import { assertRealId, isTempId, TEMP_ID_PREFIX } from "@core/temp-ids"
 
 const SYNC_RESOLVE_POLL_MS = 50
 

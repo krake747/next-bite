@@ -4,12 +4,12 @@ import userEvent from "@testing-library/user-event"
 import { afterEach, describe, expect, test, vi } from "vitest"
 
 import { ConvexProvider } from "@api/convex-client"
-import { createSeededClient, seedKey } from "@core/db/seeded-client"
+import { createSeededClient, seedKey } from "@api/db/seeded-client"
 
 import { routeTree } from "../../routeTree.gen"
 
-vi.mock("@core/auth-client", async (importOriginal) => {
-    const original = await importOriginal<typeof import("@core/auth-client")>()
+vi.mock("@api/auth-client", async (importOriginal) => {
+    const original = await importOriginal<typeof import("@api/auth-client")>()
     return {
         ...original,
         getConvexSessionToken: vi.fn<() => Promise<string | null>>(async () => {
@@ -23,8 +23,8 @@ type TestUser = { id: string; email: string; name: string }
 
 let testUser: TestUser | null = null
 
-vi.mock("@core/auth-provider", async (importOriginal) => {
-    const original = await importOriginal<typeof import("@core/auth-provider")>()
+vi.mock("@api/auth-provider", async (importOriginal) => {
+    const original = await importOriginal<typeof import("@api/auth-provider")>()
     const noop = async () => {
         await Promise.resolve()
     }

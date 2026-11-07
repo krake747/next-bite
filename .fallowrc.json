@@ -28,7 +28,7 @@
         ],
         "rules": [
             { "from": "core", "allow": ["core", "api", "convex"] },
-            { "from": "api", "allow": ["api", "convex"] },
+            { "from": "api", "allow": ["api", "convex", "core"] },
             { "from": "ui", "allow": ["ui"] },
             { "from": "pattern", "allow": ["core", "ui", "pattern", "api"], "allowTypeOnly": ["convex"] },
             { "from": "features", "allow": ["core", "ui", "pattern", "api"], "allowTypeOnly": ["convex"] },

@@ -3,13 +3,13 @@ import { fireEvent, render, screen, waitFor } from "@testing-library/react"
 import { describe, expect, test, vi } from "vitest"
 
 import { ConvexProvider } from "@api/convex-client"
+import { createSeededClient, seedKey, type MutationCall } from "@api/db/seeded-client"
 import { type Id } from "@convex/_generated/dataModel"
-import { createSeededClient, seedKey, type MutationCall } from "@core/db/seeded-client"
 
 import { ShareToGroupDialog } from "./share-to-group-dialog"
 
-vi.mock("@core/auth-client", async (importOriginal) => {
-    const original = await importOriginal<typeof import("@core/auth-client")>()
+vi.mock("@api/auth-client", async (importOriginal) => {
+    const original = await importOriginal<typeof import("@api/auth-client")>()
     return {
         ...original,
         getConvexSessionToken: vi.fn<() => Promise<string | null>>(async () => {
@@ -27,8 +27,8 @@ let testUser: { id: string; email: string; name: string } | null = {
 const mutationCalls: MutationCall[] = []
 const querySeeds = new Map<string, unknown>()
 
-vi.mock("@core/auth-provider", async (importOriginal) => {
-    const original = await importOriginal<typeof import("@core/auth-provider")>()
+vi.mock("@api/auth-provider", async (importOriginal) => {
+    const original = await importOriginal<typeof import("@api/auth-provider")>()
     const noop = async () => {
         await Promise.resolve()
     }
