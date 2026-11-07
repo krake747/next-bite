@@ -41,24 +41,20 @@ function renderGallery(initial: ImageRecord[], add: boolean): void {
 describe("useRestaurantImages ownership", () => {
     test("retries failed cleanups on the next discard", async () => {
         renderGallery([stagedImage("s1")], true)
-        const warn = vi.spyOn(console, "warn").mockImplementation(() => {})
+        using warn = vi.spyOn(console, "warn").mockImplementation(() => {})
         vi.mocked(cleanupMock).mockRejectedValueOnce(new Error("denied"))
-        try {
-            await act(async () => {
-                await currentGallery().discardChanges()
-            })
-            expect(cleanupMock).toHaveBeenCalledTimes(1)
-            expect(warn).toHaveBeenCalled()
+        await act(async () => {
+            await currentGallery().discardChanges()
+        })
+        expect(cleanupMock).toHaveBeenCalledTimes(1)
+        expect(warn).toHaveBeenCalled()
 
-            vi.mocked(cleanupMock).mockResolvedValue(undefined)
-            await act(async () => {
-                await currentGallery().discardChanges()
-            })
-            expect(cleanupMock).toHaveBeenCalledTimes(2)
-            expect(cleanupMock).toHaveBeenNthCalledWith(2, { storageId: "s1" })
-        } finally {
-            warn.mockRestore()
-        }
+        vi.mocked(cleanupMock).mockResolvedValue(undefined)
+        await act(async () => {
+            await currentGallery().discardChanges()
+        })
+        expect(cleanupMock).toHaveBeenCalledTimes(2)
+        expect(cleanupMock).toHaveBeenNthCalledWith(2, { storageId: "s1" })
     })
 
     test("cleans session-added uploads on edit-mode discard but keeps attached", async () => {
