@@ -48,7 +48,7 @@ function filterRestaurants(
     let filteredResult = [...restaurants]
 
     if (filter !== null && filter !== "") {
-        filteredResult = filteredResult.filter((r) => r.ownerName === filter)
+        filteredResult = filteredResult.filter((r) => r.ownerId === filter)
     }
 
     const searchTerm = search.trim().toLowerCase()
@@ -114,12 +114,12 @@ function HomeFeed({
     actions: SocialActions
 }>) {
     return (
-        <section aria-label="Latest activity" className="pt-10">
-            <h2 className="font-display text-2xl font-semibold text-balance text-foreground">Latest activity</h2>
-            <p className="mt-1 text-muted-foreground">Fresh saves and shouts from your people.</p>
+        <section aria-label="Latest from friends" className="pt-10">
+            <h2 className="font-display text-2xl font-semibold text-balance text-foreground">Latest from friends</h2>
+            <p className="mt-1 text-muted-foreground">Fresh saves from your people.</p>
             {feed.length === 0 ? (
                 <EmptyState
-                    title="No crew activity yet"
+                    title="No friend saves yet"
                     body="When friends share restaurants with you, their latest saves land here."
                     className="mt-6"
                 />
@@ -171,12 +171,15 @@ function HomeDiscover({
 }>) {
     const filterState = useFilterState()
     const filtered = filterRestaurants(restaurants, filterState.filter, filterState.search, sortOrder)
+    // Friend pills only appear for accounts actually present in this list.
+    // Personal saves are owned by the viewer, so no friend pill shows here;
+    // the filter keys on stable account ids, never on renamable display names.
+    const ownId = actions.auth.user?.id
+    const matchingIds = [...new Set(restaurants.map((restaurant) => restaurant.ownerId))].filter((id) => id !== ownId)
     return (
-        <section aria-label="Discover" className="pt-10">
-            <h2 className="font-display text-2xl font-semibold text-balance text-foreground">Discover</h2>
-            <p className="mt-1 text-muted-foreground">
-                Every place on the short list. Filter by friend, search by craving.
-            </p>
+        <section aria-label="Saved places" className="pt-10">
+            <h2 className="font-display text-2xl font-semibold text-balance text-foreground">Saved places</h2>
+            <p className="mt-1 text-muted-foreground">Every place on your short list. Search by craving.</p>
             <div className="pt-4">
                 <FriendsFilter
                     filter={filterState.filter}
@@ -189,6 +192,7 @@ function HomeDiscover({
                     }}
                     sortOrder={sortOrder}
                     onSortChange={onSortChange}
+                    matchingIds={matchingIds}
                 >
                     <HomeActions onAddClick={onAddClick} />
                 </FriendsFilter>
@@ -294,7 +298,7 @@ function Home() {
                         What&apos;s next, {actions.auth.user?.name?.split(" ")[0] ?? "food lover"}?
                     </HeaderTitle>
                     <HeaderSubtitle>
-                        Your crew&apos;s latest saves, wants, and shouts. Jump back in and pick the next table.
+                        Your crew&apos;s latest saves. Jump back in and pick the next table.
                     </HeaderSubtitle>
                     <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center">
                         <Button

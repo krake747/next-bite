@@ -13,20 +13,23 @@ export function FriendsFilter({
     handleSearch,
     sortOrder,
     onSortChange,
+    matchingIds,
     children,
 }: Readonly<{
     filter: string | null
-    handleFilter: (name: string | null) => void
+    handleFilter: (ownerId: string | null) => void
     search: string
     handleSearch: (value: string) => void
     sortOrder: "added" | "name"
     onSortChange: (order: "added" | "name") => void
+    matchingIds: ReadonlyArray<string>
     children: React.ReactNode
 }>) {
     const friends = useFriends()
+    const shownFriends = (friends ?? []).filter((friend) => matchingIds.includes(friend.authUserId))
 
-    const toggleFilter = (name: string) => () => {
-        handleFilter(name === filter ? null : name)
+    const toggleFilter = (ownerId: string) => () => {
+        handleFilter(ownerId === filter ? null : ownerId)
     }
 
     return (
@@ -42,22 +45,26 @@ export function FriendsFilter({
                         />
                         <span className="text-xs font-medium tracking-wide uppercase">Filter</span>
                     </div>
-                    <div className="h-4 w-px bg-border" />
-                    {friends?.map((friend: Readonly<{ name: string }>) => (
-                        <button
-                            key={friend.name}
-                            type="button"
-                            onClick={toggleFilter(friend.name)}
-                            className={cx(
-                                "inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium transition-all",
-                                filter === friend.name
-                                    ? "bg-primary text-inverse shadow-sm"
-                                    : "bg-surface-muted text-muted-foreground hover:bg-border-strong",
-                            )}
-                        >
-                            {friend.name}
-                        </button>
-                    ))}
+                    {shownFriends.length > 0 && (
+                        <>
+                            <div className="h-4 w-px bg-border" />
+                            {shownFriends.map((friend: Readonly<{ authUserId: string; name: string }>) => (
+                                <button
+                                    key={friend.authUserId}
+                                    type="button"
+                                    onClick={toggleFilter(friend.authUserId)}
+                                    className={cx(
+                                        "inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium transition-all",
+                                        filter === friend.authUserId
+                                            ? "bg-primary text-inverse shadow-sm"
+                                            : "bg-surface-muted text-muted-foreground hover:bg-border-strong",
+                                    )}
+                                >
+                                    {friend.name}
+                                </button>
+                            ))}
+                        </>
+                    )}
                     {filter !== null && filter !== "" && (
                         <button
                             type="button"

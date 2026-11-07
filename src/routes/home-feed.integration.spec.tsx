@@ -1,11 +1,11 @@
 import { QueryClient } from "@tanstack/react-query"
 import { RouterProvider, createMemoryHistory, createRouter } from "@tanstack/react-router"
-import { render, screen, within, waitFor } from "@testing-library/react"
+import { fireEvent, render, screen, within, waitFor } from "@testing-library/react"
 import { describe, expect, test, vi } from "vitest"
 
 import { ConvexProvider } from "@core/convex-client"
 import { type RestaurantDoc } from "@core/db/restaurants"
-import { createSeededClient } from "@core/db/seeded-client"
+import { createSeededClient, seedKey } from "@core/db/seeded-client"
 
 import { routeTree } from "../routeTree.gen"
 
@@ -44,13 +44,13 @@ vi.mock("@core/auth-provider", async (importOriginal) => {
     }
 })
 
-function friendRestaurant(name: string): RestaurantDoc {
+function ownedRestaurant(name: string, owner: { id: string; name: string }, id: string): RestaurantDoc {
     // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- test fixture shaped to the restaurant document
     return {
-        _id: "r1",
+        _id: id,
         _creationTime: 1000,
-        ownerId: "anna",
-        ownerName: "Anna",
+        ownerId: owner.id,
+        ownerName: owner.name,
         name,
         cuisine: "Italian",
         address: { label: "Luxembourg City" },
@@ -60,7 +60,10 @@ function friendRestaurant(name: string): RestaurantDoc {
     } as unknown as RestaurantDoc
 }
 
-async function renderHome(feed: ReadonlyArray<RestaurantDoc>): Promise<void> {
+async function renderHome(
+    feed: ReadonlyArray<RestaurantDoc>,
+    friends: ReadonlyArray<{ authUserId: string; name: string }> = [],
+): Promise<void> {
     const queryClient = new QueryClient()
     const router = createRouter({
         routeTree,
@@ -68,27 +71,60 @@ async function renderHome(feed: ReadonlyArray<RestaurantDoc>): Promise<void> {
         context: { queryClient },
     })
     await router.load()
+    const seeds = new Map<string, unknown>([[seedKey("friendships:listFriends", undefined), friends]])
     render(
-        <ConvexProvider client={createSeededClient({ liveRows: feed }).client}>
+        <ConvexProvider client={createSeededClient({ seeds, liveRows: feed }).client}>
             <RouterProvider router={router} />
         </ConvexProvider>,
     )
     await waitFor(() => {
-        expect(document.querySelector('[aria-label="Latest activity"]')).toBeInTheDocument()
+        expect(document.querySelector('[aria-label="Latest from friends"]')).toBeInTheDocument()
     })
 }
 
 describe("home friends feed", () => {
     test("shows a friend's discovery in latest activity", async () => {
-        await renderHome([friendRestaurant("Trattoria Verde")])
+        await renderHome([ownedRestaurant("Trattoria Verde", { id: "anna", name: "Anna" }, "r1")])
 
-        const activity = screen.getByLabelText("Latest activity")
+        const activity = screen.getByLabelText("Latest from friends")
         expect(within(activity).getByText("Trattoria Verde")).toBeInTheDocument()
     })
 
     test("shows an empty state when no friend activity exists", async () => {
         await renderHome([])
 
-        expect(screen.getByText("No crew activity yet")).toBeInTheDocument()
+        expect(screen.getByText("No friend saves yet")).toBeInTheDocument()
+    })
+
+    test("shows personal saves without friend pills", async () => {
+        await renderHome(
+            [ownedRestaurant("Trattoria Verde", { id: "user-1", name: "Alex" }, "r1")],
+            [{ authUserId: "user-2", name: "Ben" }],
+        )
+
+        const saved = screen.getByLabelText("Saved places")
+        expect(within(saved).getByText("Trattoria Verde")).toBeInTheDocument()
+        expect(within(saved).queryByRole("button", { name: "Ben" })).toBeNull()
+    })
+
+    test("shows friend pills only for names present in the list", async () => {
+        await renderHome(
+            [
+                ownedRestaurant("Sushi Bar", { id: "user-2", name: "Ben" }, "r2"),
+                ownedRestaurant("Trattoria Verde", { id: "user-1", name: "Alex" }, "r1"),
+            ],
+            [{ authUserId: "user-2", name: "Ben" }],
+        )
+
+        const saved = screen.getByLabelText("Saved places")
+        await waitFor(() => {
+            expect(within(saved).getByRole("button", { name: "Ben" })).toBeInTheDocument()
+        })
+        fireEvent.click(within(saved).getByRole("button", { name: "Ben" }))
+
+        await waitFor(() => {
+            expect(within(saved).queryByText("Trattoria Verde")).toBeNull()
+        })
+        expect(within(saved).getByText("Sushi Bar")).toBeInTheDocument()
     })
 })
