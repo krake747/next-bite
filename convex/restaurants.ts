@@ -168,7 +168,6 @@ function toOpenState(openNow: boolean | undefined): OpeningHoursData["openState"
 
 async function fetchCurrentOpeningHours(placeId: string, apiKey: string): Promise<GoogleOpeningHours | undefined> {
     try {
-        console.log("fetchOpeningHoursFromGoogle: Fetching for placeId:", placeId)
         const response = await fetch(`https://places.googleapis.com/v1/places/${placeId}?fields=currentOpeningHours`, {
             headers: {
                 "X-Goog-Api-Key": apiKey,
@@ -177,16 +176,13 @@ async function fetchCurrentOpeningHours(placeId: string, apiKey: string): Promis
         })
 
         if (!response.ok) {
-            const errorText = await response.text()
-            console.log("fetchOpeningHoursFromGoogle: API error:", response.status, errorText)
+            await response.text()
             return undefined
         }
 
         const data = valibot.parse(googleOpeningHoursSchema, await response.json())
-        console.log("fetchOpeningHoursFromGoogle: Result:", JSON.stringify(data.currentOpeningHours))
         return data.currentOpeningHours ?? undefined
-    } catch (err) {
-        console.log("fetchOpeningHoursFromGoogle: Catch error:", err)
+    } catch {
         return undefined
     }
 }
@@ -222,7 +218,6 @@ function toOpeningHoursData(google: GoogleOpeningHours): OpeningHoursData {
 async function fetchOpeningHoursFromGoogle(placeId: string): Promise<OpeningHoursData> {
     const apiKey = googleMapsApiKey()
     if (apiKey === undefined) {
-        console.log("fetchOpeningHoursFromGoogle: No API key")
         return openFallback()
     }
 
@@ -327,13 +322,11 @@ type GooglePlaceResult = {
 async function lookupPlaceIdFromGoogle(name: string, location: string): Promise<GooglePlaceResult> {
     const apiKey = googleMapsApiKey()
     if (apiKey === undefined) {
-        console.log("lookupPlaceIdFromGoogle: No API key")
         return {}
     }
 
     try {
         const searchQuery = `${name}, ${location}`
-        console.log("lookupPlaceIdFromGoogle: Searching for:", searchQuery)
 
         const response = await fetch(`https://places.googleapis.com/v1/places:searchText`, {
             method: "POST",
@@ -346,13 +339,11 @@ async function lookupPlaceIdFromGoogle(name: string, location: string): Promise<
         })
 
         if (!response.ok) {
-            const errorText = await response.text()
-            console.log("lookupPlaceIdFromGoogle: API error:", response.status, errorText)
+            await response.text()
             return {}
         }
 
         const data = valibot.parse(googlePlacesSearchSchema, await response.json())
-        console.log("lookupPlaceIdFromGoogle: Result:", JSON.stringify(data))
 
         const place = data.places?.[0]
         return {
@@ -360,8 +351,7 @@ async function lookupPlaceIdFromGoogle(name: string, location: string): Promise<
             ...(place?.location?.latitude !== undefined ? { lat: place.location.latitude } : {}),
             ...(place?.location?.longitude !== undefined ? { lng: place.location.longitude } : {}),
         }
-    } catch (err) {
-        console.log("lookupPlaceIdFromGoogle: Catch error:", err)
+    } catch {
         return {}
     }
 }
@@ -514,7 +504,6 @@ export const addWithOpeningHours = action({
         }
 
         const google = await lookupPlaceIdFromGoogle(args.name, args.addressLabel)
-        console.log("addWithOpeningHours: Google result:", JSON.stringify(google))
 
         const coords =
             google.lat !== undefined && google.lng !== undefined
@@ -841,35 +830,26 @@ export const refreshOpeningHours = action({
 export const lookupPlaceIdAndHours = action({
     args: { restaurantId: v.id("restaurants") },
     handler: async (ctx, { restaurantId }) => {
-        console.log("lookupPlaceIdAndHours: Starting for restaurantId:", restaurantId)
         const userId = await requireUserId(ctx)
         const restaurant = await ctx.runQuery(internal.restaurants._getRestaurantById, { id: restaurantId })
         if (!restaurant) {
-            console.log("lookupPlaceIdAndHours: Restaurant not found")
             throw new Error("Restaurant not found")
         }
         if (restaurant.ownerId !== userId) {
             throw new Error("Unauthorized: only the owner can change this restaurant")
         }
 
-        console.log("lookupPlaceIdAndHours: Restaurant:", restaurant.name, restaurant.address.label)
-
         if (!restaurant.name || !restaurant.address.label) {
-            console.log("lookupPlaceIdAndHours: Missing name or location")
             throw new Error("Name and location required to lookup")
         }
 
         const google = await lookupPlaceIdFromGoogle(restaurant.name, restaurant.address.label)
-        console.log("lookupPlaceIdAndHours: Google result:", JSON.stringify(google))
 
         if (google.placeId === undefined || google.placeId === "") {
-            console.log("lookupPlaceIdAndHours: No placeId found, returning")
             return
         }
 
-        console.log("lookupPlaceIdAndHours: Fetching opening hours...")
         const openingHours = await fetchOpeningHoursFromGoogle(google.placeId)
-        console.log("lookupPlaceIdAndHours: Got openingHours:", JSON.stringify(openingHours))
 
         const coords =
             google.lat !== undefined && google.lng !== undefined
@@ -883,7 +863,6 @@ export const lookupPlaceIdAndHours = action({
                 openingHours,
             },
         })
-        console.log("lookupPlaceIdAndHours: Done!")
     },
 })
 

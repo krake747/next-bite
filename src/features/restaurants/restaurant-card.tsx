@@ -6,8 +6,7 @@ import {
     PencilLineIcon,
     TrashIcon,
 } from "@phosphor-icons/react"
-import { Map, AdvancedMarker } from "@vis.gl/react-google-maps"
-import { useState } from "react"
+import { lazy, Suspense, useState } from "react"
 
 import {
     useUpdateRestaurant,
@@ -29,6 +28,10 @@ import { EditRestaurantDialog } from "./edit-restaurant-dialog"
 import { RestaurantGallery } from "./restaurant-gallery"
 import { RestaurantHeader } from "./restaurant-header"
 import { RestaurantInterestButton } from "./restaurant-interest-button"
+
+const RestaurantCardMapView = lazy(async () =>
+    import("./restaurant-card-map").then((module) => ({ default: module.RestaurantCardMapView })),
+)
 
 export function RestaurantCard({
     restaurant,
@@ -238,7 +241,6 @@ function RestaurantCardMap({
     name: string | undefined
 }>) {
     const [showMap, setShowMap] = useState(false)
-    const directionsUrl = `https://www.google.com/maps/dir/?api=1&destination=${location.lat},${location.lng}`
     return (
         <div className="px-5 md:px-4">
             <button
@@ -246,44 +248,34 @@ function RestaurantCardMap({
                 onClick={() => {
                     setShowMap(!showMap)
                 }}
+                aria-expanded={showMap}
                 className="group/trigger flex w-full items-center justify-between rounded-xl border border-transparent px-3 py-2.5 text-sm text-muted-foreground transition-colors duration-200 hover:border-border hover:bg-surface-muted"
             >
                 <div className="flex items-center gap-3">
                     <div className="flex size-7 items-center justify-center rounded-full bg-surface-muted transition-colors duration-200 group-hover/trigger:bg-tomato-100">
-                        <NavigationArrowIcon className="size-3.5 text-muted-foreground transition-colors duration-200 group-hover/trigger:text-tomato-600" />
+                        <NavigationArrowIcon
+                            className="size-3.5 text-muted-foreground transition-colors duration-200 group-hover/trigger:text-tomato-600"
+                            aria-hidden="true"
+                        />
                     </div>
                     <span className="font-medium">View on Map</span>
                 </div>
                 <CaretDownIcon
+                    aria-hidden="true"
                     className={`size-4 text-muted-foreground transition-transform duration-300 ease-out-quad ${showMap ? "rotate-180" : ""}`}
                 />
             </button>
             {showMap && (
-                <div>
-                    <a
-                        href={directionsUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="mt-2 block aspect-video w-full cursor-pointer overflow-hidden rounded-xl border border-border shadow-inner transition-shadow duration-200 hover:shadow-md"
-                        title="Get directions"
-                    >
-                        <Map
-                            center={location}
-                            zoom={15}
-                            mapId="DEMO_MAP_ID"
-                            disableDefaultUI
-                            zoomControl={false}
-                            mapTypeControl={false}
-                            streetViewControl={false}
-                            fullscreenControl={false}
-                            scrollwheel={false}
-                            style={{ width: "100%", height: "100%" }}
-                        >
-                            <AdvancedMarker position={location} title={name ?? null} />
-                        </Map>
-                    </a>
-                    <p className="mt-2 text-center text-xs text-muted-foreground">Click map to get directions</p>
-                </div>
+                <Suspense
+                    fallback={
+                        <div
+                            className="mt-2 aspect-video w-full animate-pulse rounded-xl bg-surface-muted"
+                            aria-hidden="true"
+                        />
+                    }
+                >
+                    <RestaurantCardMapView location={location} name={name} />
+                </Suspense>
             )}
         </div>
     )
