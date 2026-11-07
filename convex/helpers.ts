@@ -77,7 +77,7 @@ export async function adjustStatsCounters(
         .unique()
     const cuisineCounts: Record<string, number> = { ...existing?.cuisineCounts }
     for (const [cuisine, change] of Object.entries(delta.cuisines ?? {})) {
-        cuisineCounts[cuisine] = (cuisineCounts[cuisine] ?? 0) + change
+        cuisineCounts[cuisine] = Math.max(0, (cuisineCounts[cuisine] ?? 0) + change)
     }
     const row = {
         key: STATS_COUNTER_KEY,

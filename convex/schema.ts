@@ -149,10 +149,16 @@ export default defineSchema({
         storageId: v.id("_storage"),
         ownerId: v.string(),
         restaurantId: v.optional(v.id("restaurants")),
+        purpose: v.optional(
+            v.union(v.literal("restaurant"), v.literal("group"), v.literal("avatar"), v.literal("transient")),
+        ),
+        expiresAt: v.optional(v.number()),
         mimeType: v.optional(v.string()),
         byteSize: v.optional(v.number()),
         createdAt: v.number(),
-    }).index("by_storage", ["storageId"]),
+    })
+        .index("by_storage", ["storageId"])
+        .index("by_expires", ["expiresAt"]),
     // Denormalized landing aggregates, maintained on every restaurant and
     // interest write so the public getStats query stays O(1). Deployments that
     // predate this table fall back to a live computation in landing.getStats.

@@ -169,9 +169,24 @@ export const listPlansForRestaurant = query({
         const plans = await ctx.db
             .query("plans")
             .withIndex("by_restaurant", (q) => q.eq("restaurantId", args.restaurantId))
-            .collect()
+            .take(50)
+        const visiblePlans: typeof plans = []
+        for (const plan of plans) {
+            const groupId = plan.groupId
+            if (groupId === undefined) {
+                visiblePlans.push(plan)
+                continue
+            }
+            const membership = await ctx.db
+                .query("groupMembers")
+                .withIndex("by_group_user", (q) => q.eq("groupId", groupId).eq("userId", userId))
+                .unique()
+            if (membership) {
+                visiblePlans.push(plan)
+            }
+        }
         return Promise.all(
-            plans
+            visiblePlans
                 .toSorted((a, b) => a.date - b.date)
                 .map(async (plan) => {
                     const rows = await ctx.db

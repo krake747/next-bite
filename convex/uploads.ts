@@ -26,11 +26,15 @@ export const lookupByStorage = internalQuery({
         return {
             ownerId: existing.ownerId,
             restaurantId: existing.restaurantId ?? null,
+            purpose: existing.purpose ?? null,
+            expiresAt: existing.expiresAt ?? null,
             mimeType: existing.mimeType ?? null,
             byteSize: existing.byteSize ?? null,
         }
     },
 })
+
+const TRANSIENT_TTL_MS = 24 * 60 * 60 * 1000
 
 export const record = internalMutation({
     args: {
@@ -43,13 +47,16 @@ export const record = internalMutation({
             return existing._id
         }
         // Server-observed blob metadata: content type and size come from the
-        // platform's storage record, never from client claims.
+        // platform's storage record, never from client claims. New uploads start
+        // as transient with a 24h expiry so failed flows leave collectable rows.
         const stored = await ctx.db.system.get("_storage", args.storageId)
         const mimeType = typeof stored?.contentType === "string" ? stored.contentType : undefined
         const byteSize = typeof stored?.size === "number" ? stored.size : undefined
         return ctx.db.insert("uploads", {
             storageId: args.storageId,
             ownerId: args.ownerId,
+            purpose: "transient",
+            expiresAt: Date.now() + TRANSIENT_TTL_MS,
             ...(mimeType !== undefined ? { mimeType } : {}),
             ...(byteSize !== undefined ? { byteSize } : {}),
             createdAt: Date.now(),
@@ -83,7 +90,26 @@ export const attach = internalMutation({
         if (existing.restaurantId !== undefined && existing.restaurantId !== args.restaurantId) {
             throw new Error("Storage is already attached to another restaurant")
         }
-        await ctx.db.patch(existing._id, { restaurantId: args.restaurantId })
+        await ctx.db.patch(existing._id, {
+            restaurantId: args.restaurantId,
+            purpose: "restaurant",
+            expiresAt: undefined,
+        })
+    },
+})
+
+export const setPurpose = internalMutation({
+    args: {
+        storageId: v.id("_storage"),
+        ownerId: v.string(),
+        purpose: v.union(v.literal("group"), v.literal("avatar")),
+    },
+    handler: async (ctx, args) => {
+        const existing = await findUploadByStorage(ctx.db, args.storageId)
+        if (!existing || existing.ownerId !== args.ownerId) {
+            throw new Error("Unauthorized: storage does not belong to you")
+        }
+        await ctx.db.patch(existing._id, { purpose: args.purpose, expiresAt: undefined })
     },
 })
 

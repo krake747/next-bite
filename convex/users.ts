@@ -54,6 +54,7 @@ type AvatarInput = {
 
 // Avatar ownership is verified against the server upload record, and display
 // metadata comes from the record and profile, never from client-claimed fields.
+// Avatars mark the upload record so orphan sweeps skip them.
 async function resolveAvatarUpload(
     ctx: MutationCtx,
     userId: string,
@@ -67,6 +68,7 @@ async function resolveAvatarUpload(
     if (!record || record.ownerId !== userId) {
         throw new Error("Unauthorized: storage does not belong to you")
     }
+    await ctx.db.patch(record._id, { purpose: "avatar", expiresAt: undefined })
     const url = (await ctx.storage.getUrl(avatar.storageId)) ?? avatar.url
     return {
         url,

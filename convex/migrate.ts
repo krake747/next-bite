@@ -3,15 +3,31 @@ import { internalMutation } from "./_generated/server"
 export const cleanupOrphanedStorage = internalMutation({
     args: {},
     handler: async (ctx) => {
-        const restaurants = await ctx.db.query("restaurants").collect()
+        const now = Date.now()
+        const expired = await ctx.db
+            .query("uploads")
+            .withIndex("by_expires", (q) => q.lte("expiresAt", now))
+            .take(100)
 
-        const referencedStorageIds = new Set<string>()
-        for (const restaurant of restaurants) {
-            for (const img of restaurant.images) {
-                referencedStorageIds.add(img.storageId)
+        let deleted = 0
+        const referenced: string[] = []
+        for (const row of expired) {
+            if (row.purpose !== undefined && row.purpose !== "transient") {
+                continue
             }
+            if (row.restaurantId !== undefined) {
+                referenced.push(row.storageId)
+                continue
+            }
+            try {
+                await ctx.storage.delete(row.storageId)
+            } catch {
+                // Blob already gone; still drop the record below.
+            }
+            await ctx.db.delete(row._id)
+            deleted += 1
         }
 
-        return { referenced: Array.from(referencedStorageIds) }
+        return { deleted, checked: expired.length }
     },
 })

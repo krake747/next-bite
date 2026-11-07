@@ -166,7 +166,8 @@ export const listDiscoveries = query({
         const owned = await ctx.db
             .query("restaurants")
             .withIndex("by_owner", (q) => q.eq("ownerId", args.friendAuthUserId))
-            .collect()
+            .order("desc")
+            .take(20)
         const visible: Doc<"restaurants">[] = []
         for (const restaurant of owned) {
             if (await isRestaurantVisibleTo(ctx.db, userId, restaurant)) {

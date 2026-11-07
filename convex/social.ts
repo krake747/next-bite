@@ -107,11 +107,12 @@ export const getSummaries = query({
     // Signed-out callers get aggregate counts with no personal flags; identity only adds the
     // viewer's own wanted/liked state. Restaurants invisible to the caller resolve to null so
     // private lists stay unenumerable, matching getForRestaurant and restaurants.getById.
+    // Bounded to 30 ids per call to keep fan-out predictable; request more in pages.
     args: {
         restaurantIds: v.array(v.id("restaurants")),
     },
     handler: async (ctx, args) => {
-        if (args.restaurantIds.length > 100) {
+        if (args.restaurantIds.length > 30) {
             throw new Error("Too many restaurants requested")
         }
         const identity = await ctx.auth.getUserIdentity()

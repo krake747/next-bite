@@ -16,8 +16,7 @@ type GroupImageInput = {
 // Group headers carry the same server-derived attribution as restaurant photos and avatars:
 // ownership is verified against the upload record and the URL, MIME type, and byte size
 // come from the platform, never from client claims. Client-reported dimensions pass through
-// as untrusted display hints. Unlike restaurant photos the image is not attached to a
-// restaurant, so no association is recorded.
+// as untrusted display hints. Group images mark the upload record so orphan sweeps skip them.
 async function resolveGroupImage(
     ctx: MutationCtx,
     ownerId: string,
@@ -30,6 +29,11 @@ async function resolveGroupImage(
     if (record.restaurantId !== null) {
         throw new Error("Storage is already attached to a restaurant")
     }
+    await ctx.runMutation(internal.uploads.setPurpose, {
+        storageId: image.storageId,
+        ownerId,
+        purpose: "group",
+    })
     const profile = await ctx.db
         .query("profiles")
         .withIndex("by_auth_user", (q) => q.eq("authUserId", ownerId))
@@ -55,8 +59,8 @@ export const createGroup = mutation({
     handler: async (ctx, args) => {
         const userId = await requireUserId(ctx)
         const name = args.name.trim()
-        if (name === "") {
-            throw new Error("Group name is required")
+        if (name === "" || name.length > 80) {
+            throw new Error("Group name must be 1-80 characters")
         }
         const image = args.image !== undefined ? await resolveGroupImage(ctx, userId, args.image) : undefined
         const groupId = await ctx.db.insert("groups", {
@@ -82,8 +86,8 @@ export const renameGroup = mutation({
             throw new Error("Unauthorized: only admins can rename the group")
         }
         const name = args.name.trim()
-        if (name === "") {
-            throw new Error("Group name is required")
+        if (name === "" || name.length > 80) {
+            throw new Error("Group name must be 1-80 characters")
         }
         await ctx.db.patch(args.groupId, { name })
         return args.groupId

@@ -113,6 +113,25 @@ describe("bounded meal planning", () => {
         )
     })
 
+    test("hides group-scoped plans from restaurant viewers outside the group", async () => {
+        const t = setup()
+        await registerUser(t, "anna", "anna@example.com")
+        await registerUser(t, "ben", "ben@example.com")
+        await registerUser(t, "cas", "cas@example.com")
+        const restaurantId = await createRestaurant(t, "anna")
+        await asUser(t, "anna").mutation(api.shares.shareWithUser, { restaurantId, userId: "cas" })
+        const groupId = await asUser(t, "anna").mutation(api.groups.createGroup, { name: "Food Crew" })
+        await asUser(t, "anna").mutation(api.plans.createPlan, {
+            groupId,
+            restaurantId,
+            title: "Crew dinner",
+            date: Date.now() + 86400000,
+        })
+
+        const visible = await asUser(t, "cas").query(api.plans.listPlansForRestaurant, { restaurantId })
+        expect(visible).toEqual([])
+    })
+
     test("only the organizer or a group admin can update status", async () => {
         const t = setup()
         await registerUser(t, "anna", "anna@example.com")

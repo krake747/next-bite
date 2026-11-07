@@ -18,11 +18,16 @@ export const createInvite = mutation({
         if (args.target.kind === "group") {
             await requireMembership(ctx.db, args.target.groupId, userId)
         }
+        const normalizedEmail =
+            args.invitedEmail !== undefined ? args.invitedEmail.trim().toLowerCase().slice(0, 254) : undefined
+        if (args.invitedEmail !== undefined && (normalizedEmail === undefined || normalizedEmail === "")) {
+            throw new Error("Email is required")
+        }
         const token = crypto.randomUUID()
         await ctx.db.insert("invitations", {
             token,
             target: args.target,
-            ...(args.invitedEmail !== undefined ? { invitedEmail: args.invitedEmail } : {}),
+            ...(normalizedEmail !== undefined ? { invitedEmail: normalizedEmail } : {}),
             invitedBy: userId,
             status: "pending",
             expiresAt: Date.now() + INVITE_TTL_MS,

@@ -451,6 +451,8 @@ export const getById = query({
 })
 
 const FEED_LIMIT = 30
+const FEED_FRIEND_CAP = 50
+const FEED_PER_OWNER_TAKE = 50
 
 export const feed = query({
     args: {},
@@ -460,18 +462,24 @@ export const feed = query({
         const friendships = await ctx.db
             .query("friendships")
             .withIndex("by_owner", (q) => q.eq("ownerId", userId))
-            .collect()
+            .take(FEED_FRIEND_CAP * 2)
         const candidateIds = new Set(
             friendships.filter((row) => row.status === "accepted").map((row) => row.friendAuthUserId),
         )
         candidateIds.delete(userId)
 
         const discoveries: Doc<"restaurants">[] = []
+        let checked = 0
         for (const ownerId of candidateIds) {
+            if (checked >= FEED_FRIEND_CAP) {
+                break
+            }
+            checked += 1
             const owned = await ctx.db
                 .query("restaurants")
                 .withIndex("by_owner", (q) => q.eq("ownerId", ownerId))
-                .collect()
+                .order("desc")
+                .take(FEED_PER_OWNER_TAKE)
             for (const restaurant of owned) {
                 if (await isRestaurantVisibleTo(ctx.db, userId, restaurant)) {
                     discoveries.push(restaurant)
@@ -495,6 +503,7 @@ export const addWithOpeningHours = action({
     },
     handler: async (ctx, args): Promise<Id<"restaurants">> => {
         const userId = await requireUserId(ctx)
+        assertRestaurantText(args)
         const images = args.images ?? []
         assertImageLimit(images)
         const attachable: { image: ImageInput; record: NonNullable<UploadRecord> }[] = []
@@ -643,6 +652,26 @@ async function syncRestaurantImages(
     return merged
 }
 
+function assertRestaurantText(
+    args: Readonly<{ name?: string; cuisine?: string; addressLabel?: string; notes?: string; link?: string }>,
+): void {
+    if (args.name !== undefined && (args.name.trim() === "" || args.name.length > 120)) {
+        throw new Error("Name must be 1-120 characters")
+    }
+    if (args.cuisine !== undefined && (args.cuisine.trim() === "" || args.cuisine.length > 80)) {
+        throw new Error("Cuisine must be 1-80 characters")
+    }
+    if (args.addressLabel !== undefined && (args.addressLabel.trim() === "" || args.addressLabel.length > 200)) {
+        throw new Error("Address must be 1-200 characters")
+    }
+    if (args.notes !== undefined && args.notes.length > 2000) {
+        throw new Error("Notes must be at most 2000 characters")
+    }
+    if (args.link !== undefined && args.link.length > 2000) {
+        throw new Error("Link must be at most 2000 characters")
+    }
+}
+
 export const update = mutation({
     args: {
         id: v.id("restaurants"),
@@ -662,6 +691,7 @@ export const update = mutation({
         if (args.rating !== undefined && (!Number.isInteger(args.rating) || args.rating < 1 || args.rating > 7)) {
             throw new Error("Rating must be a whole number between 1 and 7")
         }
+        assertRestaurantText(args)
 
         const details = mergeDetails(restaurant.details, { notes: args.notes, link: args.link })
         const enrichment = mergeEnrichment(restaurant.address.enrichment, args.coords)
