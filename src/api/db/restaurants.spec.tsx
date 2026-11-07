@@ -429,9 +429,7 @@ describe("restaurant collections", () => {
             ),
         })
 
-        await vi.waitFor(() => {
-            expect(result.current?.map((r) => r.name)).toEqual(["Trattoria Verde"])
-        })
+        await expect.poll(() => result.current?.map((r) => r.name)).toEqual(["Trattoria Verde"])
     })
 
     test("returns undefined from the restaurants hook when signed out", async () => {
@@ -454,12 +452,8 @@ describe("restaurant collections", () => {
             },
         )
 
-        await vi.waitFor(() => {
-            expect(vi.mocked(authClient.getSession)).toHaveBeenCalled()
-        })
-        await vi.waitFor(() => {
-            expect(result.current.authed).toBe(false)
-        })
+        await expect.poll(() => vi.mocked(authClient.getSession)).toHaveBeenCalled()
+        await expect.poll(() => result.current.authed).toBe(false)
         expect(result.current.authed).toBe(false)
         expect(result.current.restaurants).toBeUndefined()
         expect(backend.subscriberCount()).toBe(0)
@@ -482,9 +476,7 @@ describe("restaurant collections", () => {
         )
 
         const first = renderHook(() => useRestaurants(), { wrapper })
-        await vi.waitFor(() => {
-            expect(first.result.current?.map((r) => r.name)).toEqual(["Trattoria Verde"])
-        })
+        await expect.poll(() => first.result.current?.map((r) => r.name)).toEqual(["Trattoria Verde"])
         first.unmount()
 
         vi.mocked(authClient.getSession).mockResolvedValue({
@@ -497,9 +489,7 @@ describe("restaurant collections", () => {
         injectSyncClient(bensBackend.client)
 
         const second = renderHook(() => useRestaurants(), { wrapper })
-        await vi.waitFor(() => {
-            expect(second.result.current?.map((r) => r.name)).toEqual(["Sushi Bar"])
-        })
+        await expect.poll(() => second.result.current?.map((r) => r.name)).toEqual(["Sushi Bar"])
         expect(second.result.current?.some((r) => r.ownerId === "anna")).toBe(false)
     })
 
@@ -519,13 +509,9 @@ describe("restaurant collections", () => {
         )
 
         const { result, unmount } = renderHook(() => useRestaurants(), { wrapper })
-        await vi.waitFor(() => {
-            expect(vi.mocked(authClient.getSession)).toHaveBeenCalled()
-        })
+        await expect.poll(() => vi.mocked(authClient.getSession)).toHaveBeenCalled()
         // Session resolved but no convex token: no subscription, no rows.
-        await vi.waitFor(() => {
-            expect(result.current).toBeUndefined()
-        })
+        await expect.poll(() => result.current).toBeUndefined()
         expect(result.current).toBeUndefined()
         expect(gated.subscriberCount()).toBe(0)
         unmount()
@@ -535,9 +521,7 @@ describe("restaurant collections", () => {
         injectSyncClient(backend.client)
 
         const second = renderHook(() => useRestaurants(), { wrapper })
-        await vi.waitFor(() => {
-            expect(second.result.current?.map((r) => r.name)).toEqual(["Trattoria Verde"])
-        })
+        await expect.poll(() => second.result.current?.map((r) => r.name)).toEqual(["Trattoria Verde"])
         expect(backend.subscriberCount()).toBeGreaterThan(0)
     })
 
@@ -560,14 +544,14 @@ describe("restaurant collections", () => {
         })
 
         expect(backend.subscriberCount()).toBe(0)
-        await vi.waitFor(
-            () => {
-                expect(result.current).toEqual([])
-            },
-            // Below the project timeout so a slow backend fails gracefully here instead of
-            // tripping the project timeout with no assertion to show for it.
-            { timeout: 2500 },
-        )
+        await expect
+            .poll(
+                () => result.current,
+                // Below the project timeout so a slow backend fails gracefully here instead of
+                // tripping the project timeout with no assertion to show for it.
+                { timeout: 2500 },
+            )
+            .toEqual([])
         expect(flaky.attempts()).toBeGreaterThanOrEqual(3)
         expect(backend.subscriberCount()).toBeGreaterThan(0)
     })
@@ -587,9 +571,7 @@ describe("restaurant collections", () => {
         )
 
         const first = renderHook(() => useRestaurants(), { wrapper })
-        await vi.waitFor(() => {
-            expect(first.result.current?.map((r) => r.name)).toEqual(["Trattoria Verde"])
-        })
+        await expect.poll(() => first.result.current?.map((r) => r.name)).toEqual(["Trattoria Verde"])
         queryClient.setQueryData(["convexQuery", "restaurants:get", {}], [{ name: "Stale" }])
         queryClient.setQueryData(["convexQuery", "users:getMe", {}], { status: "onboarding" })
         queryClient.setQueryData(["convexQuery", "landing:getStats", {}], { count: 1 })
@@ -600,9 +582,7 @@ describe("restaurant collections", () => {
         })
 
         renderHook(() => useRestaurants(), { wrapper })
-        await vi.waitFor(() => {
-            expect(queryClient.getQueryData(["convexQuery", "restaurants:get", {}])).toBeUndefined()
-        })
+        await expect.poll(() => queryClient.getQueryData(["convexQuery", "restaurants:get", {}])).toBeUndefined()
         expect(queryClient.getQueryData(["convexQuery", "users:getMe", {}])).toBeUndefined()
         expect(queryClient.getQueryData(["convexQuery", "landing:getStats", {}])).toEqual({ count: 1 })
     })
@@ -628,15 +608,11 @@ describe("restaurant collections", () => {
             injectSyncClient(backend.client)
 
             const { result } = renderOwnedRestaurants()
-            await vi.waitFor(() => {
-                expect(result.current?.map((item) => item.name)).toEqual(["Trattoria Verde"])
-            })
+            await expect.poll(() => result.current?.map((item) => item.name)).toEqual(["Trattoria Verde"])
 
             backend.failSync()
 
-            await vi.waitFor(() => {
-                expect(result.current?.map((item) => item.name)).toEqual(["Trattoria Verde"])
-            })
+            await expect.poll(() => result.current?.map((item) => item.name)).toEqual(["Trattoria Verde"])
             expect(backend.subscriberCount()).toBe(1)
         })
 
@@ -649,16 +625,12 @@ describe("restaurant collections", () => {
             injectSyncClient(backend.client)
 
             const { result, unmount } = renderOwnedRestaurants()
-            await vi.waitFor(() => {
-                expect(result.current?.map((item) => item.name)).toEqual(["Trattoria Verde"])
-            })
+            await expect.poll(() => result.current?.map((item) => item.name)).toEqual(["Trattoria Verde"])
 
             tokenMock.mockResolvedValue({ data: null })
             backend.failSync()
 
-            await vi.waitFor(() => {
-                expect(result.current).toBeUndefined()
-            })
+            await expect.poll(() => result.current).toBeUndefined()
             const settledCount = backend.subscriberCount()
             await new Promise<void>((resolve) => {
                 setTimeout(resolve, 1000)
@@ -688,9 +660,7 @@ describe("restaurant collections", () => {
             const backend = createSeededClient({ liveRows: [restaurantFixture()] })
             injectSyncClient(backend.client)
             const { result } = renderOwnedRestaurants()
-            await vi.waitFor(() => {
-                expect(result.current?.map((item) => item.name)).toEqual(["Trattoria Verde"])
-            })
+            await expect.poll(() => result.current?.map((item) => item.name)).toEqual(["Trattoria Verde"])
 
             // Insert a temp row into the hook's live collection, then fail the
             // sync underneath it while the mutation is still in flight.
@@ -706,14 +676,10 @@ describe("restaurant collections", () => {
                 }),
             )
             backend.failSync()
-            await vi.waitFor(() => {
-                expect(result.current?.map((item) => item.name)).toEqual(["Trattoria Verde"])
-            })
+            await expect.poll(() => result.current?.map((item) => item.name)).toEqual(["Trattoria Verde"])
 
             await pending.when("settled").catch(() => {})
-            await vi.waitFor(() => {
-                expect(result.current?.map((item) => item.name)).toEqual(["Trattoria Verde"])
-            })
+            await expect.poll(() => result.current?.map((item) => item.name)).toEqual(["Trattoria Verde"])
             expect(
                 result.current?.every((row) => {
                     assertRealRestaurantId(row._id)

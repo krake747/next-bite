@@ -129,22 +129,16 @@ describe("VisitMemories", () => {
         const screen = await renderMemories()
 
         await selectFiles([new File(["pixels"], "a.png", { type: "image/png" })])
-        await vi.waitFor(() => {
-            expect(document.querySelector('[data-slot="image-preview-list"]')).not.toBeNull()
-        })
+        await expect.poll(() => document.querySelector('[data-slot="image-preview-list"]')).not.toBeNull()
 
         await screen.getByRole("button", { name: "Share memory" }).click()
-        await vi.waitFor(() => {
-            expect(addMutate).toHaveBeenCalledTimes(1)
-        })
+        await expect.poll(() => addMutate).toHaveBeenCalledTimes(1)
         expect(addMutate).toHaveBeenCalledWith({
             restaurantId: "r1",
             images: [{ url: "https://example.com/s1.jpg", storageId: "s1" }],
         })
 
-        await vi.waitFor(() => {
-            expect(document.querySelector('[data-slot="image-preview-list"]')).toBeNull()
-        })
+        await expect.poll(() => document.querySelector('[data-slot="image-preview-list"]')).toBeNull()
     })
 
     test("stays hidden when signed out", async () => {

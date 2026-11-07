@@ -35,9 +35,10 @@ Tiers are picked by filename suffix. `pnpm test` runs them all; scope with `pnpm
 | `pnpm test:watch`       | Vitest in watch mode                                                                                                           |
 | `pnpm test:e2e`         | Playwright gate in a real browser against a local Worker preview (on demand, needs browsers plus wrangler; see `toolchain.md`) |
 
-Run tests only for files you change. `pnpm exec vitest run --sinceLastRun` selects the affected
-tests from the recorded dependencies (first run populates the records, so seed it with `pnpm test`);
-scope further with `--project <tier>` when you know it. Run the full suite only when asked.
+Run tests only for files you change. `pnpm test:affected` selects the affected tests from the
+recorded dependencies (seed it once with `pnpm test`); scope further with `--project <tier>` when
+you know it. If the selection looks stale, `pnpm exec vitest run --clearCache` resets the records.
+Run the full suite only when asked.
 
 ## Unit tests
 
@@ -88,8 +89,9 @@ describe("Badge", () => {
 - Test one behaviour per test case
 - Interact like the browser does through locators: `await loc.click()`, `await input.fill("text")`,
   `await input.upload(files)`; open popups through the real path
-- `await expect.element(...)` auto-retries; use it instead of `waitFor`. Poll plain JS state
-  (counters, mock calls) with `await vi.waitFor(...)`
+- `await expect.element(...)` auto-retries; use it instead of `waitFor`. Poll plain JS state with
+  `await expect.poll(() => value).matcher(...)`; use `await vi.waitUntil(() => lookup, { message })`
+  for a lookup that turns truthy, never `vi.waitFor` around an assertion
 - `@testing-library/jest-dom` matchers are auto-loaded via `src/vitest.setup.ts`
 
 ## MSW for HTTP

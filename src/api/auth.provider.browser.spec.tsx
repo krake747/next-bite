@@ -66,9 +66,7 @@ describe("AuthProvider", () => {
             </QueryClientProvider>,
         )
         await expect.element(screen.getByText("ready")).toBeInTheDocument()
-        await vi.waitFor(() => {
-            expect(constructed[0]?.fetchTokens.length).toBeGreaterThan(0)
-        })
+        await expect.poll(() => constructed[0]?.fetchTokens.length).toBeGreaterThan(0)
         const fetchToken = constructed[0]?.fetchTokens[0]
         expect(fetchToken).toBeTypeOf("function")
         await expect(fetchToken?.({ forceRefreshToken: false })).resolves.toBe("convex-jwt-1")

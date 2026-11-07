@@ -96,9 +96,7 @@ describe("AvatarSection", () => {
 
         await selectFiles([new File(["pixels"], "a.png", { type: "image/png" })])
 
-        await vi.waitFor(() => {
-            expect(updateMutate).toHaveBeenCalledTimes(1)
-        })
+        await expect.poll(() => updateMutate).toHaveBeenCalledTimes(1)
         expect(updateMutate).toHaveBeenCalledWith({
             avatar: { url: "https://example.com/a.jpg", storageId: "s9" },
         })

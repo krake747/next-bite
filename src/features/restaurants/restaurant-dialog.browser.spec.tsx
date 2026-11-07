@@ -158,17 +158,9 @@ function resetUploads(): void {
 
 async function stageOneImage(): Promise<void> {
     await selectFiles([new File(["pixels"], "a.png", { type: "image/png" })])
-    await vi.waitFor(() => {
-        expect(uploadCalls).toBe(1)
-    })
-    const gate = uploadGates[0]
-    if (gate === undefined) {
-        throw new TypeError("Upload never started")
-    }
+    const gate = await vi.waitUntil(() => uploadGates[0], { message: "Upload never started" })
     gate.resolve({ url: "https://example.com/a.jpg", storageId: storageId("s1") })
-    await vi.waitFor(() => {
-        expect(document.querySelector('[data-slot="image-preview-list"]')?.childElementCount).toBe(1)
-    })
+    await expect.poll(() => document.querySelector('[data-slot="image-preview-list"]')?.childElementCount).toBe(1)
 }
 
 async function fillRequiredFields(screen: DialogScreen): Promise<void> {
@@ -200,13 +192,13 @@ describe("RestaurantDialog close ownership", () => {
         // above the panel, so Playwright hit-testing cannot reach dialog buttons.
         clickButton(screen.getByRole("button", { name: "Cancel" }))
 
-        await vi.waitFor(() => {
-            expect(mutationCalls).toContainEqual({
+        await expect
+            .poll(() => mutationCalls)
+            .toContainEqual({
                 fn: "restaurants:cleanupStorage",
                 args: { storageId: "s1" },
             })
-        })
-        expect(onOpenChange).toHaveBeenCalledWith(false)
+        await expect.poll(() => onOpenChange).toHaveBeenCalledWith(false)
     })
 
     test("Escape discards the staged upload and closes", async () => {
@@ -220,13 +212,13 @@ describe("RestaurantDialog close ownership", () => {
             .element()
             .dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", code: "Escape", bubbles: true }))
 
-        await vi.waitFor(() => {
-            expect(mutationCalls).toContainEqual({
+        await expect
+            .poll(() => mutationCalls)
+            .toContainEqual({
                 fn: "restaurants:cleanupStorage",
                 args: { storageId: "s1" },
             })
-        })
-        expect(onOpenChange).toHaveBeenCalledWith(false)
+        await expect.poll(() => onOpenChange).toHaveBeenCalledWith(false)
     })
 
     test("submit hands attached images to persisted ownership without cleanup", async () => {
@@ -239,14 +231,11 @@ describe("RestaurantDialog close ownership", () => {
         submitGate = createDeferred<unknown>()
         clickButton(screen.getByRole("button", { name: "Add Restaurant" }))
 
-        await vi.waitFor(() => {
-            expect(addMutate).toHaveBeenCalledTimes(1)
-        })
-        requiredSubmitGate().resolve(undefined)
+        await expect.poll(() => addMutate).toHaveBeenCalledTimes(1)
+        const submit = await vi.waitUntil(() => submitGate, { message: "Submit never started" })
+        submit.resolve(undefined)
 
-        await vi.waitFor(() => {
-            expect(onOpenChange).toHaveBeenCalledWith(false)
-        })
+        await expect.poll(() => onOpenChange).toHaveBeenCalledWith(false)
         expect(addMutate).toHaveBeenCalledTimes(1)
         expect(mutationCalls.filter((call) => call.fn === "restaurants:cleanupStorage")).toHaveLength(0)
     })
@@ -259,26 +248,22 @@ describe("RestaurantDialog close ownership", () => {
         submitGate = createDeferred<unknown>()
         clickButton(screen.getByRole("button", { name: "Add Restaurant" }))
 
-        await vi.waitFor(() => {
-            expect(addMutate).toHaveBeenCalledTimes(1)
-        })
-        requiredSubmitGate().reject(new SyncTimeoutError())
+        await expect.poll(() => addMutate).toHaveBeenCalledTimes(1)
+        const failedSubmit = await vi.waitUntil(() => submitGate, { message: "Submit never started" })
+        failedSubmit.reject(new SyncTimeoutError())
         await expect.element(screen.getByText(/may already be saved/)).toBeInTheDocument()
         await expect.element(screen.getByRole("button", { name: "Retry safely" })).toBeInTheDocument()
 
         submitGate = createDeferred<unknown>()
         clickButton(screen.getByRole("button", { name: "Retry safely" }))
 
-        await vi.waitFor(() => {
-            expect(addMutate).toHaveBeenCalledTimes(2)
-        })
+        await expect.poll(() => addMutate).toHaveBeenCalledTimes(2)
         expect(requiredAddKey(1)).toBe(requiredAddKey(0))
 
-        requiredSubmitGate().resolve(undefined)
+        const retrySubmit = await vi.waitUntil(() => submitGate, { message: "Submit never started" })
+        retrySubmit.resolve(undefined)
 
-        await vi.waitFor(() => {
-            expect(onOpenChange).toHaveBeenCalledWith(false)
-        })
+        await expect.poll(() => onOpenChange).toHaveBeenCalledWith(false)
         expect(mutationCalls.filter((call) => call.fn === "restaurants:cleanupStorage")).toHaveLength(0)
     })
 
@@ -290,23 +275,18 @@ describe("RestaurantDialog close ownership", () => {
         submitGate = createDeferred<unknown>()
         clickButton(screen.getByRole("button", { name: "Add Restaurant" }))
 
-        await vi.waitFor(() => {
-            expect(addMutate).toHaveBeenCalledTimes(1)
-        })
-        requiredSubmitGate().resolve(undefined)
+        await expect.poll(() => addMutate).toHaveBeenCalledTimes(1)
+        const firstSubmit = await vi.waitUntil(() => submitGate, { message: "Submit never started" })
+        firstSubmit.resolve(undefined)
 
-        await vi.waitFor(() => {
-            expect(onOpenChange).toHaveBeenCalledTimes(1)
-        })
+        await expect.poll(() => onOpenChange).toHaveBeenCalledTimes(1)
         const firstKey = requiredAddKey(0)
 
         await fillRequiredFields(screen)
         submitGate = createDeferred<unknown>()
         clickButton(screen.getByRole("button", { name: "Add Restaurant" }))
 
-        await vi.waitFor(() => {
-            expect(addMutate).toHaveBeenCalledTimes(2)
-        })
+        await expect.poll(() => addMutate).toHaveBeenCalledTimes(2)
         expect(requiredAddKey(1)).not.toBe(firstKey)
     })
 })

@@ -95,12 +95,12 @@ describe("share to group dialog", () => {
         // above the panel, so Playwright hit-testing cannot reach dialog buttons.
         clickButton(screen.getByRole("button", { name: "Add to group" }))
 
-        await vi.waitFor(() => {
-            expect(mutationCalls).toContainEqual({
+        await expect
+            .poll(() => mutationCalls)
+            .toContainEqual({
                 fn: "shares:shareWithGroup",
                 args: { restaurantId: "r1", groupId: "g1" },
             })
-        })
     })
 
     test("removes an existing group share", async () => {
@@ -117,11 +117,11 @@ describe("share to group dialog", () => {
         await expect.element(screen.getByRole("button", { name: "Remove" })).toBeInTheDocument()
         clickButton(screen.getByRole("button", { name: "Remove" }))
 
-        await vi.waitFor(() => {
-            expect(mutationCalls).toContainEqual({
+        await expect
+            .poll(() => mutationCalls)
+            .toContainEqual({
                 fn: "shares:unshare",
                 args: { restaurantId: "r1", target: { kind: "group", groupId: "g1" } },
             })
-        })
     })
 })

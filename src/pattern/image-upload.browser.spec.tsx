@@ -110,14 +110,6 @@ function pngFile(name: string): File {
     return new File(["pixels"], name, { type: "image/png" })
 }
 
-function requiredGate(index: number): Deferred<ImageRecord> {
-    const gate = uploadGates[index]
-    if (gate === undefined) {
-        throw new TypeError("Upload never started")
-    }
-    return gate
-}
-
 function resetUploads(): void {
     uploadCalls = 0
     uploadGates.length = 0
@@ -137,17 +129,12 @@ describe("ImageUpload batch ownership", () => {
         const screen = await renderHarness()
         await selectFiles([pngFile("a.png"), pngFile("b.png")])
 
-        await vi.waitFor(() => {
-            expect(uploadCalls).toBe(1)
-        })
-        const firstGate = requiredGate(0)
+        const firstGate = await vi.waitUntil(() => uploadGates[0], { message: "Upload never started" })
         firstGate.resolve({ url: "https://example.com/a.jpg", storageId: storageId("s1") })
 
-        await vi.waitFor(() => {
-            expect(stagedImageCount()).toBe(1)
-        })
+        await expect.poll(() => stagedImageCount()).toBe(1)
         expect(uploadCalls).toBe(2)
-        const secondGate = requiredGate(1)
+        const secondGate = await vi.waitUntil(() => uploadGates[1], { message: "Upload never started" })
         secondGate.reject(new Error("denied"))
 
         await expect.element(screen.getByText("denied")).toBeInTheDocument()
@@ -159,20 +146,18 @@ describe("ImageUpload batch ownership", () => {
         const screen = await renderHarness()
         await selectFiles([pngFile("a.png")])
 
-        await vi.waitFor(() => {
-            expect(uploadCalls).toBe(1)
-        })
+        await expect.poll(() => uploadCalls).toBe(1)
         await screen.unmount()
 
-        const gate = requiredGate(0)
+        const gate = await vi.waitUntil(() => uploadGates[0], { message: "Upload never started" })
         gate.resolve({ url: "https://example.com/a.jpg", storageId: storageId("s1") })
 
-        await vi.waitFor(() => {
-            expect(mutationCalls).toContainEqual({
+        await expect
+            .poll(() => mutationCalls)
+            .toContainEqual({
                 fn: "restaurants:cleanupStorage",
                 args: { storageId: "s1" },
             })
-        })
 
         const fresh = await renderHarness()
         await expect.element(fresh.getByRole("button", { name: /upload images/i })).toBeInTheDocument()
@@ -184,27 +169,19 @@ describe("ImageUpload batch ownership", () => {
         await renderHarness()
         await selectFiles([pngFile("a.png")])
 
-        await vi.waitFor(() => {
-            expect(uploadCalls).toBe(1)
-        })
+        await expect.poll(() => uploadCalls).toBe(1)
         await selectFiles([pngFile("b.png")])
 
-        await vi.waitFor(() => {
-            expect(uploadCalls).toBe(2)
-        })
-        const firstGate = requiredGate(0)
+        await expect.poll(() => uploadCalls).toBe(2)
+        const firstGate = await vi.waitUntil(() => uploadGates[0], { message: "Upload never started" })
         firstGate.resolve({ url: "https://example.com/a.jpg", storageId: storageId("s1") })
 
-        await vi.waitFor(() => {
-            expect(stagedImageCount()).toBe(1)
-        })
+        await expect.poll(() => stagedImageCount()).toBe(1)
         expect(mutationCalls.filter((call) => call.fn === "restaurants:cleanupStorage")).toHaveLength(0)
 
-        const secondGate = requiredGate(1)
+        const secondGate = await vi.waitUntil(() => uploadGates[1], { message: "Upload never started" })
         secondGate.resolve({ url: "https://example.com/b.jpg", storageId: storageId("s2") })
 
-        await vi.waitFor(() => {
-            expect(stagedImageCount()).toBe(2)
-        })
+        await expect.poll(() => stagedImageCount()).toBe(2)
     })
 })
