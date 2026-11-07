@@ -10,35 +10,40 @@ Long-lived explanations of this project's architecture and technical decisions.
   [worktrees](agents/worktrees.md), [stacked PRs](agents/stacked-prs.md),
   [domain layout](agents/domain.md), [verify](agents/verify.md), [toolchain](agents/toolchain.md),
   [testing](agents/testing.md), and [sources of truth](agents/sources-of-truth.md).
-- Decisions: [ADRs](adr/0001-bottom-up-migration-solidjs-to-react.md). Read the catalog below before
-  changing an established area; when a change conflicts with a recorded decision, surface the
-  conflict instead of silently overriding it.
+- Decisions: [ADRs](adr/0001-base-ui-headless-primitives.md). Read the catalog below before changing
+  an established area; when a change conflicts with a recorded decision, surface the conflict
+  instead of silently overriding it.
 - Data model: [migrations](../migrations.md).
 - Technical foundation: [tech](tech.md). Points at owners for stack, layers, rendering, data, auth,
   storage, email, AI, testing, plus the dependency audit.
 
 ## ADRs
 
-- [0001](adr/0001-bottom-up-migration-solidjs-to-react.md): bottom-up SolidJS to React migration.
-- [0002](adr/0002-base-ui-headless-primitives.md): Base UI headless primitives.
-- [0003](adr/0003-tanstack-query-convex-data.md): TanStack Query for Convex data fetching.
-- [0004](adr/0004-vite-plus-toolchain.md): Vite+ toolchain with co-located config.
-- [0005](adr/0005-tiered-vitest-projects.md): tiered Vitest projects on happy-dom.
-- [0006](adr/0006-validated-env-module.md): validated env module owns all reads.
-- [0007](adr/0007-react-compiler-owns-memoization.md): React Compiler owns memoization.
-- [0008](adr/0008-cloudflare-workers-assets.md): Cloudflare Workers static assets via the cf CLI.
-- [0009](adr/0009-manual-release-pipeline.md): manual release pipeline with semver tags.
-- [0010](adr/0010-tanstack-start-shell.md): TanStack Start shell with SSR off.
-- [0011](adr/0011-design-system-foundation.md): design system foundation (light-only Tomato and
+- [0001](adr/0001-base-ui-headless-primitives.md): Base UI headless primitives.
+- [0002](adr/0002-tanstack-query-convex-data.md): TanStack Query for Convex data fetching.
+- [0003](adr/0003-vite-plus-toolchain.md): Vite+ toolchain with co-located config.
+- [0004](adr/0004-tiered-vitest-projects.md): tiered Vitest projects on happy-dom.
+- [0005](adr/0005-validated-env-module.md): validated env module owns all reads.
+- [0006](adr/0006-react-compiler-owns-memoization.md): React Compiler owns memoization.
+- [0007](adr/0007-cloudflare-workers-assets.md): Cloudflare Workers static assets via the cf CLI.
+- [0008](adr/0008-manual-release-pipeline.md): manual release pipeline with semver tags.
+- [0009](adr/0009-tanstack-start-shell.md): TanStack Start shell with SSR off.
+- [0010](adr/0010-design-system-foundation.md): design system foundation (light-only Tomato and
   Butter).
-- [0012](adr/0012-core-ui-standardization.md): core UI standardization (eleven primitives, one
+- [0011](adr/0011-core-ui-standardization.md): core UI standardization (eleven primitives, one
   contract).
-- [0013](adr/0013-social-components-presentational.md): social components, presentational only.
-- [0014](adr/0014-restaurant-group-components.md): restaurant and group components, presentational.
-- [0015](adr/0015-application-experience.md): application experience (feed, detail, social backend).
-- [0016](adr/0016-design-system-docs.md): design-system documentation and distribution.
-- [0017](adr/0017-tanstack-db-collections.md): TanStack DB collections over Convex.
-- [0018](adr/0018-auth-methods-invitation-flow.md): Google OAuth, email OTP, invitation-first flow.
-- [0019](adr/0019-convex-file-storage.md): Convex File Storage for images.
-- [0020](adr/0020-mailgun-eu-email.md): Mailgun EU transactional email.
-- [0021](adr/0021-tanstack-ai-extension.md): TanStack AI as optional extension.
+- [0012](adr/0012-application-experience.md): application experience (feed, detail, social backend).
+- [0013](adr/0013-design-system-docs.md): design-system documentation and distribution.
+- [0014](adr/0014-tanstack-db-collections.md): TanStack DB collections over Convex.
+- [0015](adr/0015-auth-methods-invitation-flow.md): Google OAuth, email OTP, invitation-first flow.
+- [0016](adr/0016-convex-file-storage.md): Convex File Storage for images.
+- [0017](adr/0017-mailgun-eu-email.md): Mailgun EU transactional email.
+- [0018](adr/0018-tanstack-ai-extension.md): TanStack AI as optional extension.
+- [0019](adr/0019-group-owns-shared-list.md): group owns the shared list, no separate entity.
+- [0020](adr/0020-black-box-testing.md): black-box testing, observable behavior only.
+- [0021](adr/0021-no-tautological-tests.md): every test must be able to fail.
+- [0022](adr/0022-third-party-libraries-assumed-correct.md): third-party libraries assumed correct,
+  stub at the boundary.
+- [0023](adr/0023-cva-axis-naming.md): CVA axis naming, tone is color, variant is structure.
+- [0024](adr/0024-backend-function-shapes.md): backend function shapes, nulls, guards, verbs.
+- [0025](adr/0025-suspense-first-data-fetching.md): Suspense-first data fetching.

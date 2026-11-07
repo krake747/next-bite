@@ -13,7 +13,7 @@ the value. When you add a new owned value, add a row here and point at it.
 | Local gate and full gate          | `package.json` (`check`, `check:arch`, `check:full`); lefthook pre-push runs `pnpm check`                                       |
 | PR and push CI                    | `.github/workflows/pr.yml`, `.github/workflows/main.yml`                                                                        |
 | Release process                   | `.github/workflows/release.yml`; `docs/agents/toolchain.md` overview                                                            |
-| Env names and validation          | `src/core/env.ts`; policy in ADR-0006                                                                                           |
+| Env names and validation          | `src/core/env.ts`; policy in ADR-0005                                                                                           |
 | Convex schema and functions       | `convex/schema.ts`, `convex/`; guidelines in `convex/_generated/ai/guidelines.md`                                               |
 | Convex migrations                 | `docs/migrations.md`, `convex/migrate.ts`                                                                                       |
 | Hosting and deploy target         | `cloudflare.config.ts`; `docs/agents/toolchain.md` overview                                                                     |

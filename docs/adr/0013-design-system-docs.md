@@ -19,9 +19,8 @@ source. Nothing is published to an external registry; components get consumed he
   typography, shape, buttons, inputs, cards/badges, avatars, social, activity/photos,
   restaurant/group, overlays, empty states), each a small local section component, all interactive
   elements live (dialog, popover, tabs, toggles with noop callbacks, gallery viewer).
-- No footer link: the route is dev-only by design (`docs/agents/toolchain.md` notes dev-gated routes
-  redirect in production builds), so it stays undiscoverable in prod. `registry.json` maps ui,
-  component, and block items to source paths.
+- Footer links to `/ds` for discoverability (dev-only route, redirects to `/` in prod).
+  `registry.json` maps ui, component, and block items to source paths.
 - No dedicated AGENTS.md Design system section: the mandatory rules live in `CODING_STANDARDS.md`
   and the AGENTS.md rules table (`shadcn/no-restyle`, CVA variants, Base UI primitives).
 - Verification is `pnpm check:full` plus `cf deploy --dry-run` plus a manual visual read of the

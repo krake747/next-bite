@@ -22,4 +22,4 @@ the project doesn't use (reconsider) or there's a real gap (note it for `/domain
 
 If your output contradicts an existing ADR, surface it explicitly rather than silently overriding:
 
-> _Contradicts ADR-0004 (Vite+ toolchain), but worth reopening because..._
+> _Contradicts ADR-0003 (Vite+ toolchain), but worth reopening because..._
