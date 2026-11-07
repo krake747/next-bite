@@ -45,7 +45,6 @@ export function RestaurantCard({
     } & React.ComponentProps<typeof Card>
 >) {
     const [dialog, setDialog] = useState<null | "edit" | "hours" | "delete">(null)
-    const [showMap, setShowMap] = useState(false)
     const [isRefreshing, setIsRefreshing] = useState(false)
     const updateRestaurant = useUpdateRestaurant()
     const deleteRestaurant = useDeleteRestaurant()
@@ -183,14 +182,7 @@ export function RestaurantCard({
                         onToggleWant={handleToggleWant}
                     />
                 </div>
-                {hasLocation && coords !== undefined && (
-                    <RestaurantCardMap
-                        showMap={showMap}
-                        setShowMap={setShowMap}
-                        location={coords}
-                        restaurant={restaurant}
-                    />
-                )}
+                {hasLocation && coords !== undefined && <RestaurantCardMap location={coords} name={restaurant.name} />}
                 <div className="px-5 py-2 md:px-4 md:py-2">
                     <EmojiRating rating={restaurant.rating} onRate={handleRate} />
                 </div>
@@ -239,16 +231,13 @@ function RestaurantCardNotes({ notes }: Readonly<{ notes: string | null | undefi
 }
 
 function RestaurantCardMap({
-    showMap,
-    setShowMap,
     location,
-    restaurant,
+    name,
 }: Readonly<{
-    showMap: boolean
-    setShowMap: (show: boolean) => void
     location: Readonly<{ readonly lat: number; readonly lng: number }>
-    restaurant: Restaurant
+    name: string | undefined
 }>) {
+    const [showMap, setShowMap] = useState(false)
     const directionsUrl = `https://www.google.com/maps/dir/?api=1&destination=${location.lat},${location.lng}`
     return (
         <div className="px-5 md:px-4">
@@ -290,7 +279,7 @@ function RestaurantCardMap({
                             scrollwheel={false}
                             style={{ width: "100%", height: "100%" }}
                         >
-                            <AdvancedMarker position={location} title={restaurant.name ?? undefined} />
+                            <AdvancedMarker position={location} title={name ?? null} />
                         </Map>
                     </a>
                     <p className="mt-2 text-center text-xs text-muted-foreground">Click map to get directions</p>
