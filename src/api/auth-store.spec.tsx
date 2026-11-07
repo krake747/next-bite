@@ -3,7 +3,7 @@ import { act } from "@testing-library/react"
 import { useEffect } from "react"
 import { describe, expect, test, vi } from "vitest"
 
-import { useAuthStore } from "./auth-store"
+import { hasCachedSession, useAuthStore } from "./auth-store"
 
 type Store = ReturnType<typeof useAuthStore>
 
@@ -305,5 +305,18 @@ describe("auth lifecycle ownership", () => {
         })
         expect(screen.getByText("auth:true")).toBeInTheDocument()
         expect(screen.getByText("user:b@example.com")).toBeInTheDocument()
+    })
+})
+
+describe("hasCachedSession", () => {
+    test("reports a cached session only for a valid stored user", () => {
+        resetAuth()
+        expect(hasCachedSession()).toBe(false)
+        seedCache("a@example.com")
+        expect(hasCachedSession()).toBe(true)
+        localStorage.setItem("nb:session", "not-json")
+        expect(hasCachedSession()).toBe(false)
+        localStorage.setItem("nb:session", JSON.stringify({ id: 1 }))
+        expect(hasCachedSession()).toBe(false)
     })
 })

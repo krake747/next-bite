@@ -68,6 +68,18 @@ function clearSessionFromStorage(): void {
     }
 }
 
+export function hasCachedSession(): boolean {
+    try {
+        const stored = localStorage.getItem(SESSION_KEY)
+        if (stored === null || stored === "") {
+            return false
+        }
+        return isValidUser(JSON.parse(stored) as unknown)
+    } catch {
+        return false
+    }
+}
+
 type AuthState = {
     readonly isAuthenticated: boolean
     readonly isLoading: boolean

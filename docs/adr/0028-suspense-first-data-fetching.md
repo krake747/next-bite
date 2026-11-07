@@ -14,9 +14,14 @@ and SSR keeps queries disabled without a client.
 
 **Consequences**
 
-- `useSuspenseConvexQuery` lives in `src/core/convex-client.tsx` next to `useConvexQuery`, which
-  stays for gated and optional reads until their views convert.
+- `useSuspenseConvexQuery` lives in `src/api/convex-client.tsx` next to `useConvexQuery`, which
+  stays for gated and optional reads until their views convert. Both build on the shared
+  `convexQueryOptions` builder in `src/api/convex-options.ts`.
 - Converted routes render gates first, then a `<Suspense>` boundary whose view calls suspense hooks
   unconditionally with no skip option.
 - `useSuspenseConvexQuery` throws when no Convex client is connected; converted views must only
   mount below a ready session gate.
+- Route loaders warm the cache with `queryClient.query(convexQueryOptions(...))`, fire-and-forget
+  with swallowed errors. The loader checks `hasCachedSession()` first so signed-out visits and SSR
+  never fire a doomed fetch; the Suspense view stays the source of truth and refetches on mount when
+  the warm-up has not landed.

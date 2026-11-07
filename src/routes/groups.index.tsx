@@ -1,7 +1,9 @@
 import { createFileRoute, Link } from "@tanstack/react-router"
 import { Suspense, useState } from "react"
 
+import { hasCachedSession } from "@api/auth-store"
 import { useSuspenseConvexQuery } from "@api/convex-client"
+import { convexQueryOptions } from "@api/convex-options"
 import { api } from "@api/endpoints"
 import { useCreateGroup, useSessionStatus } from "@core/hooks"
 import { clearError, errorFrom, type FormError } from "@core/outcome"
@@ -19,6 +21,15 @@ import { control, fieldLabel } from "@ui/variants"
 export const Route = createFileRoute("/groups/")({
     component: GroupsPage,
     errorComponent: GroupsError,
+    loader: ({ context }) => {
+        if (!hasCachedSession()) {
+            return null
+        }
+        // Best-effort warm-up only: the Suspense view below refetches on its own
+        // when this has not landed, so a failed warm-up stays silent by design.
+        void context.queryClient.query(convexQueryOptions(api.groups.listMyGroups)).catch(() => {})
+        return null
+    },
 })
 
 function GroupsError({ reset }: Readonly<{ reset: () => void }>) {
