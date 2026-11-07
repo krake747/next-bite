@@ -1,4 +1,4 @@
-import Clock from "lucide-react/icons/clock"
+import { ClockIcon } from "@phosphor-icons/react"
 
 import {
     isOpenNow,
@@ -36,7 +36,7 @@ export function OpeningHours({
             )}
         >
             <div className="flex size-6 items-center justify-center rounded-full bg-stone-100">
-                <Clock className="size-3.5 text-stone-400" />
+                <ClockIcon className="size-3.5 text-stone-400" />
             </div>
             <div className="flex items-center gap-2 text-sm">
                 <span className={cx("font-medium", openNow ? "text-tomato-600" : "text-stone-600")}>

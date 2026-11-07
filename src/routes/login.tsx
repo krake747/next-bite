@@ -1,6 +1,6 @@
 import { useForm, Field, Form, useField } from "@formisch/react"
+import { ForkKnifeIcon } from "@phosphor-icons/react"
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router"
-import UtensilsCrossed from "lucide-react/icons/utensils-crossed"
 import { useState } from "react"
 import * as v from "valibot"
 
@@ -62,7 +62,7 @@ function LoginPage() {
 
     return (
         <AuthLayout
-            icon={<UtensilsCrossed className="size-8" />}
+            icon={<ForkKnifeIcon className="size-8" />}
             title={
                 <h2 className="relative font-display text-4xl font-semibold tracking-tight text-balance text-stone-900 sm:text-5xl">
                     Welcome back

@@ -1,8 +1,5 @@
+import { ForkKnifeIcon, MagnifyingGlassIcon, PlusIcon, SparkleIcon } from "@phosphor-icons/react"
 import { useNavigate } from "@tanstack/react-router"
-import Plus from "lucide-react/icons/plus"
-import SearchX from "lucide-react/icons/search-x"
-import Sparkles from "lucide-react/icons/sparkles"
-import Utensils from "lucide-react/icons/utensils"
 
 import { useAuth } from "@core/hooks"
 import { Button } from "@ui/button"
@@ -26,9 +23,9 @@ export function EmptyRestaurantsState({
             <div className="relative mb-6">
                 <div className="flex size-20 items-center justify-center rounded-full bg-linear-to-br from-tomato-100 to-tomato-200">
                     {isSearching ? (
-                        <SearchX className="size-8 text-tomato-600" />
+                        <MagnifyingGlassIcon className="size-8 text-tomato-600" />
                     ) : (
-                        <Utensils className="size-8 text-tomato-600" />
+                        <ForkKnifeIcon className="size-8 text-tomato-600" />
                     )}
                 </div>
                 <div className="absolute -top-1 -right-1 size-3 rounded-full bg-tomato-400/60" />
@@ -54,7 +51,7 @@ export function EmptyRestaurantsState({
             {!isSearching &&
                 (auth.isAuthenticated ? (
                     <Button onClick={onAddClick}>
-                        <Plus className="size-4" />
+                        <PlusIcon className="size-4" />
                         Add your first restaurant
                     </Button>
                 ) : (
@@ -64,7 +61,7 @@ export function EmptyRestaurantsState({
                             void navigate({ to: "/login", viewTransition: true })
                         }}
                     >
-                        <Sparkles className="size-4" />
+                        <SparkleIcon className="size-4" />
                         Sign in to add restaurants
                     </Button>
                 ))}

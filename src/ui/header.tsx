@@ -1,4 +1,4 @@
-import UtensilsCrossed from "lucide-react/icons/utensils-crossed"
+import { ForkKnifeIcon } from "@phosphor-icons/react"
 
 import { cx } from "@ui/cva.config"
 
@@ -20,7 +20,7 @@ export function Header({ children, className, ...props }: Readonly<React.Compone
 
                     <div className="hidden shrink-0 items-center justify-center pr-1 sm:flex">
                         <BrandIcon size="lg">
-                            <UtensilsCrossed className="size-10" />
+                            <ForkKnifeIcon className="size-10" />
                         </BrandIcon>
                     </div>
                 </div>

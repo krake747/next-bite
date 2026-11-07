@@ -1,4 +1,4 @@
-import X from "lucide-react/icons/x"
+import { XIcon } from "@phosphor-icons/react"
 import { useEffect } from "react"
 
 import { Dialog, DialogBackdrop, DialogPanel, DialogTitle } from "@ui/dialog"
@@ -87,7 +87,7 @@ function GalleryShell({
                         className="rounded-full p-2 text-inverse hover:bg-surface/20"
                         aria-label="Close gallery"
                     >
-                        <X className="size-6" />
+                        <XIcon className="size-6" />
                     </button>
                 </div>
 

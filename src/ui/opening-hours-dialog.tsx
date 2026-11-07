@@ -1,4 +1,4 @@
-import Clock from "lucide-react/icons/clock"
+import { ClockIcon } from "@phosphor-icons/react"
 
 import { type OpeningHours } from "@core/opening-hours"
 import { isOpenNow, openStatusLabel, orderedWeek, parseDayText, todayIndex } from "@core/opening-hours"
@@ -29,7 +29,7 @@ export function OpeningHoursDialog({
             <DialogBackdrop>
                 <DialogPanel size="sm" padding="sm">
                     <DialogTitle className="mb-4 flex items-center gap-2">
-                        <Clock className="size-5 text-tomato-500" />
+                        <ClockIcon className="size-5 text-tomato-500" />
                         Hours
                     </DialogTitle>
 

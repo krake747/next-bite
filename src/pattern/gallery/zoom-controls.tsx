@@ -1,8 +1,10 @@
-import Maximize from "lucide-react/icons/maximize"
-import Minimize from "lucide-react/icons/minimize"
-import RotateCcw from "lucide-react/icons/rotate-ccw"
-import ZoomIn from "lucide-react/icons/zoom-in"
-import ZoomOut from "lucide-react/icons/zoom-out"
+import {
+    ArrowCounterClockwiseIcon,
+    CornersInIcon,
+    CornersOutIcon,
+    MagnifyingGlassMinusIcon,
+    MagnifyingGlassPlusIcon,
+} from "@phosphor-icons/react"
 
 import { Button } from "@ui/button"
 import { IconButton } from "@ui/icon-button"
@@ -18,17 +20,17 @@ export function ZoomControls({ zoomPan }: Readonly<{ zoomPan: ZoomHandle }>) {
         <div className="flex flex-wrap items-center justify-center gap-2 p-4">
             <div className="flex items-center gap-1">
                 <IconButton label="Zoom out" tone="inverse" size="xs" onClick={zoomPan.zoomOut}>
-                    <ZoomOut className="size-5" />
+                    <MagnifyingGlassMinusIcon className="size-5" />
                 </IconButton>
                 <span className="min-w-12 text-center text-sm text-inverse">{Math.round(zoomPan.zoom * 100)}%</span>
                 <IconButton label="Zoom in" tone="inverse" size="xs" onClick={zoomPan.zoomIn}>
-                    <ZoomIn className="size-5" />
+                    <MagnifyingGlassPlusIcon className="size-5" />
                 </IconButton>
             </div>
 
             <div className="flex items-center gap-1">
                 <IconButton label="Rotate" tone="inverse" size="xs" onClick={zoomPan.rotate}>
-                    <RotateCcw className="size-5" />
+                    <ArrowCounterClockwiseIcon className="size-5" />
                 </IconButton>
                 <IconButton
                     label={viewer.isFullscreen ? "Exit fullscreen" : "Fullscreen"}
@@ -36,7 +38,7 @@ export function ZoomControls({ zoomPan }: Readonly<{ zoomPan: ZoomHandle }>) {
                     size="xs"
                     onClick={viewer.toggleFullscreen}
                 >
-                    {viewer.isFullscreen ? <Minimize className="size-5" /> : <Maximize className="size-5" />}
+                    {viewer.isFullscreen ? <CornersInIcon className="size-5" /> : <CornersOutIcon className="size-5" />}
                 </IconButton>
                 <button
                     type="button"

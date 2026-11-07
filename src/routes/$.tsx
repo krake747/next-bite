@@ -1,5 +1,5 @@
+import { ArrowRightIcon } from "@phosphor-icons/react"
 import { Link, createFileRoute } from "@tanstack/react-router"
-import ArrowRight from "lucide-react/icons/arrow-right"
 
 import { PageContainer } from "@routes/-layouts/page-container"
 import { PageLayout } from "@routes/-layouts/page-layout"
@@ -33,7 +33,7 @@ function NotFoundPage() {
                             className="inline-flex items-center gap-1 text-sm font-semibold"
                         >
                             Suggest this page on GitHub
-                            <ArrowRight className="size-4" />
+                            <ArrowRightIcon className="size-4" />
                         </a>
                     </div>
                 </div>

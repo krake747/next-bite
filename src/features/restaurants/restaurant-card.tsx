@@ -1,10 +1,12 @@
+import {
+    ArrowCounterClockwiseIcon,
+    CaretDownIcon,
+    MagnifyingGlassIcon,
+    NavigationArrowIcon,
+    PencilLineIcon,
+    TrashIcon,
+} from "@phosphor-icons/react"
 import { Map, AdvancedMarker } from "@vis.gl/react-google-maps"
-import ChevronDown from "lucide-react/icons/chevron-down"
-import Navigation from "lucide-react/icons/navigation"
-import RotateCcw from "lucide-react/icons/rotate-ccw"
-import Search from "lucide-react/icons/search"
-import SquarePen from "lucide-react/icons/square-pen"
-import Trash2 from "lucide-react/icons/trash-2"
 import { useState } from "react"
 
 import {
@@ -124,7 +126,7 @@ export function RestaurantCard({
                                         disabled={isRefreshing}
                                         onClick={handleRefreshHours}
                                     >
-                                        <RotateCcw className="size-3.5" />
+                                        <ArrowCounterClockwiseIcon className="size-3.5" />
                                     </IconButton>
                                 ) : (
                                     <IconButton
@@ -133,7 +135,7 @@ export function RestaurantCard({
                                         disabled={isRefreshing}
                                         onClick={handleFindHours}
                                     >
-                                        <Search className="size-3.5" />
+                                        <MagnifyingGlassIcon className="size-3.5" />
                                     </IconButton>
                                 )}
                                 <IconButton
@@ -143,7 +145,7 @@ export function RestaurantCard({
                                         setDialog("edit")
                                     }}
                                 >
-                                    <SquarePen className="size-3.5" />
+                                    <PencilLineIcon className="size-3.5" />
                                 </IconButton>
                                 <IconButton
                                     label="Delete restaurant"
@@ -153,7 +155,7 @@ export function RestaurantCard({
                                         setDialog("delete")
                                     }}
                                 >
-                                    <Trash2 className="size-3.5" />
+                                    <TrashIcon className="size-3.5" />
                                 </IconButton>
                             </>
                         ) : undefined
@@ -259,11 +261,11 @@ function RestaurantCardMap({
             >
                 <div className="flex items-center gap-3">
                     <div className="flex size-7 items-center justify-center rounded-full bg-surface-muted transition-colors duration-200 group-hover/trigger:bg-tomato-100">
-                        <Navigation className="size-3.5 text-muted-foreground transition-colors duration-200 group-hover/trigger:text-tomato-600" />
+                        <NavigationArrowIcon className="size-3.5 text-muted-foreground transition-colors duration-200 group-hover/trigger:text-tomato-600" />
                     </div>
                     <span className="font-medium">View on Map</span>
                 </div>
-                <ChevronDown
+                <CaretDownIcon
                     className={`size-4 text-muted-foreground transition-transform duration-300 ease-out-quad ${showMap ? "rotate-180" : ""}`}
                 />
             </button>

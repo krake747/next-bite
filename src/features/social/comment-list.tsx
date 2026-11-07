@@ -1,4 +1,4 @@
-import Trash2 from "lucide-react/icons/trash-2"
+import { TrashIcon } from "@phosphor-icons/react"
 import { useState } from "react"
 
 import { AvatarGroup } from "@pattern/avatar-group"
@@ -62,7 +62,7 @@ export function CommentList({
                                         onDelete(comment.id)
                                     }}
                                 >
-                                    <Trash2 className="size-4" />
+                                    <TrashIcon className="size-4" />
                                 </IconButton>
                             )}
                         </li>

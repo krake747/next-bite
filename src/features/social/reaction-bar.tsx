@@ -1,6 +1,4 @@
-import Bookmark from "lucide-react/icons/bookmark"
-import Heart from "lucide-react/icons/heart"
-import MessageCircle from "lucide-react/icons/message-circle"
+import { BookmarkIcon, ChatCircleIcon, HeartIcon } from "@phosphor-icons/react"
 
 import { cx } from "@ui/cva.config"
 
@@ -46,13 +44,13 @@ export function ReactionBar({ reactions }: Readonly<{ reactions: Reactions }>) {
     return (
         <div className="flex items-center gap-1" role="group" aria-label="Reactions">
             <ReactionButton pressed={liked} count={likeCount} label="Like" onToggle={onToggleLike}>
-                <Heart className={cx("size-4", liked && "fill-current")} />
+                <HeartIcon className="size-4" weight={liked ? "fill" : "regular"} />
             </ReactionButton>
             <ReactionButton pressed={false} count={commentCount} label="Comments" onToggle={onComment}>
-                <MessageCircle className="size-4" />
+                <ChatCircleIcon className="size-4" />
             </ReactionButton>
             <ReactionButton pressed={wanted} count={wantCount} label="Want to try" onToggle={onToggleWant}>
-                <Bookmark className={cx("size-4", wanted && "fill-current")} />
+                <BookmarkIcon className="size-4" weight={wanted ? "fill" : "regular"} />
             </ReactionButton>
         </div>
     )

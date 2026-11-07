@@ -1,5 +1,5 @@
+import { PlusIcon } from "@phosphor-icons/react"
 import { createFileRoute, useNavigate } from "@tanstack/react-router"
-import Plus from "lucide-react/icons/plus"
 import { useState } from "react"
 
 import { useFeedRestaurants, useRestaurants, useAuth, useLandingStats, type Restaurant } from "@core/hooks"
@@ -219,7 +219,7 @@ function HomeActions({ onAddClick }: Readonly<{ onAddClick: () => void }>) {
         <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row">
             {auth.isAuthenticated ? (
                 <Button tone="secondary" onClick={onAddClick}>
-                    <Plus className="size-4 transition-transform duration-200 group-hover:rotate-90" />
+                    <PlusIcon className="size-4 transition-transform duration-200 group-hover:rotate-90" />
                     Add Restaurant
                 </Button>
             ) : (
@@ -229,7 +229,7 @@ function HomeActions({ onAddClick }: Readonly<{ onAddClick: () => void }>) {
                         void navigate({ to: "/login", viewTransition: true })
                     }}
                 >
-                    <Plus className="size-4 transition-transform duration-200 group-hover:rotate-90" />
+                    <PlusIcon className="size-4 transition-transform duration-200 group-hover:rotate-90" />
                     Sign in to add
                 </Button>
             )}
@@ -306,7 +306,7 @@ function Home() {
                                 setShowAddDialog(true)
                             }}
                         >
-                            <Plus className="size-4 transition-transform duration-200 group-hover:rotate-90" />
+                            <PlusIcon className="size-4 transition-transform duration-200 group-hover:rotate-90" />
                             Add Restaurant
                         </Button>
                         <HeaderBadge count={restaurantListState.length} />

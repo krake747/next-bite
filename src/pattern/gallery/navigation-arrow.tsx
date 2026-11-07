@@ -1,5 +1,4 @@
-import ChevronLeft from "lucide-react/icons/chevron-left"
-import ChevronRight from "lucide-react/icons/chevron-right"
+import { CaretLeftIcon, CaretRightIcon } from "@phosphor-icons/react"
 
 import { cx } from "@ui/cva.config"
 import { IconButton } from "@ui/icon-button"
@@ -19,7 +18,7 @@ export function NavigationArrow({
     } & Omit<React.ComponentProps<"button">, "onClick" | "children" | "type" | "aria-label">
 >) {
     const isPrev = direction === "prev"
-    const Icon = isPrev ? ChevronLeft : ChevronRight
+    const Icon = isPrev ? CaretLeftIcon : CaretRightIcon
 
     return (
         <IconButton

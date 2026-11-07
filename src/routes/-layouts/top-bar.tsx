@@ -1,7 +1,5 @@
+import { ForkKnifeIcon, SignOutIcon, UserIcon } from "@phosphor-icons/react"
 import { Link } from "@tanstack/react-router"
-import LogOut from "lucide-react/icons/log-out"
-import User from "lucide-react/icons/user"
-import UtensilsCrossed from "lucide-react/icons/utensils-crossed"
 
 import { useAuth } from "@core/hooks"
 import { Button } from "@ui/button"
@@ -20,7 +18,7 @@ export function TopBar() {
                     className="flex items-center gap-2 text-stone-900 transition-colors duration-150 ease hover:text-tomato-600"
                 >
                     <div className="flex size-8 items-center justify-center rounded-lg bg-tomato-100 text-tomato-600">
-                        <UtensilsCrossed className="size-4" />
+                        <ForkKnifeIcon className="size-4" />
                     </div>
                     <span className="font-display text-lg font-semibold">Next Bite</span>
                 </Link>
@@ -46,16 +44,16 @@ function AuthButton() {
                 {auth.user?.image !== undefined && auth.user?.image !== null && auth.user.image !== "" ? (
                     <img
                         src={auth.user.image}
-                        alt={auth.user?.name ?? "User"}
+                        alt={auth.user?.name ?? "UserIcon"}
                         className="size-8 rounded-full object-cover"
                     />
                 ) : (
-                    <User className="size-4" />
+                    <UserIcon className="size-4" />
                 )}
             </PopoverTrigger>
             <PopoverPanel className="w-56">
                 <div className="border-b border-border px-4 py-2">
-                    <p className="text-sm font-medium text-stone-900">{auth.user?.name ?? "User"}</p>
+                    <p className="text-sm font-medium text-stone-900">{auth.user?.name ?? "UserIcon"}</p>
                     <p className="text-xs text-stone-600">{auth.user?.email}</p>
                 </div>
                 <button
@@ -64,7 +62,7 @@ function AuthButton() {
                     }}
                     className="flex w-full cursor-pointer items-center gap-2 px-4 py-2 text-sm text-stone-700 hover:bg-stone-100 focus:bg-stone-100"
                 >
-                    <LogOut className="size-4" />
+                    <SignOutIcon className="size-4" />
                     Sign Out
                 </button>
             </PopoverPanel>

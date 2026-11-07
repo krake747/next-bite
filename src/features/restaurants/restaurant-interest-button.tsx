@@ -1,4 +1,4 @@
-import Bookmark from "lucide-react/icons/bookmark"
+import { BookmarkIcon } from "@phosphor-icons/react"
 
 import { cx } from "@ui/cva.config"
 import { focusRing } from "@ui/variants"
@@ -25,7 +25,7 @@ export function RestaurantInterestButton({
                     : "bg-tomato-50 text-tomato-700 inset-ring inset-ring-tomato-700/10 hover:bg-tomato-100",
             )}
         >
-            <Bookmark className={cx("size-4", wanted && "fill-current")} />
+            <BookmarkIcon className="size-4" weight={wanted ? "fill" : "regular"} />
             {wanted ? "Want to try" : "Want to try?"}
             {wantCount > 0 && <span className="text-xs font-medium tabular-nums opacity-80">{wantCount}</span>}
         </button>

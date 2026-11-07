@@ -1,7 +1,5 @@
+import { ArrowSquareOutIcon, ForkKnifeIcon, MapPinIcon } from "@phosphor-icons/react"
 import { Link } from "@tanstack/react-router"
-import ExternalLink from "lucide-react/icons/external-link"
-import MapPin from "lucide-react/icons/map-pin"
-import Utensils from "lucide-react/icons/utensils"
 
 import { type OpeningHours } from "@core/opening-hours"
 import { SocialMetadata } from "@features/social/social-metadata"
@@ -60,9 +58,9 @@ export function RestaurantHeader({
                             className="flex shrink-0 items-center gap-1.5 rounded-full bg-tomato-50 px-3 py-1.5 text-xs font-medium text-tomato-700 transition-colors duration-200 hover:bg-tomato-100"
                             title="View menu"
                         >
-                            <Utensils className="size-3.5" />
+                            <ForkKnifeIcon className="size-3.5" />
                             <span>Menu</span>
-                            <ExternalLink className="size-3 opacity-70" />
+                            <ArrowSquareOutIcon className="size-3 opacity-70" />
                         </a>
                     )}
                 </div>
@@ -74,7 +72,7 @@ export function RestaurantHeader({
                     {location !== undefined && location !== "" && (
                         <div className="flex items-center gap-2.5 text-sm text-muted-foreground">
                             <div className="flex size-6 items-center justify-center rounded-full bg-surface-muted">
-                                <MapPin className="size-3.5 text-muted-foreground" />
+                                <MapPinIcon className="size-3.5 text-muted-foreground" />
                             </div>
                             {hasLocation ? (
                                 <a

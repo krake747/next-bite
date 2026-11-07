@@ -17,9 +17,9 @@ Boolean and enum state that styling, tests, or assistive tech may need renders a
 attributes. Where we own the element, pass it through `useRender` `state:` and let Base UI convert
 it (`state: { slot: "text-link" }` renders `data-slot="text-link"`). Where a Base UI component owns
 the element, match its convention: boolean true renders as the empty string, false omits the
-attribute. Lucide icons ship hidden from assistive tech by default, so decorative icons carry no
-`aria-hidden` prop; only meaningful icons get accessible names, on the parent element. Check: the
-browser spec queries the attribute for both states.
+attribute. Phosphor icons render no accessible name unless `alt` is set, so decorative icons carry
+no `alt` prop; only meaningful icons get accessible names, on the parent element. Check: the browser
+spec queries the attribute for both states.
 
 ## Prop types stay flat
 
@@ -49,3 +49,11 @@ get deleted; tests coupled to hook shapes or call order get rewritten against re
 observable effects. Tiers, placement, and query conventions are owned by `docs/agents/testing.md`;
 this rule is the bar for what a test proves. Check: describe what breaks the test; "nothing" means
 deletion.
+
+## New Convex access lands in grouped domain modules
+
+`src/core/hooks.ts` keeps its existing one-line endpoint wrappers for compatibility, but no new ones
+get added there. A new Convex endpoint gets a method on the module that owns the domain workflow
+(session, restaurants, social, groups, plans), so endpoint moves stay local to one module instead of
+scattering across call sites. Check in review: a new `useConvexMutation(api.…)` alias in
+`src/core/hooks.ts` without a domain workflow behind it.

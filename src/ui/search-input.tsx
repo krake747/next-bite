@@ -1,6 +1,5 @@
 import { useRender } from "@base-ui/react/use-render"
-import Search from "lucide-react/icons/search"
-import X from "lucide-react/icons/x"
+import { MagnifyingGlassIcon, XIcon } from "@phosphor-icons/react"
 import { useId, useState } from "react"
 
 import { cx } from "@ui/cva.config"
@@ -57,7 +56,7 @@ export function SearchInput({
             className: cx("relative flex items-center", className),
             children: (
                 <>
-                    <Search className="pointer-events-none absolute left-0 size-4 text-stone-400" />
+                    <MagnifyingGlassIcon className="pointer-events-none absolute left-0 size-4 text-stone-400" />
                     <input
                         ref={ref}
                         id={id ?? fallbackId}
@@ -65,7 +64,7 @@ export function SearchInput({
                         value={current}
                         onChange={handleChange}
                         disabled={disabled}
-                        placeholder={placeholder ?? "Search…"}
+                        placeholder={placeholder ?? "MagnifyingGlassIcon…"}
                         className="w-full border-b border-border bg-transparent py-1.5 pr-10 pl-6 text-base text-stone-900 transition-colors duration-150 placeholder:text-stone-600 hover:border-border-strong focus:border-ring focus:outline-none md:text-sm"
                         {...props}
                     />
@@ -77,7 +76,7 @@ export function SearchInput({
                             disabled={disabled}
                             className="hit-area-2 absolute right-0"
                         >
-                            <X className="size-3.5" />
+                            <XIcon className="size-3.5" />
                         </IconButton>
                     )}
                 </>

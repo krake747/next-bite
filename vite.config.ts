@@ -157,6 +157,7 @@ export default defineConfig({
             "nextbite/no-export-list": "error",
             "nextbite/no-react-type-imports": "error",
             "nextbite/jsx-spread-last": "error",
+            "nextbite/phosphor-icon-suffix": "error",
             "shadcn/no-restyle": [
                 "error",
                 {
@@ -392,6 +393,21 @@ export default defineConfig({
     },
     resolve: {
         tsconfigPaths: true,
+    },
+    optimizeDeps: {
+        // Pre-bundle route-split deep imports so navigating to a lazy route
+        // does not trigger "optimized dependencies changed" reloads.
+        include: [
+            "@base-ui/react/avatar",
+            "@base-ui/react/button",
+            "@base-ui/react/dialog",
+            "@base-ui/react/popover",
+            "@base-ui/react/select",
+            "@base-ui/react/tabs",
+            "@base-ui/react/use-render",
+            "@formisch/react",
+            "@phosphor-icons/react",
+        ],
     },
     build: {
         license: { fileName: "license.md" },

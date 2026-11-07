@@ -1,23 +1,19 @@
+import { HouseIcon, PlusIcon, UserCircleIcon, UsersIcon, UsersThreeIcon } from "@phosphor-icons/react"
 import { Link } from "@tanstack/react-router"
-import House from "lucide-react/icons/house"
-import Plus from "lucide-react/icons/plus"
-import UserRound from "lucide-react/icons/user-round"
-import Users from "lucide-react/icons/users"
-import UsersRound from "lucide-react/icons/users-round"
 
 import { cx } from "@ui/cva.config"
 
 const destinations = [
-    { label: "Home", to: "/", Icon: House },
-    { label: "Friends", to: "/friends", Icon: Users },
-    { label: "Groups", to: "/groups", Icon: UsersRound },
-    { label: "You", to: "/you", Icon: UserRound },
+    { label: "Home", to: "/", Icon: HouseIcon },
+    { label: "Friends", to: "/friends", Icon: UsersIcon },
+    { label: "Groups", to: "/groups", Icon: UsersThreeIcon },
+    { label: "You", to: "/you", Icon: UserCircleIcon },
 ] as const
 
 const itemClasses =
     "flex flex-col items-center gap-1 rounded-xl px-2 py-1.5 text-[11px] font-medium text-stone-600 transition-colors duration-150 ease hover:bg-stone-100 hover:text-stone-900 data-[status=active]:bg-tomato-100 data-[status=active]:text-tomato-700 md:w-full md:flex-row md:gap-3 md:px-3 md:py-2 md:text-sm"
 
-function AppLink({ to, label, Icon }: Readonly<{ to: string; label: string; Icon: typeof House }>) {
+function AppLink({ to, label, Icon }: Readonly<{ to: string; label: string; Icon: typeof HouseIcon }>) {
     return (
         <Link to={to} viewTransition className={cx(itemClasses)}>
             <Icon className="size-5 shrink-0 md:size-4" />
@@ -39,7 +35,7 @@ export function AppNav({ onAddClick }: Readonly<{ onAddClick: () => void }>) {
                 <AppLink to={destinations[0].to} label={destinations[0].label} Icon={destinations[0].Icon} />
                 <AppLink to={destinations[1].to} label={destinations[1].label} Icon={destinations[1].Icon} />
                 <button type="button" onClick={onAddClick} className={cx(itemClasses, "cursor-pointer")}>
-                    <Plus className="size-5 shrink-0 md:size-4" />
+                    <PlusIcon className="size-5 shrink-0 md:size-4" />
                     <span>Add</span>
                 </button>
                 <AppLink to={destinations[2].to} label={destinations[2].label} Icon={destinations[2].Icon} />

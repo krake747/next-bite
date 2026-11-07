@@ -1,5 +1,5 @@
+import { ForkKnifeIcon } from "@phosphor-icons/react"
 import { Link } from "@tanstack/react-router"
-import UtensilsCrossed from "lucide-react/icons/utensils-crossed"
 import { useRef } from "react"
 
 import { useAuth, type Restaurant } from "@core/hooks"
@@ -43,7 +43,7 @@ export function RestaurantDialog(props: RestaurantDialogProps) {
                 <DialogPanel size="md" className="max-h-[85vh]">
                     <div className="mb-6 flex items-center gap-3">
                         <div className="flex size-10 items-center justify-center rounded-xl bg-linear-to-br from-tomato-500 to-tomato-600 text-inverse">
-                            <UtensilsCrossed className="size-5" />
+                            <ForkKnifeIcon className="size-5" />
                         </div>
                         <DialogTitle size="lg">{title}</DialogTitle>
                     </div>

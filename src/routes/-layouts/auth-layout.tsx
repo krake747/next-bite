@@ -1,5 +1,5 @@
+import { ForkKnifeIcon } from "@phosphor-icons/react"
 import { Link } from "@tanstack/react-router"
-import UtensilsCrossed from "lucide-react/icons/utensils-crossed"
 
 import { BackgroundLayers } from "@ui/background-decoration"
 import { BrandIcon } from "@ui/brand-icon"
@@ -54,7 +54,7 @@ export function AuthLayout({
                         viewTransition
                         className="group inline-flex items-center gap-2 text-sm text-stone-600 transition-colors hover:text-stone-900"
                     >
-                        <UtensilsCrossed className="size-4 transition-transform group-hover:-rotate-12" />
+                        <ForkKnifeIcon className="size-4 transition-transform group-hover:-rotate-12" />
                         Back to home
                     </Link>
                 </div>

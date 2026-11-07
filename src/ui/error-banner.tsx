@@ -1,4 +1,4 @@
-import CircleAlert from "lucide-react/icons/circle-alert"
+import { WarningCircleIcon } from "@phosphor-icons/react"
 
 import { cx } from "@ui/cva.config"
 
@@ -13,7 +13,7 @@ export function ErrorBanner({ className, children, ...props }: Readonly<React.Co
             )}
             {...props}
         >
-            <CircleAlert className="size-4 shrink-0" />
+            <WarningCircleIcon className="size-4 shrink-0" />
             <span>{children}</span>
         </div>
     )

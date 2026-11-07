@@ -1,6 +1,4 @@
-import ImagePlus from "lucide-react/icons/image-plus"
-import Upload from "lucide-react/icons/upload"
-import X from "lucide-react/icons/x"
+import { ImageIcon, UploadIcon, XIcon } from "@phosphor-icons/react"
 import { useEffect, useRef, useState } from "react"
 
 import { type Id } from "@convex/_generated/dataModel"
@@ -68,7 +66,7 @@ function prepareFilesList(files: FileListLike, existingCount: number, maxFiles: 
 }
 
 function toUploadErrorMessage(error: unknown): string {
-    return error instanceof Error ? error.message : "Upload failed"
+    return error instanceof Error ? error.message : "UploadIcon failed"
 }
 
 async function processAndUpload(file: File, uploadImage: (file: File) => Promise<ImageRecord>): Promise<ImageRecord> {
@@ -331,9 +329,9 @@ function UploadDropzone({
                 )}
             >
                 {isDragging ? (
-                    <Upload className="mb-2 size-8 text-primary" />
+                    <UploadIcon className="mb-2 size-8 text-primary" />
                 ) : (
-                    <ImagePlus className="mb-2 size-8 text-muted-foreground" />
+                    <ImageIcon className="mb-2 size-8 text-muted-foreground" />
                 )}
                 <span className="text-sm text-muted-foreground">
                     {isDragging ? "Drop images here" : "Click or drag & drop to upload images"}
@@ -366,7 +364,7 @@ function ImagePreview({
                     className="absolute top-1 right-1 rounded-full bg-destructive p-1 text-inverse opacity-0 shadow-md transition-opacity duration-150 ease group-hover:opacity-100 hover:bg-destructive/90 focus:opacity-100 focus-visible:opacity-100 active:opacity-100 pointer-coarse:opacity-100"
                     aria-label="Remove image"
                 >
-                    <X className="size-3" />
+                    <XIcon className="size-3" />
                 </button>
             )}
         </div>

@@ -1,5 +1,5 @@
 import { Dialog as BaseDialog } from "@base-ui/react/dialog"
-import X from "lucide-react/icons/x"
+import { XIcon } from "@phosphor-icons/react"
 
 import { cva, cx, type VariantProps } from "@ui/cva.config"
 import { IconButton } from "@ui/icon-button"
@@ -145,7 +145,7 @@ export function DialogCloseButton({
             onClick={onClick}
             className={cx("hit-area-2 absolute top-4 right-4", className)}
         >
-            <X className="size-4" />
+            <XIcon className="size-4" />
         </IconButton>
     )
 }

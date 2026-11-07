@@ -1,5 +1,4 @@
-import ArrowUpDown from "lucide-react/icons/arrow-up-down"
-import Funnel from "lucide-react/icons/funnel"
+import { ArrowsDownUpIcon, FunnelIcon } from "@phosphor-icons/react"
 
 import { useFriends } from "@core/hooks"
 import { cx } from "@ui/cva.config"
@@ -37,7 +36,7 @@ export function FriendsFilter({
             <div className="flex flex-1 flex-col gap-3">
                 <div className="flex flex-wrap items-center gap-2">
                     <div className="flex items-center gap-1.5 text-muted-foreground">
-                        <Funnel
+                        <FunnelIcon
                             className={cx(
                                 "size-4",
                                 filter !== null && filter !== "" && "fill-muted-foreground text-muted-foreground",
@@ -86,7 +85,7 @@ export function FriendsFilter({
                         className="w-full"
                     />
                     <div className="flex items-center gap-1.5">
-                        <ArrowUpDown className="size-3.5 text-muted-foreground" />
+                        <ArrowsDownUpIcon className="size-3.5 text-muted-foreground" />
                         <button
                             type="button"
                             onClick={() => {

@@ -1,8 +1,6 @@
 import { Select as BaseSelect } from "@base-ui/react/select"
 import { type FieldElementProps } from "@formisch/react"
-import Check from "lucide-react/icons/check"
-import ChevronDown from "lucide-react/icons/chevron-down"
-import CircleAlert from "lucide-react/icons/circle-alert"
+import { CaretDownIcon, CheckIcon, WarningCircleIcon } from "@phosphor-icons/react"
 import { useEffect, useId, useRef } from "react"
 import * as v from "valibot"
 
@@ -190,7 +188,7 @@ export function Select(props: Readonly<SelectProps>) {
                 >
                     <BaseSelect.Value>{() => selectedLabel}</BaseSelect.Value>
                     <BaseSelect.Icon>
-                        <ChevronDown className="size-4 shrink-0 text-stone-400" />
+                        <CaretDownIcon className="size-4 shrink-0 text-stone-400" />
                     </BaseSelect.Icon>
                 </BaseSelect.Trigger>
                 <BaseSelect.Portal>
@@ -205,7 +203,7 @@ export function Select(props: Readonly<SelectProps>) {
                                     >
                                         <BaseSelect.ItemText>{item.label}</BaseSelect.ItemText>
                                         <BaseSelect.ItemIndicator>
-                                            <Check className="size-4 text-tomato-600" />
+                                            <CheckIcon className="size-4 text-tomato-600" />
                                         </BaseSelect.ItemIndicator>
                                     </BaseSelect.Item>
                                 ))}
@@ -241,7 +239,7 @@ function FieldErrors({ errors, id }: Readonly<{ errors: unknown; id?: string | u
     const message = Array.isArray(errors) && typeof errors[0] === "string" ? errors[0] : null
     return message !== null && message !== "" ? (
         <div id={id} role="alert" className="flex items-center gap-1.5 text-sm text-destructive">
-            <CircleAlert className="size-4 shrink-0" />
+            <WarningCircleIcon className="size-4 shrink-0" />
             <span>{message}</span>
         </div>
     ) : null

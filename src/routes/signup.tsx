@@ -1,6 +1,6 @@
 import { useForm, Field, Form, useField } from "@formisch/react"
+import { UserIcon } from "@phosphor-icons/react"
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router"
-import UserIcon from "lucide-react/icons/user"
 import { useState } from "react"
 import * as v from "valibot"
 

@@ -191,6 +191,123 @@ const noExportList = defineRule({
     },
 })
 
+const phosphorIconSuffix = defineRule({
+    meta: {
+        type: "suggestion",
+        docs: {
+            description: "Require Icon suffix for Phosphor icon imports.",
+        },
+        fixable: "code",
+        messages: {
+            missingSuffix: "Phosphor icon {{name}} must use Icon suffix. Use {{expected}}.",
+            defaultImport: "Import Phosphor icons as named imports with Icon suffix. Use { {{expected}} }.",
+            namespaceImport: "Do not namespace import Phosphor icons. Import each icon with Icon suffix.",
+        },
+    },
+    create(context) {
+        const sourceCode = context.sourceCode
+        return {
+            ImportDeclaration(node) {
+                if (node.source.value !== "@phosphor-icons/react") {
+                    return
+                }
+                if (node.importKind === "type") {
+                    return
+                }
+                for (const specifier of node.specifiers) {
+                    if (specifier.type === "ImportDefaultSpecifier") {
+                        const local = specifier.local.name
+                        context.report({
+                            node: specifier,
+                            messageId: "defaultImport",
+                            data: { name: local, expected: `${local}Icon` },
+                        })
+                        continue
+                    }
+                    if (specifier.type === "ImportNamespaceSpecifier") {
+                        context.report({ node: specifier, messageId: "namespaceImport" })
+                        continue
+                    }
+                    if (specifier.type !== "ImportSpecifier") {
+                        continue
+                    }
+                    if (specifier.importKind === "type") {
+                        continue
+                    }
+                    if (specifier.imported.type !== "Identifier") {
+                        continue
+                    }
+                    const imported = specifier.imported.name
+                    if (
+                        imported === "Icon" ||
+                        imported === "IconProps" ||
+                        imported === "IconWeight" ||
+                        imported === "IconContext" ||
+                        imported === "IconBase"
+                    ) {
+                        continue
+                    }
+                    const local = specifier.local.name
+                    if (local.endsWith("Icon")) {
+                        continue
+                    }
+                    const expected = `${imported}Icon`
+                    context.report({
+                        node: specifier.local,
+                        messageId: "missingSuffix",
+                        data: { name: imported, expected },
+                        fix(fixer) {
+                            if (local === expected) {
+                                return null
+                            }
+                            const stack = [sourceCode.scopeManager.globalScope]
+                            let variable = null
+                            while (stack.length > 0) {
+                                const scope = stack.pop()
+                                const found = scope.variables.find((candidate) =>
+                                    candidate.defs.some((definition) => definition.node === specifier),
+                                )
+                                if (found !== undefined) {
+                                    variable = found
+                                    break
+                                }
+                                stack.push(...scope.childScopes)
+                            }
+                            if (variable === null) {
+                                if (local === imported) {
+                                    return fixer.replaceText(specifier, expected)
+                                }
+                                return fixer.replaceText(specifier.local, expected)
+                            }
+                            const taken = variable.scope.variables.some(
+                                (candidate) => candidate !== variable && candidate.name === expected,
+                            )
+                            if (taken) {
+                                return null
+                            }
+                            if (local === imported) {
+                                const fixes = [fixer.replaceText(specifier, expected)]
+                                for (const reference of variable.references) {
+                                    if (reference.identifier.name === local) {
+                                        fixes.push(fixer.replaceText(reference.identifier, expected))
+                                    }
+                                }
+                                return fixes
+                            }
+                            const fixes = [fixer.replaceText(specifier.local, expected)]
+                            for (const reference of variable.references) {
+                                if (reference.identifier.name === local) {
+                                    fixes.push(fixer.replaceText(reference.identifier, expected))
+                                }
+                            }
+                            return fixes
+                        },
+                    })
+                }
+            },
+        }
+    },
+})
 export default definePlugin({
     meta: { name: "nextbite" },
     rules: {
@@ -201,5 +318,6 @@ export default definePlugin({
         "no-export-list": noExportList,
         "no-direct-env-read": noDirectEnvRead,
         "jsx-spread-last": jsxSpreadLast,
+        "phosphor-icon-suffix": phosphorIconSuffix,
     },
 })

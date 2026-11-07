@@ -1,4 +1,4 @@
-import LoaderCircle from "lucide-react/icons/loader-circle"
+import { CircleNotchIcon } from "@phosphor-icons/react"
 
 import { Button } from "@ui/button"
 
@@ -9,7 +9,7 @@ export function PendingButton({
 }: Readonly<{ pending: boolean | undefined } & Omit<React.ComponentProps<typeof Button>, "disabled" | "aria-busy">>) {
     return (
         <Button disabled={pending} aria-busy={pending} {...props}>
-            {pending === true && <LoaderCircle className="size-4 animate-spin" />}
+            {pending === true && <CircleNotchIcon className="size-4 animate-spin" />}
             {children}
         </Button>
     )
