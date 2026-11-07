@@ -2,6 +2,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router"
 import { useEffect, useState } from "react"
 
 import { isSafeRedirectPath, useAcceptInvite, useAuth, useInvitePreview } from "@core/hooks"
+import { clearError, errorFrom, type FormError } from "@core/outcome"
 import { BackNav } from "@routes/-layouts/back-nav"
 import { PageContainer } from "@routes/-layouts/page-container"
 import { PageLayout } from "@routes/-layouts/page-layout"
@@ -39,17 +40,17 @@ function InvitePage() {
     const auth = useAuth()
     const preview = useInvitePreview(token)
     const acceptInvite = useAcceptInvite()
-    const [acceptError, setAcceptError] = useState<string | null>(null)
-    const [acceptedGroupId, setAcceptedGroupId] = useState<string | null>(null)
+    const [acceptError, setAcceptError] = useState<FormError>(clearError)
+    const [accepted, setAccepted] = useState(false)
 
     const invitePath = `/invite/${token}`
     const loginHref = `/login?redirect=${encodeURIComponent(invitePath)}`
 
     useEffect(() => {
         let cancelled = false
-        const shouldRun = auth.isAuthenticated && !auth.isLoading && preview !== undefined && acceptedGroupId === null
+        const shouldRun = auth.isAuthenticated && !auth.isLoading && preview !== undefined && !accepted
         if (shouldRun && preview.target.kind === "group") {
-            setAcceptError(null)
+            setAcceptError(clearError)
             acceptInvite
                 .mutateAsync({ token })
                 .then((result) => {
@@ -59,21 +60,21 @@ function InvitePage() {
                     if (result !== null && typeof result === "object" && "groupId" in result) {
                         const rawGroupId: unknown = result.groupId
                         if (typeof rawGroupId === "string" && rawGroupId !== "") {
-                            setAcceptedGroupId(rawGroupId)
+                            setAccepted(true)
                             void navigate({ to: "/groups/$groupId", params: { groupId: rawGroupId }, replace: true })
                         }
                     }
                 })
                 .catch((error: unknown) => {
                     if (!cancelled) {
-                        setAcceptError(error instanceof Error ? error.message : "Could not accept this invite")
+                        setAcceptError(errorFrom(error, "Could not accept this invite"))
                     }
                 })
         }
         return () => {
             cancelled = true
         }
-    }, [auth.isAuthenticated, auth.isLoading, preview, acceptedGroupId, acceptInvite, token, navigate])
+    }, [auth.isAuthenticated, auth.isLoading, preview, accepted, acceptInvite, token, navigate])
 
     if (preview === undefined) {
         return (
@@ -131,8 +132,8 @@ function InvitePage() {
         )
     }
 
-    if (acceptError !== null) {
-        return <InviteError message={acceptError} />
+    if (acceptError.kind === "error") {
+        return <InviteError message={acceptError.message} />
     }
 
     return (

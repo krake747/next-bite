@@ -9,6 +9,7 @@ import {
     useRemoveFriend,
     useRequestFriendByEmail,
 } from "@core/hooks"
+import { clearError, errorFrom, type FormError } from "@core/outcome"
 import { EmptyState } from "@pattern/empty-state"
 import { SignedOutGate } from "@routes/-components/signed-out-gate"
 import { PageContainer } from "@routes/-layouts/page-container"
@@ -27,15 +28,15 @@ export const Route = createFileRoute("/friends")({
 function InviteByEmailForm() {
     const requestFriend = useRequestFriendByEmail()
     const [email, setEmail] = useState("")
-    const [error, setError] = useState<string | null>(null)
+    const [error, setError] = useState<FormError>(clearError)
     const [sent, setSent] = useState(false)
 
     const handleInvite = async () => {
-        setError(null)
+        setError(clearError)
         setSent(false)
         const trimmed = email.trim()
         if (trimmed === "") {
-            setError("Enter your friend's email")
+            setError({ kind: "error", message: "Enter your friend's email" })
             return
         }
         try {
@@ -43,7 +44,7 @@ function InviteByEmailForm() {
             setEmail("")
             setSent(true)
         } catch (err) {
-            setError(err instanceof Error ? err.message : "Could not send the request")
+            setError(errorFrom(err, "Could not send the request"))
         }
     }
 
@@ -68,12 +69,12 @@ function InviteByEmailForm() {
                     }}
                     placeholder="friend@example.com"
                     maxLength={254}
-                    aria-invalid={error !== null}
-                    className={cx(control(), error !== null && "border-destructive")}
+                    aria-invalid={error.kind === "error"}
+                    className={cx(control(), error.kind === "error" && "border-destructive")}
                 />
-                {error !== null && (
+                {error.kind === "error" && (
                     <p role="alert" className="text-sm text-destructive">
-                        {error}
+                        {error.message}
                     </p>
                 )}
                 {sent && <p className="text-sm text-muted-foreground">Request sent.</p>}
@@ -88,7 +89,7 @@ function InviteByEmailForm() {
 function RequestsSection() {
     const requests = useFriendRequests()
     const acceptFriend = useAcceptFriend()
-    const [error, setError] = useState<string | null>(null)
+    const [error, setError] = useState<FormError>(clearError)
 
     if (requests === undefined) {
         return (
@@ -102,12 +103,12 @@ function RequestsSection() {
     }
 
     const handleAccept = (friendAuthUserId: string) => {
-        setError(null)
+        setError(clearError)
         acceptFriend.mutate(
             { friendAuthUserId },
             {
                 onError: (err) => {
-                    setError(err instanceof Error ? err.message : "Could not accept the request")
+                    setError(errorFrom(err, "Could not accept the request"))
                 },
             },
         )
@@ -116,9 +117,9 @@ function RequestsSection() {
     return (
         <section aria-label="Friend requests" className="pt-8">
             <h2 className="font-display text-2xl font-semibold text-balance text-foreground">Requests</h2>
-            {error !== null && (
+            {error.kind === "error" && (
                 <p role="alert" className="pt-2 text-sm text-destructive">
-                    {error}
+                    {error.message}
                 </p>
             )}
             <ul className="grid gap-3 pt-4 md:grid-cols-2">
@@ -189,7 +190,7 @@ function FriendDiscoveries({ ownerId, ownerName }: Readonly<{ ownerId: string; o
 function FriendsList() {
     const friends = useFriends()
     const removeFriend = useRemoveFriend()
-    const [error, setError] = useState<string | null>(null)
+    const [error, setError] = useState<FormError>(clearError)
 
     if (friends === undefined) {
         return (
@@ -209,12 +210,12 @@ function FriendsList() {
     }
 
     const handleRemove = (friendAuthUserId: string) => {
-        setError(null)
+        setError(clearError)
         removeFriend.mutate(
             { friendAuthUserId },
             {
                 onError: (err) => {
-                    setError(err instanceof Error ? err.message : "Could not remove that friend")
+                    setError(errorFrom(err, "Could not remove that friend"))
                 },
             },
         )
@@ -222,9 +223,9 @@ function FriendsList() {
 
     return (
         <>
-            {error !== null && (
+            {error.kind === "error" && (
                 <p role="alert" className="pt-4 text-sm text-destructive">
-                    {error}
+                    {error.message}
                 </p>
             )}
             <ul className="grid gap-4 pt-6 md:grid-cols-2">

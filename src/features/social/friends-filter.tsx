@@ -15,8 +15,8 @@ export function FriendsFilter({
     matchingIds,
     children,
 }: Readonly<{
-    filter: string | null
-    handleFilter: (ownerId: string | null) => void
+    filter: string
+    handleFilter: (ownerId: string) => void
     search: string
     handleSearch: (value: string) => void
     sortOrder: "added" | "name"
@@ -28,7 +28,7 @@ export function FriendsFilter({
     const shownFriends = (friends ?? []).filter((friend) => matchingIds.includes(friend.authUserId))
 
     const toggleFilter = (ownerId: string) => () => {
-        handleFilter(ownerId === filter ? null : ownerId)
+        handleFilter(ownerId === filter ? "" : ownerId)
     }
 
     return (
@@ -37,10 +37,7 @@ export function FriendsFilter({
                 <div className="flex flex-wrap items-center gap-2">
                     <div className="flex items-center gap-1.5 text-muted-foreground">
                         <FunnelIcon
-                            className={cx(
-                                "size-4",
-                                filter !== null && filter !== "" && "fill-muted-foreground text-muted-foreground",
-                            )}
+                            className={cx("size-4", filter !== "" && "fill-muted-foreground text-muted-foreground")}
                         />
                         <span className="text-xs font-medium tracking-wide uppercase">Filter</span>
                     </div>
@@ -64,11 +61,11 @@ export function FriendsFilter({
                             ))}
                         </>
                     )}
-                    {filter !== null && filter !== "" && (
+                    {filter !== "" && (
                         <button
                             type="button"
                             onClick={() => {
-                                handleFilter(null)
+                                handleFilter("")
                             }}
                             className="text-xs font-medium text-primary underline-offset-2 transition-colors hover:underline"
                         >

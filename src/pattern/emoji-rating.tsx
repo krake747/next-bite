@@ -46,33 +46,33 @@ type RateClickEvent = Readonly<{
 
 export function EmojiRating({
     rating,
-    defaultRating = null,
+    defaultRating,
     onRate,
     disabled,
     className,
 }: Readonly<{
-    rating?: number | null | undefined
-    defaultRating?: number | null | undefined
+    rating?: number | undefined
+    defaultRating?: number | undefined
     onRate: (rating: number) => void | Promise<void>
     disabled?: boolean | undefined
     className?: string | undefined
 }>) {
-    const [hoverRating, setHoverRating] = useState<number | null>(null)
-    const [uncontrolled, setUncontrolled] = useState<number | null>(defaultRating ?? null)
+    const [hoverRating, setHoverRating] = useState<number | undefined>(undefined)
+    const [uncontrolled, setUncontrolled] = useState<number | undefined>(defaultRating ?? undefined)
     const isControlled = rating !== undefined
-    const current = isControlled ? (rating ?? null) : uncontrolled
+    const current = isControlled ? (rating ?? undefined) : uncontrolled
     const displayRating = hoverRating ?? current
 
     const selectedTitle = (() => {
         const idx = hoverRating ?? current
-        if (idx === null) {
+        if (idx === undefined) {
             return "Tap an emoji to rate"
         }
         const emoji = RATING_EMOJIS[idx]
         return emoji !== undefined ? EMOJI_TITLES[emoji] : ""
     })()
 
-    const activeColor = displayRating !== null ? RATING_COLORS[displayRating] : "oklch(0.5234 0.1645 33.24)"
+    const activeColor = displayRating !== undefined ? RATING_COLORS[displayRating] : "oklch(0.5234 0.1645 33.24)"
 
     const handleRate = async (index: number, button: FocusableButton) => {
         if (!isControlled) {
@@ -87,7 +87,7 @@ export function EmojiRating({
             <div
                 className="flex items-center gap-0.5"
                 onMouseLeave={() => {
-                    setHoverRating(null)
+                    setHoverRating(undefined)
                 }}
             >
                 {RATING_EMOJIS.map((emoji, index) => {

@@ -4,16 +4,18 @@ import { ImageGalleryModal } from "@pattern/image-gallery-modal"
 
 import { photoUrls, type GalleryPhoto } from "./photos"
 
+export type LightboxSelection = { readonly kind: "closed" } | { readonly kind: "open"; readonly index: number }
+
 export function useLightbox(photos: ReadonlyArray<GalleryPhoto>) {
-    const [openedIndex, setOpenedIndex] = useState<number | null>(null)
+    const [selection, setSelection] = useState<LightboxSelection>({ kind: "closed" })
     return {
         urls: photoUrls(photos),
-        openedIndex,
+        selection,
         openAt: (index: number) => {
-            setOpenedIndex(index)
+            setSelection({ kind: "open", index })
         },
         close: () => {
-            setOpenedIndex(null)
+            setSelection({ kind: "closed" })
         },
     }
 }
@@ -21,14 +23,14 @@ export function useLightbox(photos: ReadonlyArray<GalleryPhoto>) {
 type LightboxState = ReturnType<typeof useLightbox>
 
 export function Lightbox({ lightbox }: Readonly<{ lightbox: LightboxState }>) {
-    if (lightbox.openedIndex === null) {
+    if (lightbox.selection.kind === "closed") {
         return null
     }
     return (
         <ImageGalleryModal
             images={lightbox.urls}
             show
-            initialIndex={lightbox.openedIndex}
+            initialIndex={lightbox.selection.index}
             onOpenChange={(open) => {
                 if (!open) {
                     lightbox.close()

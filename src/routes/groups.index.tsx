@@ -2,6 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router"
 import { useState } from "react"
 
 import { useCreateGroup, useMyGroups } from "@core/hooks"
+import { clearError, errorFrom, type FormError } from "@core/outcome"
 import { EmptyState } from "@pattern/empty-state"
 import { SignedOutGate } from "@routes/-components/signed-out-gate"
 import { PageContainer } from "@routes/-layouts/page-container"
@@ -19,20 +20,20 @@ export const Route = createFileRoute("/groups/")({
 function CreateGroupForm() {
     const createGroup = useCreateGroup()
     const [name, setName] = useState("")
-    const [error, setError] = useState<string | null>(null)
+    const [error, setError] = useState<FormError>(clearError)
 
     const handleCreate = async () => {
-        setError(null)
+        setError(clearError)
         const trimmed = name.trim()
         if (trimmed === "") {
-            setError("Give your group a name")
+            setError({ kind: "error", message: "Give your group a name" })
             return
         }
         try {
             await createGroup.mutateAsync({ name: trimmed })
             setName("")
         } catch (err) {
-            setError(err instanceof Error ? err.message : "Could not create the group")
+            setError(errorFrom(err, "Could not create the group"))
         }
     }
 
@@ -56,12 +57,12 @@ function CreateGroupForm() {
                     }}
                     placeholder="Sunday dinner crew"
                     maxLength={80}
-                    aria-invalid={error !== null}
-                    className={cx(control(), error !== null && "border-destructive")}
+                    aria-invalid={error.kind === "error"}
+                    className={cx(control(), error.kind === "error" && "border-destructive")}
                 />
-                {error !== null && (
+                {error.kind === "error" && (
                     <p role="alert" className="text-sm text-destructive">
-                        {error}
+                        {error.message}
                     </p>
                 )}
             </div>

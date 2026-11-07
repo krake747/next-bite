@@ -50,7 +50,7 @@ vi.mock("@core/hooks", async (importOriginal) => {
     }
 })
 
-function renderAvatar(avatarUrl: string | null): void {
+function renderAvatar(avatarUrl: string | undefined): void {
     const backend = createSeededClient({})
     render(
         <QueryClientProvider client={backend.queryClient}>
@@ -85,7 +85,7 @@ describe("AvatarSection", () => {
 
     test("uploads a new photo through the profile update", async () => {
         resetAvatar()
-        renderAvatar(null)
+        renderAvatar(undefined)
 
         selectFiles([new File(["pixels"], "a.png", { type: "image/png" })])
 
@@ -100,7 +100,7 @@ describe("AvatarSection", () => {
     test("shows an error when the update fails", async () => {
         resetAvatar()
         updateMutate.mockRejectedValueOnce(new Error("denied"))
-        renderAvatar(null)
+        renderAvatar(undefined)
 
         selectFiles([new File(["pixels"], "a.png", { type: "image/png" })])
 

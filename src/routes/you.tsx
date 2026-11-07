@@ -3,6 +3,7 @@ import { useState } from "react"
 
 import { type Doc } from "@convex/_generated/dataModel"
 import { useAuth, useMyProfile, useMyStatuses, useRestaurants, useUpdateProfile, type ImageRecord } from "@core/hooks"
+import { clearError, errorFrom, type FormError } from "@core/outcome"
 import { orderFeedByRecency } from "@core/social"
 import { ImageUpload } from "@pattern/image-upload"
 import { LazyImage } from "@pattern/lazy-image"
@@ -30,22 +31,22 @@ function ProfileForm({
 }: Readonly<{ email: string; initialName: string; heading: string; subheading: string }>) {
     const updateProfile = useUpdateProfile()
     const [name, setName] = useState(initialName)
-    const [error, setError] = useState<string | null>(null)
+    const [error, setError] = useState<FormError>(clearError)
     const [saved, setSaved] = useState(false)
 
     const handleSave = async () => {
-        setError(null)
+        setError(clearError)
         setSaved(false)
         const trimmed = name.trim()
         if (trimmed === "") {
-            setError("Name cannot be empty")
+            setError({ kind: "error", message: "Name cannot be empty" })
             return
         }
         try {
             await updateProfile.mutateAsync({ name: trimmed })
             setSaved(true)
         } catch (err) {
-            setError(err instanceof Error ? err.message : "Could not save your profile")
+            setError(errorFrom(err, "Could not save your profile"))
         }
     }
 
@@ -67,13 +68,13 @@ function ProfileForm({
                                 setName(event.target.value)
                             }}
                             maxLength={80}
-                            aria-invalid={error !== null}
-                            aria-describedby={error !== null ? "profile-name-error" : undefined}
-                            className={cx(control(), error !== null && "border-destructive")}
+                            aria-invalid={error.kind === "error"}
+                            aria-describedby={error.kind === "error" ? "profile-name-error" : undefined}
+                            className={cx(control(), error.kind === "error" && "border-destructive")}
                         />
-                        {error !== null && (
+                        {error.kind === "error" && (
                             <p id="profile-name-error" role="alert" className="text-sm text-destructive">
-                                {error}
+                                {error.message}
                             </p>
                         )}
                         {saved && <p className="text-sm text-muted-foreground">Saved.</p>}
@@ -110,7 +111,7 @@ function ProfileSection() {
     }
     return (
         <>
-            <AvatarSection avatarUrl={profile.profile.avatar?.url ?? null} />
+            <AvatarSection avatarUrl={profile.profile.avatar?.url ?? undefined} />
             <ProfileForm
                 email={profile.profile.email}
                 initialName={profile.profile.name}
@@ -121,27 +122,27 @@ function ProfileSection() {
     )
 }
 
-export function AvatarSection({ avatarUrl }: Readonly<{ avatarUrl: string | null }>) {
+export function AvatarSection({ avatarUrl }: Readonly<{ avatarUrl: string | undefined }>) {
     const updateProfile = useUpdateProfile()
-    const [error, setError] = useState<string | null>(null)
+    const [error, setError] = useState<FormError>(clearError)
 
     const handleAvatar = async (images: ReadonlyArray<ImageRecord>) => {
         const image = images[0]
         if (image === undefined || updateProfile.isPending) {
             return
         }
-        setError(null)
+        setError(clearError)
         try {
             await updateProfile.mutateAsync({ avatar: { url: image.url, storageId: image.storageId } })
         } catch (err) {
-            setError(err instanceof Error ? err.message : "Could not save your photo")
+            setError(errorFrom(err, "Could not save your photo"))
         }
     }
 
     return (
         <section aria-label="Profile photo" className="pt-6">
             <div className="mt-3 flex items-center gap-4 rounded-card border border-border bg-surface p-5 shadow-card">
-                {avatarUrl !== null ? (
+                {avatarUrl !== undefined ? (
                     <LazyImage src={avatarUrl} alt="Your profile photo" className="size-16 rounded-full object-cover" />
                 ) : (
                     <div aria-hidden="true" className="size-16 rounded-full bg-surface-muted" />
@@ -155,9 +156,9 @@ export function AvatarSection({ avatarUrl }: Readonly<{ avatarUrl: string | null
                         maxFiles={1}
                         disabled={updateProfile.isPending}
                     />
-                    {error !== null && (
+                    {error.kind === "error" && (
                         <p role="alert" className="pt-2 text-sm text-destructive">
-                            {error}
+                            {error.message}
                         </p>
                     )}
                 </div>

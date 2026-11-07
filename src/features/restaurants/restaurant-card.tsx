@@ -47,7 +47,7 @@ export function RestaurantCard({
         detailsHref?: string | undefined
     } & React.ComponentProps<typeof Card>
 >) {
-    const [dialog, setDialog] = useState<null | "edit" | "hours" | "delete">(null)
+    const [dialog, setDialog] = useState<"closed" | "edit" | "hours" | "delete">("closed")
     const [isRefreshing, setIsRefreshing] = useState(false)
     const updateRestaurant = useUpdateRestaurant()
     const deleteRestaurant = useDeleteRestaurant()
@@ -107,7 +107,7 @@ export function RestaurantCard({
 
     const handleDialogOpenChange = (open: boolean) => {
         if (!open) {
-            setDialog(null)
+            setDialog("closed")
         }
     }
 
@@ -177,7 +177,7 @@ export function RestaurantCard({
                     }}
                     detailsHref={detailsHref}
                 />
-                <RestaurantCardNotes notes={restaurant.details?.notes} />
+                <RestaurantCardNotes notes={restaurant.details?.notes ?? undefined} />
                 <div className="px-5 pt-1 pb-2 md:px-4">
                     <RestaurantInterestButton
                         wanted={active.wanted}
@@ -212,8 +212,8 @@ export function RestaurantCard({
     )
 }
 
-function RestaurantCardNotes({ notes }: Readonly<{ notes: string | null | undefined }>) {
-    if (notes === null || notes === undefined || notes === "") {
+function RestaurantCardNotes({ notes }: Readonly<{ notes: string | undefined }>) {
+    if (notes === undefined || notes === "") {
         return null
     }
     return (

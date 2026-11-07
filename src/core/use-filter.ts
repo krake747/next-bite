@@ -1,7 +1,7 @@
 import { useState } from "react"
 
 export function useFilterState() {
-    const [filter, setFilter] = useState<string | null>(null)
+    const [filter, setFilter] = useState("")
     const [search, setSearch] = useState("")
 
     return {

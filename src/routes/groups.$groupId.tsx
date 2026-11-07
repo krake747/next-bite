@@ -12,6 +12,7 @@ import {
     useShareWithGroup,
     useUnshare,
 } from "@core/hooks"
+import { clearError, errorFrom, type FormError } from "@core/outcome"
 import { orderFeedByRecency, useSocialSummaries } from "@core/social"
 import { GroupMembers } from "@features/groups/group-members"
 import { PlanMealSection } from "@features/plans/meal-plans"
@@ -96,11 +97,11 @@ function AddFromMyList({ groupId, sharedIds }: Readonly<{ groupId: Id<"groups">;
 function GroupRestaurantsSection({
     groupId,
     restaurants,
-    myId,
+    viewer,
 }: Readonly<{
     groupId: Id<"groups">
     restaurants: ReturnType<typeof useGroupRestaurants>
-    myId: string | null
+    viewer: { readonly kind: "signed-in"; readonly id: string } | { readonly kind: "signed-out" }
 }>) {
     const summaries = useSocialSummaries(restaurants === undefined ? [] : restaurants.map((r) => r._id))
     const unshare = useUnshare()
@@ -142,7 +143,7 @@ function GroupRestaurantsSection({
                                 ? ` · ${social.wantCount} want · ${social.beenCount} been`
                                 : ""}
                         </p>
-                        {myId !== null && shared.ownerId === myId && (
+                        {viewer.kind === "signed-in" && shared.ownerId === viewer.id && (
                             <div className="pt-3">
                                 <Button
                                     size="sm"
@@ -168,31 +169,32 @@ function GroupRestaurantsSection({
 function GroupInviteSection({ groupId }: Readonly<{ groupId: Id<"groups"> }>) {
     const createInvite = useCreateInvite()
     const revokeInvite = useRevokeInvite()
-    const [token, setToken] = useState<string | null>(null)
-    const [error, setError] = useState<string | null>(null)
+    type InviteLink = { readonly kind: "none" } | { readonly kind: "ready"; readonly token: string }
+    const [token, setToken] = useState<InviteLink>({ kind: "none" })
+    const [error, setError] = useState<FormError>(clearError)
     const [copied, setCopied] = useState(false)
 
     const handleCreate = async () => {
-        setError(null)
+        setError(clearError)
         setCopied(false)
         try {
             const next = await createInvite.mutateAsync({ target: { kind: "group", groupId } })
-            setToken(typeof next === "string" ? next : null)
+            setToken(typeof next === "string" && next.length > 0 ? { kind: "ready", token: next } : { kind: "none" })
         } catch (err) {
-            setError(err instanceof Error ? err.message : "Could not create invite link")
+            setError(errorFrom(err, "Could not create invite link"))
         }
     }
 
     const handleRevoke = async () => {
-        if (token === null) {
+        if (token.kind === "none") {
             return
         }
-        setError(null)
+        setError(clearError)
         try {
-            await revokeInvite.mutateAsync({ token })
-            setToken(null)
+            await revokeInvite.mutateAsync({ token: token.token })
+            setToken({ kind: "none" })
         } catch (err) {
-            setError(err instanceof Error ? err.message : "Could not revoke invite link")
+            setError(errorFrom(err, "Could not revoke invite link"))
         }
     }
 
@@ -202,7 +204,7 @@ function GroupInviteSection({ groupId }: Readonly<{ groupId: Id<"groups"> }>) {
             <p className="pt-1 text-sm text-muted-foreground">
                 Anyone with the link can join until it expires or is revoked. No email needed.
             </p>
-            {token === null ? (
+            {token.kind === "none" ? (
                 <div className="pt-4">
                     <Button onClick={() => void handleCreate()} disabled={createInvite.isPending}>
                         Create invite link
@@ -211,14 +213,14 @@ function GroupInviteSection({ groupId }: Readonly<{ groupId: Id<"groups"> }>) {
             ) : (
                 <div className="pt-4">
                     <p className="rounded-card border border-border bg-surface p-3 text-sm break-all text-foreground">
-                        {`/invite/${token}`}
+                        {`/invite/${token.token}`}
                     </p>
                     <div className="flex flex-col gap-2 pt-3 sm:flex-row">
                         <Button
                             tone="secondary"
                             onClick={() => {
                                 void navigator.clipboard
-                                    .writeText(`${window.location.origin}/invite/${token}`)
+                                    .writeText(`${window.location.origin}/invite/${token.token}`)
                                     .then(() => {
                                         setCopied(true)
                                     })
@@ -235,9 +237,9 @@ function GroupInviteSection({ groupId }: Readonly<{ groupId: Id<"groups"> }>) {
                     </div>
                 </div>
             )}
-            {error !== null && (
+            {error.kind === "error" && (
                 <p role="alert" className="pt-2 text-sm text-destructive">
-                    {error}
+                    {error.message}
                 </p>
             )}
         </section>
@@ -269,7 +271,9 @@ function GroupDetail() {
     }
 
     const sharedIds = new Set(restaurants.map((p) => p._id))
-    const myId = auth.user?.id ?? null
+    const userId = auth.user?.id
+    const viewer: { readonly kind: "signed-in"; readonly id: string } | { readonly kind: "signed-out" } =
+        userId !== undefined && userId !== "" ? { kind: "signed-in", id: userId } : { kind: "signed-out" }
 
     return (
         <PageLayout>
@@ -289,7 +293,7 @@ function GroupDetail() {
                 <PlanMealSection groupId={groupConvexId} />
                 <section aria-label="Shared restaurants" className="pt-8">
                     <h2 className="font-display text-2xl font-semibold text-balance text-foreground">Shared list</h2>
-                    <GroupRestaurantsSection groupId={groupConvexId} restaurants={restaurants} myId={myId} />
+                    <GroupRestaurantsSection groupId={groupConvexId} restaurants={restaurants} viewer={viewer} />
                 </section>
                 {auth.isAuthenticated && (
                     <section aria-label="Add your restaurants" className="pt-8">

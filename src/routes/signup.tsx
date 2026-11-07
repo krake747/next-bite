@@ -5,6 +5,7 @@ import { useState } from "react"
 import * as v from "valibot"
 
 import { useAuth, useAuthMethods, isSafeRedirectPath } from "@core/hooks"
+import { clearError, type FormError } from "@core/outcome"
 import { PendingButton } from "@routes/-components/pending-button"
 import { AuthDivider, SocialButtons } from "@routes/-components/social-buttons"
 import { AuthLayout } from "@routes/-layouts/auth-layout"
@@ -37,7 +38,7 @@ function SignupPage() {
     const { redirect: redirectTo } = Route.useSearch()
     const auth = useAuth()
 
-    const [passwordError, setPasswordError] = useState<string | null>(null)
+    const [passwordError, setPasswordError] = useState<FormError>(clearError)
 
     const form = useForm({ schema: SignupSchema })
     const nameField = useField(form, { path: ["name"] })
@@ -47,10 +48,10 @@ function SignupPage() {
     const methods = useAuthMethods()
 
     const handleSubmit = async (output: Readonly<SignupInput>) => {
-        setPasswordError(null)
+        setPasswordError(clearError)
 
         if (output.password !== output.confirmPassword) {
-            setPasswordError("Passwords do not match")
+            setPasswordError({ kind: "error", message: "Passwords do not match" })
             return
         }
 
@@ -67,7 +68,8 @@ function SignupPage() {
         return <LoadingPlaceholder />
     }
 
-    const bannerError = [passwordError, auth.error].find((part) => part !== null && part !== "")
+    const passwordMessage = passwordError.kind === "error" ? passwordError.message : ""
+    const bannerError = [passwordMessage, auth.error].find((part) => part !== null && part !== "")
 
     return (
         <AuthLayout

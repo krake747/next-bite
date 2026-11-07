@@ -13,6 +13,7 @@ import {
     IMAGE_ACCEPT,
     IMAGE_TYPE_LABEL,
 } from "@core/image-utils"
+import { clearError, errorFrom, type FormError } from "@core/outcome"
 import { cx } from "@ui/cva.config"
 
 type FileListLike = Readonly<{
@@ -65,8 +66,8 @@ function prepareFilesList(files: FileListLike, existingCount: number, maxFiles: 
     return batch.length > 0 ? batch : null
 }
 
-function toUploadErrorMessage(error: unknown): string {
-    return error instanceof Error ? error.message : "UploadIcon failed"
+function toUploadError(error: unknown): FormError {
+    return errorFrom(error, "UploadIcon failed")
 }
 
 async function processAndUpload(file: File, uploadImage: (file: File) => Promise<ImageRecord>): Promise<ImageRecord> {
@@ -81,7 +82,7 @@ export function ImageUpload(props: Readonly<ImageUploadProps>) {
     const uploadImage = useUploadImage()
     const cleanupStorage = useCleanupStorage()
     const [isUploading, setIsUploading] = useState(false)
-    const [uploadError, setUploadError] = useState<string | null>(null)
+    const [uploadError, setUploadError] = useState<FormError>(clearError)
     const batchRef = useRef(0)
     const mountedRef = useRef(true)
     const latestImagesRef = useRef(props.images)
@@ -133,7 +134,7 @@ export function ImageUpload(props: Readonly<ImageUploadProps>) {
         const isCurrent = () => batchRef.current === batch
 
         setIsUploading(true)
-        setUploadError(null)
+        setUploadError(clearError)
 
         const published: ImageRecord[] = []
         try {
@@ -148,7 +149,7 @@ export function ImageUpload(props: Readonly<ImageUploadProps>) {
             }
         } catch (error) {
             if (isCurrent()) {
-                setUploadError(toUploadErrorMessage(error))
+                setUploadError(toUploadError(error))
             }
         } finally {
             if (isCurrent()) {
@@ -184,7 +185,7 @@ export function ImageUpload(props: Readonly<ImageUploadProps>) {
 
             {isUploading && <p className="text-center text-sm text-muted-foreground">Uploading…</p>}
 
-            {uploadError !== null && uploadError !== "" && <p className="text-sm text-destructive">{uploadError}</p>}
+            {uploadError.kind === "error" && <p className="text-sm text-destructive">{uploadError.message}</p>}
         </div>
     )
 }

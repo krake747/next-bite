@@ -2,6 +2,7 @@ import { useState } from "react"
 
 import { type Id } from "@convex/_generated/dataModel"
 import { useAuth, useCreatePlan, usePlansForGroup, usePlansForRestaurant, useUpdatePlanStatus } from "@core/hooks"
+import { clearError, errorFrom, type FormError } from "@core/outcome"
 import { Button } from "@ui/button"
 import { LoadingPlaceholder } from "@ui/loading"
 
@@ -62,14 +63,24 @@ function PlanCard({ plan, canUpdate }: Readonly<{ plan: PlanRow; canUpdate: bool
     )
 }
 
-function PlanList({ plans, myId }: Readonly<{ plans: ReadonlyArray<PlanRow>; myId: string | null }>) {
+function PlanList({
+    plans,
+    viewer,
+}: Readonly<{
+    plans: ReadonlyArray<PlanRow>
+    viewer: { readonly kind: "signed-in"; readonly id: string } | { readonly kind: "signed-out" }
+}>) {
     if (plans.length === 0) {
         return <p className="pt-3 text-sm text-muted-foreground">No plans yet. Propose the first date above.</p>
     }
     return (
         <ul className="grid gap-3 pt-3 md:grid-cols-2">
             {plans.map((plan) => (
-                <PlanCard key={plan._id} plan={plan} canUpdate={myId !== null && plan.createdBy === myId} />
+                <PlanCard
+                    key={plan._id}
+                    plan={plan}
+                    canUpdate={viewer.kind === "signed-in" && plan.createdBy === viewer.id}
+                />
             ))}
         </ul>
     )
@@ -85,10 +96,12 @@ export function PlanMealSection({
     const createPlan = useCreatePlan()
     const [title, setTitle] = useState("")
     const [dateInput, setDateInput] = useState("")
-    const [error, setError] = useState<string | null>(null)
+    const [error, setError] = useState<FormError>(clearError)
 
     const plans = (groupId === undefined ? restaurantPlans : groupPlans) as ReadonlyArray<PlanRow> | undefined
-    const myId = auth.user?.id ?? null
+    const userId = auth.user?.id
+    const viewer: { readonly kind: "signed-in"; readonly id: string } | { readonly kind: "signed-out" } =
+        userId !== undefined && userId !== "" ? { kind: "signed-in", id: userId } : { kind: "signed-out" }
 
     if (!auth.isAuthenticated) {
         return null
@@ -105,10 +118,10 @@ export function PlanMealSection({
     }
 
     const handleCreate = async () => {
-        setError(null)
+        setError(clearError)
         const parsed = dateInput === "" ? Number.NaN : Date.parse(`${dateInput}T12:00:00`)
         if (title.trim() === "" || Number.isNaN(parsed)) {
-            setError("Add a title and a date to propose a plan")
+            setError({ kind: "error", message: "Add a title and a date to propose a plan" })
             return
         }
         try {
@@ -121,7 +134,7 @@ export function PlanMealSection({
             setTitle("")
             setDateInput("")
         } catch (err) {
-            setError(err instanceof Error ? err.message : "Could not create the plan")
+            setError(errorFrom(err, "Could not create the plan"))
         }
     }
 
@@ -156,12 +169,12 @@ export function PlanMealSection({
                     Propose date
                 </Button>
             </div>
-            {error !== null && (
+            {error.kind === "error" && (
                 <p role="alert" className="pt-2 text-sm text-destructive">
-                    {error}
+                    {error.message}
                 </p>
             )}
-            <PlanList plans={plans} myId={myId} />
+            <PlanList plans={plans} viewer={viewer} />
         </section>
     )
 }

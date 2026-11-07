@@ -34,13 +34,13 @@ export const Route = createFileRoute("/")({
 
 function filterRestaurants(
     restaurants: ReadonlyArray<Restaurant>,
-    filter: string | null,
+    filter: string,
     search: string,
     sortOrder: "added" | "name",
 ): Restaurant[] {
     let filteredResult = [...restaurants]
 
-    if (filter !== null && filter !== "") {
+    if (filter !== "") {
         filteredResult = filteredResult.filter((r) => r.ownerId === filter)
     }
 
@@ -135,7 +135,7 @@ function HomeDiscover({ restaurants }: Readonly<{ restaurants: ReadonlyArray<Res
             </div>
             <RestaurantList
                 restaurants={filtered}
-                hasFilter={filterState.filter !== null && filterState.filter !== ""}
+                hasFilter={filterState.filter !== ""}
                 hasSearch={filterState.search !== ""}
                 socialFor={actions.socialFor}
                 onToggleWant={(restaurant) => {

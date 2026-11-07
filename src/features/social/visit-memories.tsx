@@ -2,6 +2,7 @@ import { useState } from "react"
 
 import { type Id } from "@convex/_generated/dataModel"
 import { useAddVisitMemory, useAuth, useCleanupStorage, useVisitMemories, type ImageRecord } from "@core/hooks"
+import { clearError, errorFrom, type FormError } from "@core/outcome"
 import { ImageUpload } from "@pattern/image-upload"
 import { Button } from "@ui/button"
 
@@ -13,7 +14,7 @@ export function VisitMemories({ restaurantId }: Readonly<{ restaurantId: Id<"res
     const addVisitMemory = useAddVisitMemory()
     const cleanupStorage = useCleanupStorage()
     const [staged, setStaged] = useState<ReadonlyArray<ImageRecord>>([])
-    const [error, setError] = useState<string | null>(null)
+    const [error, setError] = useState<FormError>(clearError)
 
     if (!auth.isAuthenticated) {
         return null
@@ -35,7 +36,7 @@ export function VisitMemories({ restaurantId }: Readonly<{ restaurantId: Id<"res
         if (staged.length === 0 || addVisitMemory.isPending) {
             return
         }
-        setError(null)
+        setError(clearError)
         try {
             // The client claims only location and dimensions. Ownership,
             // display name, MIME type, and byte size are resolved server-side
@@ -51,7 +52,7 @@ export function VisitMemories({ restaurantId }: Readonly<{ restaurantId: Id<"res
             })
             setStaged([])
         } catch (err) {
-            setError(err instanceof Error ? err.message : "Could not share this memory")
+            setError(errorFrom(err, "Could not share this memory"))
         }
     }
 
@@ -74,9 +75,9 @@ export function VisitMemories({ restaurantId }: Readonly<{ restaurantId: Id<"res
                     onRemove={handleRemoveStaged}
                     disabled={addVisitMemory.isPending}
                 />
-                {error !== null && (
+                {error.kind === "error" && (
                     <p role="alert" className="text-sm text-destructive">
-                        {error}
+                        {error.message}
                     </p>
                 )}
                 <Button
