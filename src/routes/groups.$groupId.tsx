@@ -1,14 +1,17 @@
 import { createFileRoute, Link } from "@tanstack/react-router"
-import { useState } from "react"
+import { Suspense, useState } from "react"
 
-import { type Id } from "@api/data-model"
+import { hasCachedSession } from "@api/auth-store"
+import { useSuspenseConvexQuery } from "@api/convex-client"
+import { convexQueryOptions } from "@api/convex-options"
+import { type Doc, type Id } from "@api/data-model"
+import { api } from "@api/endpoints"
 import {
     useAuth,
     useCreateInvite,
-    useGroup,
-    useGroupRestaurants,
     useRevokeInvite,
     useRestaurants,
+    useSessionStatus,
     useShareWithGroup,
     useUnshare,
 } from "@core/hooks"
@@ -17,6 +20,7 @@ import { orderFeedByRecency, useSocialSummaries } from "@core/social"
 import { GroupMembers } from "@features/groups/group-members"
 import { PlanMealSection } from "@features/plans/meal-plans"
 import { EmptyState } from "@pattern/empty-state"
+import { QueryErrorState } from "@pattern/query-error"
 import { BackNav } from "@routes/-layouts/back-nav"
 import { PageContainer } from "@routes/-layouts/page-container"
 import { PageLayout } from "@routes/-layouts/page-layout"
@@ -27,7 +31,33 @@ import { LoadingPlaceholder } from "@ui/loading"
 export const Route = createFileRoute("/groups/$groupId")({
     head: () => ({ meta: [{ title: "Group details" }] }),
     component: GroupDetail,
+    errorComponent: GroupDetailError,
+    loader: ({ context, params }) => {
+        if (!hasCachedSession()) {
+            return null
+        }
+        // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- single documented boundary conversion from router param
+        const groupId = params.groupId as unknown as Id<"groups">
+        // Best-effort warm-up only: the Suspense view below refetches on its own
+        // when this has not landed, so a failed warm-up stays silent by design.
+        void context.queryClient.query(convexQueryOptions(api.groups.getGroup, { groupId })).catch(() => {})
+        void context.queryClient.query(convexQueryOptions(api.shares.listForGroup, { groupId })).catch(() => {})
+        return null
+    },
 })
+
+function GroupDetailError({ reset }: Readonly<{ reset: () => void }>) {
+    return (
+        <PageLayout>
+            <PageContainer>
+                <BackNav backTo="/groups" label="Back to groups" />
+                <div className="pt-4">
+                    <QueryErrorState reset={reset} />
+                </div>
+            </PageContainer>
+        </PageLayout>
+    )
+}
 
 function GroupNotFound() {
     return (
@@ -100,19 +130,12 @@ function GroupRestaurantsSection({
     viewer,
 }: Readonly<{
     groupId: Id<"groups">
-    restaurants: ReturnType<typeof useGroupRestaurants>
+    restaurants: ReadonlyArray<Doc<"restaurants">>
     viewer: { readonly kind: "signed-in"; readonly id: string } | { readonly kind: "signed-out" }
 }>) {
-    const summaries = useSocialSummaries(restaurants === undefined ? [] : restaurants.map((r) => r._id))
+    const summaries = useSocialSummaries(restaurants.map((r) => r._id))
     const unshare = useUnshare()
 
-    if (restaurants === undefined) {
-        return (
-            <div className="pt-4">
-                <LoadingPlaceholder />
-            </div>
-        )
-    }
     const feed = orderFeedByRecency(restaurants)
     if (feed.length === 0) {
         return (
@@ -245,29 +268,16 @@ function GroupInviteSection({ groupId }: Readonly<{ groupId: Id<"groups"> }>) {
         </section>
     )
 }
-function GroupDetail() {
+function GroupDetailView() {
     const { groupId } = Route.useParams()
     // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- single documented boundary conversion from router param
     const groupConvexId = groupId as unknown as Id<"groups">
     const auth = useAuth()
-    const group = useGroup(groupConvexId)
-    const restaurants = useGroupRestaurants(group === null || group === undefined ? null : groupConvexId)
+    const group = useSuspenseConvexQuery(api.groups.getGroup, { groupId: groupConvexId })
+    const restaurants = useSuspenseConvexQuery(api.shares.listForGroup, { groupId: groupConvexId })
 
     if (group === null) {
         return <GroupNotFound />
-    }
-
-    if (group === undefined || restaurants === undefined) {
-        return (
-            <PageLayout>
-                <PageContainer>
-                    <BackNav backTo="/groups" label="Back to groups" />
-                    <div className="pt-4">
-                        <LoadingPlaceholder />
-                    </div>
-                </PageContainer>
-            </PageLayout>
-        )
     }
 
     const sharedIds = new Set(restaurants.map((p) => p._id))
@@ -303,6 +313,41 @@ function GroupDetail() {
                         <AddFromMyList groupId={groupConvexId} sharedIds={sharedIds} />
                     </section>
                 )}
+            </PageContainer>
+        </PageLayout>
+    )
+}
+
+function GroupDetail() {
+    const status = useSessionStatus()
+
+    if (status.kind !== "ready") {
+        return (
+            <PageLayout>
+                <PageContainer>
+                    <BackNav backTo="/groups" label="Back to groups" />
+                    <div className="pt-4">
+                        <LoadingPlaceholder />
+                    </div>
+                </PageContainer>
+            </PageLayout>
+        )
+    }
+    return (
+        <Suspense fallback={<GroupDetailLoading />}>
+            <GroupDetailView />
+        </Suspense>
+    )
+}
+
+function GroupDetailLoading() {
+    return (
+        <PageLayout>
+            <PageContainer>
+                <BackNav backTo="/groups" label="Back to groups" />
+                <div className="pt-4">
+                    <LoadingPlaceholder />
+                </div>
             </PageContainer>
         </PageLayout>
     )
