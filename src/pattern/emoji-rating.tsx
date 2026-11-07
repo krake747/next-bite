@@ -58,9 +58,9 @@ export function EmojiRating({
     className?: string | undefined
 }>) {
     const [hoverRating, setHoverRating] = useState<number | undefined>(undefined)
-    const [uncontrolled, setUncontrolled] = useState<number | undefined>(defaultRating ?? undefined)
+    const [uncontrolled, setUncontrolled] = useState<number | undefined>(defaultRating)
     const isControlled = rating !== undefined
-    const current = isControlled ? (rating ?? undefined) : uncontrolled
+    const current = isControlled ? rating : uncontrolled
     const displayRating = hoverRating ?? current
 
     const selectedTitle = (() => {

@@ -17,7 +17,7 @@ export function Tabs({
     children?: React.ReactNode | undefined
 }>) {
     return (
-        <BaseTabs.Root value={value} defaultValue={defaultValue ?? undefined} onValueChange={onValueChange}>
+        <BaseTabs.Root value={value} defaultValue={defaultValue} onValueChange={onValueChange}>
             {children}
         </BaseTabs.Root>
     )

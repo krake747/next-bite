@@ -94,7 +94,7 @@ function useOwnerOrFeed(kind: "owner" | "feed"): ReadonlyArray<Doc<"restaurants"
     if (gated || result.isLoading) {
         return undefined
     }
-    return result.data ?? undefined
+    return result.data
 }
 
 export const useRestaurants = () => useOwnerOrFeed("owner")

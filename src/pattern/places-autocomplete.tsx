@@ -50,7 +50,7 @@ function handlePlaceSelectEvent(event: unknown, onChange: PlacesAutocompleteProp
                 [place.formattedAddress, place.displayName].find(
                     (part) => part !== null && part !== undefined && part !== "",
                 ) ?? ""
-            onChange(address, lat ?? undefined, lng ?? undefined, place.id ?? undefined)
+            onChange(address, lat, lng, place.id ?? undefined)
         })
 }
 

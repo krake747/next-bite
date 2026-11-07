@@ -138,7 +138,7 @@ function ProfileSection() {
     }
     return (
         <>
-            <AvatarSection avatarUrl={profile.profile.avatar?.url ?? undefined} />
+            <AvatarSection avatarUrl={profile.profile.avatar?.url} />
             <ProfileForm
                 email={profile.profile.email}
                 initialName={profile.profile.name}

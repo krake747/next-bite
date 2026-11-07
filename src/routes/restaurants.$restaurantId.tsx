@@ -209,7 +209,7 @@ function DetailComments({
     const addComment = useAddComment()
     const deleteComment = useDeleteComment()
     const isAuthenticated = auth.isAuthenticated
-    const currentUser = auth.user?.name ?? auth.user?.email ?? undefined
+    const currentUser = auth.user?.name ?? auth.user?.email
     return (
         <div className="rounded-card border border-border bg-surface p-4 shadow-card">
             <CommentList

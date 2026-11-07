@@ -177,7 +177,7 @@ export function RestaurantCard({
                     }}
                     detailsHref={detailsHref}
                 />
-                <RestaurantCardNotes notes={restaurant.details?.notes ?? undefined} />
+                <RestaurantCardNotes notes={restaurant.details?.notes} />
                 <div className="px-5 pt-1 pb-2 md:px-4">
                     <RestaurantInterestButton
                         wanted={active.wanted}
