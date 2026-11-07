@@ -439,7 +439,7 @@ export default defineConfig({
                 test: {
                     name: "pure",
                     environment: "node",
-                    include: ["src/**/*.pure.spec.{js,ts,jsx,tsx}"],
+                    include: ["src/**/*.pure.spec.{js,ts,jsx,tsx}", "lint/**/*.pure.spec.ts"],
                     testTimeout: 2000,
                     slowTestThreshold: 1500,
                 },

@@ -5,7 +5,7 @@
     "type": "module",
     "scripts": {
         "build": "vp build",
-        "check": "pnpm fmt:check && pnpm lint && pnpm lint:ts && pnpm test",
+        "check": "pnpm fmt:check && pnpm lint && pnpm lint:ts && pnpm lint:names && pnpm test",
         "check:arch": "pnpm fallow audit",
         "check:full": "pnpm check && pnpm check:arch && pnpm build",
         "convex:deploy": "convex deploy",
@@ -17,6 +17,7 @@
         "fmt:check": "vp fmt --check",
         "lint": "vp lint",
         "lint:fix": "vp lint --fix",
+        "lint:names": "node lint/same-stem.js",
         "lint:ts": "tsc -b --noEmit",
         "postinstall": "lefthook install",
         "preview": "vite preview --port=5173",

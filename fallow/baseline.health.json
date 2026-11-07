@@ -24,20 +24,6 @@
                 "count": 1
             }
         },
-        "lint/nextbite.js": {
-            "complexity_critical": {
-                "count": 2
-            },
-            "crap_critical": {
-                "count": 2
-            },
-            "crap_high": {
-                "count": 1
-            },
-            "crap_moderate": {
-                "count": 3
-            }
-        },
         "src/routes/-layouts/top-bar.tsx": {
             "crap_moderate": {
                 "count": 1
@@ -92,40 +78,6 @@
         },
         "convex/users.ts\u0000handler": {
             "crap_high": {
-                "count": 1
-            }
-        },
-        "lint/nextbite.js\u0000<arrow>": {
-            "crap_moderate": {
-                "count": 1
-            }
-        },
-        "lint/nextbite.js\u0000CallExpression": {
-            "crap_high": {
-                "count": 1
-            }
-        },
-        "lint/nextbite.js\u0000ImportDeclaration": {
-            "complexity_critical": {
-                "count": 1
-            },
-            "crap_critical": {
-                "count": 1
-            },
-            "crap_moderate": {
-                "count": 1
-            }
-        },
-        "lint/nextbite.js\u0000MemberExpression": {
-            "crap_moderate": {
-                "count": 1
-            }
-        },
-        "lint/nextbite.js\u0000fix": {
-            "complexity_critical": {
-                "count": 1
-            },
-            "crap_critical": {
                 "count": 1
             }
         },

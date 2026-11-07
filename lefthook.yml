@@ -15,6 +15,8 @@ pre-push:
       run: pnpm fmt:check
     lint:
       run: pnpm lint
+    names:
+      run: pnpm lint:names
     types:
       run: pnpm lint:ts
     test:

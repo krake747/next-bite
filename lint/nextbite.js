@@ -1,5 +1,14 @@
 import { definePlugin, defineRule } from "vite-plus/lint/plugins"
 
+import {
+    configArgumentSetsTimeout,
+    isImportMetaEnvRead,
+    isPhosphorIconImport,
+    isViSetConfigCall,
+    reportPhosphorSpecifiers,
+    reportReactTypeImports,
+} from "./rule-helpers.js"
+
 const noReactTypeImports = defineRule({
     meta: {
         type: "problem",
@@ -16,16 +25,7 @@ const noReactTypeImports = defineRule({
                 if (node.source.value !== "react") {
                     return
                 }
-                for (const specifier of node.specifiers) {
-                    const typeOnly = node.importKind === "type" || specifier.importKind === "type"
-                    if (typeOnly && specifier.local) {
-                        context.report({
-                            node: specifier,
-                            messageId: "unexpected",
-                            data: { name: specifier.local.name },
-                        })
-                    }
-                }
+                reportReactTypeImports(context, node)
             },
         }
     },
@@ -70,26 +70,10 @@ const noTestTimeout = defineRule({
     create(context) {
         return {
             CallExpression(node) {
-                if (node.callee.type !== "MemberExpression" || node.callee.computed) {
+                if (!isViSetConfigCall(node)) {
                     return
                 }
-                if (node.callee.object.type !== "Identifier" || node.callee.object.name !== "vi") {
-                    return
-                }
-                if (node.callee.property.type !== "Identifier" || node.callee.property.name !== "setConfig") {
-                    return
-                }
-                const setsTimeout = node.arguments.some(
-                    (argument) =>
-                        argument.type === "ObjectExpression" &&
-                        argument.properties.some(
-                            (property) =>
-                                property.type === "Property" &&
-                                ((property.key.type === "Identifier" && property.key.name === "testTimeout") ||
-                                    (property.key.type === "Literal" && property.key.value === "testTimeout")),
-                        ),
-                )
-                if (setsTimeout) {
+                if (node.arguments.some(configArgumentSetsTimeout)) {
                     context.report({ node, messageId: "unexpected" })
                 }
             },
@@ -110,16 +94,9 @@ const noDirectEnvRead = defineRule({
     create(context) {
         return {
             MemberExpression(node) {
-                if (node.object.type !== "MetaProperty") {
-                    return
+                if (isImportMetaEnvRead(node)) {
+                    context.report({ node, messageId: "unexpected" })
                 }
-                if (node.object.meta.name !== "import" || node.object.property.name !== "meta") {
-                    return
-                }
-                if (node.property.type !== "Identifier" || node.property.name !== "env") {
-                    return
-                }
-                context.report({ node, messageId: "unexpected" })
             },
         }
     },
@@ -208,102 +185,10 @@ const phosphorIconSuffix = defineRule({
         const sourceCode = context.sourceCode
         return {
             ImportDeclaration(node) {
-                if (node.source.value !== "@phosphor-icons/react") {
+                if (!isPhosphorIconImport(node)) {
                     return
                 }
-                if (node.importKind === "type") {
-                    return
-                }
-                for (const specifier of node.specifiers) {
-                    if (specifier.type === "ImportDefaultSpecifier") {
-                        const local = specifier.local.name
-                        context.report({
-                            node: specifier,
-                            messageId: "defaultImport",
-                            data: { name: local, expected: `${local}Icon` },
-                        })
-                        continue
-                    }
-                    if (specifier.type === "ImportNamespaceSpecifier") {
-                        context.report({ node: specifier, messageId: "namespaceImport" })
-                        continue
-                    }
-                    if (specifier.type !== "ImportSpecifier") {
-                        continue
-                    }
-                    if (specifier.importKind === "type") {
-                        continue
-                    }
-                    if (specifier.imported.type !== "Identifier") {
-                        continue
-                    }
-                    const imported = specifier.imported.name
-                    if (
-                        imported === "Icon" ||
-                        imported === "IconProps" ||
-                        imported === "IconWeight" ||
-                        imported === "IconContext" ||
-                        imported === "IconBase"
-                    ) {
-                        continue
-                    }
-                    const local = specifier.local.name
-                    if (local.endsWith("Icon")) {
-                        continue
-                    }
-                    const expected = `${imported}Icon`
-                    context.report({
-                        node: specifier.local,
-                        messageId: "missingSuffix",
-                        data: { name: imported, expected },
-                        fix(fixer) {
-                            if (local === expected) {
-                                return null
-                            }
-                            const stack = [sourceCode.scopeManager.globalScope]
-                            let variable = null
-                            while (stack.length > 0) {
-                                const scope = stack.pop()
-                                const found = scope.variables.find((candidate) =>
-                                    candidate.defs.some((definition) => definition.node === specifier),
-                                )
-                                if (found !== undefined) {
-                                    variable = found
-                                    break
-                                }
-                                stack.push(...scope.childScopes)
-                            }
-                            if (variable === null) {
-                                if (local === imported) {
-                                    return fixer.replaceText(specifier, expected)
-                                }
-                                return fixer.replaceText(specifier.local, expected)
-                            }
-                            const taken = variable.scope.variables.some(
-                                (candidate) => candidate !== variable && candidate.name === expected,
-                            )
-                            if (taken) {
-                                return null
-                            }
-                            if (local === imported) {
-                                const fixes = [fixer.replaceText(specifier, expected)]
-                                for (const reference of variable.references) {
-                                    if (reference.identifier.name === local) {
-                                        fixes.push(fixer.replaceText(reference.identifier, expected))
-                                    }
-                                }
-                                return fixes
-                            }
-                            const fixes = [fixer.replaceText(specifier.local, expected)]
-                            for (const reference of variable.references) {
-                                if (reference.identifier.name === local) {
-                                    fixes.push(fixer.replaceText(reference.identifier, expected))
-                                }
-                            }
-                            return fixes
-                        },
-                    })
-                }
+                reportPhosphorSpecifiers(context, sourceCode, node)
             },
         }
     },
