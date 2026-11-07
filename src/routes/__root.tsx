@@ -7,7 +7,7 @@ import { StrictMode, Suspense } from "react"
 
 import { AuthProvider } from "@api/auth-provider"
 import { env } from "@core/env"
-import { useEnsureProfile } from "@core/hooks"
+import { useEnsureProfile } from "@core/session"
 import { SessionTimeoutNotice } from "@routes/-components/session-timeout-notice"
 import { LoadingPlaceholder } from "@ui/loading"
 

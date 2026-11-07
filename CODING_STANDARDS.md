@@ -50,13 +50,13 @@ observable effects. Tiers, placement, and query conventions are owned by `docs/a
 this rule is the bar for what a test proves. Check: describe what breaks the test; "nothing" means
 deletion.
 
-## New Convex access lands in grouped domain modules
+## Convex access lives in grouped domain modules
 
-`src/core/hooks.ts` keeps its existing one-line endpoint wrappers for compatibility, but no new ones
-get added there. A new Convex endpoint gets a method on the module that owns the domain workflow
-(session, restaurants, social, groups, plans), so endpoint moves stay local to one module instead of
-scattering across call sites. Check in review: a new `useConvexMutation(api.…)` alias in
-`src/core/hooks.ts` without a domain workflow behind it.
+Convex endpoints are called only from the module that owns the domain workflow
+(`src/core/session.ts`, `restaurants.ts`, `social.ts`, `groups.ts`, `plans.ts`). Routes, features,
+and patterns import those modules directly; there is no shared hooks barrel. A new Convex endpoint
+gets a method on the owning module so endpoint moves stay local instead of scattering across call
+sites. Check in review: a new `useConvexMutation(api.…)` alias outside the five domain modules.
 
 ## Absent UI state is a status union
 

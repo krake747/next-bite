@@ -1,8 +1,9 @@
 import { useState } from "react"
 
 import { type Id } from "@api/data-model"
-import { useAddVisitMemory, useAuth, useCleanupStorage, useVisitMemories, type ImageRecord } from "@core/hooks"
 import { clearError, errorFrom, type FormError } from "@core/outcome"
+import { useAddVisitMemory, useCleanupStorage, useVisitMemories, type ImageRecord } from "@core/restaurants"
+import { useAuth } from "@core/session"
 import { ImageUpload } from "@pattern/image-upload"
 import { Button } from "@ui/button"
 

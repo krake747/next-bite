@@ -1,7 +1,7 @@
 import { ForkKnifeIcon, MagnifyingGlassIcon, PlusIcon, SparkleIcon } from "@phosphor-icons/react"
 import { useNavigate } from "@tanstack/react-router"
 
-import { useAuth } from "@core/hooks"
+import { useAuth } from "@core/session"
 import { Button } from "@ui/button"
 
 import { useOpenAddRestaurant } from "./add-restaurant-provider"

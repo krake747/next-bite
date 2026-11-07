@@ -1,12 +1,6 @@
 import { type Id } from "@api/data-model"
-import {
-    useFriends,
-    useMyGroups,
-    useRestaurantShares,
-    useShareWithGroup,
-    useShareWithUser,
-    useUnshare,
-} from "@core/hooks"
+import { useMyGroups, useRestaurantShares, useShareWithGroup, useShareWithUser, useUnshare } from "@core/groups"
+import { useFriends } from "@core/social"
 import { Button } from "@ui/button"
 import { Dialog, DialogBackdrop, DialogPanel, DialogTitle } from "@ui/dialog"
 

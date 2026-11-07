@@ -7,7 +7,7 @@ import { describe, expect, test, vi } from "vitest"
 import { ConvexProvider } from "@api/convex-client"
 import { createSeededClient, type MutationCall } from "@api/db/seeded-client"
 import { type Id } from "@convex/_generated/dataModel"
-import { type ImageRecord } from "@core/hooks"
+import { type ImageRecord } from "@core/restaurants"
 import { ImageUpload } from "@pattern/image-upload"
 
 type Deferred<T> = {
@@ -61,8 +61,8 @@ vi.mock("@core/image-utils", async (importOriginal) => {
     }
 })
 
-vi.mock("@core/hooks", async (importOriginal) => {
-    const original = await importOriginal<typeof import("@core/hooks")>()
+vi.mock("@core/restaurants", async (importOriginal) => {
+    const original = await importOriginal<typeof import("@core/restaurants")>()
     return {
         ...original,
         useUploadImage: () => uploadImpl,

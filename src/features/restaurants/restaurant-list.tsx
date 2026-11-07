@@ -1,4 +1,4 @@
-import { type Restaurant } from "@core/hooks"
+import { type Restaurant } from "@core/restaurants"
 import { type RestaurantSocial, type RestaurantSocialSummary } from "@core/social"
 
 import { useOpenAddRestaurant } from "./add-restaurant-provider"

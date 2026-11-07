@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from "react"
 
 import { type Id } from "@api/data-model"
 import { SyncTimeoutError, type RestaurantAddArgs, type RestaurantUpdateArgs } from "@api/db/restaurants"
-import { useAddRestaurantWithHours, useCleanupStorage, useUpdateRestaurant, type Restaurant } from "@core/hooks"
+import { useAddRestaurantWithHours, useCleanupStorage, useUpdateRestaurant, type Restaurant } from "@core/restaurants"
 import { RestaurantSchema, type RestaurantOutput } from "@core/schemas"
 import { ImageUpload } from "@pattern/image-upload"
 import { Button } from "@ui/button"

@@ -38,11 +38,18 @@ vi.mock("@core/image-utils", async (importOriginal) => {
     }
 })
 
-vi.mock("@core/hooks", async (importOriginal) => {
-    const original = await importOriginal<typeof import("@core/hooks")>()
+vi.mock("@core/session", async (importOriginal) => {
+    const original = await importOriginal<typeof import("@core/session")>()
     return {
         ...original,
         useUpdateProfile: () => ({ mutateAsync: updateMutate, isPending: false }),
+    }
+})
+
+vi.mock("@core/restaurants", async (importOriginal) => {
+    const original = await importOriginal<typeof import("@core/restaurants")>()
+    return {
+        ...original,
         useUploadImage: () => async () => {
             await Promise.resolve()
             return { url: "https://example.com/a.jpg", storageId: storageId("s9") }

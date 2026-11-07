@@ -1,8 +1,9 @@
 import { useState } from "react"
 
 import { type Id } from "@api/data-model"
-import { useAuth, useCreatePlan, usePlansForGroup, usePlansForRestaurant, useUpdatePlanStatus } from "@core/hooks"
 import { clearError, errorFrom, type FormError } from "@core/outcome"
+import { useCreatePlan, usePlansForGroup, usePlansForRestaurant, useUpdatePlanStatus } from "@core/plans"
+import { useAuth } from "@core/session"
 import { Button } from "@ui/button"
 import { LoadingPlaceholder } from "@ui/loading"
 

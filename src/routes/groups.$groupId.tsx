@@ -6,16 +6,10 @@ import { useSuspenseConvexQuery } from "@api/convex-client"
 import { convexQueryOptions } from "@api/convex-options"
 import { type Doc, type Id } from "@api/data-model"
 import { api } from "@api/endpoints"
-import {
-    useAuth,
-    useCreateInvite,
-    useRevokeInvite,
-    useRestaurants,
-    useSessionStatus,
-    useShareWithGroup,
-    useUnshare,
-} from "@core/hooks"
+import { useCreateInvite, useRevokeInvite, useShareWithGroup, useUnshare } from "@core/groups"
 import { clearError, errorFrom, type FormError } from "@core/outcome"
+import { useRestaurants } from "@core/restaurants"
+import { useAuth, useSessionStatus } from "@core/session"
 import { orderFeedByRecency, useSocialSummaries } from "@core/social"
 import { GroupMembers } from "@features/groups/group-members"
 import { PlanMealSection } from "@features/plans/meal-plans"

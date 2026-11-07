@@ -1,4 +1,4 @@
-import { useAuth } from "@core/hooks"
+import { useAuth } from "@core/session"
 import { AddRestaurantProvider } from "@features/restaurants/add-restaurant-provider"
 
 import { AppNav } from "./app-nav"

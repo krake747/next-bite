@@ -3,7 +3,7 @@ import { describe, expect, test, vi } from "vitest"
 
 import { ConvexProvider } from "@api/convex-client"
 import { createSeededClient } from "@api/db/seeded-client"
-import { useSessionStatus } from "@core/hooks"
+import { useSessionStatus } from "@core/session"
 
 type TestUser = { id: string; email: string; name: string }
 

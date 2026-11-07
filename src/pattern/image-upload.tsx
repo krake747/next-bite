@@ -3,7 +3,6 @@ import { useEffect, useRef, useState } from "react"
 
 import { type Id } from "@api/data-model"
 import { MAX_IMAGES } from "@core/constants"
-import { useCleanupStorage, useDeleteImage, useUploadImage, type ImageRecord } from "@core/hooks"
 import {
     extensionForMime,
     formatFileSize,
@@ -14,6 +13,7 @@ import {
     IMAGE_TYPE_LABEL,
 } from "@core/image-utils"
 import { clearError, errorFrom, type FormError } from "@core/outcome"
+import { useCleanupStorage, useDeleteImage, useUploadImage, type ImageRecord } from "@core/restaurants"
 import { cx } from "@ui/cva.config"
 
 type FileListLike = Readonly<{

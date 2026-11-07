@@ -11,11 +11,11 @@ import { lazy, Suspense, useState } from "react"
 import {
     useUpdateRestaurant,
     useDeleteRestaurant,
-    useAuth,
     useRefreshOpeningHours,
     useLookupPlaceIdAndHours,
     type Restaurant,
-} from "@core/hooks"
+} from "@core/restaurants"
+import { useAuth } from "@core/session"
 import { emptySocialSummary, type RestaurantSocial, type RestaurantSocialSummary } from "@core/social"
 import { EmojiRating } from "@pattern/emoji-rating"
 import { Button } from "@ui/button"

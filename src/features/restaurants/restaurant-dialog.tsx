@@ -2,7 +2,8 @@ import { ForkKnifeIcon } from "@phosphor-icons/react"
 import { Link } from "@tanstack/react-router"
 import { useRef } from "react"
 
-import { useAuth, type Restaurant } from "@core/hooks"
+import { type Restaurant } from "@core/restaurants"
+import { useAuth } from "@core/session"
 import { Button } from "@ui/button"
 import { Dialog, DialogBackdrop, DialogPanel, DialogTitle } from "@ui/dialog"
 

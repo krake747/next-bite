@@ -1,6 +1,6 @@
 import { Link } from "@tanstack/react-router"
 
-import { useAuth } from "@core/hooks"
+import { useAuth } from "@core/session"
 
 export function SignedOutGate({
     context,

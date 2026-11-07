@@ -1,7 +1,7 @@
 import { ForkKnifeIcon, SignOutIcon, UserIcon } from "@phosphor-icons/react"
 import { Link } from "@tanstack/react-router"
 
-import { useAuth } from "@core/hooks"
+import { useAuth } from "@core/session"
 import { LazyImage } from "@pattern/lazy-image"
 import { Button } from "@ui/button"
 import { Popover, PopoverPanel, PopoverTrigger } from "@ui/popover"

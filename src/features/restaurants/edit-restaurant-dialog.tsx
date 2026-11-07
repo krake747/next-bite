@@ -1,4 +1,4 @@
-import { type Restaurant } from "@core/hooks"
+import { type Restaurant } from "@core/restaurants"
 
 import { RestaurantDialog } from "./restaurant-dialog"
 

@@ -16,7 +16,6 @@
         "deadCodeBaseline": "fallow/baseline.dead-code.json",
         "healthBaseline": "fallow/baseline.health.json"
     },
-    "ignoreExports": [{ "file": "src/core/hooks.ts", "exports": ["useAuth"] }],
     "ignoreFindings": ["cloudflare.config.ts", "doctor.config.ts"],
     "boundaries": {
         "zones": [

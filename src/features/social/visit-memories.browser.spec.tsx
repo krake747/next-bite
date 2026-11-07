@@ -45,8 +45,8 @@ vi.mock("@core/image-utils", async (importOriginal) => {
     }
 })
 
-vi.mock("@core/hooks", async (importOriginal) => {
-    const original = await importOriginal<typeof import("@core/hooks")>()
+vi.mock("@core/session", async (importOriginal) => {
+    const original = await importOriginal<typeof import("@core/session")>()
     const noop = async () => {
         await Promise.resolve()
     }
@@ -65,6 +65,16 @@ vi.mock("@core/hooks", async (importOriginal) => {
             verifyOtp: noop,
             signOut: noop,
         }),
+    }
+})
+
+vi.mock("@core/restaurants", async (importOriginal) => {
+    const original = await importOriginal<typeof import("@core/restaurants")>()
+    const noop = async () => {
+        await Promise.resolve()
+    }
+    return {
+        ...original,
         useVisitMemories: () => scriptedMemories,
         useAddVisitMemory: () => ({ mutateAsync: addMutate, isPending: false }),
         useCleanupStorage: () => ({ mutateAsync: noop }),

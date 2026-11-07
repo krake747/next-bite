@@ -5,7 +5,7 @@ import { describe, expect, test, vi } from "vitest"
 import { getConvexSessionToken } from "@api/auth-client"
 
 import { server } from "../vitest.msw.setup"
-import { useUploadImage } from "./hooks"
+import { useUploadImage } from "./restaurants"
 
 vi.mock("@api/auth-client", async (importOriginal) => {
     const original = await importOriginal<typeof import("@api/auth-client")>()

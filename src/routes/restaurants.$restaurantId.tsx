@@ -6,7 +6,8 @@ import { useSuspenseConvexQuery } from "@api/convex-client"
 import { convexQueryOptions } from "@api/convex-options"
 import { type Id } from "@api/data-model"
 import { api } from "@api/endpoints"
-import { useAuth, type Restaurant } from "@core/hooks"
+import { type Restaurant } from "@core/restaurants"
+import { useAuth } from "@core/session"
 import {
     emptySocial,
     useAddComment,

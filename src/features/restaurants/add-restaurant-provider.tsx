@@ -1,6 +1,6 @@
 import { createContext, use, useState } from "react"
 
-import { useAuth } from "@core/hooks"
+import { useAuth } from "@core/session"
 
 import { AddRestaurantDialog } from "./add-restaurant-dialog"
 

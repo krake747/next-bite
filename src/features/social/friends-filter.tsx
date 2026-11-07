@@ -1,6 +1,6 @@
 import { ArrowsDownUpIcon, FunnelIcon } from "@phosphor-icons/react"
 
-import { useFriends } from "@core/hooks"
+import { useFriends } from "@core/social"
 import { cx } from "@ui/cva.config"
 import { SearchInput } from "@ui/search-input"
 import { Skeleton } from "@ui/skeleton"

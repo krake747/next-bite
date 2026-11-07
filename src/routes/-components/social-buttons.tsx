@@ -1,4 +1,4 @@
-import { useAuth } from "@core/hooks"
+import { useAuth } from "@core/session"
 
 import { PendingButton } from "./pending-button"
 

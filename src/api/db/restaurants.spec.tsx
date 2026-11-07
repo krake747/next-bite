@@ -4,7 +4,7 @@ import { type ConvexReactClient } from "convex/react"
 import { describe, expect, test, vi } from "vitest"
 
 import { type Id } from "@convex/_generated/dataModel"
-import { useRestaurants } from "@core/hooks"
+import { useRestaurants } from "@core/restaurants"
 
 import { authClient } from "../auth-client"
 import { AuthProvider, useAuth as useProbeAuth } from "../auth-provider"

@@ -7,7 +7,7 @@ import { ConvexProvider } from "@api/convex-client"
 import { SyncTimeoutError, type RestaurantAddArgs } from "@api/db/restaurants"
 import { createSeededClient, type MutationCall } from "@api/db/seeded-client"
 import { type Id } from "@convex/_generated/dataModel"
-import { type ImageRecord } from "@core/hooks"
+import { type ImageRecord } from "@core/restaurants"
 
 import { RestaurantDialog } from "./restaurant-dialog"
 
@@ -62,8 +62,8 @@ vi.mock("@api/auth-client", () => ({
     },
 }))
 
-vi.mock("@core/hooks", async (importOriginal) => {
-    const original = await importOriginal<typeof import("@core/hooks")>()
+vi.mock("@core/restaurants", async (importOriginal) => {
+    const original = await importOriginal<typeof import("@core/restaurants")>()
     return {
         ...original,
         useUploadImage: () => uploadImpl,

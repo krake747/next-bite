@@ -1,4 +1,4 @@
-import { useSessionStatus } from "@core/hooks"
+import { useSessionStatus } from "@core/session"
 import { Button } from "@ui/button"
 
 export function SessionTimeoutNotice() {

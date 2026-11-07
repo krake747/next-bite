@@ -1,13 +1,13 @@
 import { fireEvent, render, screen } from "@testing-library/react"
 import { describe, expect, test, vi } from "vitest"
 
-import { type SessionStatus } from "@core/hooks"
+import { type SessionStatus } from "@core/session"
 import { SessionTimeoutNotice } from "@routes/-components/session-timeout-notice"
 
 let scriptedStatus: SessionStatus = { kind: "loading" }
 
-vi.mock("@core/hooks", async (importOriginal) => {
-    const original = await importOriginal<typeof import("@core/hooks")>()
+vi.mock("@core/session", async (importOriginal) => {
+    const original = await importOriginal<typeof import("@core/session")>()
     return {
         ...original,
         useSessionStatus: () => scriptedStatus,

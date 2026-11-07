@@ -1,7 +1,8 @@
 import { useNavigate } from "@tanstack/react-router"
 import { createContext, use } from "react"
 
-import { useAuth, type Restaurant } from "@core/hooks"
+import { type Restaurant } from "@core/restaurants"
+import { useAuth } from "@core/session"
 import {
     emptySocialSummary,
     useSocialSummaries,
