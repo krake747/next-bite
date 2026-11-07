@@ -14,11 +14,6 @@ needed, not how it is implemented.
 What we decided and what we ruled out. State the principle so it generalizes beyond this codebase.
 Keep filenames, key names, and literal values out of the decision.
 
-Optional one-line Y-statement first:
-
-> In the context of `<use case>`, facing `<concern>`, we decided for `<option>` and against
-> `<alternative>` to achieve `<value>`, accepting `<tradeoff>`.
-
 ## Consequences
 
 What becomes easier or harder because of this choice, what tradeoffs we accept. No implementation
