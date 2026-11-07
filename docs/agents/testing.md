@@ -35,7 +35,9 @@ Tiers are picked by filename suffix. `pnpm test` runs them all; scope with `pnpm
 | `pnpm test:watch`       | Vitest in watch mode                                                                                                           |
 | `pnpm test:e2e`         | Playwright gate in a real browser against a local Worker preview (on demand, needs browsers plus wrangler; see `toolchain.md`) |
 
-Run tests only for files you change. Run the full suite only when asked.
+Run tests only for files you change. `pnpm exec vitest run --sinceLastRun` selects the affected
+tests from the recorded dependencies (first run populates the records, so seed it with `pnpm test`);
+scope further with `--project <tier>` when you know it. Run the full suite only when asked.
 
 ## Unit tests
 

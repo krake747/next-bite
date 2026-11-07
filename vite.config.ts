@@ -460,6 +460,11 @@ export default defineConfig({
     ]),
     test: {
         globals: false,
+        // Record wait steps (expect.poll, vi.waitFor, vi.waitUntil) so the next
+        // flaky timeout explains itself instead of just timing out.
+        experimental: {
+            traceTimeline: true,
+        },
         env: {
             VITE_CONVEX_URL: "https://example.convex.cloud",
             VITE_CONVEX_SITE_URL: "https://example.convex.site",
