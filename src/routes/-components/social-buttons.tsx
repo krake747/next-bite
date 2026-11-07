@@ -20,8 +20,8 @@ export function SocialButtons({
                     className="w-full"
                     pending={auth.isLoading}
                     onClick={() => {
-                        // Auth errors already land in the auth store; swallow here to avoid an unhandled rejection.
-                        void auth.signInWithSocial("google", redirect).catch(() => {})
+                        // Auth errors land in the auth store; the step resolves false instead of rejecting.
+                        void auth.signInWithSocial("google", redirect)
                     }}
                 >
                     Continue with Google
@@ -34,8 +34,8 @@ export function SocialButtons({
                     className="w-full"
                     pending={auth.isLoading}
                     onClick={() => {
-                        // Auth errors already land in the auth store; swallow here to avoid an unhandled rejection.
-                        void auth.signInWithSocial("github", redirect).catch(() => {})
+                        // Auth errors land in the auth store; the step resolves false instead of rejecting.
+                        void auth.signInWithSocial("github", redirect)
                     }}
                 >
                     Continue with GitHub

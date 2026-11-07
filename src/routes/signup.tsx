@@ -55,13 +55,12 @@ function SignupPage() {
             return
         }
 
-        try {
-            await auth.signUpWithPassword(output.name, output.email, output.password)
-            const safeRedirect = isSafeRedirectPath(redirectTo) ? redirectTo : "/"
-            void navigate({ to: safeRedirect, replace: true, from: Route.fullPath })
-        } catch {
+        const ok = await auth.signUpWithPassword(output.name, output.email, output.password)
+        if (!ok) {
             return
         }
+        const safeRedirect = isSafeRedirectPath(redirectTo) ? redirectTo : "/"
+        void navigate({ to: safeRedirect, replace: true, from: Route.fullPath })
     }
 
     if (auth.isLoading) {

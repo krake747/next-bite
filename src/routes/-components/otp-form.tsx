@@ -30,24 +30,22 @@ export function OtpForm({
     const codeField = useField(codeForm, { path: ["code"] })
 
     const handleSend = async (output: Readonly<{ email: string }>) => {
-        try {
-            await auth.requestOtp(output.email)
-            onEmailChange(output.email)
-        } catch {
+        const ok = await auth.requestOtp(output.email)
+        if (!ok) {
             return
         }
+        onEmailChange(output.email)
     }
 
     const handleVerify = async (output: Readonly<{ code: string }>) => {
         if (email === undefined) {
             return
         }
-        try {
-            await auth.verifyOtp(email, output.code)
-            onSuccess()
-        } catch {
+        const ok = await auth.verifyOtp(email, output.code)
+        if (!ok) {
             return
         }
+        onSuccess()
     }
 
     if (email === undefined) {

@@ -48,12 +48,11 @@ function LoginPage() {
     }
 
     const handleEmailSubmit = async (output: Readonly<LoginInput>) => {
-        try {
-            await auth.signInWithPassword(output.email, output.password)
-            goHome()
-        } catch {
+        const ok = await auth.signInWithPassword(output.email, output.password)
+        if (!ok) {
             return
         }
+        goHome()
     }
 
     if (auth.isLoading) {

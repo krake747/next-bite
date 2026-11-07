@@ -52,16 +52,17 @@ function createDeferred(): Deferred {
     return { promise, resolve, reject }
 }
 
-async function fakeAuthStep(fallbackMessage: string): Promise<void> {
+async function fakeAuthStep(fallbackMessage: string): Promise<boolean> {
     publishAuth({ isLoading: true, error: null })
     pendingAuth = createDeferred()
     try {
         await pendingAuth.promise
     } catch (error) {
         publishAuth({ isLoading: false, error: error instanceof Error ? error.message : fallbackMessage })
-        throw error
+        return false
     }
     publishAuth({ isLoading: false, error: null })
+    return true
 }
 
 async function noop(): Promise<void> {
@@ -96,10 +97,10 @@ vi.mock("@core/auth-provider", async (importOriginal) => {
                 signUpWithPassword: noop,
                 signInWithSocial: noop,
                 requestOtp: async (_email: string) => {
-                    await fakeAuthStep("Could not send code")
+                    return fakeAuthStep("Could not send code")
                 },
                 verifyOtp: async (_email: string, _code: string) => {
-                    await fakeAuthStep("Invalid code")
+                    return fakeAuthStep("Invalid code")
                 },
                 signOut: noop,
             }

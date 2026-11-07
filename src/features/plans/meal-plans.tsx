@@ -23,7 +23,15 @@ function formatPlanDate(value: number): string {
     return date.toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" })
 }
 
-function PlanCard({ plan, canUpdate }: Readonly<{ plan: PlanRow; canUpdate: boolean }>) {
+function PlanCard({
+    plan,
+    canUpdate,
+    onUpdateError,
+}: Readonly<{
+    plan: PlanRow
+    canUpdate: boolean
+    onUpdateError: (error: unknown) => void
+}>) {
     const updateStatus = useUpdatePlanStatus()
     return (
         <li className="rounded-card border border-border bg-surface p-4 shadow-card">
@@ -42,7 +50,7 @@ function PlanCard({ plan, canUpdate }: Readonly<{ plan: PlanRow; canUpdate: bool
                         tone="secondary"
                         disabled={updateStatus.isPending}
                         onClick={() => {
-                            void updateStatus.mutateAsync({ planId: plan._id, status: "done" }).catch(() => {})
+                            updateStatus.mutate({ planId: plan._id, status: "done" }, { onError: onUpdateError })
                         }}
                     >
                         Mark done
@@ -52,7 +60,7 @@ function PlanCard({ plan, canUpdate }: Readonly<{ plan: PlanRow; canUpdate: bool
                         tone="secondary"
                         disabled={updateStatus.isPending}
                         onClick={() => {
-                            void updateStatus.mutateAsync({ planId: plan._id, status: "cancelled" }).catch(() => {})
+                            updateStatus.mutate({ planId: plan._id, status: "cancelled" }, { onError: onUpdateError })
                         }}
                     >
                         Cancel
@@ -66,9 +74,11 @@ function PlanCard({ plan, canUpdate }: Readonly<{ plan: PlanRow; canUpdate: bool
 function PlanList({
     plans,
     viewer,
+    onUpdateError,
 }: Readonly<{
     plans: ReadonlyArray<PlanRow>
     viewer: { readonly kind: "signed-in"; readonly id: string } | { readonly kind: "signed-out" }
+    onUpdateError: (error: unknown) => void
 }>) {
     if (plans.length === 0) {
         return <p className="pt-3 text-sm text-muted-foreground">No plans yet. Propose the first date above.</p>
@@ -80,6 +90,7 @@ function PlanList({
                     key={plan._id}
                     plan={plan}
                     canUpdate={viewer.kind === "signed-in" && plan.createdBy === viewer.id}
+                    onUpdateError={onUpdateError}
                 />
             ))}
         </ul>
@@ -174,7 +185,13 @@ export function PlanMealSection({
                     {error.message}
                 </p>
             )}
-            <PlanList plans={plans} viewer={viewer} />
+            <PlanList
+                plans={plans}
+                viewer={viewer}
+                onUpdateError={(error) => {
+                    setError(errorFrom(error, "Could not update the plan"))
+                }}
+            />
         </section>
     )
 }

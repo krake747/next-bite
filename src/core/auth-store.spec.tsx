@@ -261,9 +261,8 @@ describe("auth lifecycle ownership", () => {
         render(<Probe />)
 
         await act(async () => {
-            await expect(currentStore().signInWithPassword("a@example.com", "wrongpass")).rejects.toThrow(
-                "bad password",
-            )
+            const ok = await currentStore().signInWithPassword("a@example.com", "wrongpass")
+            expect(ok).toBe(false)
         })
         expect(screen.getByText("error:bad password")).toBeInTheDocument()
 

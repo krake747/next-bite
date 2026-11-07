@@ -176,7 +176,10 @@ export function useAuthStore() {
         }
     }
 
-    async function runAuthStep(fallbackMessage: string, attempt: (generation: number) => Promise<void>): Promise<void> {
+    async function runAuthStep(
+        fallbackMessage: string,
+        attempt: (generation: number) => Promise<void>,
+    ): Promise<boolean> {
         const generation = claimGeneration()
         dispatch({ type: "SET_LOADING", isLoading: true })
         dispatch({ type: "SET_ERROR", error: null })
@@ -186,12 +189,13 @@ export function useAuthStore() {
             if (generation === currentGeneration()) {
                 dispatch({ type: "SET_ERROR", error: err instanceof Error ? err.message : fallbackMessage })
             }
-            throw err
+            return false
         } finally {
             if (generation === currentGeneration()) {
                 dispatch({ type: "SET_LOADING", isLoading: false })
             }
         }
+        return true
     }
 
     function throwAuthError(message: string | undefined, fallbackMessage: string): never {
@@ -223,9 +227,9 @@ export function useAuthStore() {
     const authenticateWithPassword = async (
         action: "signIn" | "signUp",
         credentials: Readonly<{ name?: string | undefined; email: string; password: string }>,
-    ) => {
+    ): Promise<boolean> => {
         const fallbackMessage = action === "signIn" ? "Sign in failed" : "Sign up failed"
-        await runAuthStep(fallbackMessage, async (generation) => {
+        return runAuthStep(fallbackMessage, async (generation) => {
             const result =
                 action === "signIn"
                     ? await authClient.signIn.email({ email: credentials.email, password: credentials.password })
@@ -247,16 +251,16 @@ export function useAuthStore() {
         })
     }
 
-    const signInWithPassword = async (email: string, password: string) => {
-        await authenticateWithPassword("signIn", { email, password })
+    const signInWithPassword = async (email: string, password: string): Promise<boolean> => {
+        return authenticateWithPassword("signIn", { email, password })
     }
 
-    const signUpWithPassword = async (name: string, email: string, password: string) => {
-        await authenticateWithPassword("signUp", { name, email, password })
+    const signUpWithPassword = async (name: string, email: string, password: string): Promise<boolean> => {
+        return authenticateWithPassword("signUp", { name, email, password })
     }
 
-    const signInWithSocial = async (provider: "google" | "github", redirect?: string) => {
-        await runAuthStep("Social sign in failed", async () => {
+    const signInWithSocial = async (provider: "google" | "github", redirect?: string): Promise<boolean> => {
+        return runAuthStep("Social sign in failed", async () => {
             const safeRedirect =
                 redirect !== undefined && redirect.startsWith("/") && !redirect.startsWith("//") ? redirect : "/"
             const result = await authClient.signIn.social({ provider, callbackURL: safeRedirect })
@@ -266,8 +270,8 @@ export function useAuthStore() {
         })
     }
 
-    const requestOtp = async (email: string) => {
-        await runAuthStep("Could not send code", async () => {
+    const requestOtp = async (email: string): Promise<boolean> => {
+        return runAuthStep("Could not send code", async () => {
             const result = await authClient.emailOtp.sendVerificationOtp({ email, type: "sign-in" })
             if (result.error) {
                 throwAuthError(result.error.message, "Could not send code")
@@ -275,8 +279,8 @@ export function useAuthStore() {
         })
     }
 
-    const verifyOtp = async (email: string, otp: string) => {
-        await runAuthStep("Invalid code", async (generation) => {
+    const verifyOtp = async (email: string, otp: string): Promise<boolean> => {
+        return runAuthStep("Invalid code", async (generation) => {
             const result = await authClient.signIn.emailOtp({ email, otp })
             if (result.error) {
                 throwAuthError(result.error.message, "Invalid code")

@@ -18,6 +18,11 @@ async function noopServerAuthStep(): Promise<void> {
     await Promise.resolve()
 }
 
+async function noopServerAuthResult(): Promise<boolean> {
+    await Promise.resolve()
+    return false
+}
+
 const serverAuthStore: AuthStore = {
     // Auth-unknown: the server has no session, so it renders the same loading variant as the
     // client's first render. Matching first renders keeps hydration clean; resolved auth state
@@ -27,11 +32,11 @@ const serverAuthStore: AuthStore = {
     user: null,
     error: null,
     initializeAuth: noopServerAuthStep,
-    signInWithPassword: noopServerAuthStep,
-    signUpWithPassword: noopServerAuthStep,
-    signInWithSocial: noopServerAuthStep,
-    requestOtp: noopServerAuthStep,
-    verifyOtp: noopServerAuthStep,
+    signInWithPassword: noopServerAuthResult,
+    signUpWithPassword: noopServerAuthResult,
+    signInWithSocial: noopServerAuthResult,
+    requestOtp: noopServerAuthResult,
+    verifyOtp: noopServerAuthResult,
     signOut: noopServerAuthStep,
 }
 
