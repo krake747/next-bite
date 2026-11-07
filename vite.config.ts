@@ -407,6 +407,11 @@ export default defineConfig({
     optimizeDeps: {
         // Pre-bundle route-split deep imports so navigating to a lazy route
         // does not trigger "optimized dependencies changed" reloads.
+        // The browser test tier imports below must stay pre-bundled too, or
+        // the first cold run reloads mid-suite and flakes.
+        // dataModel has types only (no runtime file); the scanner cannot
+        // resolve it, so exclude it instead of letting it fail the scan.
+        exclude: ["@convex/_generated/dataModel"],
         include: [
             "@base-ui/react/avatar",
             "@base-ui/react/button",
@@ -417,6 +422,24 @@ export default defineConfig({
             "@base-ui/react/use-render",
             "@formisch/react",
             "@phosphor-icons/react",
+            "@testing-library/jest-dom/vitest",
+            "@testing-library/react",
+            "@convex-dev/better-auth/client/plugins",
+            "@convex-dev/better-auth/react",
+            "@convex-dev/react-query",
+            "@tanstack/convex-db-collection",
+            "@tanstack/db",
+            "@tanstack/react-db",
+            "@tanstack/react-query",
+            "@vis.gl/react-google-maps",
+            "cn",
+            "convex/react",
+            "convex/server",
+            "cva/config",
+            "react",
+            "react-dom",
+            "valibot",
+            "vitest-browser-react",
         ],
     },
     build: {
