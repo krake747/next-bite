@@ -22,7 +22,7 @@ export default defineConfig({
         tabWidth: 4,
         semi: false,
         sortImports: {
-            internalPattern: ["@core", "@ui", "@pattern", "@features", "@routes", "@convex"],
+            internalPattern: ["@core", "@api", "@ui", "@pattern", "@features", "@routes", "@convex"],
         },
         sortTailwindcss: {
             stylesheet: "src/index.css",

@@ -2,9 +2,8 @@ import { QueryClient } from "@tanstack/react-query"
 import { type ConvexReactClient } from "convex/react"
 import { getFunctionName } from "convex/server"
 
+import { convexArgsKey } from "@api/convex-client"
 import { ConvexQueryClient } from "@convex-dev/react-query"
-
-import { convexArgsKey } from "../convex-client"
 
 export type SeedMap = Map<string, unknown>
 export type MutationCall = { fn: string; args: unknown }

@@ -1,13 +1,13 @@
 import { ClockIcon } from "@phosphor-icons/react"
 
+import { cx } from "@ui/cva.config"
 import {
     isOpenNow,
     openStatusLabel,
     parseDayText,
     todayText,
     type OpeningHours as OpeningHoursData,
-} from "@core/opening-hours"
-import { cx } from "@ui/cva.config"
+} from "@ui/opening-hours-utils"
 import { focusRing } from "@ui/variants"
 
 export function OpeningHours({

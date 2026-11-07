@@ -1,6 +1,6 @@
 import { CommentList } from "@features/social/comment-list"
 import { ReactionBar } from "@features/social/reaction-bar"
-import { SocialMetadata } from "@features/social/social-metadata"
+import { SocialMetadata } from "@pattern/social-metadata"
 import { Card } from "@ui/card"
 
 export const socialMeta = {

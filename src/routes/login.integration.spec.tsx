@@ -3,7 +3,7 @@ import { act, fireEvent, render, screen, waitFor } from "@testing-library/react"
 import { useSyncExternalStore } from "react"
 import { describe, expect, test, vi } from "vitest"
 
-import { ConvexProvider } from "@core/convex-client"
+import { ConvexProvider } from "@api/convex-client"
 import { createSeededClient, seedKey } from "@core/db/seeded-client"
 
 import { routeTree } from "../routeTree.gen"

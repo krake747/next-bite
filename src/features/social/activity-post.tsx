@@ -1,9 +1,9 @@
 import { AvatarGroup, type AvatarMember } from "@pattern/avatar-group"
 import { photoUrls } from "@pattern/gallery"
 import { LazyImage } from "@pattern/lazy-image"
+import { SocialMetadata } from "@pattern/social-metadata"
 
 import { ReactionBar, type Reactions } from "./reaction-bar"
-import { SocialMetadata } from "./social-metadata"
 
 export type ActivityAuthor = {
     readonly name: string

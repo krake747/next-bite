@@ -3,19 +3,19 @@ import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { type ConvexReactClient } from "convex/react"
 import { useEffect, useRef } from "react"
 
-import { api } from "@convex/_generated/api"
-import { type Doc, type Id } from "@convex/_generated/dataModel"
-
-import { getConvexSessionToken } from "./auth-client"
-import { useAuth as useAuthSource } from "./auth-provider"
-import { FALLBACK_DISPLAY_NAME } from "./constants"
 import {
     useConvexClient,
     useConvexQuery,
     useConvexQueryResult,
     useConvexMutation,
     useConvexAction,
-} from "./convex-client.tsx"
+} from "@api/convex-client"
+import { type Doc, type Id } from "@api/data-model"
+import { api } from "@api/endpoints"
+
+import { getConvexSessionToken } from "./auth-client"
+import { useAuth as useAuthSource } from "./auth-provider"
+import { FALLBACK_DISPLAY_NAME } from "./constants"
 import {
     applyUpdateArgsToDraft,
     assertRealRestaurantId,

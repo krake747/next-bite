@@ -1,8 +1,8 @@
 import { ClockIcon } from "@phosphor-icons/react"
 
-import { type OpeningHours } from "@core/opening-hours"
-import { isOpenNow, openStatusLabel, orderedWeek, parseDayText, todayIndex } from "@core/opening-hours"
 import { cx } from "@ui/cva.config"
+import { type OpeningHours } from "@ui/opening-hours-utils"
+import { isOpenNow, openStatusLabel, orderedWeek, parseDayText, todayIndex } from "@ui/opening-hours-utils"
 
 import { Badge } from "./badge"
 import { Dialog, DialogBackdrop, DialogCloseButton, DialogPanel, DialogTitle } from "./dialog"

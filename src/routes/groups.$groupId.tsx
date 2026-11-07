@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router"
 import { useState } from "react"
 
-import { type Id } from "@convex/_generated/dataModel"
+import { type Id } from "@api/data-model"
 import {
     useAuth,
     useCreateInvite,

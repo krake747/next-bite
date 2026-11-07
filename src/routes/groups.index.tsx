@@ -1,8 +1,8 @@
 import { createFileRoute, Link } from "@tanstack/react-router"
 import { Suspense, useState } from "react"
 
-import { api } from "@convex/_generated/api"
-import { useSuspenseConvexQuery } from "@core/convex-client"
+import { useSuspenseConvexQuery } from "@api/convex-client"
+import { api } from "@api/endpoints"
 import { useCreateGroup, useSessionStatus } from "@core/hooks"
 import { clearError, errorFrom, type FormError } from "@core/outcome"
 import { EmptyState } from "@pattern/empty-state"

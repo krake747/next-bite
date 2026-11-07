@@ -28,8 +28,8 @@ const SESSION = "user-1"
 
 let injectedClient: ConvexReactClient | null = null
 
-vi.mock("../convex-client", async (importOriginal) => {
-    const original = await importOriginal<typeof import("../convex-client")>()
+vi.mock("@api/convex-client", async (importOriginal) => {
+    const original = await importOriginal<typeof import("@api/convex-client")>()
     return { ...original, useConvexClient: () => injectedClient }
 })
 

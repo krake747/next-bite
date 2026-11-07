@@ -2,7 +2,7 @@ import { RouterProvider, createMemoryHistory, createRouter } from "@tanstack/rea
 import { fireEvent, render, screen, within, waitFor } from "@testing-library/react"
 import { describe, expect, test, vi } from "vitest"
 
-import { ConvexProvider } from "@core/convex-client"
+import { ConvexProvider } from "@api/convex-client"
 import { type RestaurantDoc } from "@core/db/restaurants"
 import { createSeededClient, seedKey } from "@core/db/seeded-client"
 

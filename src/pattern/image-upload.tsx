@@ -1,7 +1,7 @@
 import { ImageIcon, UploadIcon, XIcon } from "@phosphor-icons/react"
 import { useEffect, useRef, useState } from "react"
 
-import { type Id } from "@convex/_generated/dataModel"
+import { type Id } from "@api/data-model"
 import { MAX_IMAGES } from "@core/constants"
 import { useCleanupStorage, useDeleteImage, useUploadImage, type ImageRecord } from "@core/hooks"
 import {

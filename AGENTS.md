@@ -18,9 +18,10 @@ Use this file as a routing layer into the repo docs.
 - Branch names follow `docs/agents/agent-contract.md`: `<type>/NNN-short-slug`.
 - When working on Convex code, always read `convex/_generated/ai/guidelines.md` first. It overrides
   training-data defaults.
-- Layers live in `src/` plus `convex/`, owned by `.fallowrc.json`. Shared utilities in `core/`,
-  low-level components in `ui/`, composable patterns in `pattern/`, feature areas in `features/`,
-  pages in `routes/`, backend in `convex/`. Read the owner for exact zones and import rules.
+- Layers live in `src/` plus `convex/`, owned by `.fallowrc.json`. Shared utilities in `core/`, the
+  Convex adapter in `api/` (the only layer that touches generated code and SDK libs), low-level
+  components in `ui/`, composable patterns in `pattern/`, feature areas in `features/`, pages in
+  `routes/`, backend in `convex/`. Read the owner for exact zones and import rules.
 
 ## Read on demand
 

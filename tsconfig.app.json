@@ -5,6 +5,7 @@
             "@ui/*": ["./src/ui/*"],
             "@pattern/*": ["./src/pattern/*"],
             "@core/*": ["./src/core/*"],
+            "@api/*": ["./src/api/*"],
             "@features/*": ["./src/features/*"],
             "@routes/*": ["./src/routes/*"],
             "@convex/*": ["./convex/*"]

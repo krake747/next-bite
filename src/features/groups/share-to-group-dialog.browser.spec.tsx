@@ -2,8 +2,8 @@ import { QueryClientProvider } from "@tanstack/react-query"
 import { fireEvent, render, screen, waitFor } from "@testing-library/react"
 import { describe, expect, test, vi } from "vitest"
 
+import { ConvexProvider } from "@api/convex-client"
 import { type Id } from "@convex/_generated/dataModel"
-import { ConvexProvider } from "@core/convex-client"
 import { createSeededClient, seedKey, type MutationCall } from "@core/db/seeded-client"
 
 import { ShareToGroupDialog } from "./share-to-group-dialog"

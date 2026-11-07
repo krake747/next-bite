@@ -2,8 +2,8 @@ import { convexCollectionOptions } from "@tanstack/convex-db-collection"
 import { createCollection } from "@tanstack/db"
 import { type ConvexReactClient } from "convex/react"
 
-import { api } from "@convex/_generated/api"
-import { type Doc, type Id } from "@convex/_generated/dataModel"
+import { type Doc, type Id } from "@api/data-model"
+import { api } from "@api/endpoints"
 
 import { sleep } from "../async"
 import { mergeDetails, mergeEnrichment } from "../restaurant-details"

@@ -1,6 +1,6 @@
 import { useState } from "react"
 
-import { type Id } from "@convex/_generated/dataModel"
+import { type Id } from "@api/data-model"
 import { useAuth, useCreatePlan, usePlansForGroup, usePlansForRestaurant, useUpdatePlanStatus } from "@core/hooks"
 import { clearError, errorFrom, type FormError } from "@core/outcome"
 import { Button } from "@ui/button"

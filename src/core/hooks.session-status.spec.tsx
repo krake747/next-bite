@@ -1,7 +1,7 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react"
 import { describe, expect, test, vi } from "vitest"
 
-import { ConvexProvider } from "@core/convex-client"
+import { ConvexProvider } from "@api/convex-client"
 import { createSeededClient } from "@core/db/seeded-client"
 import { useSessionStatus } from "@core/hooks"
 

@@ -19,42 +19,22 @@
     "boundaries": {
         "zones": [
             { "name": "core", "patterns": ["src/core/**"] },
+            { "name": "api", "patterns": ["src/api/**"] },
             { "name": "ui", "patterns": ["src/ui/**"] },
             { "name": "pattern", "patterns": ["src/pattern/**"] },
-            { "name": "features", "patterns": ["src/features/*.ts", "src/features/*.tsx"] },
-            { "name": "features-restaurants", "patterns": ["src/features/restaurants/**"] },
-            { "name": "features-social", "patterns": ["src/features/social/**"] },
-            { "name": "features-groups", "patterns": ["src/features/groups/**"] },
-            { "name": "features-plans", "patterns": ["src/features/plans/**"] },
+            { "name": "features", "patterns": ["src/features/**"] },
             { "name": "routes", "patterns": ["src/routes/**"] },
             { "name": "convex", "patterns": ["convex/**"] }
         ],
         "rules": [
-            { "from": "core", "allow": ["core", "convex", "ui"] },
-            { "from": "ui", "allow": ["core", "ui"] },
-            { "from": "pattern", "allow": ["core", "ui", "pattern", "convex"] },
-            { "from": "features", "allow": ["core", "ui", "pattern", "features", "convex"] },
-            {
-                "from": "features-restaurants",
-                "allow": ["core", "ui", "pattern", "features", "features-social", "convex"]
-            },
-            { "from": "features-social", "allow": ["core", "ui", "pattern", "features", "convex"] },
-            { "from": "features-groups", "allow": ["core", "ui", "pattern", "features", "features-social", "convex"] },
-            { "from": "features-plans", "allow": ["core", "ui", "pattern", "features", "convex"] },
+            { "from": "core", "allow": ["core", "api", "convex"] },
+            { "from": "api", "allow": ["api", "convex"] },
+            { "from": "ui", "allow": ["ui"] },
+            { "from": "pattern", "allow": ["core", "ui", "pattern", "api"], "allowTypeOnly": ["convex"] },
+            { "from": "features", "allow": ["core", "ui", "pattern", "api"], "allowTypeOnly": ["convex"] },
             {
                 "from": "routes",
-                "allow": [
-                    "core",
-                    "ui",
-                    "pattern",
-                    "features",
-                    "features-restaurants",
-                    "features-social",
-                    "features-groups",
-                    "features-plans",
-                    "convex",
-                    "routes"
-                ]
+                "allow": ["core", "ui", "pattern", "features", "api", "convex", "routes"]
             },
             { "from": "convex", "allow": ["convex", "core"] }
         ]

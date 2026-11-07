@@ -1,10 +1,10 @@
 import { ArrowSquareOutIcon, ForkKnifeIcon, MapPinIcon } from "@phosphor-icons/react"
 import { Link } from "@tanstack/react-router"
 
-import { type OpeningHours } from "@core/opening-hours"
-import { SocialMetadata } from "@features/social/social-metadata"
+import { SocialMetadata } from "@pattern/social-metadata"
 import { cx } from "@ui/cva.config"
 import { OpeningHours as OpeningHoursSummary } from "@ui/opening-hours"
+import { type OpeningHours } from "@ui/opening-hours-utils"
 import { focusRing } from "@ui/variants"
 
 export function RestaurantHeader({

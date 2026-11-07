@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router"
 import { useState } from "react"
 
-import { type Doc } from "@convex/_generated/dataModel"
+import { type Doc } from "@api/data-model"
 import { useAuth, useMyProfile, useMyStatuses, useRestaurants, useUpdateProfile, type ImageRecord } from "@core/hooks"
 import { clearError, errorFrom, type FormError } from "@core/outcome"
 import { orderFeedByRecency } from "@core/social"

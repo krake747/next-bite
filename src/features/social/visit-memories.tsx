@@ -1,6 +1,6 @@
 import { useState } from "react"
 
-import { type Id } from "@convex/_generated/dataModel"
+import { type Id } from "@api/data-model"
 import { useAddVisitMemory, useAuth, useCleanupStorage, useVisitMemories, type ImageRecord } from "@core/hooks"
 import { clearError, errorFrom, type FormError } from "@core/outcome"
 import { ImageUpload } from "@pattern/image-upload"
