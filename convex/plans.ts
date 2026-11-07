@@ -14,11 +14,11 @@ async function ensureAcceptedFriend(ctx: PlanDb, creator: string, candidate: str
     if (candidate === creator) {
         return true
     }
-    const forward = await ctx.db
+    const outgoing = await ctx.db
         .query("friendships")
         .withIndex("by_owner_friend", (q) => q.eq("ownerId", creator).eq("friendAuthUserId", candidate))
         .unique()
-    if (forward?.status === "accepted") {
+    if (outgoing?.status === "accepted") {
         return true
     }
     const backward = await ctx.db

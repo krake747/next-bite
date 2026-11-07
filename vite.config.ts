@@ -3,6 +3,7 @@ import tailwindcss from "@tailwindcss/vite"
 import { tanstackStart } from "@tanstack/react-start/plugin/vite"
 import { default as react } from "@vitejs/plugin-react"
 import { defineConfig, lazyPlugins } from "vite-plus"
+import { playwright } from "vite-plus/test/browser-playwright"
 
 // https://viteplus.dev/config/
 const domSetupFiles = ["./src/vitest.setup.ts"]
@@ -313,6 +314,15 @@ export default defineConfig({
                 },
             },
             {
+                files: ["**/*.browser.spec.{ts,tsx}"],
+                plugins: ["typescript"],
+                rules: {
+                    // Browser assertions poll at runtime (`await expect.element(...)`);
+                    // the static types do not model the Thenable.
+                    "typescript/await-thenable": "allow",
+                },
+            },
+            {
                 files: ["**/*.{spec,test}.{ts,tsx}"],
                 plugins: ["vitest", "typescript", "eslint"],
                 rules: {
@@ -457,16 +467,20 @@ export default defineConfig({
                 },
             },
             {
-                // happy-dom today; swap only this project's environment when the real-browser
-                // runner lands (ADR-0011). Keep include plus timeouts tier scoped.
+                // Real-browser runner (ADR-0011 seam filled): only this project uses
+                // browser mode. Keep include plus timeouts tier scoped.
                 test: {
                     name: "browser",
-                    environment: "happy-dom",
-                    environmentOptions: happyDomEnvironmentOptions,
-                    setupFiles: domSetupFiles,
                     include: ["src/**/*.browser.spec.{js,ts,jsx,tsx}"],
-                    testTimeout: 2000,
-                    slowTestThreshold: 1500,
+                    setupFiles: domSetupFiles,
+                    testTimeout: 10000,
+                    slowTestThreshold: 9500,
+                    browser: {
+                        enabled: true,
+                        headless: true,
+                        provider: playwright(),
+                        instances: [{ browser: "chromium" }],
+                    },
                 },
             },
             {

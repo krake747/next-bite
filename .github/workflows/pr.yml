@@ -24,5 +24,8 @@ jobs:
       - name: Install dependencies
         run: vp install
 
+      - name: Install Playwright chromium
+        run: npx playwright install chromium --only-shell
+
       - name: Full local gate
         run: vp run check:full

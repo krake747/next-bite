@@ -86,7 +86,7 @@ function CreateGroupForm() {
                     onChange={(event) => {
                         setName(event.target.value)
                     }}
-                    placeholder="Sunday dinner crew"
+                    placeholder="Sunday dinner group"
                     maxLength={80}
                     aria-invalid={error.kind === "error"}
                     className={cx(control(), error.kind === "error" && "border-destructive")}

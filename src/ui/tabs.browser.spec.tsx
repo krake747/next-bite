@@ -1,14 +1,12 @@
-import { render, screen } from "@testing-library/react"
-import userEvent from "@testing-library/user-event"
 import { describe, expect, test, vi } from "vitest"
+import { render } from "vitest-browser-react"
 
 import { Tabs, TabsList, TabsPanel, TabsTab } from "./tabs"
 
 describe("Tabs", () => {
     test("switches panels and reports the value", async () => {
-        const user = userEvent.setup()
         const onValueChange = vi.fn<(value: string | number) => void>()
-        render(
+        const screen = await render(
             <Tabs defaultValue="discover" onValueChange={onValueChange}>
                 <TabsList>
                     <TabsTab value="discover">Discover</TabsTab>
@@ -19,10 +17,10 @@ describe("Tabs", () => {
             </Tabs>,
         )
 
-        expect(screen.getByText("Discovery content")).toBeInTheDocument()
-        await user.click(screen.getByRole("tab", { name: "Saved" }))
+        await expect.element(screen.getByText("Discovery content")).toBeInTheDocument()
+        await screen.getByRole("tab", { name: "Saved" }).click()
         expect(onValueChange).toHaveBeenCalledTimes(1)
         expect(onValueChange.mock.calls[0]?.[0]).toBe("saved")
-        expect(screen.getByText("Saved content")).toBeInTheDocument()
+        await expect.element(screen.getByText("Saved content")).toBeInTheDocument()
     })
 })

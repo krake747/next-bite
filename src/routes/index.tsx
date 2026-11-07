@@ -119,15 +119,15 @@ function HomeDiscover({ restaurants }: Readonly<{ restaurants: ReadonlyArray<Res
     const [sortOrder, setSortOrder] = useState<"added" | "name">("added")
     const filterState = useFilterState()
     const filtered = filterRestaurants(restaurants, filterState.filter, filterState.search, sortOrder)
-    // Friend pills only appear for accounts actually present in this list.
+    // Friend pills only appear for users actually present in this list.
     // Personal saves are owned by the viewer, so no friend pill shows here;
-    // the filter keys on stable account ids, never on renamable display names.
+    // the filter keys on stable user ids, never on renamable display names.
     const ownId = auth.user?.id
     const matchingIds = [...new Set(restaurants.map((restaurant) => restaurant.ownerId))].filter((id) => id !== ownId)
     return (
-        <section aria-label="Saved places" className="pt-10">
-            <h2 className="font-display text-2xl font-semibold text-balance text-foreground">Saved places</h2>
-            <p className="mt-1 text-muted-foreground">Every place on your short list. Search by craving.</p>
+        <section aria-label="Saved restaurants" className="pt-10">
+            <h2 className="font-display text-2xl font-semibold text-balance text-foreground">Saved restaurants</h2>
+            <p className="mt-1 text-muted-foreground">Every restaurant on your short list. Search by craving.</p>
             <div className="pt-4">
                 <FriendsFilter
                     filter={filterState.filter}
@@ -205,8 +205,8 @@ function LandingHero() {
                     Your friends have good taste
                 </h1>
                 <p className="mx-auto mt-6 max-w-xl text-xl leading-relaxed text-pretty text-muted-foreground">
-                    Next Bite is the short list of places your people actually want to try. Save spots, vote want-to-go,
-                    and pick the next dinner in minutes.
+                    Next Bite is the short list of restaurants your people actually want to try. Save restaurants, vote
+                    want-to-go, and pick the next dinner in minutes.
                 </p>
                 <LandingActions />
                 <p className="mt-4 text-sm text-muted-foreground">
@@ -257,7 +257,7 @@ function Home() {
                 <Header>
                     <HeaderTitle>What&apos;s next, {auth.user?.name?.split(" ")[0] ?? "food lover"}?</HeaderTitle>
                     <HeaderSubtitle>
-                        Your crew&apos;s latest saves. Jump back in and pick the next table.
+                        Your friends&apos; latest saves. Jump back in and pick the next table.
                     </HeaderSubtitle>
                     <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center">
                         <HomeHeaderButton />

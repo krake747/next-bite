@@ -1,16 +1,14 @@
-import { render, screen } from "@testing-library/react"
-import userEvent from "@testing-library/user-event"
 import { describe, expect, test, vi } from "vitest"
+import { render } from "vitest-browser-react"
 
 import { ReactionBar } from "./reaction-bar"
 
 describe("ReactionBar", () => {
     test("toggles like and want through callbacks", async () => {
-        const user = userEvent.setup()
         const onToggleLike = vi.fn<() => void>()
         const onToggleWant = vi.fn<() => void>()
         const onComment = vi.fn<() => void>()
-        render(
+        const screen = await render(
             <ReactionBar
                 reactions={{
                     liked: false,
@@ -24,9 +22,9 @@ describe("ReactionBar", () => {
                 }}
             />,
         )
-        await user.click(screen.getByRole("button", { name: /Like/ }))
-        await user.click(screen.getByRole("button", { name: /Want to try/ }))
-        await user.click(screen.getByRole("button", { name: /Comments/ }))
+        await screen.getByRole("button", { name: /Like/ }).click()
+        await screen.getByRole("button", { name: /Want to try/ }).click()
+        await screen.getByRole("button", { name: /Comments/ }).click()
         expect(onToggleLike).toHaveBeenCalledTimes(1)
         expect(onToggleWant).toHaveBeenCalledTimes(1)
         expect(onComment).toHaveBeenCalledTimes(1)

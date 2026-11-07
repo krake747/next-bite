@@ -41,7 +41,7 @@ function AuthButton() {
 
     return (
         <Popover>
-            <PopoverTrigger tone="tinted" aria-label="Open account menu" className="size-8">
+            <PopoverTrigger tone="tinted" aria-label="Open your menu" className="size-8">
                 {auth.user?.image !== undefined && auth.user?.image !== null && auth.user.image !== "" ? (
                     <LazyImage
                         src={auth.user.image}

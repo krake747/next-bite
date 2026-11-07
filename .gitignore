@@ -47,3 +47,4 @@ nextbite.md
 # Playwright artifacts
 playwright-report/
 test-results/
+.vitest/

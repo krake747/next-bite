@@ -92,10 +92,10 @@ function SignupPage() {
                     </svg>
                 </h2>
             }
-            subtitle="Create an account to start adding restaurants"
+            subtitle="Create your login to start adding restaurants"
             footerLink={
                 <p className="text-sm text-stone-600">
-                    Already have an account? <TextLink render={<Link to="/login" viewTransition />}>Sign in</TextLink>
+                    Already have a login? <TextLink render={<Link to="/login" viewTransition />}>Sign in</TextLink>
                 </p>
             }
         >
@@ -159,7 +159,7 @@ function SignupPage() {
                     )}
                 </Field>
                 <PendingButton type="submit" className="w-full" pending={auth.isLoading}>
-                    Create Account
+                    Sign up
                 </PendingButton>
             </Form>
             {(methods?.google === true || methods?.github === true) && (

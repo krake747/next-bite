@@ -1,5 +1,5 @@
-import { render, screen } from "@testing-library/react"
 import { describe, expect, test } from "vitest"
+import { render } from "vitest-browser-react"
 
 import { AvatarGroup } from "./avatar-group"
 
@@ -13,14 +13,15 @@ const friends = [
 ]
 
 describe("AvatarGroup", () => {
-    test("shows at most four members with an overflow indicator", () => {
-        render(<AvatarGroup members={friends} />)
-        expect(screen.getByText("+2")).toBeInTheDocument()
-        expect(screen.getByRole("group", { name: /Alex.*2 more/ })).toBeInTheDocument()
+    test("shows at most four members with an overflow indicator", async () => {
+        const screen = await render(<AvatarGroup members={friends} />)
+        await expect.element(screen.getByText("+2")).toBeInTheDocument()
+        await expect.element(screen.getByRole("group", { name: /Alex.*2 more/ })).toBeInTheDocument()
     })
 
-    test("renders members that share a name", () => {
-        render(<AvatarGroup members={[{ name: "Alex" }, { name: "Alex" }]} />)
-        expect(screen.getAllByLabelText("Alex")).toHaveLength(2)
+    test("renders members that share a name", async () => {
+        const screen = await render(<AvatarGroup members={[{ name: "Alex" }, { name: "Alex" }]} />)
+        await expect.element(screen.getByLabelText("Alex").first()).toBeInTheDocument()
+        expect(screen.getByLabelText("Alex").all()).toHaveLength(2)
     })
 })

@@ -186,7 +186,7 @@ describe("group detail", () => {
         expect(within(screen.getByLabelText("Members")).getByText("2 members")).toBeInTheDocument()
     })
 
-    test("renders shared places with social counts", async () => {
+    test("renders shared restaurants with social counts", async () => {
         testUser = { id: "user-1", email: "alex@example.com", name: "Alex" }
         querySeeds.clear()
         seedDetail()

@@ -42,7 +42,7 @@ function FriendsError({ reset }: Readonly<{ reset: () => void }>) {
             <PageContainer>
                 <Header>
                     <HeaderTitle>Friends</HeaderTitle>
-                    <HeaderSubtitle>See what your crew is craving. Friend connections live here.</HeaderSubtitle>
+                    <HeaderSubtitle>See what your friends are craving. Friend connections live here.</HeaderSubtitle>
                 </Header>
                 <QueryErrorState reset={reset} />
             </PageContainer>
@@ -294,7 +294,7 @@ function FriendsPage() {
             <PageContainer>
                 <Header>
                     <HeaderTitle>Friends</HeaderTitle>
-                    <HeaderSubtitle>See what your crew is craving. Friend connections live here.</HeaderSubtitle>
+                    <HeaderSubtitle>See what your friends are craving. Friend connections live here.</HeaderSubtitle>
                 </Header>
                 {status.kind !== "ready" ? (
                     <SignedOutGate context="your friends">

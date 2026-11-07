@@ -98,7 +98,7 @@ function PlanList({
     )
 }
 
-export function PlanMealSection({
+export function PlanSection({
     groupId,
     restaurantId,
 }: Readonly<{ groupId?: Id<"groups"> | undefined; restaurantId?: Id<"restaurants"> | undefined }>) {
@@ -120,8 +120,8 @@ export function PlanMealSection({
     }
     if (plans === undefined) {
         return (
-            <section aria-label="Meal plans" className="pt-8">
-                <h2 className="font-display text-2xl font-semibold text-balance text-foreground">Plan a meal</h2>
+            <section aria-label="Plans" className="pt-8">
+                <h2 className="font-display text-2xl font-semibold text-balance text-foreground">Plan an outing</h2>
                 <div className="pt-3">
                     <LoadingPlaceholder />
                 </div>
@@ -151,8 +151,8 @@ export function PlanMealSection({
     }
 
     return (
-        <section aria-label="Meal plans" className="pt-8">
-            <h2 className="font-display text-2xl font-semibold text-balance text-foreground">Plan a meal</h2>
+        <section aria-label="Plans" className="pt-8">
+            <h2 className="font-display text-2xl font-semibold text-balance text-foreground">Plan an outing</h2>
             <div className="flex flex-col gap-2 pt-3 sm:flex-row sm:items-end">
                 <label className="flex flex-1 flex-col gap-1 text-sm text-foreground">
                     Title

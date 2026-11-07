@@ -22,7 +22,7 @@ async function registerUser(t: TestConvexForDataModel<DataModel>, subject: strin
     await asUser(t, subject).mutation(api.users.ensureProfile, { email, name: subject })
 }
 
-describe("reusable group invite links", () => {
+describe("reusable group invitation links", () => {
     test("admits multiple holders without consuming the link", async () => {
         const t = setup()
         await registerUser(t, "anna", "anna@example.com")

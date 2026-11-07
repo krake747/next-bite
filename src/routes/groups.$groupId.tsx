@@ -13,7 +13,7 @@ import { useRestaurants } from "@core/restaurants"
 import { useAuth, useSessionStatus } from "@core/session"
 import { orderFeedByRecency, useSocialSummaries } from "@core/social"
 import { GroupMembers } from "@features/groups/group-members"
-import { PlanMealSection } from "@features/plans/meal-plans"
+import { PlanSection } from "@features/plans/plans"
 import { EmptyState } from "@pattern/empty-state"
 import { QueryErrorState } from "@pattern/query-error"
 import { BackNav } from "@routes/-layouts/back-nav"
@@ -187,8 +187,8 @@ function GroupRestaurantsSection({
 function GroupInviteSection({ groupId }: Readonly<{ groupId: Id<"groups"> }>) {
     const createInvite = useCreateInvite()
     const revokeInvite = useRevokeInvite()
-    type InviteLink = { readonly kind: "none" } | { readonly kind: "ready"; readonly token: string }
-    const [token, setToken] = useState<InviteLink>({ kind: "none" })
+    type InvitationLink = { readonly kind: "none" } | { readonly kind: "ready"; readonly token: string }
+    const [token, setToken] = useState<InvitationLink>({ kind: "none" })
     const [error, setError] = useState<FormError>(clearError)
     const [copied, setCopied] = useState(false)
 
@@ -199,7 +199,7 @@ function GroupInviteSection({ groupId }: Readonly<{ groupId: Id<"groups"> }>) {
             const next = await createInvite.mutateAsync({ target: { kind: "group", groupId } })
             setToken(typeof next === "string" && next.length > 0 ? { kind: "ready", token: next } : { kind: "none" })
         } catch (err) {
-            setError(errorFrom(err, "Could not create invite link"))
+            setError(errorFrom(err, "Could not create invitation link"))
         }
     }
 
@@ -212,20 +212,20 @@ function GroupInviteSection({ groupId }: Readonly<{ groupId: Id<"groups"> }>) {
             await revokeInvite.mutateAsync({ token: token.token })
             setToken({ kind: "none" })
         } catch (err) {
-            setError(errorFrom(err, "Could not revoke invite link"))
+            setError(errorFrom(err, "Could not revoke invitation link"))
         }
     }
 
     return (
-        <section aria-label="Invite link" className="pt-8">
-            <h2 className="font-display text-2xl font-semibold text-balance text-foreground">Invite by link</h2>
+        <section aria-label="Invitation link" className="pt-8">
+            <h2 className="font-display text-2xl font-semibold text-balance text-foreground">Share with a link</h2>
             <p className="pt-1 text-sm text-muted-foreground">
                 Anyone with the link can join until it expires or is revoked. No email needed.
             </p>
             {token.kind === "none" ? (
                 <div className="pt-4">
                     <Button onClick={() => void handleCreate()} disabled={createInvite.isPending}>
-                        Create invite link
+                        Create invitation link
                     </Button>
                 </div>
             ) : (
@@ -295,7 +295,7 @@ function GroupDetailView() {
                     <GroupMembers members={group.members.map((m) => ({ name: m.name }))} />
                 </section>
                 {auth.isAuthenticated && <GroupInviteSection groupId={groupConvexId} />}
-                <PlanMealSection groupId={groupConvexId} />
+                <PlanSection groupId={groupConvexId} />
                 <section aria-label="Shared restaurants" className="pt-8">
                     <h2 className="font-display text-2xl font-semibold text-balance text-foreground">Shared list</h2>
                     <GroupRestaurantsSection groupId={groupConvexId} restaurants={restaurants} viewer={viewer} />

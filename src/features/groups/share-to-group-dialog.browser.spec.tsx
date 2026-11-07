@@ -1,6 +1,6 @@
 import { QueryClientProvider } from "@tanstack/react-query"
-import { fireEvent, render, screen, waitFor } from "@testing-library/react"
 import { describe, expect, test, vi } from "vitest"
+import { render } from "vitest-browser-react"
 
 import { ConvexProvider } from "@api/convex.client"
 import { createSeededClient, seedKey, type MutationCall } from "@api/db/seeded.client"
@@ -54,9 +54,9 @@ vi.mock("@api/auth.provider", async (importOriginal) => {
 // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- test-only restaurant id
 const restaurantId = "r1" as unknown as Id<"restaurants">
 
-function renderDialog(): void {
+async function renderDialog() {
     const backend = createSeededClient({ seeds: querySeeds, calls: mutationCalls, mutateResult: "s1" })
-    render(
+    return render(
         <QueryClientProvider client={backend.queryClient}>
             <ConvexProvider client={backend.client}>
                 <ShareToGroupDialog
@@ -70,6 +70,16 @@ function renderDialog(): void {
     )
 }
 
+// Direct dispatch: the unstyled test env leaves Base UI's inert backdrop above
+// the panel, so Playwright hit-testing cannot reach dialog buttons.
+function clickButton(button: { element: () => HTMLElement | SVGElement }): void {
+    const node = button.element()
+    if (!(node instanceof HTMLElement)) {
+        throw new TypeError("Button not found")
+    }
+    node.click()
+}
+
 describe("share to group dialog", () => {
     test("shares with a group through Add to group", async () => {
         querySeeds.clear()
@@ -78,14 +88,14 @@ describe("share to group dialog", () => {
             { group: { _id: "g1", name: "Food Crew" }, role: "admin" },
         ])
         querySeeds.set(seedKey("shares:listShares", { restaurantId: "r1" }), [])
-        renderDialog()
+        const screen = await renderDialog()
 
-        await waitFor(() => {
-            expect(screen.getByRole("button", { name: "Add to group" })).toBeInTheDocument()
-        })
-        fireEvent.click(screen.getByRole("button", { name: "Add to group" }))
+        await expect.element(screen.getByRole("button", { name: "Add to group" })).toBeInTheDocument()
+        // Direct dispatch: the unstyled test env leaves Base UI's inert backdrop
+        // above the panel, so Playwright hit-testing cannot reach dialog buttons.
+        clickButton(screen.getByRole("button", { name: "Add to group" }))
 
-        await waitFor(() => {
+        await vi.waitFor(() => {
             expect(mutationCalls).toContainEqual({
                 fn: "shares:shareWithGroup",
                 args: { restaurantId: "r1", groupId: "g1" },
@@ -102,14 +112,12 @@ describe("share to group dialog", () => {
         querySeeds.set(seedKey("shares:listShares", { restaurantId: "r1" }), [
             { _id: "s1", target: { kind: "group", groupId: "g1" }, displayName: "Food Crew" },
         ])
-        renderDialog()
+        const screen = await renderDialog()
 
-        await waitFor(() => {
-            expect(screen.getByRole("button", { name: "Remove" })).toBeInTheDocument()
-        })
-        fireEvent.click(screen.getByRole("button", { name: "Remove" }))
+        await expect.element(screen.getByRole("button", { name: "Remove" })).toBeInTheDocument()
+        clickButton(screen.getByRole("button", { name: "Remove" }))
 
-        await waitFor(() => {
+        await vi.waitFor(() => {
             expect(mutationCalls).toContainEqual({
                 fn: "shares:unshare",
                 args: { restaurantId: "r1", target: { kind: "group", groupId: "g1" } },

@@ -1,12 +1,11 @@
-import { render, screen } from "@testing-library/react"
-import userEvent from "@testing-library/user-event"
 import { describe, expect, test, vi } from "vitest"
+import { render } from "vitest-browser-react"
 
 import { RestaurantHeader } from "./restaurant-header"
 
 describe("RestaurantHeader", () => {
-    function renderHeader(onShowHours: () => void): void {
-        render(
+    async function renderHeader(onShowHours: () => void) {
+        return render(
             <RestaurantHeader
                 name="Trattoria Verde"
                 link="https://example.com/menu"
@@ -32,22 +31,23 @@ describe("RestaurantHeader", () => {
         )
     }
 
-    test("shows name, menu, attribution, location, and hours", () => {
-        renderHeader(() => {})
+    test("shows name, menu, attribution, location, and hours", async () => {
+        const screen = await renderHeader(() => {})
 
-        expect(screen.getByRole("heading", { name: "Trattoria Verde" })).toBeInTheDocument()
-        expect(screen.getByRole("link", { name: /Menu/ })).toHaveAttribute("href", "https://example.com/menu")
-        expect(screen.getByText("Added by Alex")).toBeInTheDocument()
-        expect(screen.getByText("4 friends want to try")).toBeInTheDocument()
-        expect(screen.getByText("Luxembourg City")).toBeInTheDocument()
+        await expect.element(screen.getByRole("heading", { name: "Trattoria Verde" })).toBeInTheDocument()
+        await expect
+            .element(screen.getByRole("link", { name: /Menu/ }))
+            .toHaveAttribute("href", "https://example.com/menu")
+        await expect.element(screen.getByText("Added by Alex")).toBeInTheDocument()
+        await expect.element(screen.getByText("4 friends want to try")).toBeInTheDocument()
+        await expect.element(screen.getByText("Luxembourg City")).toBeInTheDocument()
     })
 
     test("opens hours through its callback", async () => {
-        const user = userEvent.setup()
         const onShowHours = vi.fn<() => void>()
-        renderHeader(onShowHours)
+        const screen = await renderHeader(onShowHours)
 
-        await user.click(screen.getByRole("button", { name: /Open now/ }))
+        await screen.getByRole("button", { name: /Open now/ }).click()
         expect(onShowHours).toHaveBeenCalledTimes(1)
     })
 })

@@ -1,17 +1,18 @@
-import { render, screen } from "@testing-library/react"
-import { describe, test, expect } from "vitest"
+import { describe, expect, test } from "vitest"
+import { render } from "vitest-browser-react"
 
 import { Button } from "./button"
 
 describe("Button", () => {
-    test("renders children as a button", () => {
-        render(<Button>Save</Button>)
+    test("renders children as a button", async () => {
+        const screen = await render(<Button>Save</Button>)
         const button = screen.getByRole("button", { name: "Save" })
-        expect(button.getAttribute("type")).toBe("button")
+        await expect.element(button).toBeInTheDocument()
+        await expect.element(button).toHaveAttribute("type", "button")
     })
 
-    test("passes disabled through", () => {
-        render(<Button disabled>Save</Button>)
-        expect(screen.getByRole("button")).toBeDisabled()
+    test("passes disabled through", async () => {
+        const screen = await render(<Button disabled>Save</Button>)
+        await expect.element(screen.getByRole("button")).toBeDisabled()
     })
 })

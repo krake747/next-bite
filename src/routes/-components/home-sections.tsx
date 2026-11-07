@@ -51,7 +51,7 @@ export function CommunityStatsSkeleton() {
 export function CommunityStats({ stats }: Readonly<{ stats: LandingStats }>) {
     const topCuisine = stats.topCuisines[0]
     const statEntries = [
-        { value: String(stats.totalRestaurants), label: "places shared" },
+        { value: String(stats.totalRestaurants), label: "restaurants shared" },
         { value: String(stats.totalWants), label: "wants saved" },
         { value: topCuisine?.cuisine ?? "—", label: "top cuisine" },
     ]
@@ -83,8 +83,8 @@ export function CommunityStats({ stats }: Readonly<{ stats: LandingStats }>) {
 
 const steps = [
     {
-        title: "Add places",
-        body: "Save the spots your group keeps naming in the chat.",
+        title: "Add restaurants",
+        body: "Save the restaurants your group keeps naming in the chat.",
     },
     {
         title: "Vote want-to-go",

@@ -84,7 +84,7 @@ function LoginPage() {
             subtitle="Sign in to continue to your next bite"
             footerLink={
                 <p className="text-sm text-stone-600">
-                    Do not have an account? <TextLink render={<Link to="/signup" viewTransition />}>Sign up</TextLink>
+                    Do not have a login? <TextLink render={<Link to="/signup" viewTransition />}>Sign up</TextLink>
                 </p>
             }
         >

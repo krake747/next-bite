@@ -23,7 +23,7 @@
         "preview": "vite preview --port=5173",
         "skills:krake747": "pnx skills add krake747/skills",
         "skills:mattpocock": "pnx skills add mattpocock/skills",
-        "test": "vitest run",
+        "test": "vitest run --project pure && vitest run --project unit && vitest run --project browser && vitest run --project integration",
         "test:browser": "vitest run --project browser",
         "test:e2e": "playwright test",
         "test:integration": "vitest run --project integration",
@@ -70,6 +70,7 @@
         "@types/react": "^19.3.0",
         "@types/react-dom": "^19.3.0",
         "@vitejs/plugin-react": "^6.2.1",
+        "@vitest/browser-playwright": "5.1.0",
         "cf": "1.0.0-beta.27",
         "convex-test": "^0.0.67",
         "fallow": "^3.39.0",
@@ -82,7 +83,8 @@
         "typescript": "~7.0.2",
         "vite": "npm:@voidzero-dev/vite-plus-core@1.5.0",
         "vite-plus": "1.5.0",
-        "vitest": "^5.1.0"
+        "vitest": "^5.1.0",
+        "vitest-browser-react": "^2.3.0"
     },
     "browserslist": {
         "production": [

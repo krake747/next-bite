@@ -15,7 +15,7 @@ import { Header, HeaderSubtitle, HeaderTitle } from "@ui/header"
 import { LoadingPlaceholder } from "@ui/loading"
 
 export const Route = createFileRoute("/invite/$token")({
-    head: () => ({ meta: [{ title: "Group invite" }] }),
+    head: () => ({ meta: [{ title: "Group invitation" }] }),
     component: InvitePage,
     // No loader here: the preview args carry `now: Date.now()`, so a warmed key
     // would never match the view's key. The preview is a single cheap fetch.
@@ -28,7 +28,7 @@ function InviteLoadError({ reset }: Readonly<{ reset: () => void }>) {
             <PageContainer>
                 <BackNav backTo="/" label="Back home" />
                 <Header>
-                    <HeaderTitle>Invite unavailable</HeaderTitle>
+                    <HeaderTitle>Invitation unavailable</HeaderTitle>
                     <HeaderSubtitle>This link is invalid, expired, or was revoked.</HeaderSubtitle>
                 </Header>
                 <div className="pt-4">
@@ -45,7 +45,7 @@ function InviteError({ message }: Readonly<{ message: string }>) {
             <PageContainer>
                 <BackNav backTo="/" label="Back home" />
                 <Header>
-                    <HeaderTitle>Invite unavailable</HeaderTitle>
+                    <HeaderTitle>Invitation unavailable</HeaderTitle>
                     <HeaderSubtitle>{message}</HeaderSubtitle>
                 </Header>
                 <p className="pt-6">
@@ -91,7 +91,7 @@ function InviteView() {
                 })
                 .catch((error: unknown) => {
                     if (!cancelled) {
-                        setAcceptError(errorFrom(error, "Could not accept this invite"))
+                        setAcceptError(errorFrom(error, "Could not accept this invitation"))
                     }
                 })
         }
@@ -101,7 +101,7 @@ function InviteView() {
     }, [auth.isAuthenticated, auth.isLoading, preview, accepted, acceptInvite, token, navigate])
 
     if (preview.target.kind !== "group") {
-        return <InviteError message="This invite link is for a friend connection. Ask for a group link instead." />
+        return <InviteError message="This invitation link is for a friend connection. Ask for a group link instead." />
     }
 
     if (!auth.isAuthenticated) {
@@ -132,7 +132,7 @@ function InviteView() {
                                 void navigate({ to: "/signup", search: { redirect }, replace: true })
                             }}
                         >
-                            Create an account
+                            Sign up to join
                         </Button>
                     </div>
                     <p className="pt-4 text-sm text-muted-foreground">

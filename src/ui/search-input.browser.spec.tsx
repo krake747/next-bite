@@ -1,18 +1,20 @@
-import { render, screen } from "@testing-library/react"
 import { describe, test, expect } from "vitest"
+import { render } from "vitest-browser-react"
 
 import { SearchInput } from "./search-input"
 
 describe("SearchInput", () => {
-    test("marks the empty state on the wrapper", () => {
-        render(<SearchInput defaultValue="" />)
+    test("marks the empty state on the wrapper", async () => {
+        const screen = await render(<SearchInput defaultValue="" />)
 
-        expect(screen.getByRole("searchbox").closest('[data-slot="search-input"]')).toHaveAttribute("data-empty", "")
+        const wrapper = screen.getByRole("searchbox").element().closest<HTMLElement>('[data-slot="search-input"]')
+        expect(wrapper?.dataset.empty).toBe("")
     })
 
-    test("clears the empty state with a value", () => {
-        render(<SearchInput defaultValue="sushi" />)
+    test("clears the empty state with a value", async () => {
+        const screen = await render(<SearchInput defaultValue="sushi" />)
 
-        expect(screen.getByRole("searchbox").closest('[data-slot="search-input"]')).not.toHaveAttribute("data-empty")
+        const wrapper = screen.getByRole("searchbox").element().closest<HTMLElement>('[data-slot="search-input"]')
+        expect(wrapper?.dataset.empty).toBeUndefined()
     })
 })

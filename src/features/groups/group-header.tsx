@@ -21,7 +21,7 @@ export function GroupHeader({
                         {name}
                     </h3>
                     <p className="shrink-0 text-xs font-medium text-muted-foreground">
-                        {restaurantCount === 1 ? "1 spot" : `${restaurantCount} spots`}
+                        {restaurantCount === 1 ? "1 restaurant" : `${restaurantCount} restaurants`}
                     </p>
                 </div>
                 {description !== undefined && description !== "" && (

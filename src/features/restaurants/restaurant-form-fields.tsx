@@ -20,7 +20,7 @@ export function NameCuisineFields({ form }: Readonly<{ form: RestaurantFormStore
                             input={nameField.input}
                             errors={nameField.errors}
                             label="Restaurant name"
-                            placeholder="The fancy burger place"
+                            placeholder="The fancy burger restaurant"
                             {...nameField.props}
                         />
                     </FieldWrapper>

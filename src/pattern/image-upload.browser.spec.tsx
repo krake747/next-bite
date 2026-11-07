@@ -1,8 +1,8 @@
 import { QueryClientProvider } from "@tanstack/react-query"
-import { fireEvent, render, screen, waitFor } from "@testing-library/react"
-import { act } from "@testing-library/react"
 import { useState } from "react"
 import { describe, expect, test, vi } from "vitest"
+import { render } from "vitest-browser-react"
+import { page } from "vitest/browser"
 
 import { ConvexProvider } from "@api/convex.client"
 import { createSeededClient, type MutationCall } from "@api/db/seeded.client"
@@ -83,7 +83,7 @@ function Harness() {
     )
 }
 
-function renderHarness() {
+async function renderHarness() {
     const backend = createSeededClient({ calls: mutationCalls })
     return render(
         <QueryClientProvider client={backend.queryClient}>
@@ -94,13 +94,12 @@ function renderHarness() {
     )
 }
 
-function selectFiles(files: File[]): void {
+async function selectFiles(files: File[]): Promise<void> {
     const input = document.querySelector('[data-slot="image-upload-input"]')
     if (!(input instanceof HTMLInputElement)) {
         throw new TypeError("File input not found")
     }
-    Object.defineProperty(input, "files", { value: files, configurable: true })
-    fireEvent.change(input)
+    await page.elementLocator(input).upload(files)
 }
 
 function stagedImageCount(): number {
@@ -135,95 +134,76 @@ function resetUploads(): void {
 describe("ImageUpload batch ownership", () => {
     test("keeps the first upload when the second fails", async () => {
         resetUploads()
-        renderHarness()
-        selectFiles([pngFile("a.png"), pngFile("b.png")])
+        const screen = await renderHarness()
+        await selectFiles([pngFile("a.png"), pngFile("b.png")])
 
-        await waitFor(() => {
+        await vi.waitFor(() => {
             expect(uploadCalls).toBe(1)
         })
         const firstGate = requiredGate(0)
-        await act(async () => {
-            firstGate.resolve({ url: "https://example.com/a.jpg", storageId: storageId("s1") })
-            await Promise.resolve()
-        })
+        firstGate.resolve({ url: "https://example.com/a.jpg", storageId: storageId("s1") })
 
-        await waitFor(() => {
+        await vi.waitFor(() => {
             expect(stagedImageCount()).toBe(1)
         })
         expect(uploadCalls).toBe(2)
         const secondGate = requiredGate(1)
-        await act(async () => {
-            secondGate.reject(new Error("denied"))
-            await Promise.resolve()
-        })
+        secondGate.reject(new Error("denied"))
 
-        await waitFor(() => {
-            expect(screen.getByText("denied")).toBeInTheDocument()
-        })
+        await expect.element(screen.getByText("denied")).toBeInTheDocument()
         expect(stagedImageCount()).toBe(1)
     })
 
     test("cleans up a late upload after unmount instead of appending it", async () => {
         resetUploads()
-        const first = renderHarness()
-        selectFiles([pngFile("a.png")])
+        const screen = await renderHarness()
+        await selectFiles([pngFile("a.png")])
 
-        await waitFor(() => {
+        await vi.waitFor(() => {
             expect(uploadCalls).toBe(1)
         })
-        first.unmount()
+        await screen.unmount()
 
         const gate = requiredGate(0)
-        await act(async () => {
-            gate.resolve({ url: "https://example.com/a.jpg", storageId: storageId("s1") })
-            await Promise.resolve()
-        })
+        gate.resolve({ url: "https://example.com/a.jpg", storageId: storageId("s1") })
 
-        await waitFor(() => {
+        await vi.waitFor(() => {
             expect(mutationCalls).toContainEqual({
                 fn: "restaurants:cleanupStorage",
                 args: { storageId: "s1" },
             })
         })
 
-        renderHarness()
-        await waitFor(() => {
-            expect(document.querySelector('[data-slot="image-upload-input"]')).not.toBeNull()
-        })
+        const fresh = await renderHarness()
+        await expect.element(fresh.getByRole("button", { name: /upload images/i })).toBeInTheDocument()
         expect(stagedImageCount()).toBe(0)
     })
 
     test("merges a superseded batch into the gallery while mounted", async () => {
         resetUploads()
-        renderHarness()
-        selectFiles([pngFile("a.png")])
+        await renderHarness()
+        await selectFiles([pngFile("a.png")])
 
-        await waitFor(() => {
+        await vi.waitFor(() => {
             expect(uploadCalls).toBe(1)
         })
-        selectFiles([pngFile("b.png")])
+        await selectFiles([pngFile("b.png")])
 
-        await waitFor(() => {
+        await vi.waitFor(() => {
             expect(uploadCalls).toBe(2)
         })
         const firstGate = requiredGate(0)
-        await act(async () => {
-            firstGate.resolve({ url: "https://example.com/a.jpg", storageId: storageId("s1") })
-            await Promise.resolve()
-        })
+        firstGate.resolve({ url: "https://example.com/a.jpg", storageId: storageId("s1") })
 
-        await waitFor(() => {
+        await vi.waitFor(() => {
             expect(stagedImageCount()).toBe(1)
         })
         expect(mutationCalls.filter((call) => call.fn === "restaurants:cleanupStorage")).toHaveLength(0)
 
         const secondGate = requiredGate(1)
-        await act(async () => {
-            secondGate.resolve({ url: "https://example.com/b.jpg", storageId: storageId("s2") })
-            await Promise.resolve()
-        })
+        secondGate.resolve({ url: "https://example.com/b.jpg", storageId: storageId("s2") })
 
-        await waitFor(() => {
+        await vi.waitFor(() => {
             expect(stagedImageCount()).toBe(2)
         })
     })
