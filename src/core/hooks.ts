@@ -103,7 +103,7 @@ function retrySessionGate(): void {
 export function useSessionStatus(options?: Readonly<{ timeoutMs?: number }>): SessionStatus {
     const { isAuthenticated, isLoading, user } = useAuthSource()
     const client = useConvexClient()
-    const gateGeneration = useSyncExternalStore(subscribeGateAttempt, getGateAttempt)
+    const gateGeneration = useSyncExternalStore(subscribeGateAttempt, getGateAttempt, getGateAttempt)
     const [gate, setGate] = useState<ConvexGate>({ userId: null, outcome: "probing" })
     const sessionKey = !isAuthenticated || isLoading || user === null ? null : user.id
     const timeoutMs = options?.timeoutMs ?? CONVEX_AUTH_TIMEOUT_MS
