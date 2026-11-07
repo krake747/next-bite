@@ -2,14 +2,14 @@ import { QueryClientProvider } from "@tanstack/react-query"
 import { describe, expect, test, vi } from "vitest"
 import { render } from "vitest-browser-react"
 
-import { ConvexProvider } from "@api/convex.client"
+import { ConvexProvider } from "@api/convex.context"
 import { createSeededClient, seedKey, type MutationCall } from "@api/db/seeded.client"
 import { type Id } from "@convex/_generated/dataModel"
 
 import { ShareToGroupDialog } from "./share-to-group-dialog"
 
-vi.mock("@api/auth.client", async (importOriginal) => {
-    const original = await importOriginal<typeof import("@api/auth.client")>()
+vi.mock("@api/auth.sdk", async (importOriginal) => {
+    const original = await importOriginal<typeof import("@api/auth.sdk")>()
     return {
         ...original,
         getConvexSessionToken: vi.fn<() => Promise<string | null>>(async () => {

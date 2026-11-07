@@ -3,9 +3,9 @@ import { mutationOptions, useMutation, useQueryClient } from "@tanstack/react-qu
 import { type ConvexReactClient } from "convex/react"
 import { useEffect, useRef } from "react"
 
-import { getConvexSessionToken } from "@api/auth.client"
 import { useAuth as useAuthSource } from "@api/auth.provider"
-import { useConvexClient, useConvexQuery, useConvexMutation, useConvexAction } from "@api/convex.client"
+import { getConvexSessionToken } from "@api/auth.sdk"
+import { useConvexClient, useConvexQuery, useConvexMutation, useConvexAction } from "@api/convex.context"
 import { type Doc, type Id } from "@api/data.model"
 import {
     applyUpdateArgsToDraft,

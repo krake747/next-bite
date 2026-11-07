@@ -1,9 +1,9 @@
 import { type ConvexReactClient } from "convex/react"
 import { useEffect, useState, useSyncExternalStore } from "react"
 
-import { getConvexSessionToken } from "@api/auth.client"
 import { useAuth as useAuthSource } from "@api/auth.provider"
-import { useConvexClient, useConvexMutation, useConvexQuery } from "@api/convex.client"
+import { getConvexSessionToken } from "@api/auth.sdk"
+import { useConvexClient, useConvexMutation, useConvexQuery } from "@api/convex.context"
 import { api } from "@api/endpoints"
 
 import { sleep } from "./async"

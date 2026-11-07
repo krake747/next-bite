@@ -3,13 +3,13 @@ import { fireEvent, render, screen, waitFor } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import { afterEach, describe, expect, test, vi } from "vitest"
 
-import { ConvexProvider } from "@api/convex.client"
+import { ConvexProvider } from "@api/convex.context"
 import { createSeededClient, seedKey } from "@api/db/seeded.client"
 
 import { routeTree } from "../../routeTree.gen"
 
-vi.mock("@api/auth.client", async (importOriginal) => {
-    const original = await importOriginal<typeof import("@api/auth.client")>()
+vi.mock("@api/auth.sdk", async (importOriginal) => {
+    const original = await importOriginal<typeof import("@api/auth.sdk")>()
     return {
         ...original,
         getConvexSessionToken: vi.fn<() => Promise<string | null>>(async () => {

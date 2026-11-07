@@ -2,14 +2,14 @@ import { RouterProvider, createMemoryHistory, createRouter } from "@tanstack/rea
 import { fireEvent, render, screen, within, waitFor } from "@testing-library/react"
 import { describe, expect, test, vi } from "vitest"
 
-import { ConvexProvider } from "@api/convex.client"
+import { ConvexProvider } from "@api/convex.context"
 import { type RestaurantDoc } from "@api/db/restaurants"
 import { createSeededClient, seedKey } from "@api/db/seeded.client"
 
 import { routeTree } from "../routeTree.gen"
 
-vi.mock("@api/auth.client", async (importOriginal) => {
-    const original = await importOriginal<typeof import("@api/auth.client")>()
+vi.mock("@api/auth.sdk", async (importOriginal) => {
+    const original = await importOriginal<typeof import("@api/auth.sdk")>()
     return {
         ...original,
         getConvexSessionToken: vi.fn<() => Promise<string | null>>(async () => {

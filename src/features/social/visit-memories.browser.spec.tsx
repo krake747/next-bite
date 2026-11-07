@@ -3,7 +3,7 @@ import { describe, expect, test, vi } from "vitest"
 import { render } from "vitest-browser-react"
 import { page } from "vitest/browser"
 
-import { ConvexProvider } from "@api/convex.client"
+import { ConvexProvider } from "@api/convex.context"
 import { createSeededClient } from "@api/db/seeded.client"
 import { type Id } from "@convex/_generated/dataModel"
 
@@ -21,7 +21,7 @@ let signedIn = true
 let scriptedMemories: ScriptedMemory[] | undefined = []
 const addMutate = vi.fn<() => Promise<unknown>>()
 
-vi.mock("@api/auth.client", () => ({
+vi.mock("@api/auth.sdk", () => ({
     getConvexSessionToken: async () => {
         await Promise.resolve()
         return "test-token"

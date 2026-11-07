@@ -31,7 +31,7 @@ type SessionResponse = {
 let impls: Record<string, () => Promise<unknown>> = {}
 let storeRef: Store | null = null
 
-vi.mock("./auth.client", () => {
+vi.mock("./auth.sdk", () => {
     return {
         authClient: {
             getSession: async () => impls["getSession"]?.(),

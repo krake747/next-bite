@@ -3,7 +3,7 @@ import { noop } from "@tanstack/react-query"
 import { createFileRoute, useNavigate } from "@tanstack/react-router"
 import { Suspense, useState } from "react"
 
-import { useSuspenseConvexQuery } from "@api/convex.client"
+import { useSuspenseConvexQuery } from "@api/convex.context"
 import { convexQueryOptions } from "@api/convex.options"
 import { api } from "@api/endpoints"
 import { useFeedRestaurants, useRestaurants, type Restaurant } from "@core/restaurants"

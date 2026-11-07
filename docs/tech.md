@@ -8,22 +8,22 @@ values owned elsewhere.
 Owners: `package.json` for versions, `convex/schema.ts` for data, `src/core/env.ts` for env names,
 `cloudflare.config.ts` for deploy target, `vite.config.ts` for toolchain and test tiers.
 
-| Layer         | Technology                              | Owner                                                |
-| ------------- | --------------------------------------- | ---------------------------------------------------- |
-| Language      | TypeScript                              | `tsconfig.json`                                      |
-| UI framework  | React 19                                | `package.json`                                       |
-| App framework | TanStack Start                          | `src/server.ts`, `src/router.tsx`                    |
-| Routing       | TanStack Router                         | `src/routes/`, `src/routeTree.gen.ts`                |
-| Client data   | TanStack Query plus live DB collections | ADR-0001, ADR-0002, `src/api/db/`                    |
-| Backend       | Convex                                  | `convex/`, `convex/schema.ts`                        |
-| Auth          | Better Auth plus Convex integration     | `convex/auth.ts`, `src/api/auth.client.ts`, ADR-0005 |
-| File storage  | Convex File Storage                     | ADR-0015                                             |
-| Email         | Mailgun EU over HTTPS                   | ADR-0016                                             |
-| Hosting       | Cloudflare Workers                      | `cloudflare.config.ts`, ADR-0013                     |
-| AI            | TanStack AI as extension only           | ADR-0017                                             |
-| Styling       | Tailwind CSS v4                         | `src/index.css`                                      |
-| Components    | Base UI plus CVA                        | ADR-0018, `src/ui/`                                  |
-| Icons         | Phosphor                                | `package.json`                                       |
+| Layer         | Technology                              | Owner                                             |
+| ------------- | --------------------------------------- | ------------------------------------------------- |
+| Language      | TypeScript                              | `tsconfig.json`                                   |
+| UI framework  | React 19                                | `package.json`                                    |
+| App framework | TanStack Start                          | `src/server.ts`, `src/router.tsx`                 |
+| Routing       | TanStack Router                         | `src/routes/`, `src/routeTree.gen.ts`             |
+| Client data   | TanStack Query plus live DB collections | ADR-0001, ADR-0002, `src/api/db/`                 |
+| Backend       | Convex                                  | `convex/`, `convex/schema.ts`                     |
+| Auth          | Better Auth plus Convex integration     | `convex/auth.ts`, `src/api/auth.sdk.ts`, ADR-0005 |
+| File storage  | Convex File Storage                     | ADR-0015                                          |
+| Email         | Mailgun EU over HTTPS                   | ADR-0016                                          |
+| Hosting       | Cloudflare Workers                      | `cloudflare.config.ts`, ADR-0013                  |
+| AI            | TanStack AI as extension only           | ADR-0017                                          |
+| Styling       | Tailwind CSS v4                         | `src/index.css`                                   |
+| Components    | Base UI plus CVA                        | ADR-0018, `src/ui/`                               |
+| Icons         | Phosphor                                | `package.json`                                    |
 
 ## Repository layers
 
@@ -61,7 +61,7 @@ Convex is the source of truth. TanStack DB is a reactive view, not a second data
 
 ## Authentication
 
-Owner: `convex/auth.ts`, `src/api/auth.client.ts`, ADR-0005.
+Owner: `convex/auth.ts`, `src/api/auth.sdk.ts`, ADR-0005.
 
 - Better Auth owns identity and sessions. Convex owns profiles and authorization.
 - Methods: Google OAuth, then email OTP. Invitation-first flow preserves invite context across auth

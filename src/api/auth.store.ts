@@ -1,7 +1,7 @@
 import { useReducer, useRef } from "react"
 import * as v from "valibot"
 
-import { authClient } from "./auth.client"
+import { authClient } from "./auth.sdk"
 
 type User = {
     readonly id: string

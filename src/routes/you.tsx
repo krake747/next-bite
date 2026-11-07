@@ -3,7 +3,7 @@ import { createFileRoute, Link } from "@tanstack/react-router"
 import { Suspense, useState } from "react"
 
 import { hasCachedSession } from "@api/auth.store"
-import { useSuspenseConvexQuery } from "@api/convex.client"
+import { useSuspenseConvexQuery } from "@api/convex.context"
 import { convexQueryOptions } from "@api/convex.options"
 import { type Doc } from "@api/data.model"
 import { api } from "@api/endpoints"

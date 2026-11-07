@@ -31,7 +31,7 @@ vi.mock("convex/react", async (importOriginal) => {
     }
 })
 
-vi.mock("./auth.client", () => ({
+vi.mock("./auth.sdk", () => ({
     authClient: {
         useSession: () => ({
             data: {

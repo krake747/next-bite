@@ -2,7 +2,7 @@ import { QueryClient } from "@tanstack/react-query"
 import { type ConvexReactClient } from "convex/react"
 import { getFunctionName } from "convex/server"
 
-import { convexArgsKey } from "@api/convex.client"
+import { convexArgsKey } from "@api/convex.context"
 import { ConvexQueryClient } from "@convex-dev/react-query"
 
 export type SeedMap = Map<string, unknown>

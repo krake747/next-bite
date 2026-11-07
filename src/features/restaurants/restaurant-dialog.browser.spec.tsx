@@ -3,7 +3,7 @@ import { describe, expect, test, vi } from "vitest"
 import { render } from "vitest-browser-react"
 import { page } from "vitest/browser"
 
-import { ConvexProvider } from "@api/convex.client"
+import { ConvexProvider } from "@api/convex.context"
 import { SyncTimeoutError, type RestaurantAddArgs } from "@api/db/restaurants"
 import { createSeededClient, type MutationCall } from "@api/db/seeded.client"
 import { type Id } from "@convex/_generated/dataModel"
@@ -55,7 +55,7 @@ vi.mock("@core/image.utils", async (importOriginal) => {
     }
 })
 
-vi.mock("@api/auth.client", () => ({
+vi.mock("@api/auth.sdk", () => ({
     getConvexSessionToken: async () => {
         await Promise.resolve()
         return "test-token"

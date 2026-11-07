@@ -2,7 +2,7 @@ import { RouterProvider, createMemoryHistory, createRouter } from "@tanstack/rea
 import { fireEvent, render, screen, waitFor } from "@testing-library/react"
 import { describe, expect, test, vi } from "vitest"
 
-import { ConvexProvider } from "@api/convex.client"
+import { ConvexProvider } from "@api/convex.context"
 import { type RestaurantDoc } from "@api/db/restaurants"
 import { createSeededClient, seedKey, type MutationCall } from "@api/db/seeded.client"
 
@@ -14,8 +14,8 @@ let testUser: TestUser | null = { id: "user-1", email: "alex@example.com", name:
 const mutationCalls: MutationCall[] = []
 const querySeeds = new Map<string, unknown>()
 
-vi.mock("@api/auth.client", async (importOriginal) => {
-    const original = await importOriginal<typeof import("@api/auth.client")>()
+vi.mock("@api/auth.sdk", async (importOriginal) => {
+    const original = await importOriginal<typeof import("@api/auth.sdk")>()
     return {
         ...original,
         getConvexSessionToken: vi.fn<() => Promise<string | null>>(async () => {

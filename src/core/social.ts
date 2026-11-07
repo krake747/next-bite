@@ -1,4 +1,4 @@
-import { useConvexMutation, useConvexQuery } from "@api/convex.client"
+import { useConvexMutation, useConvexQuery } from "@api/convex.context"
 import { type Id } from "@api/data.model"
 import { api } from "@api/endpoints"
 
