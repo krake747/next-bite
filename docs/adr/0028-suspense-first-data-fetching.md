@@ -24,4 +24,8 @@ and SSR keeps queries disabled without a client.
 - Route loaders warm the cache with `queryClient.query(convexQueryOptions(...))`, fire-and-forget
   with swallowed errors. The loader checks `hasCachedSession()` first so signed-out visits and SSR
   never fire a doomed fetch; the Suspense view stays the source of truth and refetches on mount when
-  the warm-up has not landed.
+  the warm-up has not landed. Public queries (`restaurants.getById`, `landing.getStats`) warm
+  ungated; `invite/$token` has no loader because its `now` arg makes the key un-warmable.
+- The `/` authenticated feed stays on live collections (`useRestaurants`, `useFeedRestaurants` via
+  react-db preload), not Suspense; only the signed-out landing stats suspend. Feed conversion waits
+  on the domain-module slice moving those collections behind the api adapter.

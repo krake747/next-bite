@@ -1,8 +1,11 @@
 import { PlusIcon } from "@phosphor-icons/react"
 import { createFileRoute, useNavigate } from "@tanstack/react-router"
-import { useState } from "react"
+import { Suspense, useState } from "react"
 
-import { useFeedRestaurants, useRestaurants, useAuth, useLandingStats, type Restaurant } from "@core/hooks"
+import { useSuspenseConvexQuery } from "@api/convex-client"
+import { convexQueryOptions } from "@api/convex-options"
+import { api } from "@api/endpoints"
+import { useFeedRestaurants, useRestaurants, useAuth, type Restaurant } from "@core/hooks"
 import { feedTextFor, orderFeedByRecency } from "@core/social"
 import { useFilterState } from "@core/use-filter"
 import { useOpenAddRestaurant } from "@features/restaurants/add-restaurant-provider"
@@ -30,6 +33,13 @@ import { Header, HeaderSubtitle, HeaderTitle, HeaderBadge } from "@ui/header"
 export const Route = createFileRoute("/")({
     head: () => ({ meta: [{ title: "Our next bite" }] }),
     component: Home,
+    loader: ({ context }) => {
+        // Public landing stats warm for everyone; the authenticated feed below
+        // rides live collections with their own preload, not this cache.
+        // A failed warm-up stays silent: the Suspense section refetches.
+        void context.queryClient.query(convexQueryOptions(api.landing.getStats)).catch(() => {})
+        return null
+    },
 })
 
 function filterRestaurants(
@@ -205,17 +215,22 @@ function LandingHero() {
     )
 }
 
+function LandingStatsSection() {
+    const stats = useSuspenseConvexQuery(api.landing.getStats)
+    if (stats.totalRestaurants === 0) {
+        return null
+    }
+    return <CommunityStats stats={stats} />
+}
+
 function SignedOutHome() {
-    const stats = useLandingStats()
     return (
         <PageLayout>
             <LandingHero />
             <PageContainer>
-                {stats === undefined ? (
-                    <CommunityStatsSkeleton />
-                ) : stats.totalRestaurants === 0 ? null : (
-                    <CommunityStats stats={stats} />
-                )}
+                <Suspense fallback={<CommunityStatsSkeleton />}>
+                    <LandingStatsSection />
+                </Suspense>
                 <HowItWorks />
                 <LandingCloser />
             </PageContainer>
