@@ -1,7 +1,8 @@
 # Design-system documentation and distribution (Phase 6)
 
-Phase 6 makes the system self-describing: a living `/design-system` route rendering the real
-components, agent instructions in AGENTS.md, and a `registry.json` describing the distributable
+Phase 6 makes the system self-describing: a living `/ds` route rendering the real components
+(`src/routes/ds/` with `index.tsx`, `route.tsx`, `$sectionId.tsx`, `-sections/`, dev-gated via
+`env.DEV`), agent instructions in AGENTS.md, and a `registry.json` describing the distributable
 source. Nothing is published to an external registry; components get consumed here first.
 
 **Considered Options**
@@ -14,13 +15,15 @@ source. Nothing is published to an external registry; components get consumed he
 
 **Consequences**
 
-- `src/routes/design-system.tsx`: twelve sections in spec order (palette, typography, shape,
-  buttons, inputs, cards/badges, avatars, social, activity/photos, restaurant/group, overlays, empty
-  states), each a small local component, all interactive elements live (dialog, popover, tabs,
-  toggles with noop callbacks, gallery viewer).
-- Footer links to `/design-system` for discoverability. `registry.json` maps ui, component, and
-  block items to source paths.
-- AGENTS.md gains a Design system section condensing the mandatory rules.
+- `src/routes/ds/` (dev-only, redirects to `/` when `!env.DEV`): sections in spec order (palette,
+  typography, shape, buttons, inputs, cards/badges, avatars, social, activity/photos,
+  restaurant/group, overlays, empty states), each a small local section component, all interactive
+  elements live (dialog, popover, tabs, toggles with noop callbacks, gallery viewer).
+- No footer link: the route is dev-only by design (`docs/agents/toolchain.md` notes dev-gated routes
+  redirect in production builds), so it stays undiscoverable in prod. `registry.json` maps ui,
+  component, and block items to source paths.
+- No dedicated AGENTS.md Design system section: the mandatory rules live in `CODING_STANDARDS.md`
+  and the AGENTS.md rules table (`shadcn/no-restyle`, CVA variants, Base UI primitives).
 - Verification is `pnpm check:full` plus `cf deploy --dry-run` plus a manual visual read of the
   route; no automated test asserts on the docs page itself.
 - With this, all six phases are implemented. Remaining: production deploy of Phases 1-6 and the

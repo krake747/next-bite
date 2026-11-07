@@ -15,6 +15,9 @@ private helpers), the fix rewrites the test against rendered output, never the o
 **Consequences**
 
 - New specs query rendered output and observable effects; reviewers reject specs that assert hook
-  shapes, call order, or class strings as behavior.
+  shapes, call order, or class strings as behavior. The single exception is the `className`
+  passthrough check (`expect(el.className).toContain("custom-class")`): wrappers own styling and
+  call sites may only pass layout classes, so asserting the merge lands is asserting the
+  `shadcn/no-restyle` contract, not a style value. Prefer `data-slot`/`dataset` for everything else.
 - `docs/agents/testing.md` owns tiers and query conventions; `CODING_STANDARDS.md` owns the bar a
   test must clear.

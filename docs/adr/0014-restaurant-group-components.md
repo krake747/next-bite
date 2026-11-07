@@ -22,10 +22,12 @@ reframing.
   `RestaurantGallery` (hero, cuisine fallback, action slot, count button, owns viewer state),
   `RestaurantInterestButton` (Tomato toggle, labeled, `aria-pressed`). `RestaurantCard` is a thin
   orchestrator; notes, map, rating, delete dialog untouched; skeleton and empty states untouched.
-- `src/features/groups` (new `features-groups` fallow zone): `GroupMembers`, `GroupHeader` (cover,
-  description, spot count), `SharedRestaurantList` (rows with optional select), `GroupCard`
-  composing all three.
+- `src/features/groups` (covered by the generic `features` fallow zone, which forbids `features`
+  importing `features`; no per-feature `features-groups` zone): `GroupMembers`, `GroupHeader`
+  (cover, description, spot count), `SharedRestaurantList` (rows with optional select), `GroupCard`
+  composing all three. `share-to-group-dialog.tsx` was added later by application work.
 - Inline `fontFamily` styles in touched code become `font-display`/`font-sans` utilities.
 - `restaurant.browser.spec.tsx` + `groups.browser.spec.tsx` cover header content, gallery viewer,
   interest toggle, group composition, and selection callbacks (13 tests).
-- Deferred: real interest data, photo authorship, feed, `/design-system` route.
+- Deferred: real interest data, photo authorship, feed, `/ds` route (landed in Phase 6 as
+  `src/routes/ds/`, dev-only).

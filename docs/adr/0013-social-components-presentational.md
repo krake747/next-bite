@@ -17,15 +17,17 @@ setup, and stay with the later application work.
 
 **Consequences**
 
-- `AvatarGroup` (4 visible + "+N" overflow, accessible label), `FriendPresence` (static dot with
-  sr-only state), `SocialMetadata` (human sentences, null with no context), `ReactionBar` (like /
-  comment / want toggles with counts, `aria-pressed`), `CommentList` (plain text, author-only
-  delete, local draft form), `PhotoGallery` (3-up grid composing `LazyImage` + existing
-  `ImageGalleryModal` viewer, per-photo attribution, add-photo entry), `ActivityPost` (author +
-  time + text + restaurant + social context + reactions, representative data only).
+- `AvatarGroup` (4 visible + "+N" overflow, accessible label) and `SocialMetadata` (human sentences,
+  null with no context) live in `src/pattern/` as composable patterns, imported by `ActivityPost`
+  and `CommentList`; the remaining five (`FriendPresence`, `ReactionBar`, `CommentList`,
+  `PhotoGallery`, `ActivityPost`) live in `src/features/social`. Later additions in the same area
+  (`friends-filter.tsx`, `visit-memories.tsx` with real `Id<"restaurants">` bindings) came from
+  application phases, not Phase 3.
 - Bookmark is the Want-to-try toggle; no separate bookmark concept. `EmojiRating` untouched.
   `Avatar`'s static presence dot and `FriendPresence` stay display-only; no presence infra.
-- `social.browser.spec.tsx` covers all seven (8 tests). `features-social` zone added to fallow
-  boundaries.
+- `social.browser.spec.tsx` covers all seven (8 tests). No per-feature `features-social` fallow zone
+  was added; the generic `features` zone (which forbids `features` importing `features`) covers the
+  boundary.
 - Deferred: Convex interests/likes/comments tables, photo `uploadedBy` attribution, feed assembly
-  and homepage redesign (Phase 5), groups/plans (Phase 4), `/design-system` route (Phase 6).
+  and homepage redesign (Phase 5), groups/plans (Phase 4), `/ds` route (Phase 6, landed as
+  `src/routes/ds/`, dev-only).

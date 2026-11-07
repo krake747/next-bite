@@ -28,6 +28,7 @@ foundation without redesigning any screen.
   `bg-[#faf9f7]` became `bg-background`, `bg-white` became `bg-surface`, dialog shadows became
   `shadow-popover`, `Card` uses `border-border` + `shadow-card`.
 - Deliberately deferred: per-component semantic-token migration (Phase 2 standardization), wheel
-  canvas colors (browns, golds, confetti) and rating ramps (Phase 4/5), `/design-system` route and
-  registry (Phase 6). Red/amber/orange accents outside the error paths stay until Phase 2.
+  canvas colors (browns, golds, confetti) and rating ramps (Phase 4/5), `/ds` route and registry
+  (Phase 6, landed as `src/routes/ds/` with `$sectionId` sections, dev-only). Red/amber/orange
+  accents outside the error paths stay until Phase 2.
 - No production deploy in Phase 1; verified with `pnpm check:full` and `cf deploy --dry-run`.

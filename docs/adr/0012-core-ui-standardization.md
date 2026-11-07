@@ -27,9 +27,12 @@ layout classes and must use variants for the rest.
   remain outside `src/ui`.
 - `src/ui/popover.tsx`: `Popover`, `PopoverTrigger` (`plain`/`tinted`), `PopoverPanel`
   (`shadow-popover`). Top-bar account menu migrated.
-- `src/ui/button.tsx`: `danger` renamed to `destructive`; added Outline, Ghost, Small, Icon and
-  `loading` (spinner + disabled + `aria-busy`); `render` passthrough for link-buttons. All consumers
-  migrated, including the top-bar Sign In link and login/signup spinners.
+- `src/ui/button.tsx`: `danger` renamed to `destructive`; added Outline, Ghost, Small, Icon. No
+  dedicated `loading` prop on `Button` itself: async submits use `disabled={...isPending}` plus the
+  route-level `PendingButton` (`src/routes/-components/pending-button.tsx`, shown in the ds buttons
+  section) and `LoadingPlaceholder` for route bootstraps. `render` passthrough for link-buttons
+  works via Base UI props spread (`React.ComponentProps<typeof BaseButton>`), not an explicit prop.
+  The top-bar Sign In link and login/signup pendings use these patterns.
 - `src/ui/badge.tsx`: variants are neutral/brand/success/accent/outline with neutral default;
   Want-to-try reads Tomato, Been-there reads Basil, always labeled. `pink` and the one-off
   `editorial` are gone; the photo overlay takes `brand`.
@@ -38,8 +41,8 @@ layout classes and must use variants for the rest.
   that dispatches a real change event (verified by `field.browser.spec.tsx`, which also caught a
   label-resolution gap fixed with a render prop). `FieldErrors` uses the `destructive` token.
 - New `src/ui/avatar.tsx` (Base UI Avatar, 24/32/40/48/64, initials fallback, optional static
-  presence dot) and `src/ui/tabs.tsx` (zero consumers by design). Card and Skeleton stay
-  single-variant by agreement.
+  presence dot) and `src/ui/tabs.tsx` (no consumers at the time; now used by the dev-only
+  `ds/-sections/overlays.tsx` gallery). Card and Skeleton stay single-variant by agreement.
 - Small reds folded into tokens (`error-banner`, favorite heart, upload errors, dialog alerts; amber
   hint to `warning`, decorative dot to mango). Wheel canvas colors, rating ramps, and the needle
   stay until Phases 4/5.
