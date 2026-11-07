@@ -30,8 +30,8 @@ async function createRestaurant(t: TestConvexForDataModel<DataModel>, subject: s
     })
 }
 
-describe("personal profile and statuses", () => {
-    test("reports onboarding without a profile and readiness after", async () => {
+describe("personal user details and statuses", () => {
+    test("reports onboarding without user details and readiness after", async () => {
         const t = setup()
 
         expect(await asUser(t, "anna").query(api.users.getMe, {})).toEqual({ status: "onboarding" })
@@ -44,7 +44,7 @@ describe("personal profile and statuses", () => {
         })
     })
 
-    test("updates only the caller's own profile", async () => {
+    test("updates only the caller's own details", async () => {
         const t = setup()
         await registerUser(t, "anna", "anna@example.com")
         await registerUser(t, "ben", "ben@example.com")

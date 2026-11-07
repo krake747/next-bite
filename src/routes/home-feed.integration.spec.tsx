@@ -101,7 +101,7 @@ describe("home friends feed", () => {
             [{ authUserId: "user-2", name: "Ben" }],
         )
 
-        const saved = screen.getByLabelText("Saved places")
+        const saved = screen.getByLabelText("Saved restaurants")
         expect(within(saved).getByText("Trattoria Verde")).toBeInTheDocument()
         expect(within(saved).queryByRole("button", { name: "Ben" })).toBeNull()
     })
@@ -115,7 +115,7 @@ describe("home friends feed", () => {
             [{ authUserId: "user-2", name: "Ben" }],
         )
 
-        const saved = screen.getByLabelText("Saved places")
+        const saved = screen.getByLabelText("Saved restaurants")
         await waitFor(() => {
             expect(within(saved).getByRole("button", { name: "Ben" })).toBeInTheDocument()
         })

@@ -278,7 +278,7 @@ describe("auth lifecycle ownership", () => {
         expect(localStorage.getItem("nb:session")).toBeNull()
     })
 
-    test("late bootstrap cannot overwrite a replaced account", async () => {
+    test("late bootstrap cannot overwrite a replaced user", async () => {
         resetAuth()
         const sessionGate = createDeferred<SessionResponse>()
         impls["getSession"] = async () => sessionGate.promise

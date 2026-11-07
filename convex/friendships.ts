@@ -21,9 +21,9 @@ async function findRow(
 }
 
 async function acceptPair(db: GenericDatabaseWriter<DataModel>, a: string, b: string): Promise<void> {
-    const forward = await findRow(db, a, b)
-    if (forward) {
-        await db.patch(forward._id, { status: "accepted" })
+    const existing = await findRow(db, a, b)
+    if (existing) {
+        await db.patch(existing._id, { status: "accepted" })
     } else {
         await db.insert("friendships", { ownerId: a, friendAuthUserId: b, status: "accepted", createdAt: Date.now() })
     }
@@ -93,9 +93,9 @@ export const removeFriend = mutation({
     },
     handler: async (ctx, args) => {
         const userId = await requireUserId(ctx)
-        const forward = await findRow(ctx.db, userId, args.friendAuthUserId)
-        if (forward) {
-            await ctx.db.delete(forward._id)
+        const existing = await findRow(ctx.db, userId, args.friendAuthUserId)
+        if (existing) {
+            await ctx.db.delete(existing._id)
         }
         const mirror = await findRow(ctx.db, args.friendAuthUserId, userId)
         if (mirror) {

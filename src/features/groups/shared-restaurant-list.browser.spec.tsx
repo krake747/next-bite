@@ -9,7 +9,7 @@ const restaurants = [
 ]
 
 describe("SharedRestaurantList", () => {
-    test("lists shared spots", async () => {
+    test("lists shared restaurants", async () => {
         const screen = await render(<SharedRestaurantList items={restaurants} />)
         await expect.element(screen.getByText("Trattoria Verde")).toBeInTheDocument()
         await expect.element(screen.getByText("Added by Alex")).toBeInTheDocument()

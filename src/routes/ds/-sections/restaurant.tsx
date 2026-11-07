@@ -31,7 +31,7 @@ export function RestaurantDemo() {
                     </div>
                 </Card>
                 <GroupCard
-                    name="Food Crew"
+                    name="Food Group"
                     description="Weekend brunch plans"
                     members={[{ name: "Alex" }, { name: "Priya" }, { name: "Jamie" }]}
                     restaurants={[

@@ -25,7 +25,7 @@ function asUser(subject: string): TestConvexForDataModel<DataModel> {
 }
 
 describe("users", () => {
-    test("creates a profile on first ensure and returns the same id on retry", async () => {
+    test("creates user details on first ensure and returns the same id on retry", async () => {
         const t = asUser("user-1")
         const first = await t.mutation(api.users.ensureProfile, { email: "ada@example.com", name: "Ada" })
         const second = await t.mutation(api.users.ensureProfile, { email: "ada@example.com", name: "Ada" })
@@ -41,7 +41,7 @@ describe("users", () => {
         expect(me.profile.name).toBe("bob@example.com")
     })
 
-    test("reports onboarding before the profile exists", async () => {
+    test("reports onboarding before user details exist", async () => {
         const t = asUser("user-3")
         await expect(t.query(api.users.getMe, {})).resolves.toEqual({ status: "onboarding" })
     })

@@ -46,7 +46,7 @@ export function OverlaysDemo() {
                         +
                     </PopoverTrigger>
                     <PopoverPanel className="w-48">
-                        <p className="px-3 py-2 text-sm text-stone-700">Account menu content</p>
+                        <p className="px-3 py-2 text-sm text-stone-700">Your menu content</p>
                     </PopoverPanel>
                 </Popover>
                 <div className="w-full max-w-sm">

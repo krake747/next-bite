@@ -465,7 +465,7 @@ describe("restaurant collections", () => {
         expect(backend.subscriberCount()).toBe(0)
     })
 
-    test("isolates account data across sign-out to a different account", async () => {
+    test("isolates user data across sign-out to a different user", async () => {
         vi.mocked(authClient.getSession).mockResolvedValue({
             data: { user: { id: "anna", email: "anna@example.com", name: "Anna" } },
             error: null,

@@ -20,7 +20,7 @@ import {
 } from "@core/social"
 import { type Viewer } from "@core/social.counts"
 import { ShareToGroupDialog } from "@features/groups/share-to-group-dialog"
-import { PlanMealSection } from "@features/plans/meal-plans"
+import { PlanSection } from "@features/plans/plans"
 import { RestaurantGallery } from "@features/restaurants/restaurant-gallery"
 import { RestaurantHeader } from "@features/restaurants/restaurant-header"
 import { RestaurantInterestButton } from "@features/restaurants/restaurant-interest-button"
@@ -254,7 +254,9 @@ function DetailNotFound() {
             <PageContainer>
                 <BackNav backTo="/" label="Back to restaurants" />
                 <div className="py-16 text-center">
-                    <p className="font-display text-2xl font-semibold text-balance text-foreground">Spot not found</p>
+                    <p className="font-display text-2xl font-semibold text-balance text-foreground">
+                        Restaurant not found
+                    </p>
                     <p className="mt-2 text-sm text-pretty text-muted-foreground">
                         This page went out for snacks and never came back.
                     </p>
@@ -320,7 +322,7 @@ function RestaurantDetailView() {
                         shareAction={<DetailShare restaurant={restaurant} />}
                     />
                     <DetailPhotos photos={photos} />
-                    <PlanMealSection restaurantId={restaurant._id} />
+                    <PlanSection restaurantId={restaurant._id} />
                     <VisitMemories restaurantId={restaurant._id} />
                     <DetailComments restaurant={restaurant} social={social} />
                 </div>

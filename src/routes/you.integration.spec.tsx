@@ -101,7 +101,7 @@ async function renderAt(path: string): Promise<void> {
 }
 
 describe("you screen", () => {
-    test("renders the profile with saved, want, and been counts", async () => {
+    test("renders user details with saved, want, and been counts", async () => {
         testUser = { id: "user-1", email: "alex@example.com", name: "Alex" }
         querySeeds.clear()
         seedYou()
@@ -135,7 +135,7 @@ describe("you screen", () => {
         })
     })
 
-    test("shows the onboarding form without a profile", async () => {
+    test("shows the onboarding form without user details", async () => {
         testUser = { id: "user-1", email: "alex@example.com", name: "Alex" }
         querySeeds.clear()
         seedQuery("users:getMe", undefined, { status: "onboarding" })
@@ -144,7 +144,7 @@ describe("you screen", () => {
         await renderAt("/you")
 
         await waitFor(() => {
-            expect(screen.getByText("Complete your profile")).toBeInTheDocument()
+            expect(screen.getByText("Complete your details")).toBeInTheDocument()
         })
     })
 

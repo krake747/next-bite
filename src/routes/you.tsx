@@ -47,7 +47,7 @@ function YouError({ reset }: Readonly<{ reset: () => void }>) {
             <PageContainer>
                 <Header>
                     <HeaderTitle>You</HeaderTitle>
-                    <HeaderSubtitle>Your profile, saves, wants, and visits.</HeaderSubtitle>
+                    <HeaderSubtitle>Your details, saves, wants, and visits.</HeaderSubtitle>
                 </Header>
                 <QueryErrorState reset={reset} />
             </PageContainer>
@@ -57,7 +57,7 @@ function YouError({ reset }: Readonly<{ reset: () => void }>) {
 
 type Restaurant = Doc<"restaurants">
 
-function ProfileForm({
+function UserDetailsForm({
     email,
     initialName,
     heading,
@@ -80,7 +80,7 @@ function ProfileForm({
             await updateProfile.mutateAsync({ name: trimmed })
             setSaved(true)
         } catch (err) {
-            setError(errorFrom(err, "Could not save your profile"))
+            setError(errorFrom(err, "Could not save your details"))
         }
     }
 
@@ -92,22 +92,22 @@ function ProfileForm({
                 <p className="text-sm text-muted-foreground">{email}</p>
                 <div className="mt-3 flex flex-col gap-3 sm:flex-row sm:items-end">
                     <div className="flex flex-1 flex-col gap-1.5">
-                        <label htmlFor="profile-name" className={fieldLabel()}>
+                        <label htmlFor="user-name" className={fieldLabel()}>
                             Display name
                         </label>
                         <input
-                            id="profile-name"
+                            id="user-name"
                             value={name}
                             onChange={(event) => {
                                 setName(event.target.value)
                             }}
                             maxLength={80}
                             aria-invalid={error.kind === "error"}
-                            aria-describedby={error.kind === "error" ? "profile-name-error" : undefined}
+                            aria-describedby={error.kind === "error" ? "user-name-error" : undefined}
                             className={cx(control(), error.kind === "error" && "border-destructive")}
                         />
                         {error.kind === "error" && (
-                            <p id="profile-name-error" role="alert" className="text-sm text-destructive">
+                            <p id="user-name-error" role="alert" className="text-sm text-destructive">
                                 {error.message}
                             </p>
                         )}
@@ -122,16 +122,16 @@ function ProfileForm({
     )
 }
 
-function ProfileSection() {
+function UserDetailsSection() {
     const auth = useAuth()
     const profile = useSuspenseConvexQuery(api.users.getMe)
 
     if (profile.status === "onboarding") {
         return (
-            <ProfileForm
+            <UserDetailsForm
                 email={auth.user?.email ?? ""}
                 initialName={auth.user?.name ?? ""}
-                heading="Complete your profile"
+                heading="Complete your details"
                 subheading="Add your name so friends recognize you."
             />
         )
@@ -139,10 +139,10 @@ function ProfileSection() {
     return (
         <>
             <AvatarSection avatarUrl={profile.profile.avatar?.url} />
-            <ProfileForm
+            <UserDetailsForm
                 email={profile.profile.email}
                 initialName={profile.profile.name}
-                heading="Your profile"
+                heading="Your details"
                 subheading="Only you see this page."
             />
         </>
@@ -167,10 +167,10 @@ export function AvatarSection({ avatarUrl }: Readonly<{ avatarUrl: string | unde
     }
 
     return (
-        <section aria-label="Profile photo" className="pt-6">
+        <section aria-label="Your photo" className="pt-6">
             <div className="mt-3 flex items-center gap-4 rounded-card border border-border bg-surface p-5 shadow-card">
                 {avatarUrl !== undefined ? (
-                    <LazyImage src={avatarUrl} alt="Your profile photo" className="size-16 rounded-full object-cover" />
+                    <LazyImage src={avatarUrl} alt="Your photo" className="size-16 rounded-full object-cover" />
                 ) : (
                     <div aria-hidden="true" className="size-16 rounded-full bg-surface-muted" />
                 )}
@@ -194,7 +194,7 @@ export function AvatarSection({ avatarUrl }: Readonly<{ avatarUrl: string | unde
     )
 }
 
-function PlacesSection({
+function RestaurantsSection({
     title,
     restaurants,
     emptyText,
@@ -250,18 +250,18 @@ function YouContent() {
 
     return (
         <>
-            <ProfileSection />
-            <PlacesSection
+            <UserDetailsSection />
+            <RestaurantsSection
                 title="Saved"
                 restaurants={saved}
                 emptyText="Nothing saved yet. Add your first restaurant from Home."
             />
-            <PlacesSection
+            <RestaurantsSection
                 title="Want to try"
                 restaurants={want}
                 emptyText="No wants yet. Tap Want on any restaurant to park it here."
             />
-            <PlacesSection
+            <RestaurantsSection
                 title="Been"
                 restaurants={been}
                 emptyText="No visits yet. Mark Been on restaurants you tried."
@@ -278,10 +278,10 @@ function YouPage() {
             <PageContainer>
                 <Header>
                     <HeaderTitle>You</HeaderTitle>
-                    <HeaderSubtitle>Your profile, saves, wants, and visits.</HeaderSubtitle>
+                    <HeaderSubtitle>Your details, saves, wants, and visits.</HeaderSubtitle>
                 </Header>
                 {status.kind !== "ready" ? (
-                    <SignedOutGate context="your profile">
+                    <SignedOutGate context="your details">
                         <div className="pt-6">
                             <LoadingPlaceholder />
                         </div>

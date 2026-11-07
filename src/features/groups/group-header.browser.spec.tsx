@@ -8,11 +8,11 @@ const members = [{ name: "Alex" }, { name: "Priya" }, { name: "Jamie" }]
 describe("GroupHeader", () => {
     test("shows identity, counts, and members", async () => {
         const screen = await render(
-            <GroupHeader name="Food Crew" description="Weekend plans" members={members} restaurantCount={2} />,
+            <GroupHeader name="Food Group" description="Weekend plans" members={members} restaurantCount={2} />,
         )
-        await expect.element(screen.getByRole("heading", { name: "Food Crew" })).toBeInTheDocument()
+        await expect.element(screen.getByRole("heading", { name: "Food Group" })).toBeInTheDocument()
         await expect.element(screen.getByText("Weekend plans")).toBeInTheDocument()
-        await expect.element(screen.getByText("2 spots")).toBeInTheDocument()
+        await expect.element(screen.getByText("2 restaurants")).toBeInTheDocument()
         await expect.element(screen.getByText("3 members")).toBeInTheDocument()
     })
 })

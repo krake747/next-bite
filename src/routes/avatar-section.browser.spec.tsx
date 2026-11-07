@@ -87,10 +87,10 @@ describe("AvatarSection", () => {
         resetAvatar()
         const screen = await renderAvatar("https://example.com/a.jpg")
 
-        await expect.element(screen.getByRole("img", { name: "Your profile photo" })).toBeInTheDocument()
+        await expect.element(screen.getByRole("img", { name: "Your photo" })).toBeInTheDocument()
     })
 
-    test("uploads a new photo through the profile update", async () => {
+    test("uploads a new photo through the user details update", async () => {
         resetAvatar()
         await renderAvatar(undefined)
 

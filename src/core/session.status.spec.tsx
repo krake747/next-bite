@@ -168,7 +168,7 @@ describe("useSessionStatus", () => {
         })
     })
 
-    test("stays loading through an account switch until the new probe resolves", async () => {
+    test("stays loading through a user switch until the new probe resolves", async () => {
         resetAuth()
         let releaseGate!: () => void
         tokenGate = {

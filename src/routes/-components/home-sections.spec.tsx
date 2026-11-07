@@ -25,7 +25,7 @@ describe("CommunityStats", () => {
         render(<CommunityStats stats={stats} />)
 
         expect(screen.getByText("3")).toBeInTheDocument()
-        expect(screen.getByText("places shared")).toBeInTheDocument()
+        expect(screen.getByText("restaurants shared")).toBeInTheDocument()
         expect(screen.getByText("5")).toBeInTheDocument()
         expect(screen.getByText("wants saved")).toBeInTheDocument()
         expect(screen.getByText("Italian")).toBeInTheDocument()
