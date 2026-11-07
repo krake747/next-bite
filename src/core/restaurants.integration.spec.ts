@@ -88,3 +88,32 @@ describe("restaurant getById", () => {
         expect(found).toBeNull()
     })
 })
+
+describe("restaurant update", () => {
+    test("accepts ratings within the emoji scale", async () => {
+        const t = setup()
+        await registerUser(t, "anna")
+        const restaurantId = await createRestaurant(t, "anna")
+
+        await asUser(t, "anna").mutation(api.restaurants.update, { id: restaurantId, rating: 7 })
+
+        const found = await asUser(t, "anna").query(api.restaurants.getById, { id: restaurantId })
+        expect(found?.rating).toBe(7)
+    })
+
+    test("rejects ratings outside the emoji scale", async () => {
+        const t = setup()
+        await registerUser(t, "anna")
+        const restaurantId = await createRestaurant(t, "anna")
+
+        await expect(
+            asUser(t, "anna").mutation(api.restaurants.update, { id: restaurantId, rating: 0 }),
+        ).rejects.toThrow("whole number between 1 and 7")
+        await expect(
+            asUser(t, "anna").mutation(api.restaurants.update, { id: restaurantId, rating: 8 }),
+        ).rejects.toThrow("whole number between 1 and 7")
+        await expect(
+            asUser(t, "anna").mutation(api.restaurants.update, { id: restaurantId, rating: 4.5 }),
+        ).rejects.toThrow("whole number between 1 and 7")
+    })
+})

@@ -658,6 +658,10 @@ export const update = mutation({
     handler: async (ctx, args) => {
         const restaurant = await requireOwnedRestaurant(ctx, args.id)
 
+        if (args.rating !== undefined && (!Number.isInteger(args.rating) || args.rating < 1 || args.rating > 7)) {
+            throw new Error("Rating must be a whole number between 1 and 7")
+        }
+
         const details = mergeDetails(restaurant.details, { notes: args.notes, link: args.link })
         const enrichment = mergeEnrichment(restaurant.address.enrichment, args.coords)
 
