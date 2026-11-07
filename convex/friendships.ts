@@ -4,7 +4,7 @@ import { v } from "convex/values"
 import { type DataModel } from "./_generated/dataModel"
 import { type Doc } from "./_generated/dataModel"
 import { internalMutation, mutation, query } from "./_generated/server"
-import { FALLBACK_DISPLAY_NAME, requireUserId } from "./helpers"
+import { formatDisplayName, requireUserId } from "./helpers"
 import { isRestaurantVisibleTo } from "./visibility"
 
 type FriendshipRow = Doc<"friendships">
@@ -197,7 +197,7 @@ export const listFriendRequests = query({
                 .query("profiles")
                 .withIndex("by_auth_user", (q) => q.eq("authUserId", authUserId))
                 .unique()
-            return profile?.name ?? FALLBACK_DISPLAY_NAME
+            return formatDisplayName(profile?.name)
         }
         return {
             incoming: await Promise.all(
@@ -227,7 +227,7 @@ export const listFriends = query({
                     .query("profiles")
                     .withIndex("by_auth_user", (q) => q.eq("authUserId", row.friendAuthUserId))
                     .unique()
-                return { authUserId: row.friendAuthUserId, name: profile?.name ?? FALLBACK_DISPLAY_NAME }
+                return { authUserId: row.friendAuthUserId, name: formatDisplayName(profile?.name) }
             }),
         )
     },

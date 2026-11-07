@@ -1,7 +1,7 @@
 import { useLiveQuery } from "@tanstack/react-db"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { type ConvexClient } from "convex/browser"
-import { useEffect, useRef, useState, useSyncExternalStore } from "react"
+import { useEffect, useRef } from "react"
 
 import { api } from "@convex/_generated/api"
 import { type Doc, type Id } from "@convex/_generated/dataModel"
@@ -24,125 +24,10 @@ import {
 } from "./db/restaurants"
 import { env } from "./env"
 import { parseImageRecord, type ImageRecord } from "./schemas"
+import { retrySessionGate, useSessionKey, useSessionStatus } from "./session"
 
-async function sleep(ms: number): Promise<void> {
-    await new Promise<void>((resolve) => {
-        setTimeout(resolve, ms)
-    })
-}
-
-async function probeConvexAuth(client: ConvexClient): Promise<boolean> {
-    const token = await getConvexSessionToken()
-    if (token === null) {
-        return false
-    }
-    try {
-        await client.query(api.friendships.listFriends, {})
-        return true
-    } catch {
-        return false
-    }
-}
-
-const CONVEX_AUTH_TIMEOUT_MS = 10000
-
-async function settleConvexAuth(
-    client: ConvexClient,
-    isCancelled: () => boolean,
-    timeoutMs: number = CONVEX_AUTH_TIMEOUT_MS,
-): Promise<boolean> {
-    const deadline = Date.now() + timeoutMs
-    while (!isCancelled()) {
-        if (await probeConvexAuth(client)) {
-            return true
-        }
-        if (Date.now() >= deadline) {
-            return false
-        }
-        await sleep(500)
-    }
-    return false
-}
-
-function useSessionKey(): string | null {
-    const status = useSessionStatus()
-    return status.kind === "ready" ? status.userId : null
-}
-
-export type SessionStatus =
-    | { readonly kind: "loading" }
-    | { readonly kind: "signed-out" }
-    | { readonly kind: "ready"; readonly userId: string }
-    | { readonly kind: "timed-out"; readonly userId: string; readonly retry: () => void }
-
-type ConvexGate = {
-    readonly userId: string | null
-    readonly outcome: "probing" | "ready" | "timed-out"
-}
-
-let gateAttempt = 0
-const gateAttemptListeners = new Set<() => void>()
-
-function subscribeGateAttempt(listener: () => void): () => void {
-    gateAttemptListeners.add(listener)
-    return () => {
-        gateAttemptListeners.delete(listener)
-    }
-}
-
-function getGateAttempt(): number {
-    return gateAttempt
-}
-
-function retrySessionGate(): void {
-    gateAttempt += 1
-    for (const listener of gateAttemptListeners) {
-        listener()
-    }
-}
-
-export function useSessionStatus(options?: Readonly<{ timeoutMs?: number }>): SessionStatus {
-    const { isAuthenticated, isLoading, user } = useAuthSource()
-    const client = useConvexClient()
-    const gateGeneration = useSyncExternalStore(subscribeGateAttempt, getGateAttempt, getGateAttempt)
-    const [gate, setGate] = useState<ConvexGate>({ userId: null, outcome: "probing" })
-    const sessionKey = !isAuthenticated || isLoading || user === null ? null : user.id
-    const timeoutMs = options?.timeoutMs ?? CONVEX_AUTH_TIMEOUT_MS
-    useEffect(() => {
-        let cancelled = false
-        if (sessionKey === null || client === null) {
-            setGate({ userId: null, outcome: "probing" })
-        } else {
-            const owner = sessionKey
-            setGate({ userId: owner, outcome: "probing" })
-            void settleConvexAuth(client, () => cancelled, timeoutMs).then((verified) => {
-                if (!cancelled) {
-                    setGate({ userId: owner, outcome: verified ? "ready" : "timed-out" })
-                }
-            })
-        }
-        return () => {
-            cancelled = true
-        }
-    }, [sessionKey, client, gateGeneration, timeoutMs])
-    if (sessionKey === null) {
-        return isLoading ? { kind: "loading" } : { kind: "signed-out" }
-    }
-    if (gate.userId !== sessionKey) {
-        return { kind: "loading" }
-    }
-    if (gate.outcome === "ready") {
-        return { kind: "ready", userId: sessionKey }
-    }
-    if (gate.outcome === "timed-out") {
-        return {
-            kind: "timed-out",
-            userId: sessionKey,
-            retry: retrySessionGate,
-        }
-    }
-    return { kind: "loading" }
-}
+export { CONVEX_AUTH_TIMEOUT_MS, retrySessionGate, useSessionKey, useSessionStatus } from "./session"
+export type { SessionStatus } from "./session"
 
 function useSessionSyncRecovery(
     input: Readonly<{
@@ -388,6 +273,8 @@ export function useAddRestaurantWithHours() {
                 clientMutationId,
             })
             const tx = collections.owner.insert(temp)
+            // The rejection surfaces via tx.state below; swallowing here avoids an
+            // unhandled rejection while the definitive error is thrown next.
             await tx.when("settled").catch(() => {})
             if (tx.state === "failed") {
                 throw tx.error?.error ?? new Error("Add failed")

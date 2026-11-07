@@ -2,7 +2,7 @@ import { api } from "@convex/_generated/api"
 import { type Id } from "@convex/_generated/dataModel"
 
 import { useConvexMutation, useConvexQuery } from "./convex-client.tsx"
-import { useSessionStatus } from "./hooks"
+import { useSessionStatus } from "./session"
 import { countReactions } from "./social-counts"
 import { isTempId } from "./temp-ids"
 

@@ -3,13 +3,13 @@ import { useEffect, useRef, useState } from "react"
 
 import { type Id } from "@convex/_generated/dataModel"
 import { SyncTimeoutError, type RestaurantAddArgs, type RestaurantUpdateArgs } from "@core/db/restaurants"
-import { useAddRestaurantWithHours, useUpdateRestaurant, type Restaurant } from "@core/hooks"
+import { useAddRestaurantWithHours, useCleanupStorage, useUpdateRestaurant, type Restaurant } from "@core/hooks"
 import { RestaurantSchema, type RestaurantOutput } from "@core/schemas"
 import { ImageUpload } from "@pattern/image-upload"
 import { Button } from "@ui/button"
 
 import { LinkField, LocationSection, NameCuisineFields, NotesSection, RatingSection } from "./restaurant-form-fields"
-import { useRestaurantImages } from "./use-restaurant-images"
+import { useRestaurantImages, type GalleryDraft } from "./use-restaurant-images"
 
 export type RestaurantFormProps =
     | {
@@ -67,7 +67,7 @@ function SubmitButton({ mode, saving }: Readonly<{ mode: "add" | "edit"; saving:
 
 function useSubmitDiscard(args: {
     onDiscardReady: (discard: () => Promise<void>) => void
-    gallery: Pick<ReturnType<typeof useRestaurantImages>, "discardChanges">
+    gallery: Pick<GalleryDraft, "discardChanges">
     resetForm: () => void
     guardRef: { current: SubmitGuard }
 }): void {
@@ -107,7 +107,7 @@ function SubmitOutcomeBanner({ outcome, onRetry }: Readonly<{ outcome: SubmitOut
 
 async function submitNewRestaurant(input: {
     add: (args: RestaurantAddArgs) => Promise<unknown>
-    gallery: Pick<ReturnType<typeof useRestaurantImages>, "completeAddSubmit" | "images">
+    gallery: Pick<GalleryDraft, "images">
     output: Readonly<Omit<RestaurantOutput, "images" | "placeId">>
     clientMutationId: string
 }): Promise<void> {
@@ -120,12 +120,11 @@ async function submitNewRestaurant(input: {
         images: input.gallery.images,
         clientMutationId: input.clientMutationId,
     })
-    await input.gallery.completeAddSubmit()
 }
 
 async function submitExistingRestaurant(input: {
     update: (args: RestaurantUpdateArgs) => Promise<unknown>
-    gallery: Pick<ReturnType<typeof useRestaurantImages>, "images">
+    gallery: Pick<GalleryDraft, "images">
     output: Readonly<Omit<RestaurantOutput, "images" | "placeId">>
     restaurantId: Id<"restaurants">
 }): Promise<void> {
@@ -144,7 +143,7 @@ type RestaurantFormOutput = Readonly<Omit<RestaurantOutput, "images" | "placeId"
 
 function useSubmitDraft(args: {
     target: { mode: "add" } | { mode: "edit"; restaurantId: Id<"restaurants"> }
-    gallery: ReturnType<typeof useRestaurantImages>
+    gallery: GalleryDraft
     resetForm: () => void
     onDiscardReady: (discard: () => Promise<void>) => void
     onSuccess: () => void
@@ -197,8 +196,8 @@ function useSubmitDraft(args: {
                     restaurantId: args.target.restaurantId,
                 })
             }
+            await args.gallery.commitSubmit()
             args.resetForm()
-            args.gallery.resetImages()
             guard.submitted = true
             guard.pending = false
             setIsSaving(false)
@@ -228,8 +227,12 @@ function useSubmitDraft(args: {
 export function RestaurantForm(props: Readonly<RestaurantFormProps>) {
     const addRestaurantWithHours = useAddRestaurantWithHours()
     const updateRestaurant = useUpdateRestaurant()
+    const cleanupStorage = useCleanupStorage()
     const gallery = useRestaurantImages(props.mode === "edit" ? props.restaurant.images : [], {
-        discardShouldCleanup: props.mode === "add",
+        mode: props.mode,
+        cleanup: async (args) => {
+            await cleanupStorage.mutateAsync(args)
+        },
     })
 
     const form = useForm({
@@ -285,9 +288,7 @@ export function RestaurantForm(props: Readonly<RestaurantFormProps>) {
                 onImagesChange={(updated) => {
                     gallery.setImages([...updated])
                 }}
-                {...(props.mode === "edit"
-                    ? { restaurantId: props.restaurant._id }
-                    : { onRemove: gallery.trackRemoved })}
+                {...(props.mode === "edit" ? { restaurantId: props.restaurant._id } : {})}
             />
             <div className="flex justify-end gap-2 pt-2">
                 <Button

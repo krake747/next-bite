@@ -1,5 +1,5 @@
 import { AvatarGroup, type AvatarMember } from "@pattern/avatar-group"
-import { photoUrls } from "@pattern/gallery/photos"
+import { photoUrls } from "@pattern/gallery"
 import { LazyImage } from "@pattern/lazy-image"
 
 import { ReactionBar, type Reactions } from "./reaction-bar"
@@ -25,13 +25,13 @@ function ActivityAuthorHeader({ author, time }: Readonly<{ author: ActivityAutho
 function ActivityRestaurant({
     name,
     cuisine,
-    photoUrls,
+    imageUrls,
 }: Readonly<{
     name: string
     cuisine?: string | undefined
-    photoUrls?: ReadonlyArray<string> | undefined
+    imageUrls?: ReadonlyArray<string> | undefined
 }>) {
-    const cover = photoUrls?.[0]
+    const cover = imageUrls?.[0]
     const showCover = cover !== undefined && cover !== ""
     return (
         <div className="space-y-2">
@@ -91,7 +91,7 @@ export function ActivityPost({
                 <ActivityRestaurant
                     name={restaurant.name}
                     cuisine={restaurant.cuisine}
-                    photoUrls={photoUrls(restaurant.images ?? [])}
+                    imageUrls={photoUrls(restaurant.images ?? [])}
                 />
                 <SocialMetadata
                     ownerName={social?.ownerName}

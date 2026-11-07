@@ -5,37 +5,11 @@ import { type ConvexClient } from "convex/browser"
 import { api } from "@convex/_generated/api"
 import { type Doc, type Id } from "@convex/_generated/dataModel"
 
+import { sleep } from "../async"
+import { mergeDetails, mergeEnrichment } from "../restaurant-details"
 import { assertRealId, isTempId, TEMP_ID_PREFIX } from "../temp-ids"
 
-function mergeDetailsPreview(
-    existing: RestaurantDoc["details"],
-    input: Readonly<{ notes?: string | undefined; link?: string | undefined }>,
-): RestaurantDoc["details"] {
-    // Mirrors the backend mergeDetails contract for the optimistic preview.
-    // The server re-merges on write, so drift self-heals on sync.
-    if (input.notes === undefined && input.link === undefined) {
-        return existing
-    }
-    const notes = input.notes !== undefined && input.notes !== "" ? input.notes : existing?.notes
-    const link = input.link !== undefined && input.link !== "" ? input.link : existing?.link
-    if (notes === undefined && link === undefined) {
-        return undefined
-    }
-    return { ...(notes !== undefined ? { notes } : {}), ...(link !== undefined ? { link } : {}) }
-}
-
-function mergeCoordsPreview(
-    existing: RestaurantDoc["address"]["enrichment"],
-    coords: RestaurantCoords | undefined,
-): RestaurantDoc["address"]["enrichment"] {
-    if (coords === undefined) {
-        return existing
-    }
-    return {
-        ...existing,
-        coords: { lat: coords.lat, lng: coords.lng },
-    }
-}
+const SYNC_RESOLVE_POLL_MS = 50
 
 export type RestaurantDoc = Doc<"restaurants">
 
@@ -110,14 +84,16 @@ export function applyUpdateArgsToDraft(draft: RestaurantDoc, args: RestaurantUpd
         draft.cuisine = args.cuisine
     }
     if (args.addressLabel !== undefined || args.coords !== undefined) {
-        const enrichment = mergeCoordsPreview(draft.address.enrichment, args.coords)
+        // Same contract as the server write: the preview and the persisted
+        // row agree, so there is no optimistic drift to heal on sync.
+        const enrichment = mergeEnrichment(draft.address.enrichment, args.coords)
         draft.address = {
             label: args.addressLabel ?? draft.address.label,
             ...(enrichment !== undefined ? { enrichment } : {}),
         }
     }
     if (args.notes !== undefined || args.link !== undefined) {
-        const details = mergeDetailsPreview(draft.details, { notes: args.notes, link: args.link })
+        const details = mergeDetails(draft.details, { notes: args.notes, link: args.link })
         if (details !== undefined) {
             draft.details = details
         }
@@ -242,9 +218,7 @@ export async function resolveRestaurantIdByKey(
         if (Date.now() - startedAt >= timeoutMs) {
             throw new SyncTimeoutError()
         }
-        await new Promise((resolve) => {
-            setTimeout(resolve, 50)
-        })
+        await sleep(SYNC_RESOLVE_POLL_MS)
     }
 }
 
@@ -307,7 +281,16 @@ export function dropSessionCollections(syncClient: SyncClient, sessionKey: strin
     return true
 }
 
-const USER_SCOPED_QUERY_PREFIXES = ["restaurants:", "friendships:", "social:", "users:", "groups:", "shares:"]
+const USER_SCOPED_QUERY_PREFIXES = [
+    "restaurants:",
+    "friendships:",
+    "social:",
+    "users:",
+    "groups:",
+    "shares:",
+    "plans:",
+    "invitations:",
+]
 
 function isUserScopedQueryKey(queryKey: ReadonlyArray<unknown>): boolean {
     const [namespace] = queryKey

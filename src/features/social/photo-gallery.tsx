@@ -1,5 +1,4 @@
-import { Lightbox, useLightbox } from "@pattern/gallery/lightbox"
-import { type GalleryPhoto } from "@pattern/gallery/photos"
+import { Lightbox, useLightbox, type GalleryPhoto } from "@pattern/gallery"
 import { LazyImage } from "@pattern/lazy-image"
 
 export function PhotoGallery({

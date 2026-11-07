@@ -1,7 +1,7 @@
 import { v } from "convex/values"
 
 import { mutation, query } from "./_generated/server"
-import { FALLBACK_DISPLAY_NAME, requireMembership, requireUserId } from "./helpers"
+import { formatDisplayName, requireMembership, requireUserId } from "./helpers"
 import { imageObjectValidator } from "./validators"
 
 export const createGroup = mutation({
@@ -165,7 +165,7 @@ export const getGroup = query({
             role: membership.role,
             members: members.map((member, index) => ({
                 userId: member.userId,
-                name: profiles[index]?.name ?? FALLBACK_DISPLAY_NAME,
+                name: formatDisplayName(profiles[index]?.name),
                 role: member.role,
             })),
         }

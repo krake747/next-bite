@@ -3,7 +3,7 @@ import { v } from "convex/values"
 import { internal } from "./_generated/api"
 import { type Doc, type Id } from "./_generated/dataModel"
 import { mutation, type MutationCtx, query } from "./_generated/server"
-import { FALLBACK_DISPLAY_NAME, FALLBACK_GROUP_NAME, requireMembership, requireUserId } from "./helpers"
+import { FALLBACK_GROUP_NAME, formatDisplayName, requireMembership, requireUserId } from "./helpers"
 import { inviteTargetValidator } from "./validators"
 
 const INVITE_TTL_MS = 7 * 24 * 60 * 60 * 1000
@@ -70,7 +70,7 @@ export const getInvite = query({
                 : undefined
         return {
             target: invite.target,
-            invitedByName: inviter?.name ?? FALLBACK_DISPLAY_NAME,
+            invitedByName: formatDisplayName(inviter?.name),
             ...(groupName !== undefined ? { groupName } : {}),
             status: invite.status,
             expiresAt: invite.expiresAt,

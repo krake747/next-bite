@@ -2,11 +2,19 @@ import { v, type Infer } from "convex/values"
 import * as valibot from "valibot"
 
 import { MAX_IMAGES } from "../src/core/constants"
+import {
+    cleanDetails,
+    mergeDetails,
+    mergeEnrichment,
+    type Coords,
+    type DetailsDoc,
+    type Enrichment,
+} from "../src/core/restaurant-details"
 import { internal } from "./_generated/api"
 import { type Doc, type Id } from "./_generated/dataModel"
 import { query, mutation, action, internalQuery, internalMutation, type MutationCtx } from "./_generated/server"
 import { googleMapsApiKey } from "./env"
-import { requireUserId, requireOwnedRestaurant, FALLBACK_DISPLAY_NAME } from "./helpers"
+import { requireUserId, requireOwnedRestaurant, formatDisplayName } from "./helpers"
 import { coordsValidator, enrichmentValidator, openingHoursValidator, restaurantImageValidator } from "./validators"
 import { isRestaurantVisibleTo } from "./visibility"
 
@@ -237,7 +245,7 @@ export const _profileNameByAuthUser = internalQuery({
             .query("profiles")
             .withIndex("by_auth_user", (q) => q.eq("authUserId", authUserId))
             .unique()
-        return profile?.name ?? FALLBACK_DISPLAY_NAME
+        return formatDisplayName(profile?.name)
     },
 })
 
@@ -357,42 +365,7 @@ async function lookupPlaceIdFromGoogle(name: string, location: string): Promise<
     }
 }
 
-type Coords = {
-    lat: number
-    lng: number
-}
-
-type DetailsFields = {
-    notes?: string | undefined
-    link?: string | undefined
-}
-
-type DetailsDoc = Doc<"restaurants">["details"]
-
-type EnrichmentDoc = Doc<"restaurants">["address"]["enrichment"]
-
-function nonEmptyText(value: string | undefined): string | undefined {
-    return value !== undefined && value !== "" ? value : undefined
-}
-
-function cleanDetails(input: DetailsFields): DetailsDoc {
-    const notes = nonEmptyText(input.notes)
-    const link = nonEmptyText(input.link)
-    if (notes === undefined && link === undefined) {
-        return undefined
-    }
-    return { ...(notes !== undefined ? { notes } : {}), ...(link !== undefined ? { link } : {}) }
-}
-
-function mergeDetails(existing: DetailsDoc, input: DetailsFields): DetailsDoc {
-    if (input.notes === undefined && input.link === undefined) {
-        return existing
-    }
-    return cleanDetails({
-        notes: input.notes ?? existing?.notes,
-        link: input.link ?? existing?.link,
-    })
-}
+type EnrichmentDoc = Enrichment<OpeningHoursData>
 
 type UpdateArgs = {
     name?: string | undefined
@@ -443,17 +416,6 @@ function buildEnrichment(parts: {
         ...(coords !== undefined ? { coords } : {}),
         ...(openingHours !== undefined ? { openingHours } : {}),
     }
-}
-
-function mergeEnrichment(existing: EnrichmentDoc, coords: Coords | undefined): EnrichmentDoc {
-    if (coords === undefined) {
-        return existing
-    }
-    return buildEnrichment({
-        placeId: existing?.placeId,
-        coords,
-        openingHours: existing?.openingHours,
-    })
 }
 
 export const get = query({

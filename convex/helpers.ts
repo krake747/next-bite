@@ -1,9 +1,10 @@
 import { type GenericDatabaseReader } from "convex/server"
 
+import { FALLBACK_DISPLAY_NAME } from "../src/core/constants"
 import { type DataModel, type Doc, type Id } from "./_generated/dataModel"
 import { authComponent } from "./auth"
 
-export const FALLBACK_DISPLAY_NAME = "Someone"
+export { FALLBACK_DISPLAY_NAME } from "../src/core/constants"
 
 export const FALLBACK_GROUP_NAME = "Unknown group"
 
