@@ -306,6 +306,48 @@ export const useShareWithGroup = () => useConvexMutation(api.shares.shareWithGro
 export const useShareWithUser = () => useConvexMutation(api.shares.shareWithUser)
 export const useUnshare = () => useConvexMutation(api.shares.unshare)
 export const useCreateGroup = () => useConvexMutation(api.groups.createGroup)
+export const useCreateInvite = () => useConvexMutation(api.invitations.createInvite)
+export const useAcceptInvite = () => useConvexMutation(api.invitations.acceptInvite)
+export const useRevokeInvite = () => useConvexMutation(api.invitations.revokeInvite)
+export const useCreatePlan = () => useConvexMutation(api.plans.createPlan)
+export const useUpdatePlanStatus = () => useConvexMutation(api.plans.updatePlanStatus)
+
+export function usePlansForGroup(groupId: Id<"groups"> | null | undefined) {
+    const status = useSessionStatus()
+    const skip = status.kind !== "ready" || groupId === null || groupId === undefined
+    return useConvexQuery(
+        api.plans.listPlansForGroup,
+        skip || groupId === null || groupId === undefined ? undefined : { groupId },
+        {
+            skip,
+        },
+    )
+}
+
+export function usePlansForRestaurant(restaurantId: Id<"restaurants"> | null | undefined) {
+    const status = useSessionStatus()
+    const skip = status.kind !== "ready" || restaurantId === null || restaurantId === undefined
+    return useConvexQuery(
+        api.plans.listPlansForRestaurant,
+        skip || restaurantId === null || restaurantId === undefined ? undefined : { restaurantId },
+        {
+            skip,
+        },
+    )
+}
+
+export function useInvitePreview(token: string | null | undefined) {
+    return useConvexQuery(api.invitations.getInvite, token ? { token } : undefined, {
+        skip: token === null || token === undefined || token === "",
+    })
+}
+
+export function isSafeRedirectPath(value: string | null | undefined): value is string {
+    if (typeof value !== "string" || !value.startsWith("/") || value.startsWith("//")) {
+        return false
+    }
+    return value === "/" || value.startsWith("/invite/") || value.startsWith("/groups/") || value === "/groups"
+}
 
 export const useVisitMemories = (restaurantId: Id<"restaurants"> | null | undefined) => {
     const status = useSessionStatus()

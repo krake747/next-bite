@@ -21,6 +21,7 @@ import { Route as DsIndexRouteImport } from './routes/ds/index'
 import { Route as DsSectionIdRouteImport } from './routes/ds/$sectionId'
 import { Route as GroupsIndexRouteImport } from './routes/groups.index'
 import { Route as GroupsGroupIdRouteImport } from './routes/groups.$groupId'
+import { Route as InviteTokenRouteImport } from './routes/invite.$token'
 import { Route as RestaurantsRestaurantIdRouteImport } from './routes/restaurants.$restaurantId'
 
 const IndexRoute = IndexRouteImport.update({
@@ -83,6 +84,11 @@ const GroupsGroupIdRoute = GroupsGroupIdRouteImport.update({
   path: '/$groupId',
   getParentRoute: () => GroupsRoute,
 } as any)
+const InviteTokenRoute = InviteTokenRouteImport.update({
+  id: '/invite/$token',
+  path: '/invite/$token',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const RestaurantsRestaurantIdRoute = RestaurantsRestaurantIdRouteImport.update({
   id: '/restaurants/$restaurantId',
   path: '/restaurants/$restaurantId',
@@ -100,6 +106,7 @@ export interface FileRoutesByFullPath {
   '/you': typeof YouRoute
   '/ds/$sectionId': typeof DsSectionIdRoute
   '/groups/$groupId': typeof GroupsGroupIdRoute
+  '/invite/$token': typeof InviteTokenRoute
   '/restaurants/$restaurantId': typeof RestaurantsRestaurantIdRoute
   '/ds/': typeof DsIndexRoute
   '/groups/': typeof GroupsIndexRoute
@@ -113,6 +120,7 @@ export interface FileRoutesByTo {
   '/you': typeof YouRoute
   '/ds/$sectionId': typeof DsSectionIdRoute
   '/groups/$groupId': typeof GroupsGroupIdRoute
+  '/invite/$token': typeof InviteTokenRoute
   '/restaurants/$restaurantId': typeof RestaurantsRestaurantIdRoute
   '/ds': typeof DsIndexRoute
   '/groups': typeof GroupsIndexRoute
@@ -129,6 +137,7 @@ export interface FileRoutesById {
   '/you': typeof YouRoute
   '/ds/$sectionId': typeof DsSectionIdRoute
   '/groups/$groupId': typeof GroupsGroupIdRoute
+  '/invite/$token': typeof InviteTokenRoute
   '/restaurants/$restaurantId': typeof RestaurantsRestaurantIdRoute
   '/ds/': typeof DsIndexRoute
   '/groups/': typeof GroupsIndexRoute
@@ -146,6 +155,7 @@ export interface FileRouteTypes {
     | '/you'
     | '/ds/$sectionId'
     | '/groups/$groupId'
+    | '/invite/$token'
     | '/restaurants/$restaurantId'
     | '/ds/'
     | '/groups/'
@@ -159,6 +169,7 @@ export interface FileRouteTypes {
     | '/you'
     | '/ds/$sectionId'
     | '/groups/$groupId'
+    | '/invite/$token'
     | '/restaurants/$restaurantId'
     | '/ds'
     | '/groups'
@@ -174,6 +185,7 @@ export interface FileRouteTypes {
     | '/you'
     | '/ds/$sectionId'
     | '/groups/$groupId'
+    | '/invite/$token'
     | '/restaurants/$restaurantId'
     | '/ds/'
     | '/groups/'
@@ -188,6 +200,7 @@ export interface RootRouteChildren {
   LoginRoute: typeof LoginRoute
   SignupRoute: typeof SignupRoute
   YouRoute: typeof YouRoute
+  InviteTokenRoute: typeof InviteTokenRoute
   RestaurantsRestaurantIdRoute: typeof RestaurantsRestaurantIdRoute
 }
 
@@ -277,6 +290,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof GroupsGroupIdRouteImport
       parentRoute: typeof GroupsRoute
     }
+    '/invite/$token': {
+      id: '/invite/$token'
+      path: '/invite/$token'
+      fullPath: '/invite/$token'
+      preLoaderRoute: typeof InviteTokenRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/restaurants/$restaurantId': {
       id: '/restaurants/$restaurantId'
       path: '/restaurants/$restaurantId'
@@ -322,6 +342,7 @@ const rootRouteChildren: RootRouteChildren = {
   LoginRoute: LoginRoute,
   SignupRoute: SignupRoute,
   YouRoute: YouRoute,
+  InviteTokenRoute: InviteTokenRoute,
   RestaurantsRestaurantIdRoute: RestaurantsRestaurantIdRoute,
 }
 export const routeTree = rootRouteImport

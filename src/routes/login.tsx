@@ -4,7 +4,7 @@ import UtensilsCrossed from "lucide-react/icons/utensils-crossed"
 import { useState } from "react"
 import * as v from "valibot"
 
-import { useAuth, useAuthMethods } from "@core/hooks"
+import { useAuth, useAuthMethods, isSafeRedirectPath } from "@core/hooks"
 import { OtpForm } from "@routes/-components/otp-form"
 import { PendingButton } from "@routes/-components/pending-button"
 import { AuthDivider, SocialButtons } from "@routes/-components/social-buttons"
@@ -43,7 +43,8 @@ function LoginPage() {
     const [otpEmail, setOtpEmail] = useState<string | undefined>(undefined)
 
     const goHome = () => {
-        void navigate({ to: redirectTo ?? "/", replace: true, from: Route.fullPath })
+        const safeRedirect = isSafeRedirectPath(redirectTo) ? redirectTo : "/"
+        void navigate({ to: safeRedirect, replace: true, from: Route.fullPath })
     }
 
     const handleEmailSubmit = async (output: Readonly<LoginInput>) => {
@@ -125,7 +126,11 @@ function LoginPage() {
             {(methods?.google === true || methods?.github === true) && (
                 <>
                     <AuthDivider />
-                    <SocialButtons google={methods.google} github={methods.github} />
+                    <SocialButtons
+                        google={methods.google}
+                        github={methods.github}
+                        redirect={isSafeRedirectPath(redirectTo) ? redirectTo : "/"}
+                    />
                 </>
             )}
             {methods?.emailOtp === true && (

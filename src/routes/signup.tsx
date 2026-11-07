@@ -4,7 +4,7 @@ import UserIcon from "lucide-react/icons/user"
 import { useState } from "react"
 import * as v from "valibot"
 
-import { useAuth, useAuthMethods } from "@core/hooks"
+import { useAuth, useAuthMethods, isSafeRedirectPath } from "@core/hooks"
 import { PendingButton } from "@routes/-components/pending-button"
 import { AuthDivider, SocialButtons } from "@routes/-components/social-buttons"
 import { AuthLayout } from "@routes/-layouts/auth-layout"
@@ -56,7 +56,8 @@ function SignupPage() {
 
         try {
             await auth.signUpWithPassword(output.name, output.email, output.password)
-            void navigate({ to: redirectTo ?? "/", replace: true, from: Route.fullPath })
+            const safeRedirect = isSafeRedirectPath(redirectTo) ? redirectTo : "/"
+            void navigate({ to: safeRedirect, replace: true, from: Route.fullPath })
         } catch {
             return
         }
@@ -162,7 +163,11 @@ function SignupPage() {
             {(methods?.google === true || methods?.github === true) && (
                 <>
                     <AuthDivider />
-                    <SocialButtons google={methods.google} github={methods.github} />
+                    <SocialButtons
+                        google={methods.google}
+                        github={methods.github}
+                        redirect={isSafeRedirectPath(redirectTo) ? redirectTo : "/"}
+                    />
                 </>
             )}
         </AuthLayout>

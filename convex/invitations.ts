@@ -1,7 +1,8 @@
 import { v } from "convex/values"
 
 import { internal } from "./_generated/api"
-import { mutation, query } from "./_generated/server"
+import { type Doc, type Id } from "./_generated/dataModel"
+import { mutation, type MutationCtx, query } from "./_generated/server"
 import { FALLBACK_DISPLAY_NAME, FALLBACK_GROUP_NAME, requireMembership, requireUserId } from "./helpers"
 import { inviteTargetValidator } from "./validators"
 
@@ -34,6 +35,8 @@ export const createInvite = mutation({
 export const getInvite = query({
     // Public on purpose: the token is the bearer credential. Reading reveals nothing beyond
     // what the token holder already has; acceptance validates server side per ADR-0018.
+    // Reusable group links stay usable until expiry or revocation: the effective
+    // status is computed here so previews stay honest without a write.
     args: {
         token: v.string(),
     },
@@ -44,6 +47,18 @@ export const getInvite = query({
             .unique()
         if (!invite) {
             throw new Error("Invitation not found")
+        }
+        if (invite.status === "revoked") {
+            throw new Error("Invitation revoked")
+        }
+        if (invite.status === "expired" || Date.now() > invite.expiresAt) {
+            throw new Error("Invitation expired")
+        }
+        if (invite.target.kind === "group") {
+            const group = await ctx.db.get(invite.target.groupId)
+            if (!group) {
+                throw new Error("Group no longer exists")
+            }
         }
         const inviter = await ctx.db
             .query("profiles")
@@ -63,7 +78,96 @@ export const getInvite = query({
     },
 })
 
+async function loadUsableInviteForAccept(ctx: MutationCtx, token: string): Promise<Doc<"invitations">> {
+    const invite = await ctx.db
+        .query("invitations")
+        .withIndex("by_token", (q) => q.eq("token", token))
+        .unique()
+    if (!invite) {
+        throw new Error("Invitation not found")
+    }
+    if (invite.status === "revoked") {
+        throw new Error("Invitation revoked")
+    }
+    if (invite.status === "expired" || Date.now() > invite.expiresAt) {
+        if (invite.status !== "expired") {
+            await ctx.db.patch(invite._id, { status: "expired" })
+        }
+        throw new Error("Invitation expired")
+    }
+    return invite
+}
+
+async function acceptGroupInvite(
+    ctx: MutationCtx,
+    invite: Doc<"invitations">,
+    groupId: Id<"groups">,
+    userId: string,
+): Promise<{ readonly result: "alreadyMember" | "accepted"; readonly groupId: Id<"groups"> }> {
+    const group = await ctx.db.get(groupId)
+    if (!group) {
+        throw new Error("Group no longer exists")
+    }
+    // Reusable group links: the inviter's current authority matters.
+    // If the inviter left or was removed, the link stops working.
+    const inviterMembership = await ctx.db
+        .query("groupMembers")
+        .withIndex("by_group_user", (q) => q.eq("groupId", groupId).eq("userId", invite.invitedBy))
+        .unique()
+    if (!inviterMembership) {
+        throw new Error("Invitation is no longer valid")
+    }
+    const existing = await ctx.db
+        .query("groupMembers")
+        .withIndex("by_group_user", (q) => q.eq("groupId", groupId).eq("userId", userId))
+        .unique()
+    if (existing) {
+        return { result: "alreadyMember", groupId }
+    }
+    await ctx.db.insert("groupMembers", { groupId, userId, role: "member", joinedAt: Date.now() })
+    // Intentionally leave reusable group invites pending so the same
+    // link admits every holder until expiry or revocation.
+    return { result: "accepted", groupId }
+}
+
+async function acceptFriendInvite(
+    ctx: MutationCtx,
+    invite: Doc<"invitations">,
+    userId: string,
+): Promise<{ readonly result: "alreadyMember" | "accepted"; readonly friendId: string }> {
+    if (invite.invitedBy === userId) {
+        throw new Error("You cannot accept your own invitation")
+    }
+    const pair = await ctx.db
+        .query("friendships")
+        .withIndex("by_owner_friend", (q) => q.eq("ownerId", invite.invitedBy).eq("friendAuthUserId", userId))
+        .unique()
+    if (pair?.status === "accepted") {
+        if (invite.status !== "accepted") {
+            await ctx.db.patch(invite._id, { status: "accepted" })
+        }
+        return { result: "alreadyMember", friendId: invite.invitedBy }
+    }
+    await ctx.runMutation(internal.friendships._ensurePair, { a: invite.invitedBy, b: userId })
+    await ctx.db.patch(invite._id, { status: "accepted" })
+    return { result: "accepted", friendId: invite.invitedBy }
+}
+
 export const acceptInvite = mutation({
+    args: {
+        token: v.string(),
+    },
+    handler: async (ctx, args) => {
+        const userId = await requireUserId(ctx)
+        const invite = await loadUsableInviteForAccept(ctx, args.token)
+        if (invite.target.kind === "group") {
+            return acceptGroupInvite(ctx, invite, invite.target.groupId, userId)
+        }
+        return acceptFriendInvite(ctx, invite, userId)
+    },
+})
+
+export const revokeInvite = mutation({
     args: {
         token: v.string(),
     },
@@ -76,50 +180,30 @@ export const acceptInvite = mutation({
         if (!invite) {
             throw new Error("Invitation not found")
         }
-        if (invite.status === "expired" || Date.now() > invite.expiresAt) {
-            if (invite.status !== "expired") {
-                await ctx.db.patch(invite._id, { status: "expired" })
-            }
-            throw new Error("Invitation expired")
+        if (invite.status === "revoked") {
+            return { result: "alreadyRevoked" as const }
         }
-
-        const target = invite.target
-        if (target.kind === "group") {
-            const existing = await ctx.db
-                .query("groupMembers")
-                .withIndex("by_group_user", (q) => q.eq("groupId", target.groupId).eq("userId", userId))
-                .unique()
-            if (existing) {
-                if (invite.status !== "accepted") {
-                    await ctx.db.patch(invite._id, { status: "accepted" })
+        const inviteTarget = invite.target
+        if (inviteTarget.kind === "group") {
+            const groupId = inviteTarget.groupId
+            const group = await ctx.db.get(groupId)
+            if (group) {
+                const callerMembership = await ctx.db
+                    .query("groupMembers")
+                    .withIndex("by_group_user", (q) => q.eq("groupId", groupId).eq("userId", userId))
+                    .unique()
+                const isInviter = invite.invitedBy === userId
+                const isAdmin = callerMembership?.role === "admin"
+                if (!isInviter && !isAdmin) {
+                    throw new Error("Unauthorized: only the inviter or a group admin can revoke this link")
                 }
-                return { result: "alreadyMember" as const, groupId: target.groupId }
+            } else if (invite.invitedBy !== userId) {
+                throw new Error("Unauthorized: only the inviter can revoke this link")
             }
-            await ctx.db.insert("groupMembers", {
-                groupId: target.groupId,
-                userId,
-                role: "member",
-                joinedAt: Date.now(),
-            })
-            await ctx.db.patch(invite._id, { status: "accepted" })
-            return { result: "accepted" as const, groupId: target.groupId }
+        } else if (invite.invitedBy !== userId) {
+            throw new Error("Unauthorized: only the inviter can revoke this invitation")
         }
-
-        if (invite.invitedBy === userId) {
-            throw new Error("You cannot accept your own invitation")
-        }
-        const pair = await ctx.db
-            .query("friendships")
-            .withIndex("by_owner_friend", (q) => q.eq("ownerId", invite.invitedBy).eq("friendAuthUserId", userId))
-            .unique()
-        if (pair?.status === "accepted") {
-            if (invite.status !== "accepted") {
-                await ctx.db.patch(invite._id, { status: "accepted" })
-            }
-            return { result: "alreadyMember" as const, friendId: invite.invitedBy }
-        }
-        await ctx.runMutation(internal.friendships._ensurePair, { a: invite.invitedBy, b: userId })
-        await ctx.db.patch(invite._id, { status: "accepted" })
-        return { result: "accepted" as const, friendId: invite.invitedBy }
+        await ctx.db.patch(invite._id, { status: "revoked" })
+        return { result: "revoked" as const }
     },
 })

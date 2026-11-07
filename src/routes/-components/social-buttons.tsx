@@ -2,7 +2,11 @@ import { useAuth } from "@core/hooks"
 
 import { PendingButton } from "./pending-button"
 
-export function SocialButtons({ google, github }: Readonly<{ google: boolean; github: boolean }>) {
+export function SocialButtons({
+    google,
+    github,
+    redirect,
+}: Readonly<{ google: boolean; github: boolean; redirect?: string | undefined }>) {
     const auth = useAuth()
     if (!google && !github) {
         return null
@@ -17,7 +21,7 @@ export function SocialButtons({ google, github }: Readonly<{ google: boolean; gi
                     pending={auth.isLoading}
                     onClick={() => {
                         // Auth errors already land in the auth store; swallow here to avoid an unhandled rejection.
-                        void auth.signInWithSocial("google").catch(() => {})
+                        void auth.signInWithSocial("google", redirect).catch(() => {})
                     }}
                 >
                     Continue with Google
@@ -31,7 +35,7 @@ export function SocialButtons({ google, github }: Readonly<{ google: boolean; gi
                     pending={auth.isLoading}
                     onClick={() => {
                         // Auth errors already land in the auth store; swallow here to avoid an unhandled rejection.
-                        void auth.signInWithSocial("github").catch(() => {})
+                        void auth.signInWithSocial("github", redirect).catch(() => {})
                     }}
                 >
                     Continue with GitHub

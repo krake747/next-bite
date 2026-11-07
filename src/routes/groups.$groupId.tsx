@@ -1,9 +1,20 @@
 import { createFileRoute, Link } from "@tanstack/react-router"
+import { useState } from "react"
 
 import { type Id } from "@convex/_generated/dataModel"
-import { useAuth, useGroup, useGroupRestaurants, useRestaurants, useShareWithGroup, useUnshare } from "@core/hooks"
+import {
+    useAuth,
+    useCreateInvite,
+    useGroup,
+    useGroupRestaurants,
+    useRevokeInvite,
+    useRestaurants,
+    useShareWithGroup,
+    useUnshare,
+} from "@core/hooks"
 import { orderFeedByRecency, useSocialSummaries } from "@core/social"
 import { GroupMembers } from "@features/groups/group-members"
+import { PlanMealSection } from "@features/plans/meal-plans"
 import { EmptyState } from "@pattern/empty-state"
 import { BackNav } from "@routes/-layouts/back-nav"
 import { PageContainer } from "@routes/-layouts/page-container"
@@ -154,6 +165,84 @@ function GroupRestaurantsSection({
         </ul>
     )
 }
+function GroupInviteSection({ groupId }: Readonly<{ groupId: Id<"groups"> }>) {
+    const createInvite = useCreateInvite()
+    const revokeInvite = useRevokeInvite()
+    const [token, setToken] = useState<string | null>(null)
+    const [error, setError] = useState<string | null>(null)
+    const [copied, setCopied] = useState(false)
+
+    const handleCreate = async () => {
+        setError(null)
+        setCopied(false)
+        try {
+            const next = await createInvite.mutateAsync({ target: { kind: "group", groupId } })
+            setToken(typeof next === "string" ? next : null)
+        } catch (err) {
+            setError(err instanceof Error ? err.message : "Could not create invite link")
+        }
+    }
+
+    const handleRevoke = async () => {
+        if (token === null) {
+            return
+        }
+        setError(null)
+        try {
+            await revokeInvite.mutateAsync({ token })
+            setToken(null)
+        } catch (err) {
+            setError(err instanceof Error ? err.message : "Could not revoke invite link")
+        }
+    }
+
+    return (
+        <section aria-label="Invite link" className="pt-8">
+            <h2 className="font-display text-2xl font-semibold text-balance text-foreground">Invite by link</h2>
+            <p className="pt-1 text-sm text-muted-foreground">
+                Anyone with the link can join until it expires or is revoked. No email needed.
+            </p>
+            {token === null ? (
+                <div className="pt-4">
+                    <Button onClick={() => void handleCreate()} disabled={createInvite.isPending}>
+                        Create invite link
+                    </Button>
+                </div>
+            ) : (
+                <div className="pt-4">
+                    <p className="rounded-card border border-border bg-surface p-3 text-sm break-all text-foreground">
+                        {`/invite/${token}`}
+                    </p>
+                    <div className="flex flex-col gap-2 pt-3 sm:flex-row">
+                        <Button
+                            tone="secondary"
+                            onClick={() => {
+                                void navigator.clipboard
+                                    .writeText(`${window.location.origin}/invite/${token}`)
+                                    .then(() => {
+                                        setCopied(true)
+                                    })
+                                    .catch(() => {
+                                        setCopied(false)
+                                    })
+                            }}
+                        >
+                            {copied ? "Copied" : "Copy link"}
+                        </Button>
+                        <Button tone="secondary" onClick={() => void handleRevoke()} disabled={revokeInvite.isPending}>
+                            Revoke link
+                        </Button>
+                    </div>
+                </div>
+            )}
+            {error !== null && (
+                <p role="alert" className="pt-2 text-sm text-destructive">
+                    {error}
+                </p>
+            )}
+        </section>
+    )
+}
 function GroupDetail() {
     const { groupId } = Route.useParams()
     // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- single documented boundary conversion from router param
@@ -196,6 +285,8 @@ function GroupDetail() {
                 <section aria-label="Members" className="pt-6">
                     <GroupMembers members={group.members.map((m) => ({ name: m.name }))} />
                 </section>
+                {auth.isAuthenticated && <GroupInviteSection groupId={groupConvexId} />}
+                <PlanMealSection groupId={groupConvexId} />
                 <section aria-label="Shared restaurants" className="pt-8">
                     <h2 className="font-display text-2xl font-semibold text-balance text-foreground">Shared list</h2>
                     <GroupRestaurantsSection groupId={groupConvexId} restaurants={restaurants} myId={myId} />

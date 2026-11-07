@@ -117,10 +117,32 @@ export default defineSchema({
         target: inviteTargetValidator,
         invitedEmail: v.optional(v.string()),
         invitedBy: v.string(),
-        status: v.union(v.literal("pending"), v.literal("accepted"), v.literal("expired")),
+        // Reusable group links stay pending across accepts; friend invites flip
+        // to accepted on first use. Revoked and expired both refuse new accepts.
+        status: v.union(v.literal("pending"), v.literal("accepted"), v.literal("expired"), v.literal("revoked")),
         expiresAt: v.number(),
         createdAt: v.number(),
     }).index("by_token", ["token"]),
+    plans: defineTable({
+        groupId: v.optional(v.id("groups")),
+        restaurantId: v.optional(v.id("restaurants")),
+        createdBy: v.string(),
+        title: v.string(),
+        date: v.number(),
+        status: v.union(v.literal("planned"), v.literal("done"), v.literal("cancelled")),
+        createdAt: v.number(),
+    })
+        .index("by_group", ["groupId"])
+        .index("by_restaurant", ["restaurantId"])
+        .index("by_creator", ["createdBy"]),
+    planParticipants: defineTable({
+        planId: v.id("plans"),
+        userId: v.string(),
+        joinedAt: v.number(),
+    })
+        .index("by_plan", ["planId"])
+        .index("by_plan_user", ["planId", "userId"])
+        .index("by_user", ["userId"]),
     uploads: defineTable({
         storageId: v.id("_storage"),
         ownerId: v.string(),

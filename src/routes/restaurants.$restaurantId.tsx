@@ -13,6 +13,7 @@ import {
     type RestaurantSocial,
 } from "@core/social"
 import { ShareToGroupDialog } from "@features/groups/share-to-group-dialog"
+import { PlanMealSection } from "@features/plans/meal-plans"
 import { RestaurantGallery } from "@features/restaurants/restaurant-gallery"
 import { RestaurantHeader } from "@features/restaurants/restaurant-header"
 import { RestaurantInterestButton } from "@features/restaurants/restaurant-interest-button"
@@ -288,6 +289,7 @@ function RestaurantDetail() {
                         shareAction={<DetailShare restaurant={restaurant} />}
                     />
                     <DetailPhotos photos={photos} />
+                    <PlanMealSection restaurantId={restaurant._id} />
                     <VisitMemories restaurantId={restaurant._id} />
                     <DetailComments
                         restaurant={restaurant}

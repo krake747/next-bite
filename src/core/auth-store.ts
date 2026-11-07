@@ -255,9 +255,11 @@ export function useAuthStore() {
         await authenticateWithPassword("signUp", { name, email, password })
     }
 
-    const signInWithSocial = async (provider: "google" | "github") => {
+    const signInWithSocial = async (provider: "google" | "github", redirect?: string) => {
         await runAuthStep("Social sign in failed", async () => {
-            const result = await authClient.signIn.social({ provider, callbackURL: "/" })
+            const safeRedirect =
+                redirect !== undefined && redirect.startsWith("/") && !redirect.startsWith("//") ? redirect : "/"
+            const result = await authClient.signIn.social({ provider, callbackURL: safeRedirect })
             if (result.error) {
                 throwAuthError(result.error.message, "Social sign in failed")
             }
