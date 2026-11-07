@@ -1,12 +1,11 @@
 # Base UI for headless React primitives
 
-An earlier prototype used @kobalte/core for headless UI primitives (Dialog, DropdownMenu,
-Collapsible, Button). For React, we chose Base UI (`@base-ui-components/react`) over Radix
-Primitives, Ariakit, and Ark UI. Base UI is built for React 19's APIs (useActionState,
-startTransition), has a smaller API surface matching exactly the primitives we need (Dialog,
-Popover, Button), and ships zero styles — our existing Tailwind classes carry over. Radix was the
-strongest alternative (battle-tested, backs shadcn/ui) but carries a larger bundle and a broader
-React version surface area we don't need.
+The app needs headless UI primitives (Dialog, DropdownMenu, Collapsible, Button). For React, we
+chose Base UI (`@base-ui-components/react`) over Radix Primitives, Ariakit, and Ark UI. Base UI is
+built for React 19's APIs (useActionState, startTransition), has a smaller API surface matching
+exactly the primitives we need (Dialog, Popover, Button), and ships zero styles — our existing
+Tailwind classes carry over. Radix was the strongest alternative (battle-tested, backs shadcn/ui)
+but carries a larger bundle and a broader React version surface area we don't need.
 
 **Considered Options**
 
