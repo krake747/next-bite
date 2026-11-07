@@ -30,19 +30,26 @@ function jsonResponse(request: Request, status: number, payload: unknown): Respo
     })
 }
 
-type UploadRejection = { status: number; message: string }
+type UploadValidation =
+    | { readonly kind: "valid" }
+    | { readonly kind: "invalid"; readonly status: number; readonly message: string }
 
-function validateUploadBlob(blob: Blob): UploadRejection | null {
+function validateUploadBlob(blob: Blob): UploadValidation {
     if (blob.type === "" || !ALLOWED_CONTENT_TYPES.includes(blob.type)) {
         return {
+            kind: "invalid",
             status: 400,
             message: `Invalid content type. Must be one of: ${ALLOWED_CONTENT_TYPES.join(", ")}`,
         }
     }
     if (blob.size > MAX_UPLOAD_BYTES) {
-        return { status: 413, message: `File too large. Maximum size is ${MAX_UPLOAD_BYTES / 1024 / 1024}MB` }
+        return {
+            kind: "invalid",
+            status: 413,
+            message: `File too large. Maximum size is ${MAX_UPLOAD_BYTES / 1024 / 1024}MB`,
+        }
     }
-    return null
+    return { kind: "valid" }
 }
 
 http.route({
@@ -57,9 +64,9 @@ http.route({
 
             const blob = await request.blob()
 
-            const rejected = validateUploadBlob(blob)
-            if (rejected !== null) {
-                return jsonResponse(request, rejected.status, { error: rejected.message })
+            const validation = validateUploadBlob(blob)
+            if (validation.kind === "invalid") {
+                return jsonResponse(request, validation.status, { error: validation.message })
             }
 
             const storageId = await ctx.storage.store(blob)
