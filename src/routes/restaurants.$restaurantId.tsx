@@ -166,16 +166,15 @@ function DetailPhotos({ photos }: Readonly<{ photos: ReadonlyArray<GalleryPhoto>
 function DetailComments({
     restaurant,
     social,
-    isAuthenticated,
-    currentUser,
 }: Readonly<{
     restaurant: Restaurant
     social: RestaurantSocial
-    isAuthenticated: boolean
-    currentUser: string | undefined
 }>) {
+    const auth = useAuth()
     const addComment = useAddComment()
     const deleteComment = useDeleteComment()
+    const isAuthenticated = auth.isAuthenticated
+    const currentUser = auth.user?.name ?? auth.user?.email ?? undefined
     return (
         <div className="rounded-card border border-border bg-surface p-4 shadow-card">
             <CommentList
@@ -290,12 +289,7 @@ function RestaurantDetail() {
                     <DetailPhotos photos={photos} />
                     <PlanMealSection restaurantId={restaurant._id} />
                     <VisitMemories restaurantId={restaurant._id} />
-                    <DetailComments
-                        restaurant={restaurant}
-                        social={social}
-                        isAuthenticated={auth.isAuthenticated}
-                        currentUser={auth.user?.name ?? auth.user?.email ?? undefined}
-                    />
+                    <DetailComments restaurant={restaurant} social={social} />
                 </div>
             </PageContainer>
         </PageLayout>
