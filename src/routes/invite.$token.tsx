@@ -1,8 +1,11 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router"
-import { useEffect, useState } from "react"
+import { Suspense, useEffect, useState } from "react"
 
-import { isSafeRedirectPath, useAcceptInvite, useAuth, useInvitePreview } from "@core/hooks"
+import { useSuspenseConvexQuery } from "@api/convex-client"
+import { api } from "@api/endpoints"
+import { isSafeRedirectPath, useAcceptInvite, useAuth } from "@core/hooks"
 import { clearError, errorFrom, type FormError } from "@core/outcome"
+import { QueryErrorState } from "@pattern/query-error"
 import { BackNav } from "@routes/-layouts/back-nav"
 import { PageContainer } from "@routes/-layouts/page-container"
 import { PageLayout } from "@routes/-layouts/page-layout"
@@ -13,7 +16,27 @@ import { LoadingPlaceholder } from "@ui/loading"
 export const Route = createFileRoute("/invite/$token")({
     head: () => ({ meta: [{ title: "Group invite" }] }),
     component: InvitePage,
+    // No loader here: the preview args carry `now: Date.now()`, so a warmed key
+    // would never match the view's key. The preview is a single cheap fetch.
+    errorComponent: InviteLoadError,
 })
+
+function InviteLoadError({ reset }: Readonly<{ reset: () => void }>) {
+    return (
+        <PageLayout>
+            <PageContainer>
+                <BackNav backTo="/" label="Back home" />
+                <Header>
+                    <HeaderTitle>Invite unavailable</HeaderTitle>
+                    <HeaderSubtitle>This link is invalid, expired, or was revoked.</HeaderSubtitle>
+                </Header>
+                <div className="pt-4">
+                    <QueryErrorState reset={reset} />
+                </div>
+            </PageContainer>
+        </PageLayout>
+    )
+}
 
 function InviteError({ message }: Readonly<{ message: string }>) {
     return (
@@ -34,11 +57,11 @@ function InviteError({ message }: Readonly<{ message: string }>) {
     )
 }
 
-function InvitePage() {
+function InviteView() {
     const { token } = Route.useParams()
     const navigate = useNavigate()
     const auth = useAuth()
-    const preview = useInvitePreview(token)
+    const preview = useSuspenseConvexQuery(api.invitations.getInvite, { token, now: Date.now() })
     const acceptInvite = useAcceptInvite()
     const [acceptError, setAcceptError] = useState<FormError>(clearError)
     const [accepted, setAccepted] = useState(false)
@@ -48,7 +71,7 @@ function InvitePage() {
 
     useEffect(() => {
         let cancelled = false
-        const shouldRun = auth.isAuthenticated && !auth.isLoading && preview !== undefined && !accepted
+        const shouldRun = auth.isAuthenticated && !auth.isLoading && !accepted
         if (shouldRun && preview.target.kind === "group") {
             setAcceptError(clearError)
             acceptInvite
@@ -75,19 +98,6 @@ function InvitePage() {
             cancelled = true
         }
     }, [auth.isAuthenticated, auth.isLoading, preview, accepted, acceptInvite, token, navigate])
-
-    if (preview === undefined) {
-        return (
-            <PageLayout>
-                <PageContainer>
-                    <BackNav backTo="/" label="Back home" />
-                    <div className="pt-4">
-                        <LoadingPlaceholder />
-                    </div>
-                </PageContainer>
-            </PageLayout>
-        )
-    }
 
     if (preview.target.kind !== "group") {
         return <InviteError message="This invite link is for a friend connection. Ask for a group link instead." />
@@ -149,5 +159,24 @@ function InvitePage() {
                 </div>
             </PageContainer>
         </PageLayout>
+    )
+}
+
+function InvitePage() {
+    return (
+        <Suspense
+            fallback={
+                <PageLayout>
+                    <PageContainer>
+                        <BackNav backTo="/" label="Back home" />
+                        <div className="pt-4">
+                            <LoadingPlaceholder />
+                        </div>
+                    </PageContainer>
+                </PageLayout>
+            }
+        >
+            <InviteView />
+        </Suspense>
     )
 }
