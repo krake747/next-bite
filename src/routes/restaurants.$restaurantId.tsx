@@ -44,19 +44,39 @@ function DetailHero({
     restaurant,
     social,
     photos,
-    onToggleWant,
-    onToggleLike,
-    onShowHours,
     shareAction,
 }: Readonly<{
     restaurant: Restaurant
     social: RestaurantSocial
     photos: ReadonlyArray<GalleryPhoto>
-    onToggleWant: () => void
-    onToggleLike: () => void
-    onShowHours: () => void
     shareAction: React.ReactNode
 }>) {
+    const navigate = useNavigate()
+    const auth = useAuth()
+    const toggleInterest = useToggleInterest()
+    const toggleLike = useToggleLike()
+    const [showHours, setShowHours] = useState(false)
+
+    const goToLogin = () => {
+        void navigate({ to: "/login", viewTransition: true })
+    }
+
+    const toggleWant = () => {
+        if (!auth.isAuthenticated) {
+            goToLogin()
+            return
+        }
+        toggleInterest.mutate({ restaurantId: restaurant._id, status: "want" })
+    }
+
+    const handleToggleLike = () => {
+        if (!auth.isAuthenticated) {
+            goToLogin()
+            return
+        }
+        toggleLike.mutate({ restaurantId: restaurant._id })
+    }
+
     return (
         <div className="overflow-hidden rounded-card border border-border bg-surface shadow-card">
             <div className="grid divide-border lg:grid-cols-5 lg:divide-x">
@@ -73,24 +93,26 @@ function DetailHero({
                         location={restaurant.address.label}
                         hasLocation={restaurant.address.enrichment?.coords !== undefined}
                         openingHours={restaurant.address.enrichment?.openingHours}
-                        onShowHours={onShowHours}
+                        onShowHours={() => {
+                            setShowHours(true)
+                        }}
                     />
                     <div className="flex flex-wrap items-center gap-3 px-5 pb-2 md:px-4">
                         <RestaurantInterestButton
                             wanted={social.wanted}
                             wantCount={social.wantCount}
-                            onToggleWant={onToggleWant}
+                            onToggleWant={toggleWant}
                         />
                         <ReactionBar
                             reactions={{
                                 liked: social.liked,
                                 likeCount: social.likeCount,
-                                onToggleLike,
+                                onToggleLike: handleToggleLike,
                                 commentCount: social.comments.length,
                                 onComment: () => {},
                                 wanted: social.wanted,
                                 wantCount: social.wantCount,
-                                onToggleWant,
+                                onToggleWant: toggleWant,
                             }}
                         />
                         {shareAction}
@@ -117,6 +139,12 @@ function DetailHero({
                     </div>
                 </div>
             </div>
+            <OpeningHoursDialog
+                show={showHours}
+                onOpenChange={setShowHours}
+                openingHours={restaurant.address.enrichment?.openingHours}
+                restaurantName={restaurant.name}
+            />
         </div>
     )
 }
@@ -230,16 +258,12 @@ function DetailShare({ restaurant }: Readonly<{ restaurant: Restaurant }>) {
 
 function RestaurantDetail() {
     const { restaurantId } = Route.useParams()
-    const navigate = useNavigate()
     const auth = useAuth()
     // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- single documented boundary conversion from router param
     const restaurantConvexId = restaurantId as unknown as Id<"restaurants">
     const restaurant = useVisibleRestaurant(restaurantConvexId)
     const userId = auth.user?.id ?? null
     const restaurantSocial = useSocialForRestaurant(restaurantConvexId, userId)
-    const toggleInterest = useToggleInterest()
-    const toggleLike = useToggleLike()
-    const [showHours, setShowHours] = useState(false)
 
     if (restaurant === undefined || auth.isLoading) {
         return <DetailLoading />
@@ -252,26 +276,6 @@ function RestaurantDetail() {
     const social = restaurantSocial ?? emptySocial
     const photos = restaurant.images.map((img) => ({ url: img.url, author: img.displayName ?? restaurant.ownerName }))
 
-    const goToLogin = () => {
-        void navigate({ to: "/login", viewTransition: true })
-    }
-
-    const toggleWant = () => {
-        if (!auth.isAuthenticated) {
-            goToLogin()
-            return
-        }
-        toggleInterest.mutate({ restaurantId: restaurant._id, status: "want" })
-    }
-
-    const handleToggleLike = () => {
-        if (!auth.isAuthenticated) {
-            goToLogin()
-            return
-        }
-        toggleLike.mutate({ restaurantId: restaurant._id })
-    }
-
     return (
         <PageLayout>
             <PageContainer>
@@ -281,11 +285,6 @@ function RestaurantDetail() {
                         restaurant={restaurant}
                         social={social}
                         photos={photos}
-                        onToggleWant={toggleWant}
-                        onToggleLike={handleToggleLike}
-                        onShowHours={() => {
-                            setShowHours(true)
-                        }}
                         shareAction={<DetailShare restaurant={restaurant} />}
                     />
                     <DetailPhotos photos={photos} />
@@ -299,12 +298,6 @@ function RestaurantDetail() {
                     />
                 </div>
             </PageContainer>
-            <OpeningHoursDialog
-                show={showHours}
-                onOpenChange={setShowHours}
-                openingHours={restaurant.address.enrichment?.openingHours}
-                restaurantName={restaurant.name}
-            />
         </PageLayout>
     )
 }
