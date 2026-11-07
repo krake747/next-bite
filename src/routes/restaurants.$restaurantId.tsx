@@ -1,8 +1,12 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router"
-import { useState } from "react"
+import { Suspense, useState } from "react"
 
-import { type Id } from "@convex/_generated/dataModel"
-import { useVisibleRestaurant, useAuth, type Restaurant } from "@core/hooks"
+import { hasCachedSession } from "@api/auth-store"
+import { useSuspenseConvexQuery } from "@api/convex-client"
+import { convexQueryOptions } from "@api/convex-options"
+import { type Id } from "@api/data-model"
+import { api } from "@api/endpoints"
+import { useAuth, type Restaurant } from "@core/hooks"
 import {
     emptySocial,
     useAddComment,
@@ -24,6 +28,7 @@ import { ReactionBar } from "@features/social/reaction-bar"
 import { VisitMemories } from "@features/social/visit-memories"
 import { AvatarGroup } from "@pattern/avatar-group"
 import { type GalleryPhoto } from "@pattern/gallery"
+import { QueryErrorState } from "@pattern/query-error"
 import { SocialMetadata } from "@pattern/social-metadata"
 import { BackNav } from "@routes/-layouts/back-nav"
 import { PageContainer } from "@routes/-layouts/page-container"
@@ -34,7 +39,36 @@ import { OpeningHoursDialog } from "@ui/opening-hours-dialog"
 export const Route = createFileRoute("/restaurants/$restaurantId")({
     head: () => ({ meta: [{ title: "Restaurant details" }] }),
     component: RestaurantDetail,
+    errorComponent: RestaurantDetailError,
+    loader: ({ context, params }) => {
+        // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- single documented boundary conversion from router param
+        const restaurantId = params.restaurantId as unknown as Id<"restaurants">
+        // Public detail warms for everyone; the social snapshot only when a
+        // session exists. Failures stay silent: the Suspense view refetches.
+        void context.queryClient
+            .query(convexQueryOptions(api.restaurants.getById, { id: restaurantId }))
+            .catch(() => {})
+        if (hasCachedSession()) {
+            void context.queryClient
+                .query(convexQueryOptions(api.social.getForRestaurant, { restaurantId }))
+                .catch(() => {})
+        }
+        return null
+    },
 })
+
+function RestaurantDetailError({ reset }: Readonly<{ reset: () => void }>) {
+    return (
+        <PageLayout>
+            <PageContainer>
+                <BackNav backTo="/" label="Back to restaurants" />
+                <div className="pt-4">
+                    <QueryErrorState reset={reset} />
+                </div>
+            </PageContainer>
+        </PageLayout>
+    )
+}
 
 function asCommentId(id: string): Id<"comments"> {
     // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- single documented boundary conversion from SocialComment ids
@@ -256,26 +290,21 @@ function DetailShare({ restaurant }: Readonly<{ restaurant: Restaurant }>) {
     )
 }
 
-function RestaurantDetail() {
+function RestaurantDetailView() {
     const { restaurantId } = Route.useParams()
     const auth = useAuth()
     // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- single documented boundary conversion from router param
     const restaurantConvexId = restaurantId as unknown as Id<"restaurants">
-    const restaurantQuery = useVisibleRestaurant(restaurantConvexId)
+    const restaurant = useSuspenseConvexQuery(api.restaurants.getById, { id: restaurantConvexId })
     const signedInUserId = auth.user?.id
     const viewer: Viewer =
         signedInUserId === undefined ? { kind: "signed-out" } : { kind: "signed-in", id: signedInUserId }
     const restaurantSocial = useSocialForRestaurant(restaurantConvexId, viewer)
 
-    if (restaurantQuery.isPending || auth.isLoading) {
-        return <DetailLoading />
-    }
-
-    if (restaurantQuery.isError || restaurantQuery.data === null || restaurantQuery.data === undefined) {
+    if (restaurant === null) {
         return <DetailNotFound />
     }
 
-    const restaurant = restaurantQuery.data
     const social = restaurantSocial ?? emptySocial
     const photos = restaurant.images.map((img) => ({ url: img.url, author: img.displayName ?? restaurant.ownerName }))
 
@@ -297,5 +326,13 @@ function RestaurantDetail() {
                 </div>
             </PageContainer>
         </PageLayout>
+    )
+}
+
+function RestaurantDetail() {
+    return (
+        <Suspense fallback={<DetailLoading />}>
+            <RestaurantDetailView />
+        </Suspense>
     )
 }
