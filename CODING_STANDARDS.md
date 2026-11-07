@@ -35,7 +35,11 @@ intersections. Omit only props you genuinely narrow or forbid: a required `onCli
 Base UI's `render` passthrough. Never omit `className` or `children` just to re-add them with
 identical types. Destructure `children` explicitly instead of letting it ride inside `...props`, so
 the render output names what it renders. Name the passthrough spread `...props`, never `...rest`.
-Check in review: every `Omit` names a prop whose type or presence differs from the source.
+Find candidates with `grep -rn 'Readonly<{' src/ui`: every hit must be a domain-prop component (data
+plus callbacks over composed output, such as `opening-hours`); all other primitives derive from
+`ComponentProps` or `useRender.ComponentProps`. Base prop shapes live in
+`node_modules/@base-ui/react/<component>/*.d.ts`. Check in review: every `Omit` names a prop whose
+type or presence differs from the source.
 
 ## Every prop has a caller, extraction waits for the third copy
 
@@ -56,6 +60,12 @@ get deleted; tests coupled to hook shapes or call order get rewritten against re
 observable effects. Tiers, placement, and query conventions are owned by `docs/agents/testing.md`;
 this rule is the bar for what a test proves. Check: describe what breaks the test; "nothing" means
 deletion.
+
+## Spec doubles track the prod function
+
+A spec that re-implements a production function cites the source it mirrors; prefer importing the
+prod function with injected seams over a hand-rolled copy. A mirror with no citation drifts when
+prod moves. Check: a hand-rolled mock of a function that exists in `src/` names its source.
 
 ## Convex access lives in grouped domain modules
 

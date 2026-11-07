@@ -8,28 +8,29 @@ values owned elsewhere.
 Owners: `package.json` for versions, `convex/schema.ts` for data, `src/core/env.ts` for env names,
 `cloudflare.config.ts` for deploy target, `vite.config.ts` for toolchain and test tiers.
 
-| Layer         | Technology                                         | Owner                                                |
-| ------------- | -------------------------------------------------- | ---------------------------------------------------- |
-| Language      | TypeScript                                         | `tsconfig.json`                                      |
-| UI framework  | React 19                                           | `package.json`                                       |
-| App framework | TanStack Start                                     | `src/server.ts`, `src/router.tsx`                    |
-| Routing       | TanStack Router                                    | `src/routes/`, `src/routeTree.gen.ts`                |
-| Client data   | TanStack Query today, TanStack DB collections next | ADR-0001, ADR-0002                                   |
-| Backend       | Convex                                             | `convex/`, `convex/schema.ts`                        |
-| Auth          | Better Auth plus Convex integration                | `convex/auth.ts`, `src/api/auth.client.ts`, ADR-0005 |
-| File storage  | Convex File Storage                                | ADR-0015                                             |
-| Email         | Mailgun EU over HTTPS                              | ADR-0016                                             |
-| Hosting       | Cloudflare Workers                                 | `cloudflare.config.ts`, ADR-0013                     |
-| AI            | TanStack AI as extension only                      | ADR-0017                                             |
-| Styling       | Tailwind CSS v4                                    | `src/index.css`                                      |
-| Components    | Base UI plus CVA                                   | ADR-0018, `src/ui/`                                  |
-| Icons         | Lucide                                             | `package.json`                                       |
+| Layer         | Technology                              | Owner                                                |
+| ------------- | --------------------------------------- | ---------------------------------------------------- |
+| Language      | TypeScript                              | `tsconfig.json`                                      |
+| UI framework  | React 19                                | `package.json`                                       |
+| App framework | TanStack Start                          | `src/server.ts`, `src/router.tsx`                    |
+| Routing       | TanStack Router                         | `src/routes/`, `src/routeTree.gen.ts`                |
+| Client data   | TanStack Query plus live DB collections | ADR-0001, ADR-0002, `src/api/db/`                    |
+| Backend       | Convex                                  | `convex/`, `convex/schema.ts`                        |
+| Auth          | Better Auth plus Convex integration     | `convex/auth.ts`, `src/api/auth.client.ts`, ADR-0005 |
+| File storage  | Convex File Storage                     | ADR-0015                                             |
+| Email         | Mailgun EU over HTTPS                   | ADR-0016                                             |
+| Hosting       | Cloudflare Workers                      | `cloudflare.config.ts`, ADR-0013                     |
+| AI            | TanStack AI as extension only           | ADR-0017                                             |
+| Styling       | Tailwind CSS v4                         | `src/index.css`                                      |
+| Components    | Base UI plus CVA                        | ADR-0018, `src/ui/`                                  |
+| Icons         | Phosphor                                | `package.json`                                       |
 
 ## Repository layers
 
 Owner: `.fallowrc.json` for zones, `AGENTS.md` for the layer summary.
 
 - `src/core`: app infrastructure, shared services, validation. No product UI.
+- `src/api`: Convex adapter. The only layer that touches generated code and SDK libs.
 - `src/features`: product behavior, one directory per domain.
 - `src/pattern`: reusable composed UI. No product business logic.
 - `src/routes`: route definitions only. Thin; compose features.
@@ -41,7 +42,7 @@ Owner: `.fallowrc.json` for zones, `AGENTS.md` for the layer summary.
 Owner: `src/routes/`, ADR-0006.
 
 - Public routes (`/`, `/restaurants/$id`, `/invite/$token`): SSR with metadata.
-- Authenticated social routes (`/feed`, `/groups/$id`, `/friends`, `/settings`): client side with
+- Authenticated social routes (`/friends`, `/groups`, `/groups/$groupId`, `/you`): client side with
   Convex subscriptions.
 - Server functions only for server boundaries: email send, external APIs, AI execution, Cloudflare
   bindings.
@@ -91,25 +92,6 @@ Owner: `vite.config.ts` projects, `docs/agents/testing.md`.
 
 Critical journeys: sign-in (Google, OTP), invite accept, onboarding, add and share restaurant, join
 group, react, plan meal, upload photo, unauthorized access denial.
-
-## Dependency audit, November 2026
-
-Present in `package.json`: React 19, TanStack Start 1.169.4, Router 1.170.46, React Query 5.105.3,
-Convex 1.49.0, Better Auth 1.7.17, `@convex-dev/better-auth` 0.13.0, Tailwind 4.3.4, Base UI 1.9.0,
-CVA beta 12, Lucide, Valibot.
-
-Missing for the target, install when its phase starts (no install in this change):
-
-| Package                                                                | Latest checked                   | Needed for                |
-| ---------------------------------------------------------------------- | -------------------------------- | ------------------------- |
-| `@tanstack/db`, `@tanstack/react-db`, `@tanstack/convex-db-collection` | 1.0.0-rc.1.3 (release candidate) | Phase 3 collections       |
-| `@tanstack/ai`                                                         | 1.2.0                            | Phase 6 AI extension      |
-| `playwright` plus `e2e/` config                                        | 1.65.0                           | Phase 7 critical journeys |
-
-No Mailgun SDK needed: call the HTTPS API from server code per ADR-0016.
-
-Note: TanStack DB is still a release candidate. Pin exact versions when Phase 3 starts and re-check
-the adapter docs before adopting.
 
 ## Roadmap
 

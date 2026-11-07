@@ -134,4 +134,4 @@ pnpm fallow audit  # layer boundaries + unused code
 pnpm test          # Vitest (all tiers)
 ```
 
-The lefthook pre-push hook runs `pnpm check`. Never push with `--no-verify`.
+The lefthook pre-push hook runs `pnpm check` (see `ci-gate.md`).

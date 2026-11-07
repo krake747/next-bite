@@ -15,7 +15,7 @@ Long-lived explanations of this project's architecture and technical decisions.
   overriding it. The directory listing is the index, ordered by architectural impact.
 - Data model: [migrations](../migrations.md).
 - Technical foundation: [tech](tech.md). Points at owners for stack, layers, rendering, data, auth,
-  storage, email, AI, testing, plus the dependency audit.
+  storage, email, AI, and testing.
 
 ## ADRs
 

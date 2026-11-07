@@ -57,7 +57,7 @@ when one repeats, move it up to a type, lint, or test in the same change.
 | Base UI primitives only; CVA variants; wrappers own styling, call sites pass layout only | `shadcn/no-restyle` lint                                                                   |
 | Layer imports stay inside `.fallowrc.json` zones                                         | `pnpm fallow audit` (boundary-violation errors)                                            |
 | Commit shape `type(scope): subject`                                                      | lefthook `commit-msg` (`pnpm commitlint`)                                                  |
-| Never `git push --no-verify`; local gate is the PR gate                                  | Judgment only; lefthook `pre-push` runs `pnpm check`                                       |
+| Never `git push --no-verify`; local gate is the PR gate                                  | Bound in `docs/agents/ci-gate.md`                                                          |
 | Agents run `pnpm check:arch` before pushing structural changes                           | Judgment only; structural means moving files, new modules, shapes, or imports across zones |
 | `export` on declarations, no trailing lists; `use()` for context                         | `nextbite/no-export-list`, `nextbite/no-use-context` lint                                  |
 | Types over interfaces; never cast types, fix at source                                   | `pnpm lint:ts` plus review                                                                 |
