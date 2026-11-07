@@ -1,4 +1,5 @@
 import { PlusIcon } from "@phosphor-icons/react"
+import { noop } from "@tanstack/react-query"
 import { createFileRoute, useNavigate } from "@tanstack/react-router"
 import { Suspense, useState } from "react"
 
@@ -38,7 +39,7 @@ export const Route = createFileRoute("/")({
         // Public landing stats warm for everyone; the authenticated feed below
         // rides live collections with their own preload, not this cache.
         // A failed warm-up stays silent: the Suspense section refetches.
-        void context.queryClient.query(convexQueryOptions(api.landing.getStats)).catch(() => {})
+        void context.queryClient.query(convexQueryOptions(api.landing.getStats)).catch(noop)
         return null
     },
 })

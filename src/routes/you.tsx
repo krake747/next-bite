@@ -1,3 +1,4 @@
+import { noop } from "@tanstack/react-query"
 import { createFileRoute, Link } from "@tanstack/react-router"
 import { Suspense, useState } from "react"
 
@@ -34,8 +35,8 @@ export const Route = createFileRoute("/you")({
         // when this has not landed, so a failed warm-up stays silent by design.
         // Owner restaurants ride a live collection, not this cache, so only the
         // profile and status queries warm here.
-        void context.queryClient.query(convexQueryOptions(api.users.getMe)).catch(() => {})
-        void context.queryClient.query(convexQueryOptions(api.social.listMyStatuses)).catch(() => {})
+        void context.queryClient.query(convexQueryOptions(api.users.getMe)).catch(noop)
+        void context.queryClient.query(convexQueryOptions(api.social.listMyStatuses)).catch(noop)
         return null
     },
 })

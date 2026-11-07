@@ -1,3 +1,4 @@
+import { noop } from "@tanstack/react-query"
 import { createFileRoute, Link } from "@tanstack/react-router"
 import { Suspense, useState } from "react"
 
@@ -28,7 +29,7 @@ export const Route = createFileRoute("/groups/")({
         }
         // Best-effort warm-up only: the Suspense view below refetches on its own
         // when this has not landed, so a failed warm-up stays silent by design.
-        void context.queryClient.query(convexQueryOptions(api.groups.listMyGroups)).catch(() => {})
+        void context.queryClient.query(convexQueryOptions(api.groups.listMyGroups)).catch(noop)
         return null
     },
 })

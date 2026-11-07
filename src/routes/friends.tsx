@@ -1,3 +1,4 @@
+import { noop } from "@tanstack/react-query"
 import { createFileRoute, Link } from "@tanstack/react-router"
 import { Suspense, useState } from "react"
 
@@ -29,8 +30,8 @@ export const Route = createFileRoute("/friends")({
         }
         // Best-effort warm-up only: the Suspense views below refetch on their own
         // when this has not landed, so a failed warm-up stays silent by design.
-        void context.queryClient.query(convexQueryOptions(api.friendships.listFriends)).catch(() => {})
-        void context.queryClient.query(convexQueryOptions(api.friendships.listFriendRequests)).catch(() => {})
+        void context.queryClient.query(convexQueryOptions(api.friendships.listFriends)).catch(noop)
+        void context.queryClient.query(convexQueryOptions(api.friendships.listFriendRequests)).catch(noop)
         return null
     },
 })

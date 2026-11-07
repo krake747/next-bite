@@ -1,3 +1,4 @@
+import { noop } from "@tanstack/react-query"
 import { createFileRoute, useNavigate } from "@tanstack/react-router"
 import { Suspense, useState } from "react"
 
@@ -46,13 +47,11 @@ export const Route = createFileRoute("/restaurants/$restaurantId")({
         const restaurantId = params.restaurantId as unknown as Id<"restaurants">
         // Public detail warms for everyone; the social snapshot only when a
         // session exists. Failures stay silent: the Suspense view refetches.
-        void context.queryClient
-            .query(convexQueryOptions(api.restaurants.getById, { id: restaurantId }))
-            .catch(() => {})
+        void context.queryClient.query(convexQueryOptions(api.restaurants.getById, { id: restaurantId })).catch(noop)
         if (hasCachedSession()) {
             void context.queryClient
                 .query(convexQueryOptions(api.social.getForRestaurant, { restaurantId }))
-                .catch(() => {})
+                .catch(noop)
         }
         return null
     },
