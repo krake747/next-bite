@@ -1,16 +1,14 @@
 import { createFileRoute, Link } from "@tanstack/react-router"
-import { useState } from "react"
+import { Suspense, useState } from "react"
 
-import {
-    useAcceptFriend,
-    useFriendDiscoveries,
-    useFriends,
-    useFriendRequests,
-    useRemoveFriend,
-    useRequestFriendByEmail,
-} from "@core/hooks"
+import { hasCachedSession } from "@api/auth-store"
+import { useSuspenseConvexQuery } from "@api/convex-client"
+import { convexQueryOptions } from "@api/convex-options"
+import { api } from "@api/endpoints"
+import { useAcceptFriend, useRemoveFriend, useRequestFriendByEmail, useSessionStatus } from "@core/hooks"
 import { clearError, errorFrom, type FormError } from "@core/outcome"
 import { EmptyState } from "@pattern/empty-state"
+import { QueryErrorState } from "@pattern/query-error"
 import { SignedOutGate } from "@routes/-components/signed-out-gate"
 import { PageContainer } from "@routes/-layouts/page-container"
 import { PageLayout } from "@routes/-layouts/page-layout"
@@ -23,7 +21,32 @@ import { control, fieldLabel } from "@ui/variants"
 export const Route = createFileRoute("/friends")({
     head: () => ({ meta: [{ title: "Friends - Next Bite" }] }),
     component: FriendsPage,
+    errorComponent: FriendsError,
+    loader: ({ context }) => {
+        if (!hasCachedSession()) {
+            return null
+        }
+        // Best-effort warm-up only: the Suspense views below refetch on their own
+        // when this has not landed, so a failed warm-up stays silent by design.
+        void context.queryClient.query(convexQueryOptions(api.friendships.listFriends)).catch(() => {})
+        void context.queryClient.query(convexQueryOptions(api.friendships.listFriendRequests)).catch(() => {})
+        return null
+    },
 })
+
+function FriendsError({ reset }: Readonly<{ reset: () => void }>) {
+    return (
+        <PageLayout>
+            <PageContainer>
+                <Header>
+                    <HeaderTitle>Friends</HeaderTitle>
+                    <HeaderSubtitle>See what your crew is craving. Friend connections live here.</HeaderSubtitle>
+                </Header>
+                <QueryErrorState reset={reset} />
+            </PageContainer>
+        </PageLayout>
+    )
+}
 
 function InviteByEmailForm() {
     const requestFriend = useRequestFriendByEmail()
@@ -87,17 +110,10 @@ function InviteByEmailForm() {
 }
 
 function RequestsSection() {
-    const requests = useFriendRequests()
+    const requests = useSuspenseConvexQuery(api.friendships.listFriendRequests)
     const acceptFriend = useAcceptFriend()
     const [error, setError] = useState<FormError>(clearError)
 
-    if (requests === undefined) {
-        return (
-            <div className="pt-4">
-                <LoadingPlaceholder />
-            </div>
-        )
-    }
     if (requests.incoming.length === 0 && requests.outgoing.length === 0) {
         return null
     }
@@ -160,10 +176,7 @@ function RequestsSection() {
 }
 
 function FriendDiscoveries({ ownerId, ownerName }: Readonly<{ ownerId: string; ownerName: string }>) {
-    const discoveries = useFriendDiscoveries(ownerId)
-    if (discoveries === undefined) {
-        return null
-    }
+    const discoveries = useSuspenseConvexQuery(api.friendships.listDiscoveries, { friendAuthUserId: ownerId })
     if (discoveries.length === 0) {
         return <p className="pt-1 text-xs text-muted-foreground">No discoveries yet.</p>
     }
@@ -188,17 +201,10 @@ function FriendDiscoveries({ ownerId, ownerName }: Readonly<{ ownerId: string; o
 }
 
 function FriendsList() {
-    const friends = useFriends()
+    const friends = useSuspenseConvexQuery(api.friendships.listFriends)
     const removeFriend = useRemoveFriend()
     const [error, setError] = useState<FormError>(clearError)
 
-    if (friends === undefined) {
-        return (
-            <div className="pt-4">
-                <LoadingPlaceholder />
-            </div>
-        )
-    }
     if (friends.length === 0) {
         return (
             <EmptyState
@@ -249,7 +255,7 @@ function FriendsList() {
                                 Remove
                             </Button>
                         </div>
-                        <FriendDiscoveries ownerId={friend.authUserId} ownerName={friend.name} />
+                        <FriendDiscoveriesBoundary ownerId={friend.authUserId} ownerName={friend.name} />
                     </li>
                 ))}
             </ul>
@@ -257,7 +263,30 @@ function FriendsList() {
     )
 }
 
+function FriendDiscoveriesBoundary({ ownerId, ownerName }: Readonly<{ ownerId: string; ownerName: string }>) {
+    return (
+        <Suspense fallback={null}>
+            <FriendDiscoveries ownerId={ownerId} ownerName={ownerName} />
+        </Suspense>
+    )
+}
+
+function FriendsView() {
+    return (
+        <>
+            <InviteByEmailForm />
+            <RequestsSection />
+            <section aria-label="Friends" className="pt-8">
+                <h2 className="font-display text-2xl font-semibold text-balance text-foreground">Your friends</h2>
+                <FriendsList />
+            </section>
+        </>
+    )
+}
+
 function FriendsPage() {
+    const status = useSessionStatus()
+
     return (
         <PageLayout>
             <PageContainer>
@@ -265,16 +294,23 @@ function FriendsPage() {
                     <HeaderTitle>Friends</HeaderTitle>
                     <HeaderSubtitle>See what your crew is craving. Friend connections live here.</HeaderSubtitle>
                 </Header>
-                <SignedOutGate context="your friends">
-                    <InviteByEmailForm />
-                    <RequestsSection />
-                    <section aria-label="Friends" className="pt-8">
-                        <h2 className="font-display text-2xl font-semibold text-balance text-foreground">
-                            Your friends
-                        </h2>
-                        <FriendsList />
-                    </section>
-                </SignedOutGate>
+                {status.kind !== "ready" ? (
+                    <SignedOutGate context="your friends">
+                        <div className="pt-6">
+                            <LoadingPlaceholder />
+                        </div>
+                    </SignedOutGate>
+                ) : (
+                    <Suspense
+                        fallback={
+                            <div className="pt-6">
+                                <LoadingPlaceholder />
+                            </div>
+                        }
+                    >
+                        <FriendsView />
+                    </Suspense>
+                )}
             </PageContainer>
         </PageLayout>
     )
