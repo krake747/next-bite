@@ -1,5 +1,5 @@
-import { render, screen } from "@testing-library/react"
 import { describe, expect, test } from "vitest"
+import { render } from "vitest-browser-react"
 
 import { SharedRestaurantList } from "./shared-restaurant-list"
 
@@ -9,15 +9,15 @@ const restaurants = [
 ]
 
 describe("SharedRestaurantList", () => {
-    test("lists shared spots", () => {
-        render(<SharedRestaurantList items={restaurants} />)
-        expect(screen.getByText("Trattoria Verde")).toBeInTheDocument()
-        expect(screen.getByText("Added by Alex")).toBeInTheDocument()
-        expect(screen.getByText("Sushi Bar")).toBeInTheDocument()
+    test("lists shared spots", async () => {
+        const screen = await render(<SharedRestaurantList items={restaurants} />)
+        await expect.element(screen.getByText("Trattoria Verde")).toBeInTheDocument()
+        await expect.element(screen.getByText("Added by Alex")).toBeInTheDocument()
+        await expect.element(screen.getByText("Sushi Bar")).toBeInTheDocument()
     })
 
-    test("invites sharing when empty", () => {
-        render(<SharedRestaurantList items={[]} />)
-        expect(screen.getByText(/Share somewhere/)).toBeInTheDocument()
+    test("invites sharing when empty", async () => {
+        const screen = await render(<SharedRestaurantList items={[]} />)
+        await expect.element(screen.getByText(/Share somewhere/)).toBeInTheDocument()
     })
 })

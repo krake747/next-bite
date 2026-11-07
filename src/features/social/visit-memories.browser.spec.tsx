@@ -1,6 +1,7 @@
 import { QueryClientProvider } from "@tanstack/react-query"
-import { fireEvent, render, screen, waitFor } from "@testing-library/react"
 import { describe, expect, test, vi } from "vitest"
+import { render } from "vitest-browser-react"
+import { page } from "vitest/browser"
 
 import { ConvexProvider } from "@api/convex.client"
 import { createSeededClient } from "@api/db/seeded.client"
@@ -85,11 +86,11 @@ vi.mock("@core/restaurants", async (importOriginal) => {
     }
 })
 
-function renderMemories(): void {
+async function renderMemories() {
     const backend = createSeededClient({})
     // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- test-only restaurant id
     const restaurantId = "r1" as unknown as Id<"restaurants">
-    render(
+    return render(
         <QueryClientProvider client={backend.queryClient}>
             <ConvexProvider client={backend.client}>
                 <VisitMemories restaurantId={restaurantId} />
@@ -98,13 +99,12 @@ function renderMemories(): void {
     )
 }
 
-function selectFiles(files: File[]): void {
+async function selectFiles(files: File[]): Promise<void> {
     const input = document.querySelector('[data-slot="image-upload-input"]')
     if (!(input instanceof HTMLInputElement)) {
         throw new TypeError("File input not found")
     }
-    Object.defineProperty(input, "files", { value: files, configurable: true })
-    fireEvent.change(input)
+    await page.elementLocator(input).upload(files)
 }
 
 function resetMemories(): void {
@@ -118,23 +118,23 @@ describe("VisitMemories", () => {
     test("renders memories with author names", async () => {
         resetMemories()
         scriptedMemories = [{ displayName: "Ben", images: [{ url: "https://example.com/b1.jpg" }] }]
-        renderMemories()
+        const screen = await renderMemories()
 
-        expect(await screen.findByRole("button", { name: "Open photo 1 by Ben" })).toBeInTheDocument()
+        await expect.element(screen.getByRole("button", { name: "Open photo 1 by Ben" })).toBeInTheDocument()
     })
 
     test("shares a staged photo and clears the composer", async () => {
         resetMemories()
         scriptedMemories = []
-        renderMemories()
+        const screen = await renderMemories()
 
-        selectFiles([new File(["pixels"], "a.png", { type: "image/png" })])
-        await waitFor(() => {
+        await selectFiles([new File(["pixels"], "a.png", { type: "image/png" })])
+        await vi.waitFor(() => {
             expect(document.querySelector('[data-slot="image-preview-list"]')).not.toBeNull()
         })
 
-        fireEvent.click(screen.getByRole("button", { name: "Share memory" }))
-        await waitFor(() => {
+        await screen.getByRole("button", { name: "Share memory" }).click()
+        await vi.waitFor(() => {
             expect(addMutate).toHaveBeenCalledTimes(1)
         })
         expect(addMutate).toHaveBeenCalledWith({
@@ -142,7 +142,7 @@ describe("VisitMemories", () => {
             images: [{ url: "https://example.com/s1.jpg", storageId: "s1" }],
         })
 
-        await waitFor(() => {
+        await vi.waitFor(() => {
             expect(document.querySelector('[data-slot="image-preview-list"]')).toBeNull()
         })
     })
@@ -150,12 +150,12 @@ describe("VisitMemories", () => {
     test("stays hidden when signed out", async () => {
         resetMemories()
         signedIn = false
-        renderMemories()
+        const screen = await renderMemories()
 
         await new Promise<void>((resolve) => {
             setTimeout(resolve, 50)
         })
         expect(document.querySelector('[role="alert"]')).toBeNull()
-        expect(screen.queryByText("Visit memories")).toBeNull()
+        await expect.element(screen.getByText("Visit memories")).not.toBeInTheDocument()
     })
 })

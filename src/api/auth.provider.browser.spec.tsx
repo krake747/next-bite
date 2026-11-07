@@ -1,6 +1,6 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
-import { render, screen, waitFor } from "@testing-library/react"
 import { describe, expect, test, vi } from "vitest"
+import { render } from "vitest-browser-react"
 
 import { AuthProvider } from "./auth.provider"
 
@@ -58,17 +58,15 @@ vi.mock("./auth.client", () => ({
 
 describe("AuthProvider", () => {
     test("provides the Better Auth session token to the Convex client", async () => {
-        render(
+        const screen = await render(
             <QueryClientProvider client={new QueryClient()}>
                 <AuthProvider>
                     <p>ready</p>
                 </AuthProvider>
             </QueryClientProvider>,
         )
-        await waitFor(() => {
-            expect(screen.getByText("ready")).toBeInTheDocument()
-        })
-        await waitFor(() => {
+        await expect.element(screen.getByText("ready")).toBeInTheDocument()
+        await vi.waitFor(() => {
             expect(constructed[0]?.fetchTokens.length).toBeGreaterThan(0)
         })
         const fetchToken = constructed[0]?.fetchTokens[0]

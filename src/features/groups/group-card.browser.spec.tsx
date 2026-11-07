@@ -1,5 +1,5 @@
-import { render, screen } from "@testing-library/react"
 import { describe, expect, test } from "vitest"
+import { render } from "vitest-browser-react"
 
 import { GroupCard } from "./group-card"
 
@@ -11,11 +11,11 @@ const restaurants = [
 ]
 
 describe("GroupCard", () => {
-    test("composes header, list, and members", () => {
-        render(<GroupCard name="Food Crew" members={members} restaurants={restaurants} />)
-        expect(screen.getByRole("heading", { name: "Food Crew" })).toBeInTheDocument()
-        expect(screen.getByText("Trattoria Verde")).toBeInTheDocument()
-        expect(screen.queryByText("2 members")).not.toBeInTheDocument()
-        expect(screen.getByText("3 members")).toBeInTheDocument()
+    test("composes header, list, and members", async () => {
+        const screen = await render(<GroupCard name="Food Crew" members={members} restaurants={restaurants} />)
+        await expect.element(screen.getByRole("heading", { name: "Food Crew" })).toBeInTheDocument()
+        await expect.element(screen.getByText("Trattoria Verde")).toBeInTheDocument()
+        await expect.element(screen.getByText("2 members")).not.toBeInTheDocument()
+        await expect.element(screen.getByText("3 members")).toBeInTheDocument()
     })
 })

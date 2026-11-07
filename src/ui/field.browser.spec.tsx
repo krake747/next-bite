@@ -1,6 +1,5 @@
-import { render, screen } from "@testing-library/react"
-import userEvent from "@testing-library/user-event"
 import { describe, expect, test, vi } from "vitest"
+import { render } from "vitest-browser-react"
 
 import { Select } from "./field"
 
@@ -10,13 +9,13 @@ const options = [
     { value: "Priya", label: "Priya" },
 ]
 
-function setup(input: string | undefined) {
+async function setup(input: string | undefined) {
     const onChange = vi.fn<(event: Event) => void>()
     let hiddenElement: HTMLSelectElement | null = null
     const ref = vi.fn<(element: HTMLSelectElement | null) => void>((element) => {
         hiddenElement = element
     })
-    render(
+    const screen = await render(
         <Select
             input={input}
             errors={null}
@@ -30,23 +29,22 @@ function setup(input: string | undefined) {
             ref={ref}
         />,
     )
-    return { onChange, hiddenElement: () => hiddenElement }
+    return { onChange, hiddenElement: () => hiddenElement, screen }
 }
 
 describe("Select", () => {
     test("commits the chosen option through the Formisch change handler", async () => {
-        const user = userEvent.setup()
-        const { onChange, hiddenElement } = setup("")
+        const { onChange, hiddenElement, screen } = await setup("")
 
-        await user.click(screen.getByRole("combobox", { name: "Added by" }))
-        await user.click(screen.getByRole("option", { name: "Alex" }))
+        await screen.getByRole("combobox", { name: "Added by" }).click()
+        await screen.getByRole("option", { name: "Alex" }).click()
 
         expect(onChange).toHaveBeenCalledTimes(1)
         expect(hiddenElement()?.value).toBe("Alex")
     })
 
-    test("shows the current value on the trigger", () => {
-        setup("Priya")
-        expect(screen.getByRole("combobox", { name: "Added by" })).toHaveTextContent("Priya")
+    test("shows the current value on the trigger", async () => {
+        const { screen } = await setup("Priya")
+        await expect.element(screen.getByRole("combobox", { name: "Added by" })).toHaveTextContent("Priya")
     })
 })

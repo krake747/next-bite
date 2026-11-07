@@ -7,18 +7,19 @@ Owned values live in `sources-of-truth.md`; this file holds tiers and examples o
 Tiers are picked by filename suffix. `pnpm test` runs them all; scope with `pnpm test:pure`,
 `pnpm test:unit`, `pnpm test:browser`, or `pnpm test:integration`.
 
-| Suffix                        | Runner | Env       | Location                                          |
-| ----------------------------- | ------ | --------- | ------------------------------------------------- |
-| `*.pure.spec.ts`              | Vitest | node      | `src/**/*.pure.spec.ts`, `lint/**/*.pure.spec.js` |
-| `*.spec.{ts,tsx}`             | Vitest | happy-dom | `src/**/*.spec.{ts,tsx}`                          |
-| `*.browser.spec.tsx`          | Vitest | happy-dom | `src/**/*.browser.spec.tsx`                       |
-| `*.integration.spec.{ts,tsx}` | Vitest | happy-dom | `src/**/*.integration.spec.{ts,tsx}`              |
+| Suffix                        | Runner | Env                   | Location                                          |
+| ----------------------------- | ------ | --------------------- | ------------------------------------------------- |
+| `*.pure.spec.ts`              | Vitest | node                  | `src/**/*.pure.spec.ts`, `lint/**/*.pure.spec.js` |
+| `*.spec.{ts,tsx}`             | Vitest | happy-dom             | `src/**/*.spec.{ts,tsx}`                          |
+| `*.browser.spec.tsx`          | Vitest | chromium (Playwright) | `src/**/*.browser.spec.tsx`                       |
+| `*.integration.spec.{ts,tsx}` | Vitest | happy-dom             | `src/**/*.integration.spec.{ts,tsx}`              |
 
 - `*.pure.spec.ts`: logic with no DOM. Runs in node with no setup file, stays fast.
 - `*.spec.{ts,tsx}`: unit scope. Hooks and isolated UI under happy-dom. The unit project excludes
   the suffixed tiers in `vite.config.ts`.
-- `*.browser.spec.tsx`: real components through full interaction: open the popup, then choose by
-  keyboard. Runs under happy-dom today; this project is the seam for a real-browser runner later.
+- `*.browser.spec.tsx`: real components through full interaction in Playwright chromium (headless in
+  CI): open the popup, then choose by keyboard. Install the browser once with
+  `npx playwright install chromium --only-shell` before running this tier.
 - `*.integration.spec.{ts,tsx}`: few, only where it truly matters. Route-level specs against the
   real `routeTree` or a backend contract.
 
@@ -62,27 +63,31 @@ describe("formatFileSize", () => {
 
 ## Browser tests
 
-Component tests with happy-dom plus @testing-library/react. Components in `src/ui/` and
+Component tests in real chromium via `vitest-browser-react`. Components in `src/ui/` and
 `src/pattern/` are the primary targets.
 
 ```tsx
-import { render, screen } from "@testing-library/react"
-import { describe, test, expect } from "vitest"
+import { describe, expect, test } from "vitest"
+import { render } from "vitest-browser-react"
 
 import { Badge } from "./badge"
 
 describe("Badge", () => {
-  test("renders children", () => {
-    render(<Badge>Hello</Badge>)
-    expect(screen.getByText("Hello")).toBeInTheDocument()
+  test("renders children", async () => {
+    const screen = await render(<Badge>Hello</Badge>)
+    await expect.element(screen.getByText("Hello")).toBeInTheDocument()
   })
 })
 ```
 
-- Render the component with realistic props
-- Query by text content or `data-slot` attribute (not CSS classes)
+- Render the component with realistic props; `render` is async, keep the `screen` it returns
+- Query by text content or `data-slot` attribute (not CSS classes); there is no `queryBy`, assert
+  absence with a negated element assertion on a `getBy` locator
 - Test one behaviour per test case
-- Interact like the browser does: open popups through the real path, then choose by keyboard
+- Interact like the browser does through locators: `await loc.click()`, `await input.fill("text")`,
+  `await input.upload(files)`; open popups through the real path
+- `await expect.element(...)` auto-retries; use it instead of `waitFor`. Poll plain JS state
+  (counters, mock calls) with `await vi.waitFor(...)`
 - `@testing-library/jest-dom` matchers are auto-loaded via `src/vitest.setup.ts`
 
 ## MSW for HTTP

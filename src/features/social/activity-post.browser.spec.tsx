@@ -1,11 +1,11 @@
-import { render, screen } from "@testing-library/react"
 import { describe, expect, test } from "vitest"
+import { render } from "vitest-browser-react"
 
 import { ActivityPost } from "./activity-post"
 
 describe("ActivityPost", () => {
-    test("reads like a friend's discovery, not a database entry", () => {
-        render(
+    test("reads like a friend's discovery, not a database entry", async () => {
+        const screen = await render(
             <ActivityPost
                 author={{ name: "Alex" }}
                 time="2 hours ago"
@@ -24,10 +24,10 @@ describe("ActivityPost", () => {
                 }}
             />,
         )
-        expect(screen.getByText("Alex")).toBeInTheDocument()
-        expect(screen.getByText("You have to try this place.")).toBeInTheDocument()
-        expect(screen.getByText("Trattoria Verde")).toBeInTheDocument()
-        expect(screen.getByText("Added by Alex")).toBeInTheDocument()
-        expect(screen.getByText("4 friends want to try")).toBeInTheDocument()
+        await expect.element(screen.getByText("Alex")).toBeInTheDocument()
+        await expect.element(screen.getByText("You have to try this place.")).toBeInTheDocument()
+        await expect.element(screen.getByText("Trattoria Verde")).toBeInTheDocument()
+        await expect.element(screen.getByText("Added by Alex")).toBeInTheDocument()
+        await expect.element(screen.getByText("4 friends want to try")).toBeInTheDocument()
     })
 })

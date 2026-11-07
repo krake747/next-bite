@@ -1,7 +1,7 @@
 import { QueryClientProvider } from "@tanstack/react-query"
-import { fireEvent, render, screen, waitFor } from "@testing-library/react"
-import { act } from "@testing-library/react"
 import { describe, expect, test, vi } from "vitest"
+import { render } from "vitest-browser-react"
+import { page } from "vitest/browser"
 
 import { ConvexProvider } from "@api/convex.client"
 import { SyncTimeoutError, type RestaurantAddArgs } from "@api/db/restaurants"
@@ -99,9 +99,9 @@ const mutationCalls: MutationCall[] = []
 const addMutate = vi.fn<(args: RestaurantAddArgs) => Promise<unknown>>()
 let submitGate: Deferred<unknown> | null = null
 
-function renderDialog(onOpenChange: (open: boolean) => void): void {
+async function renderDialog(onOpenChange: (open: boolean) => void) {
     const backend = createSeededClient({ calls: mutationCalls })
-    render(
+    return render(
         <QueryClientProvider client={backend.queryClient}>
             <ConvexProvider client={backend.client}>
                 <RestaurantDialog mode="add" show onOpenChange={onOpenChange} />
@@ -110,13 +110,24 @@ function renderDialog(onOpenChange: (open: boolean) => void): void {
     )
 }
 
-function selectFiles(files: File[]): void {
+type DialogScreen = Awaited<ReturnType<typeof renderDialog>>
+
+// Direct dispatch: the unstyled test env leaves Base UI's inert backdrop above
+// the panel, so Playwright hit-testing cannot reach dialog buttons.
+function clickButton(button: { element: () => HTMLElement | SVGElement }): void {
+    const node = button.element()
+    if (!(node instanceof HTMLElement)) {
+        throw new TypeError("Button not found")
+    }
+    node.click()
+}
+
+async function selectFiles(files: File[]): Promise<void> {
     const input = document.querySelector('[data-slot="image-upload-input"]')
     if (!(input instanceof HTMLInputElement)) {
         throw new TypeError("File input not found")
     }
-    Object.defineProperty(input, "files", { value: files, configurable: true })
-    fireEvent.change(input)
+    await page.elementLocator(input).upload(files)
 }
 
 function requiredSubmitGate(): Deferred<unknown> {
@@ -146,27 +157,24 @@ function resetUploads(): void {
 }
 
 async function stageOneImage(): Promise<void> {
-    selectFiles([new File(["pixels"], "a.png", { type: "image/png" })])
-    await waitFor(() => {
+    await selectFiles([new File(["pixels"], "a.png", { type: "image/png" })])
+    await vi.waitFor(() => {
         expect(uploadCalls).toBe(1)
     })
     const gate = uploadGates[0]
     if (gate === undefined) {
         throw new TypeError("Upload never started")
     }
-    await act(async () => {
-        gate.resolve({ url: "https://example.com/a.jpg", storageId: storageId("s1") })
-        await Promise.resolve()
-    })
-    await waitFor(() => {
+    gate.resolve({ url: "https://example.com/a.jpg", storageId: storageId("s1") })
+    await vi.waitFor(() => {
         expect(document.querySelector('[data-slot="image-preview-list"]')?.childElementCount).toBe(1)
     })
 }
 
-function fillRequiredFields(): void {
-    fireEvent.change(screen.getByLabelText("Restaurant name"), { target: { value: "Trattoria" } })
-    fireEvent.change(screen.getByLabelText("Cuisine"), { target: { value: "Italian" } })
-    fireEvent.change(screen.getByLabelText("Location"), { target: { value: "Luxembourg" } })
+async function fillRequiredFields(screen: DialogScreen): Promise<void> {
+    await screen.getByLabelText("Restaurant name").fill("Trattoria")
+    await screen.getByLabelText("Cuisine").fill("Italian")
+    await screen.getByLabelText("Location").fill("Luxembourg")
 }
 
 function requiredAddKey(index: number): string {
@@ -185,12 +193,14 @@ describe("RestaurantDialog close ownership", () => {
     test("Cancel discards the staged upload and closes", async () => {
         resetUploads()
         const onOpenChange = vi.fn<(open: boolean) => void>()
-        renderDialog(onOpenChange)
+        const screen = await renderDialog(onOpenChange)
         await stageOneImage()
 
-        fireEvent.click(screen.getByRole("button", { name: "Cancel" }))
+        // Direct dispatch: the unstyled test env leaves Base UI's inert backdrop
+        // above the panel, so Playwright hit-testing cannot reach dialog buttons.
+        clickButton(screen.getByRole("button", { name: "Cancel" }))
 
-        await waitFor(() => {
+        await vi.waitFor(() => {
             expect(mutationCalls).toContainEqual({
                 fn: "restaurants:cleanupStorage",
                 args: { storageId: "s1" },
@@ -202,12 +212,15 @@ describe("RestaurantDialog close ownership", () => {
     test("Escape discards the staged upload and closes", async () => {
         resetUploads()
         const onOpenChange = vi.fn<(open: boolean) => void>()
-        renderDialog(onOpenChange)
+        const screen = await renderDialog(onOpenChange)
         await stageOneImage()
 
-        fireEvent.keyDown(document, { key: "Escape", code: "Escape" })
+        screen
+            .getByRole("button", { name: "Cancel" })
+            .element()
+            .dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", code: "Escape", bubbles: true }))
 
-        await waitFor(() => {
+        await vi.waitFor(() => {
             expect(mutationCalls).toContainEqual({
                 fn: "restaurants:cleanupStorage",
                 args: { storageId: "s1" },
@@ -219,22 +232,19 @@ describe("RestaurantDialog close ownership", () => {
     test("submit hands attached images to persisted ownership without cleanup", async () => {
         resetUploads()
         const onOpenChange = vi.fn<(open: boolean) => void>()
-        renderDialog(onOpenChange)
+        const screen = await renderDialog(onOpenChange)
         await stageOneImage()
 
-        fillRequiredFields()
+        await fillRequiredFields(screen)
         submitGate = createDeferred<unknown>()
-        fireEvent.click(screen.getByRole("button", { name: "Add Restaurant" }))
+        clickButton(screen.getByRole("button", { name: "Add Restaurant" }))
 
-        await waitFor(() => {
+        await vi.waitFor(() => {
             expect(addMutate).toHaveBeenCalledTimes(1)
         })
-        await act(async () => {
-            requiredSubmitGate().resolve(undefined)
-            await Promise.resolve()
-        })
+        requiredSubmitGate().resolve(undefined)
 
-        await waitFor(() => {
+        await vi.waitFor(() => {
             expect(onOpenChange).toHaveBeenCalledWith(false)
         })
         expect(addMutate).toHaveBeenCalledTimes(1)
@@ -244,38 +254,29 @@ describe("RestaurantDialog close ownership", () => {
     test("retries a timed-out submit on the same key without duplicating", async () => {
         resetUploads()
         const onOpenChange = vi.fn<(open: boolean) => void>()
-        renderDialog(onOpenChange)
-        fillRequiredFields()
+        const screen = await renderDialog(onOpenChange)
+        await fillRequiredFields(screen)
         submitGate = createDeferred<unknown>()
-        fireEvent.click(screen.getByRole("button", { name: "Add Restaurant" }))
+        clickButton(screen.getByRole("button", { name: "Add Restaurant" }))
 
-        await waitFor(() => {
+        await vi.waitFor(() => {
             expect(addMutate).toHaveBeenCalledTimes(1)
         })
-        await act(async () => {
-            requiredSubmitGate().reject(new SyncTimeoutError())
-            await Promise.resolve()
-        })
-
-        await waitFor(() => {
-            expect(screen.getByText(/may already be saved/)).toBeInTheDocument()
-        })
-        expect(screen.getByRole("button", { name: "Retry safely" })).toBeInTheDocument()
+        requiredSubmitGate().reject(new SyncTimeoutError())
+        await expect.element(screen.getByText(/may already be saved/)).toBeInTheDocument()
+        await expect.element(screen.getByRole("button", { name: "Retry safely" })).toBeInTheDocument()
 
         submitGate = createDeferred<unknown>()
-        fireEvent.click(screen.getByRole("button", { name: "Retry safely" }))
+        clickButton(screen.getByRole("button", { name: "Retry safely" }))
 
-        await waitFor(() => {
+        await vi.waitFor(() => {
             expect(addMutate).toHaveBeenCalledTimes(2)
         })
         expect(requiredAddKey(1)).toBe(requiredAddKey(0))
 
-        await act(async () => {
-            requiredSubmitGate().resolve(undefined)
-            await Promise.resolve()
-        })
+        requiredSubmitGate().resolve(undefined)
 
-        await waitFor(() => {
+        await vi.waitFor(() => {
             expect(onOpenChange).toHaveBeenCalledWith(false)
         })
         expect(mutationCalls.filter((call) => call.fn === "restaurants:cleanupStorage")).toHaveLength(0)
@@ -284,29 +285,26 @@ describe("RestaurantDialog close ownership", () => {
     test("rotates the key after a committed submit", async () => {
         resetUploads()
         const onOpenChange = vi.fn<(open: boolean) => void>()
-        renderDialog(onOpenChange)
-        fillRequiredFields()
+        const screen = await renderDialog(onOpenChange)
+        await fillRequiredFields(screen)
         submitGate = createDeferred<unknown>()
-        fireEvent.click(screen.getByRole("button", { name: "Add Restaurant" }))
+        clickButton(screen.getByRole("button", { name: "Add Restaurant" }))
 
-        await waitFor(() => {
+        await vi.waitFor(() => {
             expect(addMutate).toHaveBeenCalledTimes(1)
         })
-        await act(async () => {
-            requiredSubmitGate().resolve(undefined)
-            await Promise.resolve()
-        })
+        requiredSubmitGate().resolve(undefined)
 
-        await waitFor(() => {
+        await vi.waitFor(() => {
             expect(onOpenChange).toHaveBeenCalledTimes(1)
         })
         const firstKey = requiredAddKey(0)
 
-        fillRequiredFields()
+        await fillRequiredFields(screen)
         submitGate = createDeferred<unknown>()
-        fireEvent.click(screen.getByRole("button", { name: "Add Restaurant" }))
+        clickButton(screen.getByRole("button", { name: "Add Restaurant" }))
 
-        await waitFor(() => {
+        await vi.waitFor(() => {
             expect(addMutate).toHaveBeenCalledTimes(2)
         })
         expect(requiredAddKey(1)).not.toBe(firstKey)

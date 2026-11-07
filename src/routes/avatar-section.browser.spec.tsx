@@ -1,6 +1,7 @@
 import { QueryClientProvider } from "@tanstack/react-query"
-import { fireEvent, render, screen, waitFor } from "@testing-library/react"
 import { describe, expect, test, vi } from "vitest"
+import { render } from "vitest-browser-react"
+import { page } from "vitest/browser"
 
 import { ConvexProvider } from "@api/convex.client"
 import { createSeededClient } from "@api/db/seeded.client"
@@ -57,9 +58,9 @@ vi.mock("@core/restaurants", async (importOriginal) => {
     }
 })
 
-function renderAvatar(avatarUrl: string | undefined): void {
+async function renderAvatar(avatarUrl: string | undefined) {
     const backend = createSeededClient({})
-    render(
+    return render(
         <QueryClientProvider client={backend.queryClient}>
             <ConvexProvider client={backend.client}>
                 <AvatarSection avatarUrl={avatarUrl} />
@@ -68,13 +69,12 @@ function renderAvatar(avatarUrl: string | undefined): void {
     )
 }
 
-function selectFiles(files: File[]): void {
+async function selectFiles(files: File[]): Promise<void> {
     const input = document.querySelector('[data-slot="image-upload-input"]')
     if (!(input instanceof HTMLInputElement)) {
         throw new TypeError("File input not found")
     }
-    Object.defineProperty(input, "files", { value: files, configurable: true })
-    fireEvent.change(input)
+    await page.elementLocator(input).upload(files)
 }
 
 function resetAvatar(): void {
@@ -83,20 +83,20 @@ function resetAvatar(): void {
 }
 
 describe("AvatarSection", () => {
-    test("shows the current avatar when set", () => {
+    test("shows the current avatar when set", async () => {
         resetAvatar()
-        renderAvatar("https://example.com/a.jpg")
+        const screen = await renderAvatar("https://example.com/a.jpg")
 
-        expect(screen.getByRole("img")).toBeInTheDocument()
+        await expect.element(screen.getByRole("img", { name: "Your profile photo" })).toBeInTheDocument()
     })
 
     test("uploads a new photo through the profile update", async () => {
         resetAvatar()
-        renderAvatar(undefined)
+        await renderAvatar(undefined)
 
-        selectFiles([new File(["pixels"], "a.png", { type: "image/png" })])
+        await selectFiles([new File(["pixels"], "a.png", { type: "image/png" })])
 
-        await waitFor(() => {
+        await vi.waitFor(() => {
             expect(updateMutate).toHaveBeenCalledTimes(1)
         })
         expect(updateMutate).toHaveBeenCalledWith({
@@ -107,13 +107,11 @@ describe("AvatarSection", () => {
     test("shows an error when the update fails", async () => {
         resetAvatar()
         updateMutate.mockRejectedValueOnce(new Error("denied"))
-        renderAvatar(undefined)
+        const screen = await renderAvatar(undefined)
 
-        selectFiles([new File(["pixels"], "a.png", { type: "image/png" })])
+        await selectFiles([new File(["pixels"], "a.png", { type: "image/png" })])
 
-        await waitFor(() => {
-            expect(screen.getByRole("alert")).toBeInTheDocument()
-        })
-        expect(screen.getByText("denied")).toBeInTheDocument()
+        await expect.element(screen.getByRole("alert")).toBeInTheDocument()
+        await expect.element(screen.getByText("denied")).toBeInTheDocument()
     })
 })

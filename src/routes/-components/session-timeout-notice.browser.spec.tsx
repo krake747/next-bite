@@ -1,5 +1,5 @@
-import { fireEvent, render, screen } from "@testing-library/react"
 import { describe, expect, test, vi } from "vitest"
+import { render } from "vitest-browser-react"
 
 import { type SessionStatus } from "@core/session"
 import { SessionTimeoutNotice } from "@routes/-components/session-timeout-notice"
@@ -14,39 +14,39 @@ vi.mock("@core/session", async (importOriginal) => {
     }
 })
 
-function renderNotice(): void {
-    render(<SessionTimeoutNotice />)
+async function renderNotice() {
+    return render(<SessionTimeoutNotice />)
 }
 
 describe("SessionTimeoutNotice", () => {
-    test("offers a retry when the session times out", () => {
+    test("offers a retry when the session times out", async () => {
         const retry = vi.fn<() => void>()
         scriptedStatus = { kind: "timed-out", userId: "user-1", retry }
-        renderNotice()
+        const screen = await renderNotice()
 
-        expect(screen.getByRole("alert")).toBeInTheDocument()
-        fireEvent.click(screen.getByRole("button", { name: "Try again" }))
+        await expect.element(screen.getByRole("alert")).toBeInTheDocument()
+        await screen.getByRole("button", { name: "Try again" }).click()
         expect(retry).toHaveBeenCalledTimes(1)
     })
 
-    test("stays hidden for a ready session", () => {
+    test("stays hidden for a ready session", async () => {
         scriptedStatus = { kind: "ready", userId: "user-1" }
-        renderNotice()
+        const screen = await renderNotice()
 
-        expect(screen.queryByRole("alert")).toBeNull()
+        await expect.element(screen.getByRole("alert")).not.toBeInTheDocument()
     })
 
-    test("stays hidden while loading", () => {
+    test("stays hidden while loading", async () => {
         scriptedStatus = { kind: "loading" }
-        renderNotice()
+        const screen = await renderNotice()
 
-        expect(screen.queryByRole("alert")).toBeNull()
+        await expect.element(screen.getByRole("alert")).not.toBeInTheDocument()
     })
 
-    test("stays hidden when signed out", () => {
+    test("stays hidden when signed out", async () => {
         scriptedStatus = { kind: "signed-out" }
-        renderNotice()
+        const screen = await renderNotice()
 
-        expect(screen.queryByRole("alert")).toBeNull()
+        await expect.element(screen.getByRole("alert")).not.toBeInTheDocument()
     })
 })

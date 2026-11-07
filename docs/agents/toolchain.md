@@ -54,9 +54,9 @@ pnpm test:watch           # Vitest watch mode
 pnpm test:e2e             # Playwright gate on a local Worker preview (needs browsers plus wrangler)
 ```
 
-Tiers live in `vite.config.ts` projects. See `testing.md`. The Playwright suite lives in `e2e/` with
-config in `playwright.config.ts`. Install browsers once with
-`npx playwright install chromium --only-shell`, then run `pnpm test:e2e`. It builds the production
+Tiers live in `vite.config.ts` projects. See `testing.md`. The browser tier also needs chromium:
+install it once with `npx playwright install chromium --only-shell`. The Playwright suite lives in
+`e2e/` with config in `playwright.config.ts`; run it with `pnpm test:e2e`. It builds the production
 Worker bundle and serves it with wrangler on port 5193, so the suite proves the built SSR boundary
 rather than the dev server. Point `E2E_BASE_URL` at a dev server with `E2E_NO_SERVER=1` set when
 iterating quickly. It stays out of the push gate and CI by design; run it on demand and before

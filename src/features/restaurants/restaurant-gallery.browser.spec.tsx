@@ -1,6 +1,5 @@
-import { render, screen } from "@testing-library/react"
-import userEvent from "@testing-library/user-event"
 import { describe, expect, test } from "vitest"
+import { render } from "vitest-browser-react"
 
 import { RestaurantGallery } from "./restaurant-gallery"
 
@@ -8,17 +7,16 @@ const photos = [{ url: "https://example.com/1.jpg", author: "Alex" }, { url: "ht
 
 describe("RestaurantGallery", () => {
     test("shows the hero with cuisine badge, count button, and viewer", async () => {
-        const user = userEvent.setup()
-        render(<RestaurantGallery photos={photos} name="Trattoria Verde" cuisine="Italian" />)
-        expect(screen.getByText("Italian")).toBeInTheDocument()
+        const screen = await render(<RestaurantGallery photos={photos} name="Trattoria Verde" cuisine="Italian" />)
+        await expect.element(screen.getByText("Italian").first()).toBeInTheDocument()
 
-        await user.click(screen.getByRole("button", { name: /2 photos/ }))
-        expect(screen.getByText("Image Gallery (1/2)")).toBeInTheDocument()
+        await screen.getByRole("button", { name: /2 photos/ }).click()
+        await expect.element(screen.getByText("Image Gallery (1/2)")).toBeInTheDocument()
     })
 
-    test("falls back to a cuisine placeholder without photos", () => {
-        render(<RestaurantGallery photos={[]} name="Trattoria Verde" cuisine="Italian" />)
-        expect(screen.getAllByText("Italian").length).toBeGreaterThan(0)
-        expect(screen.queryByRole("button", { name: /photos|View/ })).not.toBeInTheDocument()
+    test("falls back to a cuisine placeholder without photos", async () => {
+        const screen = await render(<RestaurantGallery photos={[]} name="Trattoria Verde" cuisine="Italian" />)
+        await expect.element(screen.getByText("Italian").first()).toBeInTheDocument()
+        await expect.element(screen.getByRole("button", { name: /photos|View/ })).not.toBeInTheDocument()
     })
 })
