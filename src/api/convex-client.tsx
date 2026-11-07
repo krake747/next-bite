@@ -1,9 +1,9 @@
-import { useMutation, useQuery, useSuspenseQuery } from "@tanstack/react-query"
+import { useMutation, useQuery, useSuspenseQuery, mutationOptions } from "@tanstack/react-query"
 import { type ConvexReactClient } from "convex/react"
 import { type FunctionArgs, type FunctionReference, type FunctionReturnType } from "convex/server"
 import { createContext, use } from "react"
 
-import { convexQuery } from "@convex-dev/react-query"
+import { convexQueryOptions } from "./convex-options"
 
 const ConvexContext = createContext<ConvexReactClient | null>(null)
 
@@ -36,10 +36,8 @@ export function useConvexQueryResult<Query extends FunctionReference<"query">>(
     // Null client means server render (or a tree without a provider): stay
     // disabled so no queryFn is needed, matching the old loading state.
     const skip = options?.skip ?? client === null
-    const shaped = convexQuery(query, (args ?? {}) as FunctionArgs<Query>)
     const result = useQuery({
-        queryKey: shaped.queryKey,
-        staleTime: shaped.staleTime ?? Infinity,
+        ...convexQueryOptions(query, args),
         enabled: !skip,
     })
     if (skip) {
@@ -56,39 +54,39 @@ export function useSuspenseConvexQuery<Query extends FunctionReference<"query">>
     if (client === null) {
         throw new Error("useSuspenseConvexQuery needs a connected Convex client; render below a ready session gate.")
     }
-    const shaped = convexQuery(query, (args ?? {}) as FunctionArgs<Query>)
-    return useSuspenseQuery({
-        queryKey: shaped.queryKey,
-        staleTime: shaped.staleTime ?? Infinity,
-    }).data
+    return useSuspenseQuery(convexQueryOptions(query, args)).data
 }
 
 export function useConvexMutation<Mutation extends FunctionReference<"mutation">>(mutation: Mutation) {
     const client = use(ConvexContext)
 
-    return useMutation({
-        mutationFn: async (args: FunctionArgs<Mutation>) => {
-            if (client === null) {
-                throw new Error("ConvexClient not provided. Wrap with ConvexProvider.")
-            }
-            const response = await client.mutation(mutation, args)
-            return response
-        },
-    })
+    return useMutation(
+        mutationOptions({
+            mutationFn: async (args: FunctionArgs<Mutation>) => {
+                if (client === null) {
+                    throw new Error("ConvexClient not provided. Wrap with ConvexProvider.")
+                }
+                const response = await client.mutation(mutation, args)
+                return response
+            },
+        }),
+    )
 }
 
 export function useConvexAction<Action extends FunctionReference<"action">>(action: Action) {
     const client = use(ConvexContext)
 
-    return useMutation({
-        mutationFn: async (args: FunctionArgs<Action>) => {
-            if (client === null) {
-                throw new Error("ConvexClient not provided. Wrap with ConvexProvider.")
-            }
-            const response = await client.action(action, args)
-            return response
-        },
-    })
+    return useMutation(
+        mutationOptions({
+            mutationFn: async (args: FunctionArgs<Action>) => {
+                if (client === null) {
+                    throw new Error("ConvexClient not provided. Wrap with ConvexProvider.")
+                }
+                const response = await client.action(action, args)
+                return response
+            },
+        }),
+    )
 }
 
 export function useConvexClient(): ConvexReactClient | null {

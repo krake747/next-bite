@@ -1,5 +1,5 @@
 import { useLiveQuery } from "@tanstack/react-db"
-import { useMutation, useQueryClient } from "@tanstack/react-query"
+import { mutationOptions, useMutation, useQueryClient } from "@tanstack/react-query"
 import { type ConvexReactClient } from "convex/react"
 import { useEffect, useRef } from "react"
 
@@ -265,74 +265,80 @@ export const useAuthMethods = (): AuthMethods | undefined => useConvexQuery(api.
 export function useAddRestaurantWithHours() {
     const client = useConvexClient()
     const auth = useAuthSource()
-    return useMutation({
-        mutationFn: async (args: RestaurantAddArgs): Promise<Id<"restaurants">> => {
-            if (client === null || !auth.isAuthenticated || auth.user === null) {
-                throw new Error("Sign in to add restaurants")
-            }
-            const collections = getSessionCollections(client, persistCallerFor(client), auth.user.id)
-            // The persisted key correlates the temp row with its synced server row and makes
-            // double-submits idempotent; the backend dedupes retries carrying the same key.
-            // A caller-supplied key survives retries, otherwise mint one per attempt.
-            const clientMutationId = args.clientMutationId ?? crypto.randomUUID()
-            const temp = buildTempRestaurant({
-                ownerId: auth.user.id,
-                ownerName: auth.user.name ?? FALLBACK_DISPLAY_NAME,
-                ...args,
-                clientMutationId,
-            })
-            const tx = collections.owner.insert(temp)
-            // The rejection surfaces via tx.state below; swallowing here avoids an
-            // unhandled rejection while the definitive error is thrown next.
-            await tx.when("settled").catch(() => {})
-            if (tx.state === "failed") {
-                throw tx.error?.error ?? new Error("Add failed")
-            }
-            return resolveRestaurantIdByKey(collections.owner, clientMutationId)
-        },
-    })
+    return useMutation(
+        mutationOptions({
+            mutationFn: async (args: RestaurantAddArgs): Promise<Id<"restaurants">> => {
+                if (client === null || !auth.isAuthenticated || auth.user === null) {
+                    throw new Error("Sign in to add restaurants")
+                }
+                const collections = getSessionCollections(client, persistCallerFor(client), auth.user.id)
+                // The persisted key correlates the temp row with its synced server row and makes
+                // double-submits idempotent; the backend dedupes retries carrying the same key.
+                // A caller-supplied key survives retries, otherwise mint one per attempt.
+                const clientMutationId = args.clientMutationId ?? crypto.randomUUID()
+                const temp = buildTempRestaurant({
+                    ownerId: auth.user.id,
+                    ownerName: auth.user.name ?? FALLBACK_DISPLAY_NAME,
+                    ...args,
+                    clientMutationId,
+                })
+                const tx = collections.owner.insert(temp)
+                // The rejection surfaces via tx.state below; swallowing here avoids an
+                // unhandled rejection while the definitive error is thrown next.
+                await tx.when("settled").catch(() => {})
+                if (tx.state === "failed") {
+                    throw tx.error?.error ?? new Error("Add failed")
+                }
+                return resolveRestaurantIdByKey(collections.owner, clientMutationId)
+            },
+        }),
+    )
 }
 
 export function useUpdateRestaurant() {
     const client = useConvexClient()
     const sessionKey = useSessionKey()
-    return useMutation({
-        mutationFn: async (args: RestaurantUpdateArgs) => {
-            assertRealRestaurantId(args.id)
-            if (client === null || sessionKey === null) {
-                throw new Error("Sign in to edit restaurants")
-            }
-            const collections = getSessionCollections(client, persistCallerFor(client), sessionKey)
-            const targets = [collections.owner, collections.feed].filter((collection) => collection.has(args.id))
-            if (targets.length === 0) {
-                await client.mutation(api.restaurants.update, args)
-                return
-            }
-            for (const target of targets) {
-                const tx = target.update(args.id, (draft) => {
-                    applyUpdateArgsToDraft(draft, args)
-                })
-                await tx.when("settled")
-                if (tx.state === "failed") {
-                    throw tx.error?.error ?? new Error("Update failed")
+    return useMutation(
+        mutationOptions({
+            mutationFn: async (args: RestaurantUpdateArgs) => {
+                assertRealRestaurantId(args.id)
+                if (client === null || sessionKey === null) {
+                    throw new Error("Sign in to edit restaurants")
                 }
-            }
-        },
-    })
+                const collections = getSessionCollections(client, persistCallerFor(client), sessionKey)
+                const targets = [collections.owner, collections.feed].filter((collection) => collection.has(args.id))
+                if (targets.length === 0) {
+                    await client.mutation(api.restaurants.update, args)
+                    return
+                }
+                for (const target of targets) {
+                    const tx = target.update(args.id, (draft) => {
+                        applyUpdateArgsToDraft(draft, args)
+                    })
+                    await tx.when("settled")
+                    if (tx.state === "failed") {
+                        throw tx.error?.error ?? new Error("Update failed")
+                    }
+                }
+            },
+        }),
+    )
 }
 
 export function useDeleteRestaurant() {
     const client = useConvexClient()
     const sessionKey = useSessionKey()
-    return useMutation({
-        mutationFn: async (args: { id: Id<"restaurants"> }) => {
-            assertRealRestaurantId(args.id)
-            if (client === null || sessionKey === null) {
-                throw new Error("Sign in to delete restaurants")
-            }
-            await client.mutation(api.restaurants.remove, args)
-        },
-    })
+    return useMutation(
+        mutationOptions({
+            mutationFn: async (args: { id: Id<"restaurants"> }) => {
+                assertRealRestaurantId(args.id)
+                if (client === null || sessionKey === null) {
+                    throw new Error("Sign in to delete restaurants")
+                }
+                await client.mutation(api.restaurants.remove, args)
+            },
+        }),
+    )
 }
 
 export const useDeleteImage = () => useConvexMutation(api.restaurants.deleteImage)
