@@ -1,6 +1,7 @@
 import { HouseIcon, PlusIcon, UserCircleIcon, UsersIcon, UsersThreeIcon } from "@phosphor-icons/react"
 import { Link } from "@tanstack/react-router"
 
+import { useOpenAddRestaurant } from "@features/restaurants/add-restaurant-provider"
 import { cx } from "@ui/cva.config"
 
 const destinations = [
@@ -22,7 +23,8 @@ function AppLink({ to, label, Icon }: Readonly<{ to: string; label: string; Icon
     )
 }
 
-export function AppNav({ onAddClick }: Readonly<{ onAddClick: () => void }>) {
+export function AppNav() {
+    const openAdd = useOpenAddRestaurant()
     // Authenticated only: PageLayout renders no nav for signed-out visitors, who navigate
     // through the TopBar sign-in action instead.
     return (
@@ -34,7 +36,7 @@ export function AppNav({ onAddClick }: Readonly<{ onAddClick: () => void }>) {
             <div className="mx-auto grid w-full max-w-350 grid-cols-5 gap-1 px-2 pt-2 pb-[calc(0.5rem+env(safe-area-inset-bottom))] md:flex md:flex-col md:gap-1 md:p-4">
                 <AppLink to={destinations[0].to} label={destinations[0].label} Icon={destinations[0].Icon} />
                 <AppLink to={destinations[1].to} label={destinations[1].label} Icon={destinations[1].Icon} />
-                <button type="button" onClick={onAddClick} className={cx(itemClasses, "cursor-pointer")}>
+                <button type="button" onClick={openAdd} className={cx(itemClasses, "cursor-pointer")}>
                     <PlusIcon className="size-5 shrink-0 md:size-4" />
                     <span>Add</span>
                 </button>

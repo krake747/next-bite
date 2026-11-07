@@ -15,7 +15,7 @@ import {
 import { useFilterState } from "@core/use-filter"
 import { FriendsFilter } from "@features/friends-filter"
 import { FriendsFilterSkeleton } from "@features/friends-filter"
-import { AddRestaurantDialog } from "@features/restaurants/add-restaurant-dialog"
+import { useOpenAddRestaurant } from "@features/restaurants/add-restaurant-provider"
 import { RestaurantCardSkeleton } from "@features/restaurants/restaurant-card-skeleton"
 import { RestaurantList } from "@features/restaurants/restaurant-list"
 import { ActivityPost } from "@features/social/activity-post"
@@ -160,13 +160,11 @@ function HomeDiscover({
     restaurants,
     sortOrder,
     onSortChange,
-    onAddClick,
     actions,
 }: Readonly<{
     restaurants: ReadonlyArray<Restaurant>
     sortOrder: "added" | "name"
     onSortChange: (order: "added" | "name") => void
-    onAddClick: () => void
     actions: SocialActions
 }>) {
     const filterState = useFilterState()
@@ -194,14 +192,13 @@ function HomeDiscover({
                     onSortChange={onSortChange}
                     matchingIds={matchingIds}
                 >
-                    <HomeActions onAddClick={onAddClick} />
+                    <HomeActions />
                 </FriendsFilter>
             </div>
             <RestaurantList
                 restaurants={filtered}
                 hasFilter={filterState.filter !== null && filterState.filter !== ""}
                 hasSearch={filterState.search !== ""}
-                onAddClick={onAddClick}
                 socialFor={actions.socialFor}
                 onToggleWant={(restaurant) => {
                     actions.toggleWantFor(restaurant)()
@@ -212,13 +209,24 @@ function HomeDiscover({
     )
 }
 
-function HomeActions({ onAddClick }: Readonly<{ onAddClick: () => void }>) {
+function HomeHeaderButton() {
+    const openAdd = useOpenAddRestaurant()
+    return (
+        <Button onClick={openAdd}>
+            <PlusIcon className="size-4 transition-transform duration-200 group-hover:rotate-90" />
+            Add Restaurant
+        </Button>
+    )
+}
+
+function HomeActions() {
     const navigate = useNavigate()
     const auth = useAuth()
+    const openAdd = useOpenAddRestaurant()
     return (
         <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row">
             {auth.isAuthenticated ? (
-                <Button tone="secondary" onClick={onAddClick}>
+                <Button tone="secondary" onClick={openAdd}>
                     <PlusIcon className="size-4 transition-transform duration-200 group-hover:rotate-90" />
                     Add Restaurant
                 </Button>
@@ -283,7 +291,6 @@ function Home() {
     const restaurantListState = restaurants ?? []
     const feed = orderFeedByRecency(feedRestaurants ?? [])
     const actions = useSocialActions([...feed, ...restaurantListState])
-    const [showAddDialog, setShowAddDialog] = useState(false)
     const [sortOrder, setSortOrder] = useState<"added" | "name">("added")
 
     if (!actions.auth.isAuthenticated) {
@@ -301,14 +308,7 @@ function Home() {
                         Your crew&apos;s latest saves. Jump back in and pick the next table.
                     </HeaderSubtitle>
                     <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center">
-                        <Button
-                            onClick={() => {
-                                setShowAddDialog(true)
-                            }}
-                        >
-                            <PlusIcon className="size-4 transition-transform duration-200 group-hover:rotate-90" />
-                            Add Restaurant
-                        </Button>
+                        <HomeHeaderButton />
                         <HeaderBadge count={restaurantListState.length} />
                     </div>
                 </Header>
@@ -334,16 +334,10 @@ function Home() {
                                 restaurants={restaurantListState}
                                 sortOrder={sortOrder}
                                 onSortChange={setSortOrder}
-                                onAddClick={() => {
-                                    setShowAddDialog(true)
-                                }}
                                 actions={actions}
                             />
                         </div>
                     </div>
-                )}
-                {actions.auth.isAuthenticated && (
-                    <AddRestaurantDialog show={showAddDialog} onOpenChange={setShowAddDialog} />
                 )}
             </PageContainer>
         </PageLayout>

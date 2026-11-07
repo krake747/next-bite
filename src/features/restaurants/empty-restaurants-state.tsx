@@ -4,6 +4,8 @@ import { useNavigate } from "@tanstack/react-router"
 import { useAuth } from "@core/hooks"
 import { Button } from "@ui/button"
 
+import { useOpenAddRestaurant } from "./add-restaurant-provider"
+
 export function EmptyRestaurantsState({
     hasFilter,
     hasSearch,
@@ -15,6 +17,7 @@ export function EmptyRestaurantsState({
 }>) {
     const navigate = useNavigate()
     const auth = useAuth()
+    const openAdd = useOpenAddRestaurant()
 
     const isSearching = hasFilter === true || hasSearch === true
 
@@ -50,7 +53,7 @@ export function EmptyRestaurantsState({
 
             {!isSearching &&
                 (auth.isAuthenticated ? (
-                    <Button onClick={onAddClick}>
+                    <Button onClick={onAddClick ?? openAdd}>
                         <PlusIcon className="size-4" />
                         Add your first restaurant
                     </Button>
