@@ -1,12 +1,18 @@
 import { createFileRoute, Link } from "@tanstack/react-router"
-import { useState } from "react"
+import { Suspense, useState } from "react"
 
+import { hasCachedSession } from "@api/auth-store"
+import { useSuspenseConvexQuery } from "@api/convex-client"
+import { convexQueryOptions } from "@api/convex-options"
 import { type Doc } from "@api/data-model"
-import { useAuth, useMyProfile, useMyStatuses, useRestaurants, useUpdateProfile, type ImageRecord } from "@core/hooks"
+import { api } from "@api/endpoints"
+import { useAuth, useRestaurants, useUpdateProfile, type ImageRecord } from "@core/hooks"
+import { useSessionStatus } from "@core/hooks"
 import { clearError, errorFrom, type FormError } from "@core/outcome"
 import { orderFeedByRecency } from "@core/social"
 import { ImageUpload } from "@pattern/image-upload"
 import { LazyImage } from "@pattern/lazy-image"
+import { QueryErrorState } from "@pattern/query-error"
 import { SignedOutGate } from "@routes/-components/signed-out-gate"
 import { PageContainer } from "@routes/-layouts/page-container"
 import { PageLayout } from "@routes/-layouts/page-layout"
@@ -19,7 +25,34 @@ import { control, fieldLabel } from "@ui/variants"
 export const Route = createFileRoute("/you")({
     head: () => ({ meta: [{ title: "You - Next Bite" }] }),
     component: YouPage,
+    errorComponent: YouError,
+    loader: ({ context }) => {
+        if (!hasCachedSession()) {
+            return null
+        }
+        // Best-effort warm-up only: the Suspense view below refetches on its own
+        // when this has not landed, so a failed warm-up stays silent by design.
+        // Owner restaurants ride a live collection, not this cache, so only the
+        // profile and status queries warm here.
+        void context.queryClient.query(convexQueryOptions(api.users.getMe)).catch(() => {})
+        void context.queryClient.query(convexQueryOptions(api.social.listMyStatuses)).catch(() => {})
+        return null
+    },
 })
+
+function YouError({ reset }: Readonly<{ reset: () => void }>) {
+    return (
+        <PageLayout>
+            <PageContainer>
+                <Header>
+                    <HeaderTitle>You</HeaderTitle>
+                    <HeaderSubtitle>Your profile, saves, wants, and visits.</HeaderSubtitle>
+                </Header>
+                <QueryErrorState reset={reset} />
+            </PageContainer>
+        </PageLayout>
+    )
+}
 
 type Restaurant = Doc<"restaurants">
 
@@ -90,15 +123,8 @@ function ProfileForm({
 
 function ProfileSection() {
     const auth = useAuth()
-    const profile = useMyProfile()
+    const profile = useSuspenseConvexQuery(api.users.getMe)
 
-    if (profile === undefined) {
-        return (
-            <div className="pt-6">
-                <LoadingPlaceholder />
-            </div>
-        )
-    }
     if (profile.status === "onboarding") {
         return (
             <ProfileForm
@@ -207,9 +233,9 @@ function PlacesSection({
 
 function YouContent() {
     const restaurants = useRestaurants()
-    const statuses = useMyStatuses()
+    const statuses = useSuspenseConvexQuery(api.social.listMyStatuses)
 
-    if (restaurants === undefined || statuses === undefined) {
+    if (restaurants === undefined) {
         return (
             <div className="pt-4">
                 <LoadingPlaceholder />
@@ -244,6 +270,8 @@ function YouContent() {
 }
 
 function YouPage() {
+    const status = useSessionStatus()
+
     return (
         <PageLayout>
             <PageContainer>
@@ -251,9 +279,23 @@ function YouPage() {
                     <HeaderTitle>You</HeaderTitle>
                     <HeaderSubtitle>Your profile, saves, wants, and visits.</HeaderSubtitle>
                 </Header>
-                <SignedOutGate context="your profile">
-                    <YouContent />
-                </SignedOutGate>
+                {status.kind !== "ready" ? (
+                    <SignedOutGate context="your profile">
+                        <div className="pt-6">
+                            <LoadingPlaceholder />
+                        </div>
+                    </SignedOutGate>
+                ) : (
+                    <Suspense
+                        fallback={
+                            <div className="pt-6">
+                                <LoadingPlaceholder />
+                            </div>
+                        }
+                    >
+                        <YouContent />
+                    </Suspense>
+                )}
             </PageContainer>
         </PageLayout>
     )
