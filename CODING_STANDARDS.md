@@ -57,3 +57,18 @@ get added there. A new Convex endpoint gets a method on the module that owns the
 (session, restaurants, social, groups, plans), so endpoint moves stay local to one module instead of
 scattering across call sites. Check in review: a new `useConvexMutation(api.…)` alias in
 `src/core/hooks.ts` without a domain workflow behind it.
+
+## Absent UI state is a status union
+
+Error states use `FormError` (`clear` / `error`) from `@core/outcome`; other absent values use a
+discriminated union (`Viewer`, `InviteLink`) rather than `| null`. `null` stays for React
+render-nothing, refs, DOM interop, and external API shapes. Check in review: a new nullable
+`useState` whose value reaches rendered output without narrowing through a union.
+
+## Fallible steps report booleans, never throw for control flow
+
+A fallible step resolves a boolean and records the error where the UI reads it; callers branch on
+the result instead of catching. A `catch` that maps the error into rendered state (`FormError`,
+`SubmitOutcome`) stays; a `catch` whose body only swallows or returns gets deleted in favor of a
+boolean result. Throwing stays for genuinely exceptional paths such as backend validators. Check in
+review: a new `catch { return }` or `.catch(() => {})` with no state update.

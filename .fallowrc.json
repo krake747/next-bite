@@ -1,6 +1,5 @@
 {
     "$schema": "./node_modules/fallow/schema.json",
-    "entry": ["src/router.{ts,tsx,js,jsx}", "src/server.{ts,tsx,js,jsx}"],
     "workspaces": {
         "patterns": ["."]
     },
@@ -13,7 +12,10 @@
         "unused-file": "warn",
         "boundary-violation": "error"
     },
-    "ignoreDependencies": ["@fontsource-variable/*", "@types/google.maps"],
+    "audit": {
+        "deadCodeBaseline": "fallow/baseline.dead-code.json",
+        "healthBaseline": "fallow/baseline.health.json"
+    },
     "ignoreExports": [{ "file": "src/core/hooks.ts", "exports": ["useAuth"] }],
     "ignoreFindings": ["cloudflare.config.ts", "doctor.config.ts"],
     "boundaries": {
