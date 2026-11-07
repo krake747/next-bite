@@ -17,7 +17,14 @@
                     "disableNestedConfig": false,
                     "fixKind": "safe_fix",
                     "typeAware": true,
-                    "unusedDisableDirectives": "deny"
+                    "unusedDisableDirectives": "deny",
+                    // The gate owns await-thenable per tier in vite.config.ts, which stock
+                    // oxlint cannot read. Vitest browser assertions poll at runtime despite
+                    // sync types, so the rule is noise in the editor; `pnpm lint` still
+                    // enforces it everywhere except *.browser.spec.*.
+                    "rulesCustomization": {
+                        "typescript/await-thenable": { "severity": "off" }
+                    }
                 }
             }
         },
