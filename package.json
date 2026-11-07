@@ -23,7 +23,7 @@
         "preview": "vite preview --port=5173",
         "skills:krake747": "pnx skills add krake747/skills",
         "skills:mattpocock": "pnx skills add mattpocock/skills",
-        "test": "vitest run --project pure && vitest run --project unit && vitest run --project browser && vitest run --project integration",
+        "test": "vitest run",
         "test:browser": "vitest run --project browser",
         "test:e2e": "playwright test",
         "test:integration": "vitest run --project integration",

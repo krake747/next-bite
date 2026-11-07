@@ -503,6 +503,9 @@ export default defineConfig({
                     setupFiles: domSetupFiles,
                     testTimeout: 10000,
                     slowTestThreshold: 9500,
+                    // Chromium contends with the edge-runtime integration workers and trips
+                    // their 3s timeouts, so the browser tier runs after every other tier.
+                    sequence: { groupOrder: 1 },
                     browser: {
                         enabled: true,
                         headless: true,
