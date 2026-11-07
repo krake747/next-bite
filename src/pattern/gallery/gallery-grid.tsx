@@ -15,13 +15,13 @@ export function GalleryGrid({
             <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4">
                 {images.map((imageUrl, index) => (
                     <button
-                        key={imageUrl}
+                        key={`${imageUrl}-${index}`}
                         type="button"
                         onClick={() => {
                             onSelect(index)
                         }}
                         aria-label={`Open image ${index + 1}`}
-                        className="group relative aspect-square overflow-hidden rounded-lg"
+                        className="group relative aspect-square overflow-hidden rounded-lg focus-visible:outline-ring"
                     >
                         <LazyImage
                             src={imageUrl}

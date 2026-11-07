@@ -8,16 +8,17 @@ const iconButton = cva({
     composes: [focusRing],
     variants: {
         tone: {
-            neutral: "bg-surface/90 text-stone-600 shadow-md backdrop-blur-sm hover:bg-surface hover:text-stone-900",
+            neutral:
+                "bg-surface/90 text-muted-foreground shadow-md backdrop-blur-sm hover:bg-surface hover:text-foreground",
             destructive: "bg-surface/90 text-destructive shadow-md backdrop-blur-sm hover:bg-destructive/10",
-            plain: "text-stone-400 hover:bg-stone-100 hover:text-stone-600",
+            plain: "text-muted-foreground hover:bg-surface-muted hover:text-foreground",
             inverse: "bg-surface/20 text-inverse backdrop-blur-sm hover:bg-surface/30",
         },
         size: {
-            xs: "p-2",
-            sm: "size-7",
-            md: "size-8",
-            lg: "p-3",
+            xs: "size-8 p-2",
+            sm: "size-8",
+            md: "size-9",
+            lg: "size-11 p-3",
         },
     },
     defaultVariants: {

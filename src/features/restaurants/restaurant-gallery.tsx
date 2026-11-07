@@ -30,7 +30,7 @@ export function RestaurantGallery({
                 ) : (
                     <div className="absolute inset-0 flex items-center justify-center bg-linear-to-br from-stone-200 to-stone-300">
                         <div className="flex items-center gap-2">
-                            <ForkKnifeIcon className="size-5 text-stone-400" />
+                            <ForkKnifeIcon className="size-5 text-muted-foreground" />
                             <span className="font-sans text-xs tracking-wide text-muted-foreground uppercase">
                                 {cuisine}
                             </span>

@@ -123,7 +123,7 @@ export function FriendsFilterSkeleton() {
                 <div className="flex max-w-md items-center gap-3">
                     <Skeleton className="h-10 w-full max-w-xs rounded-lg" />
                     <div className="flex items-center gap-1.5">
-                        <Skeleton className="h-3.5 w-3.5 rounded-sm bg-stone-300" />
+                        <Skeleton className="h-3.5 w-3.5 rounded-sm bg-surface-muted" />
                         <Skeleton className="h-3 w-20 rounded-sm" />
                     </div>
                 </div>

@@ -56,7 +56,10 @@ export function SearchInput({
             className: cx("relative flex items-center", className),
             children: (
                 <>
-                    <MagnifyingGlassIcon className="pointer-events-none absolute left-0 size-4 text-stone-400" />
+                    <MagnifyingGlassIcon
+                        className="pointer-events-none absolute left-0 size-4 text-muted-foreground"
+                        aria-hidden="true"
+                    />
                     <input
                         ref={ref}
                         id={id ?? fallbackId}
@@ -64,8 +67,9 @@ export function SearchInput({
                         value={current}
                         onChange={handleChange}
                         disabled={disabled}
-                        placeholder={placeholder ?? "MagnifyingGlassIcon…"}
-                        className="w-full border-b border-border bg-transparent py-1.5 pr-10 pl-6 text-base text-stone-900 transition-colors duration-150 placeholder:text-stone-600 hover:border-border-strong focus:border-ring focus:outline-none md:text-sm"
+                        placeholder={placeholder ?? "Search restaurants..."}
+                        aria-label={placeholder ?? "Search restaurants"}
+                        className="w-full border-b border-border bg-transparent py-1.5 pr-10 pl-6 text-base text-foreground transition-colors duration-150 placeholder:text-muted-foreground hover:border-border-strong focus:border-ring focus:outline-none md:text-sm"
                         {...props}
                     />
                     {current !== "" && (
@@ -76,7 +80,7 @@ export function SearchInput({
                             disabled={disabled}
                             className="hit-area-2 absolute right-0"
                         >
-                            <XIcon className="size-3.5" />
+                            <XIcon className="size-3.5" aria-hidden="true" />
                         </IconButton>
                     )}
                 </>

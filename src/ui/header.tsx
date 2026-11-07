@@ -43,7 +43,7 @@ export function HeaderTitle({ children, className, ...props }: Readonly<React.Co
         <h1
             data-slot="header-title"
             className={cx(
-                "relative font-display text-5xl leading-tight font-semibold tracking-tight text-balance text-stone-900 sm:text-6xl lg:text-7xl",
+                "relative font-display text-5xl leading-tight font-semibold tracking-tight text-balance text-foreground sm:text-6xl lg:text-7xl",
                 className,
             )}
             {...props}
@@ -75,7 +75,7 @@ export function HeaderSubtitle({ children, className, ...props }: Readonly<React
     return (
         <p
             data-slot="header-subtitle"
-            className={cx("mt-6 max-w-xl text-xl leading-relaxed text-pretty text-stone-600", className)}
+            className={cx("mt-6 max-w-xl text-xl leading-relaxed text-pretty text-muted-foreground", className)}
             {...props}
         >
             {children}
@@ -87,9 +87,9 @@ export function HeaderBadge({ count }: Readonly<{ count: number }>) {
     return (
         <p
             data-slot="header-badge"
-            className="mt-8 inline-flex items-center gap-2 rounded-full border border-border bg-surface px-4 py-1.5 text-sm text-stone-700"
+            className="mt-8 inline-flex items-center gap-2 rounded-full border border-border bg-surface px-4 py-1.5 text-sm text-foreground"
         >
-            <span className="font-semibold text-stone-900 tabular-nums">{count}</span>
+            <span className="font-semibold text-foreground tabular-nums">{count}</span>
             places to try
         </p>
     )

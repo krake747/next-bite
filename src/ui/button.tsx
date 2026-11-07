@@ -10,9 +10,10 @@ export const button = cva({
         tone: {
             primary: "bg-primary text-inverse shadow-xs hover:bg-primary-hover",
             secondary:
-                "bg-surface-muted text-stone-900 shadow-xs inset-ring inset-ring-border-strong hover:bg-stone-200",
-            outline: "border border-border bg-transparent text-stone-600 hover:bg-stone-100 hover:text-stone-900",
-            ghost: "text-stone-600 hover:bg-stone-100 hover:text-stone-900",
+                "bg-surface-muted text-foreground shadow-xs inset-ring inset-ring-border-strong hover:bg-surface-muted",
+            outline:
+                "border border-border bg-transparent text-muted-foreground hover:bg-surface-muted hover:text-foreground",
+            ghost: "text-muted-foreground hover:bg-surface-muted hover:text-foreground",
             destructive: "bg-destructive text-inverse shadow-xs hover:bg-destructive/90",
         },
         size: {

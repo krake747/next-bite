@@ -20,17 +20,17 @@ export function ZoomControls({ zoomPan }: Readonly<{ zoomPan: ZoomHandle }>) {
         <div className="flex flex-wrap items-center justify-center gap-2 p-4">
             <div className="flex items-center gap-1">
                 <IconButton label="Zoom out" tone="inverse" size="xs" onClick={zoomPan.zoomOut}>
-                    <MagnifyingGlassMinusIcon className="size-5" />
+                    <MagnifyingGlassMinusIcon className="size-4" aria-hidden="true" />
                 </IconButton>
                 <span className="min-w-12 text-center text-sm text-inverse">{Math.round(zoomPan.zoom * 100)}%</span>
                 <IconButton label="Zoom in" tone="inverse" size="xs" onClick={zoomPan.zoomIn}>
-                    <MagnifyingGlassPlusIcon className="size-5" />
+                    <MagnifyingGlassPlusIcon className="size-4" aria-hidden="true" />
                 </IconButton>
             </div>
 
             <div className="flex items-center gap-1">
                 <IconButton label="Rotate" tone="inverse" size="xs" onClick={zoomPan.rotate}>
-                    <ArrowCounterClockwiseIcon className="size-5" />
+                    <ArrowCounterClockwiseIcon className="size-4" aria-hidden="true" />
                 </IconButton>
                 <IconButton
                     label={viewer.isFullscreen ? "Exit fullscreen" : "Fullscreen"}
@@ -38,16 +38,15 @@ export function ZoomControls({ zoomPan }: Readonly<{ zoomPan: ZoomHandle }>) {
                     size="xs"
                     onClick={viewer.toggleFullscreen}
                 >
-                    {viewer.isFullscreen ? <CornersInIcon className="size-5" /> : <CornersOutIcon className="size-5" />}
+                    {viewer.isFullscreen ? (
+                        <CornersInIcon className="size-4" aria-hidden="true" />
+                    ) : (
+                        <CornersOutIcon className="size-4" aria-hidden="true" />
+                    )}
                 </IconButton>
-                <button
-                    type="button"
-                    onClick={zoomPan.resetZoom}
-                    className="rounded-full bg-surface/20 px-3 py-2 text-sm text-inverse backdrop-blur-sm transition-colors hover:bg-surface/30"
-                    aria-label="Reset zoom"
-                >
+                <Button tone="secondary" size="sm" onClick={zoomPan.resetZoom} aria-label="Reset zoom">
                     Reset
-                </button>
+                </Button>
             </div>
 
             <Button tone="secondary" size="md" onClick={viewer.backToGrid}>

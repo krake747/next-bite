@@ -182,13 +182,13 @@ export function Select(props: Readonly<SelectProps>) {
                     className={cx(
                         control(),
                         "flex items-center justify-between gap-2 text-left",
-                        value === "" && "text-stone-600",
+                        value === "" && "text-muted-foreground",
                         invalid && "border-destructive focus:border-destructive focus:ring-destructive",
                     )}
                 >
                     <BaseSelect.Value>{() => selectedLabel}</BaseSelect.Value>
                     <BaseSelect.Icon>
-                        <CaretDownIcon className="size-4 shrink-0 text-stone-400" />
+                        <CaretDownIcon className="size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
                     </BaseSelect.Icon>
                 </BaseSelect.Trigger>
                 <BaseSelect.Portal>
@@ -199,11 +199,11 @@ export function Select(props: Readonly<SelectProps>) {
                                     <BaseSelect.Item
                                         key={item.value === "" ? "__empty" : item.value}
                                         value={item.value}
-                                        className="flex cursor-pointer items-center justify-between gap-2 px-3 py-2 text-sm text-stone-900 outline-none data-highlighted:bg-stone-100"
+                                        className="flex cursor-pointer items-center justify-between gap-2 px-3 py-2 text-sm text-foreground outline-none data-highlighted:bg-surface-muted"
                                     >
                                         <BaseSelect.ItemText>{item.label}</BaseSelect.ItemText>
                                         <BaseSelect.ItemIndicator>
-                                            <CheckIcon className="size-4 text-tomato-600" />
+                                            <CheckIcon className="size-4 text-tomato-600" aria-hidden="true" />
                                         </BaseSelect.ItemIndicator>
                                     </BaseSelect.Item>
                                 ))}
@@ -239,7 +239,7 @@ function FieldErrors({ errors, id }: Readonly<{ errors: unknown; id?: string | u
     const message = Array.isArray(errors) && typeof errors[0] === "string" ? errors[0] : null
     return message !== null && message !== "" ? (
         <div id={id} role="alert" className="flex items-center gap-1.5 text-sm text-destructive">
-            <WarningCircleIcon className="size-4 shrink-0" />
+            <WarningCircleIcon className="size-4 shrink-0" aria-hidden="true" />
             <span>{message}</span>
         </div>
     ) : null

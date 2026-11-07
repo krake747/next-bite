@@ -28,9 +28,9 @@ const backdrop = cva({
             fullscreen: "",
         },
         tone: {
-            dim: "bg-stone-900/50 backdrop-blur-sm transition-opacity duration-150",
-            deep: "bg-stone-900/80 backdrop-blur-sm transition-opacity duration-150",
-            darkest: "bg-stone-900/90 transition-opacity duration-150",
+            dim: "bg-scrim/50 backdrop-blur-sm transition-opacity duration-150",
+            deep: "bg-scrim/80 backdrop-blur-sm transition-opacity duration-150",
+            darkest: "bg-scrim transition-opacity duration-150",
         },
     },
     defaultVariants: {
@@ -66,29 +66,25 @@ const panel = cva({
             sm: "p-5",
             md: "p-6",
         },
-        tone: {
-            default: "",
-        },
     },
     defaultVariants: {
         size: "md",
         padding: "md",
-        tone: "default",
     },
 })
 
 type DialogPanelProps = VariantProps<typeof panel> & React.ComponentProps<typeof BaseDialog.Popup>
 
-export function DialogPanel({ size, padding, tone, className, children, ...props }: Readonly<DialogPanelProps>) {
+export function DialogPanel({ size, padding, className, children, ...props }: Readonly<DialogPanelProps>) {
     return (
-        <BaseDialog.Popup data-slot="dialog-panel" className={cx(panel({ size, padding, tone }), className)} {...props}>
+        <BaseDialog.Popup data-slot="dialog-panel" className={cx(panel({ size, padding }), className)} {...props}>
             {children}
         </BaseDialog.Popup>
     )
 }
 
 const title = cva({
-    base: "font-display font-semibold text-balance text-stone-900",
+    base: "font-display font-semibold text-balance text-foreground",
     variants: {
         size: {
             md: "text-lg",
@@ -123,7 +119,7 @@ export function DialogDescription({
     return (
         <BaseDialog.Description
             data-slot="dialog-description"
-            className={cx("mt-2 text-sm text-stone-600", className)}
+            className={cx("mt-2 text-sm text-muted-foreground", className)}
             {...props}
         >
             {children}
@@ -145,7 +141,7 @@ export function DialogCloseButton({
             onClick={onClick}
             className={cx("hit-area-2 absolute top-4 right-4", className)}
         >
-            <XIcon className="size-4" />
+            <XIcon className="size-4" aria-hidden="true" />
         </IconButton>
     )
 }

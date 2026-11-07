@@ -39,7 +39,7 @@ export function AuthLayout({
                         </div>
                     </div>
                     {title}
-                    <p className="mt-4 text-lg text-stone-600">{subtitle}</p>
+                    <p className="mt-4 text-lg text-muted-foreground">{subtitle}</p>
                 </div>
 
                 <div className="relative mt-8 w-full max-w-md rounded-card border border-border bg-surface/80 p-6 shadow-card backdrop-blur-sm">
@@ -52,7 +52,7 @@ export function AuthLayout({
                     <Link
                         to="/"
                         viewTransition
-                        className="group inline-flex items-center gap-2 text-sm text-stone-600 transition-colors hover:text-stone-900"
+                        className="group inline-flex items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-foreground"
                     >
                         <ForkKnifeIcon className="size-4 transition-transform group-hover:-rotate-12" />
                         Back to home

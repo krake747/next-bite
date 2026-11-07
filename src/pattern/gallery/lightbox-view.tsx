@@ -26,6 +26,9 @@ export function LightboxView() {
 
                 <div
                     ref={zoomPan.containerRef}
+                    role="region"
+                    aria-label={`Image ${viewer.currentIndex + 1} of ${viewer.images.length}. Use plus and minus to zoom, zero to reset.`}
+                    tabIndex={0}
                     className={cx(
                         "relative flex max-h-full max-w-full cursor-grab items-center justify-center overflow-hidden",
                         zoomPan.isPanning && zoomPan.zoom > DEFAULT_ZOOM && "cursor-grabbing",
@@ -35,6 +38,24 @@ export function LightboxView() {
                     onTouchStart={zoomPan.touchStart}
                     onTouchMove={zoomPan.touchMove}
                     onTouchEnd={zoomPan.touchEnd}
+                    onKeyDown={(event) => {
+                        if (event.key === "+" || event.key === "=") {
+                            event.preventDefault()
+                            zoomPan.zoomIn()
+                        } else if (event.key === "-") {
+                            event.preventDefault()
+                            zoomPan.zoomOut()
+                        } else if (event.key === "0") {
+                            event.preventDefault()
+                            zoomPan.resetZoom()
+                        } else if (event.key === "ArrowRight") {
+                            event.preventDefault()
+                            viewer.showNext()
+                        } else if (event.key === "ArrowLeft") {
+                            event.preventDefault()
+                            viewer.showPrevious()
+                        }
+                    }}
                 >
                     <LazyImage
                         src={currentImage}

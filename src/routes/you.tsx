@@ -5,6 +5,7 @@ import { type Doc } from "@convex/_generated/dataModel"
 import { useAuth, useMyProfile, useMyStatuses, useRestaurants, useUpdateProfile, type ImageRecord } from "@core/hooks"
 import { orderFeedByRecency } from "@core/social"
 import { ImageUpload } from "@pattern/image-upload"
+import { LazyImage } from "@pattern/lazy-image"
 import { SignedOutGate } from "@routes/-components/signed-out-gate"
 import { PageContainer } from "@routes/-layouts/page-container"
 import { PageLayout } from "@routes/-layouts/page-layout"
@@ -67,10 +68,11 @@ function ProfileForm({
                             }}
                             maxLength={80}
                             aria-invalid={error !== null}
+                            aria-describedby={error !== null ? "profile-name-error" : undefined}
                             className={cx(control(), error !== null && "border-destructive")}
                         />
                         {error !== null && (
-                            <p role="alert" className="text-sm text-destructive">
+                            <p id="profile-name-error" role="alert" className="text-sm text-destructive">
                                 {error}
                             </p>
                         )}
@@ -140,12 +142,7 @@ export function AvatarSection({ avatarUrl }: Readonly<{ avatarUrl: string | null
         <section aria-label="Profile photo" className="pt-6">
             <div className="mt-3 flex items-center gap-4 rounded-card border border-border bg-surface p-5 shadow-card">
                 {avatarUrl !== null ? (
-                    <img
-                        src={avatarUrl}
-                        alt="Your profile photo"
-                        className="size-16 rounded-full object-cover"
-                        loading="lazy"
-                    />
+                    <LazyImage src={avatarUrl} alt="Your profile photo" className="size-16 rounded-full object-cover" />
                 ) : (
                     <div aria-hidden="true" className="size-16 rounded-full bg-surface-muted" />
                 )}

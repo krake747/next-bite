@@ -2,7 +2,8 @@ import { HouseIcon, PlusIcon, UserCircleIcon, UsersIcon, UsersThreeIcon } from "
 import { Link } from "@tanstack/react-router"
 
 import { useOpenAddRestaurant } from "@features/restaurants/add-restaurant-provider"
-import { cx } from "@ui/cva.config"
+import { cva, cx } from "@ui/cva.config"
+import { focusRing } from "@ui/variants"
 
 const destinations = [
     { label: "Home", to: "/", Icon: HouseIcon },
@@ -11,13 +12,15 @@ const destinations = [
     { label: "You", to: "/you", Icon: UserCircleIcon },
 ] as const
 
-const itemClasses =
-    "flex flex-col items-center gap-1 rounded-xl px-2 py-1.5 text-[11px] font-medium text-stone-600 transition-colors duration-150 ease hover:bg-stone-100 hover:text-stone-900 data-[status=active]:bg-tomato-100 data-[status=active]:text-tomato-700 md:w-full md:flex-row md:gap-3 md:px-3 md:py-2 md:text-sm"
+const item = cva({
+    base: "flex flex-col items-center gap-1 rounded-xl px-2 py-1.5 text-[11px] font-medium text-muted-foreground transition-colors duration-150 ease hover:bg-surface-muted hover:text-foreground data-[status=active]:bg-tomato-100 data-[status=active]:text-tomato-700 md:w-full md:flex-row md:gap-3 md:px-3 md:py-2 md:text-sm",
+    composes: [focusRing],
+})
 
 function AppLink({ to, label, Icon }: Readonly<{ to: string; label: string; Icon: typeof HouseIcon }>) {
     return (
-        <Link to={to} viewTransition className={cx(itemClasses)}>
-            <Icon className="size-5 shrink-0 md:size-4" />
+        <Link to={to} viewTransition className={cx(item())}>
+            <Icon className="size-5 shrink-0 md:size-4" aria-hidden="true" />
             <span>{label}</span>
         </Link>
     )
@@ -36,8 +39,8 @@ export function AppNav() {
             <div className="mx-auto grid w-full max-w-350 grid-cols-5 gap-1 px-2 pt-2 pb-[calc(0.5rem+env(safe-area-inset-bottom))] md:flex md:flex-col md:gap-1 md:p-4">
                 <AppLink to={destinations[0].to} label={destinations[0].label} Icon={destinations[0].Icon} />
                 <AppLink to={destinations[1].to} label={destinations[1].label} Icon={destinations[1].Icon} />
-                <button type="button" onClick={openAdd} className={cx(itemClasses, "cursor-pointer")}>
-                    <PlusIcon className="size-5 shrink-0 md:size-4" />
+                <button type="button" onClick={openAdd} className={cx(item(), "cursor-pointer")}>
+                    <PlusIcon className="size-5 shrink-0 md:size-4" aria-hidden="true" />
                     <span>Add</span>
                 </button>
                 <AppLink to={destinations[2].to} label={destinations[2].label} Icon={destinations[2].Icon} />

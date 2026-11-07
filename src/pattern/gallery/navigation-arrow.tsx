@@ -30,7 +30,7 @@ export function NavigationArrow({
             className={cx("absolute z-10", isPrev ? "left-4" : "right-4", hidden === true && "hidden", className)}
             {...props}
         >
-            <Icon className="size-6" />
+            <Icon className="size-5" aria-hidden="true" />
         </IconButton>
     )
 }

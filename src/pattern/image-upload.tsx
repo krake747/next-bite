@@ -355,16 +355,22 @@ function ImagePreview({
 }>) {
     return (
         <div className="group relative aspect-square overflow-hidden rounded-lg bg-surface-muted">
-            <img src={imageUrl} alt="" className="size-full object-cover" loading="lazy" />
+            <img
+                src={imageUrl}
+                alt={`Uploaded image preview`}
+                className="size-full object-cover"
+                loading="lazy"
+                decoding="async"
+            />
 
             {!disabled && (
                 <button
                     type="button"
                     onClick={onRemove}
-                    className="absolute top-1 right-1 rounded-full bg-destructive p-1 text-inverse opacity-0 shadow-md transition-opacity duration-150 ease group-hover:opacity-100 hover:bg-destructive/90 focus:opacity-100 focus-visible:opacity-100 active:opacity-100 pointer-coarse:opacity-100"
+                    className="hit-area-2 absolute top-1 right-1 rounded-full bg-destructive p-2 text-inverse opacity-0 shadow-md transition-opacity duration-150 ease group-hover:opacity-100 hover:bg-destructive/90 focus:opacity-100 focus-visible:opacity-100 active:opacity-100 pointer-coarse:opacity-100"
                     aria-label="Remove image"
                 >
-                    <XIcon className="size-3" />
+                    <XIcon className="size-3" aria-hidden="true" />
                 </button>
             )}
         </div>

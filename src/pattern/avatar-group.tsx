@@ -36,7 +36,7 @@ export function AvatarGroup({
             {overflow > 0 && (
                 <span
                     aria-hidden="true"
-                    className="-ml-2 flex size-8 items-center justify-center rounded-full bg-stone-200 text-xs font-semibold text-stone-700 ring-2 ring-surface"
+                    className="-ml-2 flex size-8 items-center justify-center rounded-full bg-surface-muted text-xs font-semibold text-foreground ring-2 ring-surface"
                 >
                     +{overflow}
                 </span>
