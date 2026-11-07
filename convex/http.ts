@@ -20,6 +20,31 @@ const ALLOWED_CONTENT_TYPES = ["image/jpeg", "image/png", "image/webp", "image/g
 
 authComponent.registerRoutes(http, createAuth, { cors: true })
 
+function jsonResponse(request: Request, status: number, payload: unknown): Response {
+    return new Response(JSON.stringify(payload), {
+        status,
+        headers: {
+            "Content-Type": "application/json",
+            ...corsHeadersFor(request),
+        },
+    })
+}
+
+type UploadRejection = { status: number; message: string }
+
+function validateUploadBlob(blob: Blob): UploadRejection | null {
+    if (blob.type === "" || !ALLOWED_CONTENT_TYPES.includes(blob.type)) {
+        return {
+            status: 400,
+            message: `Invalid content type. Must be one of: ${ALLOWED_CONTENT_TYPES.join(", ")}`,
+        }
+    }
+    if (blob.size > MAX_UPLOAD_BYTES) {
+        return { status: 413, message: `File too large. Maximum size is ${MAX_UPLOAD_BYTES / 1024 / 1024}MB` }
+    }
+    return null
+}
+
 http.route({
     path: "/upload",
     method: "POST",
@@ -28,46 +53,16 @@ http.route({
         try {
             const identity = await ctx.auth.getUserIdentity()
             if (!identity) {
-                return new Response(JSON.stringify({ error: "Sign in to upload photos" }), {
-                    status: 401,
-                    headers: {
-                        "Content-Type": "application/json",
-                        ...corsHeadersFor(request),
-                    },
-                })
+                return jsonResponse(request, 401, { error: "Sign in to upload photos" })
             }
 
             const blob = await request.blob()
             console.log("Blob received, size:", blob.size, "type:", blob.type)
 
-            if (!blob.type || !ALLOWED_CONTENT_TYPES.includes(blob.type)) {
-                console.log("Validation failed: invalid content type", blob.type)
-                return new Response(
-                    JSON.stringify({
-                        error: `Invalid content type. Must be one of: ${ALLOWED_CONTENT_TYPES.join(", ")}`,
-                    }),
-                    {
-                        status: 400,
-                        headers: {
-                            "Content-Type": "application/json",
-                            ...corsHeadersFor(request),
-                        },
-                    },
-                )
-            }
-
-            if (blob.size > MAX_UPLOAD_BYTES) {
-                console.log("Validation failed: file too large", blob.size)
-                return new Response(
-                    JSON.stringify({ error: `File too large. Maximum size is ${MAX_UPLOAD_BYTES / 1024 / 1024}MB` }),
-                    {
-                        status: 413,
-                        headers: {
-                            "Content-Type": "application/json",
-                            ...corsHeadersFor(request),
-                        },
-                    },
-                )
+            const rejected = validateUploadBlob(blob)
+            if (rejected !== null) {
+                console.log("Validation failed:", rejected.message)
+                return jsonResponse(request, rejected.status, { error: rejected.message })
             }
 
             const storageId = await ctx.storage.store(blob)
@@ -75,29 +70,16 @@ http.route({
             await ctx.runMutation(internal.uploads.record, { storageId, ownerId: identity.subject })
             const stored = await ctx.runQuery(internal.uploads.lookupByStorage, { storageId })
 
-            return new Response(
-                JSON.stringify({
-                    storageId,
-                    url,
-                    ...(typeof stored?.mimeType === "string" ? { mimeType: stored.mimeType } : {}),
-                    ...(typeof stored?.byteSize === "number" ? { byteSize: stored.byteSize } : {}),
-                }),
-                {
-                    status: 200,
-                    headers: {
-                        "Content-Type": "application/json",
-                        ...corsHeadersFor(request),
-                    },
-                },
-            )
+            return jsonResponse(request, 200, {
+                storageId,
+                url,
+                ...(typeof stored?.mimeType === "string" ? { mimeType: stored.mimeType } : {}),
+                ...(typeof stored?.byteSize === "number" ? { byteSize: stored.byteSize } : {}),
+            })
         } catch (error) {
             console.error("Upload error:", error)
-            return new Response(JSON.stringify({ error: error instanceof Error ? error.message : "Upload failed" }), {
-                status: 500,
-                headers: {
-                    "Content-Type": "application/json",
-                    ...corsHeadersFor(request),
-                },
+            return jsonResponse(request, 500, {
+                error: error instanceof Error ? error.message : "Upload failed",
             })
         }
     }),

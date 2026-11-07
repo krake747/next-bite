@@ -213,11 +213,15 @@ export type SyncedRows = {
 // to offer checking and retry on the same mutation key instead of minting a
 // new identity that could duplicate the row.
 export class SyncTimeoutError extends Error {
-    readonly code = "SYNC_TIMEOUT"
+    readonly code = "SYNC_TIMEOUT" as const
 
     constructor(message = "Timed out waiting for the synced restaurant") {
         super(message)
         this.name = "SyncTimeoutError"
+    }
+
+    static is(error: unknown): error is SyncTimeoutError {
+        return error instanceof SyncTimeoutError && error.code === "SYNC_TIMEOUT"
     }
 }
 

@@ -288,8 +288,7 @@ describe("restaurant collections", () => {
             () => null,
             (failure: unknown) => failure,
         )
-        expect(error).toBeInstanceOf(SyncTimeoutError)
-        expect(error).toMatchObject({ code: "SYNC_TIMEOUT" })
+        expect(SyncTimeoutError.is(error)).toBe(true)
     })
 
     test("persists rapid consecutive inserts under distinct keys", async () => {

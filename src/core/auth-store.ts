@@ -103,6 +103,42 @@ function authReducer(state: Readonly<AuthState>, action: Readonly<AuthAction>): 
     }
 }
 
+type BootstrapOutcome =
+    | { kind: "verified"; user: User }
+    | { kind: "degraded"; user: User; message: string }
+    | { kind: "clear" }
+
+function lookupFailureMessage(error: unknown): string {
+    if (error instanceof Error && error.message !== "") {
+        return error.message
+    }
+    return "Session lookup failed"
+}
+
+async function lookupSession(cachedUser: User | null): Promise<BootstrapOutcome> {
+    const settled = await authClient.getSession().then(
+        (result) => ({ ok: true as const, result }),
+        (error: unknown) => ({ ok: false as const, error }),
+    )
+    if (!settled.ok) {
+        if (cachedUser === null) {
+            return { kind: "clear" }
+        }
+        return { kind: "degraded", user: cachedUser, message: lookupFailureMessage(settled.error) }
+    }
+    if (settled.result.error) {
+        if (cachedUser === null) {
+            return { kind: "clear" }
+        }
+        return { kind: "degraded", user: cachedUser, message: lookupFailureMessage(settled.result.error) }
+    }
+    const user = settled.result.data?.user
+    if (user === undefined || user === null) {
+        return { kind: "clear" }
+    }
+    return { kind: "verified", user: mapSessionUserToUserPayload(user) }
+}
+
 export function useAuthStore() {
     const [state, dispatch] = useReducer(authReducer, {
         isAuthenticated: false,
@@ -167,46 +203,20 @@ export function useAuthStore() {
         dispatch({ type: "SET_LOADING", isLoading: true })
         dispatch({ type: "SET_ERROR", error: null })
 
-        const cachedUser = getSessionFromStorage()
-
-        try {
-            const result = await authClient.getSession()
-
-            if (generation !== currentGeneration()) {
-                return
-            }
-
-            if (result.error) {
-                if (cachedUser) {
-                    dispatch({ type: "SET_CACHED_USER", user: cachedUser })
-                    dispatch({ type: "SET_ERROR", error: result.error.message ?? "Session lookup failed" })
-                    return
-                }
-                throw new Error(result.error.message)
-            }
-
-            if (result.data?.user !== undefined && result.data?.user !== null) {
-                saveUser(mapSessionUserToUserPayload(result.data.user))
-            } else {
-                clearUser()
-            }
-        } catch (err) {
-            if (generation !== currentGeneration()) {
-                return
-            }
-            if (cachedUser) {
-                dispatch({ type: "SET_CACHED_USER", user: cachedUser })
-                dispatch({
-                    type: "SET_ERROR",
-                    error: err instanceof Error ? err.message : "Session lookup failed",
-                })
-            } else {
-                clearUser()
-            }
-        } finally {
-            if (generation === currentGeneration()) {
-                dispatch({ type: "SET_LOADING", isLoading: false })
-            }
+        const outcome = await lookupSession(getSessionFromStorage())
+        if (generation !== currentGeneration()) {
+            return
+        }
+        if (outcome.kind === "verified") {
+            saveUser(outcome.user)
+        } else if (outcome.kind === "degraded") {
+            dispatch({ type: "SET_CACHED_USER", user: outcome.user })
+            dispatch({ type: "SET_ERROR", error: outcome.message })
+        } else {
+            clearUser()
+        }
+        if (generation === currentGeneration()) {
+            dispatch({ type: "SET_LOADING", isLoading: false })
         }
     }
 

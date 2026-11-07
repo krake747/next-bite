@@ -599,14 +599,19 @@ export const addWithOpeningHours = action({
 // already-attached entries untouched (with their stored metadata), enriches
 // genuinely new uploads with server-derived identity, attaches them, and
 // detaches removed ones. Returns the merged list to persist.
-async function syncRestaurantImages(
+type FreshUpload = {
+    image: ImageInput
+    record: NonNullable<UploadRecord>
+    url: string
+}
+
+async function collectFreshUploads(
     ctx: MutationCtx,
     restaurant: Doc<"restaurants">,
     inputs: ReadonlyArray<ImageInput & { url: string }>,
-): Promise<Doc<"restaurants">["images"]> {
+): Promise<FreshUpload[]> {
     const previousIds = new Set(restaurant.images.map((img) => img.storageId))
-    const nextIds = new Set(inputs.map((img) => img.storageId))
-    const fresh: { image: ImageInput; record: NonNullable<UploadRecord>; url: string }[] = []
+    const fresh: FreshUpload[] = []
     for (const img of inputs) {
         if (previousIds.has(img.storageId)) {
             continue
@@ -616,26 +621,54 @@ async function syncRestaurantImages(
         const url = (await ctx.storage.getUrl(img.storageId)) ?? img.url
         fresh.push({ image: img, record, url })
     }
-    const storedById = new Map(restaurant.images.map((img) => [img.storageId, img]))
-    if (fresh.length > 0) {
-        const ownerName = await ctx.runQuery(internal.restaurants._profileNameByAuthUser, {
-            authUserId: restaurant.ownerId,
+    return fresh
+}
+
+async function attachFreshUploads(
+    ctx: MutationCtx,
+    restaurant: Doc<"restaurants">,
+    fresh: ReadonlyArray<FreshUpload>,
+    storedById: Map<Id<"_storage">, Doc<"restaurants">["images"][number]>,
+): Promise<void> {
+    if (fresh.length === 0) {
+        return
+    }
+    const ownerName = await ctx.runQuery(internal.restaurants._profileNameByAuthUser, {
+        authUserId: restaurant.ownerId,
+    })
+    for (const { image, record, url } of fresh) {
+        const enriched = withServerMetadata(image, { ownerId: restaurant.ownerId, displayName: ownerName }, record, url)
+        storedById.set(image.storageId, enriched)
+        await ctx.runMutation(internal.uploads.attach, {
+            storageId: image.storageId,
+            ownerId: restaurant.ownerId,
+            restaurantId: restaurant._id,
         })
-        for (const { image, record, url } of fresh) {
-            const enriched = withServerMetadata(
-                image,
-                { ownerId: restaurant.ownerId, displayName: ownerName },
-                record,
-                url,
-            )
-            storedById.set(image.storageId, enriched)
-            await ctx.runMutation(internal.uploads.attach, {
-                storageId: image.storageId,
-                ownerId: restaurant.ownerId,
-                restaurantId: restaurant._id,
-            })
+    }
+}
+
+async function detachRemovedUploads(
+    ctx: MutationCtx,
+    restaurant: Doc<"restaurants">,
+    previousIds: ReadonlySet<Id<"_storage">>,
+    nextIds: ReadonlySet<Id<"_storage">>,
+): Promise<void> {
+    for (const storageId of previousIds) {
+        if (!nextIds.has(storageId)) {
+            await ctx.runMutation(internal.uploads.detach, { storageId, ownerId: restaurant.ownerId })
         }
     }
+}
+
+async function syncRestaurantImages(
+    ctx: MutationCtx,
+    restaurant: Doc<"restaurants">,
+    inputs: ReadonlyArray<ImageInput & { url: string }>,
+): Promise<Doc<"restaurants">["images"]> {
+    const previousIds = new Set(restaurant.images.map((img) => img.storageId))
+    const nextIds = new Set(inputs.map((img) => img.storageId))
+    const storedById = new Map(restaurant.images.map((img) => [img.storageId, img]))
+    await attachFreshUploads(ctx, restaurant, await collectFreshUploads(ctx, restaurant, inputs), storedById)
     const merged: Doc<"restaurants">["images"] = []
     for (const img of inputs) {
         const kept = storedById.get(img.storageId)
@@ -643,11 +676,7 @@ async function syncRestaurantImages(
             merged.push(kept)
         }
     }
-    for (const storageId of previousIds) {
-        if (!nextIds.has(storageId)) {
-            await ctx.runMutation(internal.uploads.detach, { storageId, ownerId: restaurant.ownerId })
-        }
-    }
+    await detachRemovedUploads(ctx, restaurant, previousIds, nextIds)
     return merged
 }
 
