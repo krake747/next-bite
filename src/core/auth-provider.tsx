@@ -49,6 +49,7 @@ type ConvexPair = {
 }
 
 const connectedQueryClients = new WeakMap<QueryClient, ConvexPair>()
+const liveQueryClients = new WeakSet<QueryClient>()
 
 export function AuthProvider({ children }: Readonly<{ children: React.ReactNode }>) {
     const queryClient = useQueryClient()
@@ -62,13 +63,6 @@ export function AuthProvider({ children }: Readonly<{ children: React.ReactNode 
         }
         const client = new ConvexReactClient(env.VITE_CONVEX_URL)
         const convexQueryClient = new ConvexQueryClient(client)
-        queryClient.setDefaultOptions({
-            queries: {
-                queryKeyHashFn: convexQueryClient.hashFn(),
-                queryFn: convexQueryClient.queryFn(),
-            },
-        })
-        convexQueryClient.connect(queryClient)
         const created = { client, convexQueryClient }
         connectedQueryClients.set(queryClient, created)
         return created
@@ -76,8 +70,18 @@ export function AuthProvider({ children }: Readonly<{ children: React.ReactNode 
     const store = useAuthStore()
 
     useEffect(() => {
+        if (pair !== null && !liveQueryClients.has(queryClient)) {
+            queryClient.setDefaultOptions({
+                queries: {
+                    queryKeyHashFn: pair.convexQueryClient.hashFn(),
+                    queryFn: pair.convexQueryClient.queryFn(),
+                },
+            })
+            pair.convexQueryClient.connect(queryClient)
+            liveQueryClients.add(queryClient)
+        }
         void store.initializeAuth()
-    }, [])
+    }, [pair, queryClient])
 
     if (pair === null) {
         return <AuthContext.Provider value={serverAuthStore}>{children}</AuthContext.Provider>

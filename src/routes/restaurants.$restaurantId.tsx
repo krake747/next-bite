@@ -260,18 +260,19 @@ function RestaurantDetail() {
     const auth = useAuth()
     // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- single documented boundary conversion from router param
     const restaurantConvexId = restaurantId as unknown as Id<"restaurants">
-    const restaurant = useVisibleRestaurant(restaurantConvexId)
+    const restaurantQuery = useVisibleRestaurant(restaurantConvexId)
     const userId = auth.user?.id ?? null
     const restaurantSocial = useSocialForRestaurant(restaurantConvexId, userId)
 
-    if (restaurant === undefined || auth.isLoading) {
+    if (restaurantQuery.isPending || auth.isLoading) {
         return <DetailLoading />
     }
 
-    if (restaurant === null) {
+    if (restaurantQuery.isError || restaurantQuery.data === null || restaurantQuery.data === undefined) {
         return <DetailNotFound />
     }
 
+    const restaurant = restaurantQuery.data
     const social = restaurantSocial ?? emptySocial
     const photos = restaurant.images.map((img) => ({ url: img.url, author: img.displayName ?? restaurant.ownerName }))
 

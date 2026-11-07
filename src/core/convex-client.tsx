@@ -24,6 +24,14 @@ export function useConvexQuery<Query extends FunctionReference<"query">>(
     args?: FunctionArgs<Query>,
     options?: Readonly<{ skip?: boolean | undefined }>,
 ): FunctionReturnType<Query> | undefined {
+    return useConvexQueryResult(query, args, options).data
+}
+
+export function useConvexQueryResult<Query extends FunctionReference<"query">>(
+    query: Query,
+    args?: FunctionArgs<Query>,
+    options?: Readonly<{ skip?: boolean | undefined }>,
+): Readonly<{ data: FunctionReturnType<Query> | undefined; isPending: boolean; isError: boolean }> {
     const client = use(ConvexContext)
     // Null client means server render (or a tree without a provider): stay
     // disabled so no queryFn is needed, matching the old loading state.
@@ -34,7 +42,10 @@ export function useConvexQuery<Query extends FunctionReference<"query">>(
         staleTime: shaped.staleTime ?? Infinity,
         enabled: !skip,
     })
-    return skip ? undefined : result.data
+    if (skip) {
+        return { data: undefined, isPending: false, isError: false }
+    }
+    return { data: result.data, isPending: result.isPending, isError: result.isError }
 }
 
 export function useConvexMutation<Mutation extends FunctionReference<"mutation">>(mutation: Mutation) {

@@ -9,7 +9,13 @@ import { type Doc, type Id } from "@convex/_generated/dataModel"
 import { getConvexSessionToken } from "./auth-client"
 import { useAuth as useAuthSource } from "./auth-provider"
 import { FALLBACK_DISPLAY_NAME } from "./constants"
-import { useConvexClient, useConvexQuery, useConvexMutation, useConvexAction } from "./convex-client.tsx"
+import {
+    useConvexClient,
+    useConvexQuery,
+    useConvexQueryResult,
+    useConvexMutation,
+    useConvexAction,
+} from "./convex-client.tsx"
 import {
     applyUpdateArgsToDraft,
     assertRealRestaurantId,
@@ -106,7 +112,7 @@ export const useVisibleRestaurant = (id: Id<"restaurants">) => {
     const status = useSessionStatus()
     // Signed-out readers stay open: this query serves public restaurant detail.
     // Timeouts stay closed until the session re-verifies.
-    return useConvexQuery(
+    return useConvexQueryResult(
         api.restaurants.getById,
         { id },
         { skip: status.kind === "loading" || status.kind === "timed-out" },

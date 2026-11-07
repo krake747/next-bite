@@ -13,12 +13,11 @@ export function useOpenAddRestaurant(): () => void {
 export function AddRestaurantProvider({ children }: Readonly<{ children: React.ReactNode }>) {
     const auth = useAuth()
     const [show, setShow] = useState(false)
+    const [open] = useState(() => () => {
+        setShow(true)
+    })
     return (
-        <AddRestaurantContext.Provider
-            value={() => {
-                setShow(true)
-            }}
-        >
+        <AddRestaurantContext.Provider value={open}>
             {children}
             {auth.isAuthenticated && <AddRestaurantDialog show={show} onOpenChange={setShow} />}
         </AddRestaurantContext.Provider>

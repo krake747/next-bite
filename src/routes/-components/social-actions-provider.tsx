@@ -11,7 +11,6 @@ import {
 } from "@core/social"
 
 export type SocialActions = {
-    readonly auth: ReturnType<typeof useAuth>
     readonly socialFor: (restaurant: Restaurant) => RestaurantSocialSummary
     readonly toggleWantFor: (restaurant: Restaurant) => () => void
     readonly toggleLikeFor: (restaurant: Restaurant) => () => void
@@ -35,6 +34,7 @@ export function SocialActionsProvider({
 }: Readonly<{ restaurants: ReadonlyArray<Restaurant>; children: React.ReactNode }>) {
     const navigate = useNavigate()
     const auth = useAuth()
+    const isAuthenticated = auth.isAuthenticated
     const summaries = useSocialSummaries(restaurants.map((r) => r._id))
     const toggleInterest = useToggleInterest()
     const toggleLike = useToggleLike()
@@ -55,7 +55,7 @@ export function SocialActionsProvider({
         summaries?.get(restaurant._id) ?? emptySocialSummary
 
     const toggleWantFor = (restaurant: Restaurant) => () => {
-        if (!auth.isAuthenticated) {
+        if (!isAuthenticated) {
             goToLogin()
             return
         }
@@ -63,7 +63,7 @@ export function SocialActionsProvider({
     }
 
     const toggleLikeFor = (restaurant: Restaurant) => () => {
-        if (!auth.isAuthenticated) {
+        if (!isAuthenticated) {
             goToLogin()
             return
         }
@@ -71,7 +71,7 @@ export function SocialActionsProvider({
     }
 
     return (
-        <SocialActionsContext.Provider value={{ auth, socialFor, toggleWantFor, toggleLikeFor, goToDetail, goToLogin }}>
+        <SocialActionsContext.Provider value={{ socialFor, toggleWantFor, toggleLikeFor, goToDetail, goToLogin }}>
             {children}
         </SocialActionsContext.Provider>
     )

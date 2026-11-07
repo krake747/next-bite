@@ -103,13 +103,14 @@ function HomeFeed({ feed }: Readonly<{ feed: ReadonlyArray<Restaurant> }>) {
 
 function HomeDiscover({ restaurants }: Readonly<{ restaurants: ReadonlyArray<Restaurant> }>) {
     const actions = useSocialActions()
+    const auth = useAuth()
     const [sortOrder, setSortOrder] = useState<"added" | "name">("added")
     const filterState = useFilterState()
     const filtered = filterRestaurants(restaurants, filterState.filter, filterState.search, sortOrder)
     // Friend pills only appear for accounts actually present in this list.
     // Personal saves are owned by the viewer, so no friend pill shows here;
     // the filter keys on stable account ids, never on renamable display names.
-    const ownId = actions.auth.user?.id
+    const ownId = auth.user?.id
     const matchingIds = [...new Set(restaurants.map((restaurant) => restaurant.ownerId))].filter((id) => id !== ownId)
     return (
         <section aria-label="Saved places" className="pt-10">
