@@ -24,6 +24,7 @@
         "skills:krake747": "pnx skills add krake747/skills",
         "skills:mattpocock": "pnx skills add mattpocock/skills",
         "test": "vitest run",
+        "test:affected": "vitest run --sinceLastRun",
         "test:browser": "vitest run --project browser",
         "test:e2e": "playwright test",
         "test:integration": "vitest run --project integration",

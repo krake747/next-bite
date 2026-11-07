@@ -6,9 +6,9 @@ Use this file as a routing layer into the repo docs.
   TypeScript, Tailwind CSS, and TanStack. Convex owns the backend, Base UI owns headless primitives,
   `vp` (Vite+) owns the toolchain, Vitest owns testing in tiers, fallow owns layer boundaries.
 - The following are safe to run without asking: `pnpm fmt`, `pnpm fmt:check`, `pnpm lint` on files
-  you touched, `pnpm lint:ts`, `pnpm test` scoped to files you changed, and `pnpm fallow audit`.
-  Run, fix, and rerun them without per-step approval. Ask before `pnpm deploy`,
-  `pnpm convex:deploy`, or any secrets change.
+  you touched, `pnpm lint:ts`, `pnpm test` scoped to files you changed (`pnpm test:affected` tracks
+  this automatically), and `pnpm fallow audit`. Run, fix, and rerun them without per-step approval.
+  Ask before `pnpm deploy`, `pnpm convex:deploy`, or any secrets change.
 - Shared non-negotiables (prod ownership, commits, prose, simplicity, ADRs, docs): see
   `docs/agents/non-negotiables.md`.
 - Commit shape: `type(scope): subject`. Types in use: `feat`, `fix`, `refactor`, `docs`, `chore`,
