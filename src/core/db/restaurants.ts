@@ -293,6 +293,20 @@ export function getSessionCollections(
     return created
 }
 
+// Evict a session's cached collections so the next read builds a fresh
+// subscription. Only evicts when the cached entry still belongs to the given
+// session; never touches another session's collections. Used to recover from
+// a poisoned mid-session subscription: the caller re-verifies auth, and the
+// next render subscribes cleanly instead of reusing the failed sync.
+export function dropSessionCollections(syncClient: SyncClient, sessionKey: string): boolean {
+    const hit = collectionCache.get(syncClient)
+    if (hit === undefined || hit.sessionKey !== sessionKey) {
+        return false
+    }
+    collectionCache.delete(syncClient)
+    return true
+}
+
 const USER_SCOPED_QUERY_PREFIXES = ["restaurants:", "friendships:", "social:", "users:", "groups:", "shares:"]
 
 function isUserScopedQueryKey(queryKey: ReadonlyArray<unknown>): boolean {

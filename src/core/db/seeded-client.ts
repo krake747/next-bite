@@ -33,6 +33,7 @@ export function createSeededClient(options: SeededClientOptions = {}) {
         receive: (value: unknown) => void
         current: unknown
     }>()
+    const failers = new Map<string, Set<(error: unknown) => void>>()
 
     const valueFor = (key: string): unknown => {
         const seeded = seeds.get(key)
@@ -42,20 +43,44 @@ export function createSeededClient(options: SeededClientOptions = {}) {
         return structuredClone([...liveRows])
     }
 
+    const trackFailureHandler = (key: string, onError: ((error: unknown) => void) | undefined): void => {
+        if (typeof onError !== "function") {
+            return
+        }
+        let set = failers.get(key)
+        if (set === undefined) {
+            set = new Set()
+            failers.set(key, set)
+        }
+        set.add(onError)
+    }
+
+    const untrackFailureHandler = (key: string, onError: ((error: unknown) => void) | undefined): void => {
+        if (typeof onError !== "function") {
+            return
+        }
+        failers.get(key)?.delete(onError)
+    }
+
     const syncClient = {
-        onUpdate: (ref: unknown, args: unknown, receive: (result: unknown) => void) => {
+        onUpdate: (
+            ref: unknown,
+            args: unknown,
+            receive: (result: unknown) => void,
+            onError?: (error: unknown) => void,
+        ) => {
             // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- test-only function reference shaped to the Convex subscription surface
             const key = seedKey(getFunctionName(ref as never), args)
             const entry = { key, receive, current: valueFor(key) }
             receivers.add(entry)
+            trackFailureHandler(key, onError)
             receive(entry.current)
-            const unsub: () => void = () => {
+            const forget = () => {
                 receivers.delete(entry)
+                untrackFailureHandler(key, onError)
             }
-            return Object.assign(unsub, {
-                unsubscribe: () => {
-                    receivers.delete(entry)
-                },
+            return Object.assign(forget, {
+                unsubscribe: forget,
                 getCurrentValue: () => entry.current,
             })
         },
@@ -91,10 +116,22 @@ export function createSeededClient(options: SeededClientOptions = {}) {
         }
     }
 
+    // Drive a mid-session sync failure the way a dropped Convex subscription
+    // surfaces it: the adapter reports the error through the onUpdate error
+    // callback it registered at subscribe time.
+    const failSync = (error: unknown = new Error("Convex subscription failed")): void => {
+        for (const set of failers.values()) {
+            for (const fail of set) {
+                fail(error)
+            }
+        }
+    }
+
     return {
         // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- test-only sync client standing in for the Convex subscription surface
         client: syncClient as unknown as ConvexClient,
         pushState,
         subscriberCount: (): number => receivers.size,
+        failSync,
     }
 }

@@ -13,6 +13,7 @@ import {
     assertRealRestaurantId,
     buildTempRestaurant,
     clearUserScopedQueries,
+    dropSessionCollections,
     getSessionCollections,
     resolveRestaurantIdByKey,
     SyncTimeoutError,
@@ -586,5 +587,121 @@ describe("restaurant collections", () => {
             expect(queryClient.getQueryData(["restaurants:get", "{}"])).toBeUndefined()
         })
         expect(queryClient.getQueryData(["landing:getStats", "{}"])).toEqual({ count: 1 })
+    })
+
+    describe("collection recovery", () => {
+        function renderOwnedRestaurants() {
+            const queryClient = new QueryClient()
+            return renderHook(() => useRestaurants(), {
+                wrapper: ({ children }: Readonly<{ children: React.ReactNode }>) => (
+                    <QueryClientProvider client={queryClient}>
+                        <AuthProvider>{children}</AuthProvider>
+                    </QueryClientProvider>
+                ),
+            })
+        }
+
+        test("recovers the session collection after a mid-session sync failure", async () => {
+            vi.mocked(authClient.getSession).mockResolvedValue({
+                data: { user: { id: "user-1", email: "alex@example.com", name: "Alex" } },
+                error: null,
+            })
+            const backend = createSeededClient({ liveRows: [restaurantFixture()] })
+            injectSyncClient(backend.client)
+
+            const { result } = renderOwnedRestaurants()
+            await vi.waitFor(() => {
+                expect(result.current?.map((item) => item.name)).toEqual(["Trattoria Verde"])
+            })
+
+            backend.failSync()
+
+            await vi.waitFor(() => {
+                expect(result.current?.map((item) => item.name)).toEqual(["Trattoria Verde"])
+            })
+            expect(backend.subscriberCount()).toBe(1)
+        })
+
+        test("stays gated without looping when auth cannot re-verify after a failure", async () => {
+            vi.mocked(authClient.getSession).mockResolvedValue({
+                data: { user: { id: "user-1", email: "alex@example.com", name: "Alex" } },
+                error: null,
+            })
+            const backend = createSeededClient({ liveRows: [restaurantFixture()] })
+            injectSyncClient(backend.client)
+
+            const { result, unmount } = renderOwnedRestaurants()
+            await vi.waitFor(() => {
+                expect(result.current?.map((item) => item.name)).toEqual(["Trattoria Verde"])
+            })
+
+            tokenMock.mockResolvedValue({ data: null })
+            backend.failSync()
+
+            await vi.waitFor(() => {
+                expect(result.current).toBeUndefined()
+            })
+            const settledCount = backend.subscriberCount()
+            await new Promise<void>((resolve) => {
+                setTimeout(resolve, 1000)
+            })
+            expect(backend.subscriberCount()).toBe(settledCount)
+            expect(result.current).toBeUndefined()
+            unmount()
+            tokenMock.mockResolvedValue({ data: { token: "test-token" } })
+        })
+
+        test("dropSessionCollections only evicts the matching session", () => {
+            const backend = createSeededClient({ liveRows: [restaurantFixture()] })
+            const persist = mockPersist()
+            const first = getSessionCollections(backend.client, persist, "drop-a")
+
+            expect(dropSessionCollections(backend.client, "drop-b")).toBe(false)
+            expect(getSessionCollections(backend.client, persist, "drop-a")).toBe(first)
+            expect(dropSessionCollections(backend.client, "drop-a")).toBe(true)
+            expect(getSessionCollections(backend.client, persist, "drop-a")).not.toBe(first)
+        })
+
+        test("abandons uncommitted optimistic rows instead of duplicating them", async () => {
+            vi.mocked(authClient.getSession).mockResolvedValue({
+                data: { user: { id: "user-1", email: "alex@example.com", name: "Alex" } },
+                error: null,
+            })
+            const backend = createSeededClient({ liveRows: [restaurantFixture()] })
+            injectSyncClient(backend.client)
+            const { result } = renderOwnedRestaurants()
+            await vi.waitFor(() => {
+                expect(result.current?.map((item) => item.name)).toEqual(["Trattoria Verde"])
+            })
+
+            // Insert a temp row into the hook's live collection, then fail the
+            // sync underneath it while the mutation is still in flight.
+            const draft = getSessionCollections(backend.client, mockPersist(), SESSION)
+            const pending = draft.owner.insert(
+                buildTempRestaurant({
+                    ownerId: "user-1",
+                    ownerName: "Alex",
+                    name: "Sushi Bar",
+                    cuisine: "Japanese",
+                    addressLabel: "Luxembourg City",
+                    clientMutationId: "user-1:k9",
+                }),
+            )
+            backend.failSync()
+            await vi.waitFor(() => {
+                expect(result.current?.map((item) => item.name)).toEqual(["Trattoria Verde"])
+            })
+
+            await pending.when("settled").catch(() => {})
+            await vi.waitFor(() => {
+                expect(result.current?.map((item) => item.name)).toEqual(["Trattoria Verde"])
+            })
+            expect(
+                result.current?.every((row) => {
+                    assertRealRestaurantId(row._id)
+                    return true
+                }),
+            ).toBe(true)
+        })
     })
 })

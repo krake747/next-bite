@@ -1,7 +1,7 @@
 import { useLiveQuery } from "@tanstack/react-db"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { type ConvexClient } from "convex/browser"
-import { useEffect, useState, useSyncExternalStore } from "react"
+import { useEffect, useRef, useState, useSyncExternalStore } from "react"
 
 import { api } from "@convex/_generated/api"
 import { type Doc, type Id } from "@convex/_generated/dataModel"
@@ -15,6 +15,7 @@ import {
     assertRealRestaurantId,
     buildTempRestaurant,
     clearUserScopedQueries,
+    dropSessionCollections,
     getSessionCollections,
     persistCallerFor,
     resolveRestaurantIdByKey,
@@ -143,6 +144,37 @@ export function useSessionStatus(options?: Readonly<{ timeoutMs?: number }>): Se
     return { kind: "loading" }
 }
 
+function useSessionSyncRecovery(
+    input: Readonly<{
+        gated: boolean
+        sessionKey: string | null
+        client: ConvexClient | null
+        isLoadingError: boolean
+        isSyncError: boolean
+        status: string
+        hasData: boolean
+    }>,
+): void {
+    const { gated, sessionKey, client, isLoadingError, isSyncError, status, hasData } = input
+    const syncFailed = !gated && (isLoadingError || isSyncError || status === "error" || status === "crashed")
+    const failedRef = useRef(false)
+    useEffect(() => {
+        // A failed sync poisons the cached collections (typically an expired
+        // Convex token mid-session). Evict the session cache so the next read
+        // subscribes fresh, and re-verify auth: success restores the same
+        // user's live data, failure surfaces the timeout notice with a retry.
+        // Edge-triggered per failure episode; the latch only clears once the
+        // collection serves data again, so a still-broken backend cannot loop.
+        if (syncFailed && !failedRef.current && sessionKey !== null && client !== null) {
+            failedRef.current = true
+            dropSessionCollections(client, sessionKey)
+            retrySessionGate()
+        } else if (!syncFailed && hasData) {
+            failedRef.current = false
+        }
+    }, [syncFailed, sessionKey, client, hasData, gated])
+}
+
 function useOwnerOrFeed(kind: "owner" | "feed"): ReadonlyArray<Doc<"restaurants">> | undefined {
     const sessionKey = useSessionKey()
     const client = useConvexClient()
@@ -165,6 +197,15 @@ function useOwnerOrFeed(kind: "owner" | "feed"): ReadonlyArray<Doc<"restaurants"
             void collection.preload()
         }
     }, [collection])
+    useSessionSyncRecovery({
+        gated,
+        sessionKey,
+        client,
+        isLoadingError: result.isLoadingError,
+        isSyncError: result.isSyncError,
+        status: result.status,
+        hasData: result.data !== undefined,
+    })
     if (gated || result.isLoading) {
         return undefined
     }
