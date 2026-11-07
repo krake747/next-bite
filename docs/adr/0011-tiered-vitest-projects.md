@@ -19,5 +19,5 @@ point.
 ## Consequences
 
 Scope follows the filename, and each tier runs independently. Timeouts live in config, not in spec
-files. The browser tier is the seam for a real-browser runner later. The HTTP seam starts with
-unexpected network access failing loudly, so specs declare the traffic they touch.
+files. The browser tier is the seam for a real-browser runner later. Unexpected network access fails
+loudly, so specs declare the traffic they touch.

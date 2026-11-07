@@ -22,5 +22,5 @@ are grandfathered, not exemplary.
 ## Consequences
 
 Shared auth guards live in one helpers module, never duplicated per domain. Reviewers check new
-functions against the four rules and reject new verbs outside the table without a note. Contract
-specs keep asserting the documented shapes.
+functions against the rules and reject new verbs outside the table without a note. Contract specs
+keep asserting the documented shapes.
