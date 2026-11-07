@@ -105,7 +105,8 @@ export const listMyStatuses = query({
 
 export const getSummaries = query({
     // Signed-out callers get aggregate counts with no personal flags; identity only adds the
-    // viewer's own wanted/liked state. Nothing per-user leaks to strangers.
+    // viewer's own wanted/liked state. Restaurants invisible to the caller resolve to null so
+    // private lists stay unenumerable, matching getForRestaurant and restaurants.getById.
     args: {
         restaurantIds: v.array(v.id("restaurants")),
     },
@@ -117,6 +118,13 @@ export const getSummaries = query({
         const userId = identity?.subject ?? null
         return Promise.all(
             args.restaurantIds.map(async (restaurantId) => {
+                const restaurant = await ctx.db.get(restaurantId)
+                if (!restaurant) {
+                    return null
+                }
+                if (userId === null || !(await isRestaurantVisibleTo(ctx.db, userId, restaurant))) {
+                    return null
+                }
                 const { interests, likes, comments } = await collectSocialFor(ctx.db, restaurantId)
                 const counts = countReactions(interests, likes, userId)
                 return {

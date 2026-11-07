@@ -121,7 +121,7 @@ export function useSocialSummaries(
     if (summaries === undefined) {
         return undefined
     }
-    return new Map(summaries.map((summary) => [summary.restaurantId, summary]))
+    return new Map(summaries.flatMap((summary) => (summary === null ? [] : [[summary.restaurantId, summary] as const])))
 }
 
 export function useSocialForRestaurant(

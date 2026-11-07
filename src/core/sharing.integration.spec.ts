@@ -60,6 +60,23 @@ describe("sharing and social gating", () => {
         await expect(asUser(t, "anna").query(api.social.getForRestaurant, { restaurantId })).resolves.not.toBeNull()
     })
 
+    test("hides summaries from strangers", async () => {
+        const t = setup()
+        await registerUser(t, "anna", "anna@example.com")
+        await registerUser(t, "ben", "ben@example.com")
+        await registerUser(t, "cas", "cas@example.com")
+        const restaurantId = await createRestaurant(t, "anna")
+
+        await expect(
+            asUser(t, "cas").query(api.social.getSummaries, { restaurantIds: [restaurantId] }),
+        ).resolves.toEqual([null])
+        await expect(t.query(api.social.getSummaries, { restaurantIds: [restaurantId] })).resolves.toEqual([null])
+
+        await asUser(t, "anna").mutation(api.shares.shareWithUser, { restaurantId, userId: "ben" })
+        const [summary] = await asUser(t, "ben").query(api.social.getSummaries, { restaurantIds: [restaurantId] })
+        expect(summary).toMatchObject({ restaurantId, wantCount: 0 })
+    })
+
     test("rejects non-owner writes and shares", async () => {
         const t = setup()
         await registerUser(t, "anna", "anna@example.com")
