@@ -133,3 +133,12 @@ export const useToggleInterest = () => useConvexMutation(api.social.toggleIntere
 export const useToggleLike = () => useConvexMutation(api.social.toggleLike)
 export const useAddComment = () => useConvexMutation(api.social.addComment)
 export const useDeleteComment = () => useConvexMutation(api.social.deleteComment)
+
+export const useFriends = () => {
+    const status = useSessionStatus()
+    return useConvexQuery(api.friendships.listFriends, undefined, { skip: status.kind !== "ready" })
+}
+
+export const useRequestFriendByEmail = () => useConvexMutation(api.friendships.requestFriendByEmail)
+export const useAcceptFriend = () => useConvexMutation(api.friendships.acceptFriend)
+export const useRemoveFriend = () => useConvexMutation(api.friendships.removeFriend)

@@ -3,7 +3,7 @@ import { useEffect, useState, useSyncExternalStore } from "react"
 
 import { getConvexSessionToken } from "@api/auth-client"
 import { useAuth as useAuthSource } from "@api/auth-provider"
-import { useConvexClient } from "@api/convex-client"
+import { useConvexClient, useConvexMutation, useConvexQuery } from "@api/convex-client"
 import { api } from "@api/endpoints"
 
 import { sleep } from "./async"
@@ -121,3 +121,42 @@ export function useSessionKey(): string | null {
     const status = useSessionStatus()
     return status.kind === "ready" ? status.userId : null
 }
+
+export const useAuth = useAuthSource
+
+export const useUpdateProfile = () => useConvexMutation(api.users.updateMe)
+
+export function useEnsureProfile(): void {
+    const auth = useAuthSource()
+    const client = useConvexClient()
+    const sessionKey = useSessionKey()
+    useEffect(() => {
+        // Profiles back display names and email lookup. Signups create the auth session but no
+        // profile row, so every ready session ensures one exactly once. The readiness gate
+        // matters: firing pre-install runs the mutation unauthenticated. Failures stay silent:
+        // callers already fall back to placeholder names.
+        if (sessionKey === null || client === null) {
+            return
+        }
+        const user = auth.user
+        if (user === null || user.id !== sessionKey) {
+            return
+        }
+        const { email, name } = user
+        void client
+            .mutation(api.users.ensureProfile, {
+                email,
+                ...(name !== undefined && name !== null ? { name } : {}),
+            })
+            .catch(() => {})
+    }, [sessionKey, client, auth.user])
+}
+
+export type AuthMethods = {
+    readonly password: boolean
+    readonly google: boolean
+    readonly github: boolean
+    readonly emailOtp: boolean
+}
+
+export const useAuthMethods = (): AuthMethods | undefined => useConvexQuery(api.auth.getAuthMethods)
