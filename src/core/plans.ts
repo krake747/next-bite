@@ -1,5 +1,5 @@
-import { useConvexMutation, useConvexQuery } from "@api/convex-client"
-import { type Id } from "@api/data-model"
+import { useConvexMutation, useConvexQuery } from "@api/convex.client"
+import { type Id } from "@api/data.model"
 import { api } from "@api/endpoints"
 
 import { useSessionStatus } from "./session"

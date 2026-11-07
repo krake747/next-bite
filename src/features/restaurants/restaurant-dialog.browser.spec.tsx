@@ -3,9 +3,9 @@ import { fireEvent, render, screen, waitFor } from "@testing-library/react"
 import { act } from "@testing-library/react"
 import { describe, expect, test, vi } from "vitest"
 
-import { ConvexProvider } from "@api/convex-client"
+import { ConvexProvider } from "@api/convex.client"
 import { SyncTimeoutError, type RestaurantAddArgs } from "@api/db/restaurants"
-import { createSeededClient, type MutationCall } from "@api/db/seeded-client"
+import { createSeededClient, type MutationCall } from "@api/db/seeded.client"
 import { type Id } from "@convex/_generated/dataModel"
 import { type ImageRecord } from "@core/restaurants"
 
@@ -37,8 +37,8 @@ let uploadImpl: (file: Readonly<File>) => Promise<ImageRecord> = async () => {
     throw new Error("uploadImpl not set")
 }
 
-vi.mock("@core/image-utils", async (importOriginal) => {
-    const original = await importOriginal<typeof import("@core/image-utils")>()
+vi.mock("@core/image.utils", async (importOriginal) => {
+    const original = await importOriginal<typeof import("@core/image.utils")>()
     return {
         ...original,
         processImage: async (file: Readonly<File>) => {
@@ -55,7 +55,7 @@ vi.mock("@core/image-utils", async (importOriginal) => {
     }
 })
 
-vi.mock("@api/auth-client", () => ({
+vi.mock("@api/auth.client", () => ({
     getConvexSessionToken: async () => {
         await Promise.resolve()
         return "test-token"
@@ -71,8 +71,8 @@ vi.mock("@core/restaurants", async (importOriginal) => {
     }
 })
 
-vi.mock("@api/auth-provider", async (importOriginal) => {
-    const original = await importOriginal<typeof import("@api/auth-provider")>()
+vi.mock("@api/auth.provider", async (importOriginal) => {
+    const original = await importOriginal<typeof import("@api/auth.provider")>()
     const noop = async () => {
         await Promise.resolve()
     }

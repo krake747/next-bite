@@ -1,7 +1,7 @@
 import { type GenericDatabaseReader, type GenericMutationCtx } from "convex/server"
 import { v } from "convex/values"
 
-import { countReactions } from "../src/core/social-counts"
+import { countReactions } from "../src/core/social.counts"
 import { type DataModel, type Doc, type Id } from "./_generated/dataModel"
 import { mutation, query } from "./_generated/server"
 import { authComponent } from "./auth"

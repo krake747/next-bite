@@ -2,9 +2,9 @@ import { RouterProvider, createMemoryHistory, createRouter } from "@tanstack/rea
 import { fireEvent, render, screen, waitFor, within } from "@testing-library/react"
 import { describe, expect, test, vi } from "vitest"
 
-import { ConvexProvider } from "@api/convex-client"
+import { ConvexProvider } from "@api/convex.client"
 import { type RestaurantDoc } from "@api/db/restaurants"
-import { createSeededClient, seedKey, type MutationCall } from "@api/db/seeded-client"
+import { createSeededClient, seedKey, type MutationCall } from "@api/db/seeded.client"
 
 import { routeTree } from "../routeTree.gen"
 
@@ -14,8 +14,8 @@ let testUser: TestUser | null = { id: "user-1", email: "alex@example.com", name:
 const mutationCalls: MutationCall[] = []
 const querySeeds = new Map<string, unknown>()
 
-vi.mock("@api/auth-client", async (importOriginal) => {
-    const original = await importOriginal<typeof import("@api/auth-client")>()
+vi.mock("@api/auth.client", async (importOriginal) => {
+    const original = await importOriginal<typeof import("@api/auth.client")>()
     return {
         ...original,
         getConvexSessionToken: vi.fn<() => Promise<string | null>>(async () => {
@@ -25,8 +25,8 @@ vi.mock("@api/auth-client", async (importOriginal) => {
     }
 })
 
-vi.mock("@api/auth-provider", async (importOriginal) => {
-    const original = await importOriginal<typeof import("@api/auth-provider")>()
+vi.mock("@api/auth.provider", async (importOriginal) => {
+    const original = await importOriginal<typeof import("@api/auth.provider")>()
     const noop = async () => {
         await Promise.resolve()
     }

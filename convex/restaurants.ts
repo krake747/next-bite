@@ -9,7 +9,7 @@ import {
     type Coords,
     type DetailsDoc,
     type Enrichment,
-} from "../src/core/restaurant-details"
+} from "../src/core/restaurant.details"
 import { internal } from "./_generated/api"
 import { type Doc, type Id } from "./_generated/dataModel"
 import { query, mutation, action, internalQuery, internalMutation, type MutationCtx } from "./_generated/server"

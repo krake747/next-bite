@@ -1,7 +1,7 @@
 import { Form, reset, setInput, useForm } from "@formisch/react"
 import { useEffect, useRef, useState } from "react"
 
-import { type Id } from "@api/data-model"
+import { type Id } from "@api/data.model"
 import { SyncTimeoutError, type RestaurantAddArgs, type RestaurantUpdateArgs } from "@api/db/restaurants"
 import { useAddRestaurantWithHours, useCleanupStorage, useUpdateRestaurant, type Restaurant } from "@core/restaurants"
 import { RestaurantSchema, type RestaurantOutput } from "@core/schemas"

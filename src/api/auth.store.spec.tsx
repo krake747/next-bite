@@ -3,7 +3,7 @@ import { act } from "@testing-library/react"
 import { useEffect } from "react"
 import { describe, expect, test, vi } from "vitest"
 
-import { hasCachedSession, useAuthStore } from "./auth-store"
+import { hasCachedSession, useAuthStore } from "./auth.store"
 
 type Store = ReturnType<typeof useAuthStore>
 
@@ -31,7 +31,7 @@ type SessionResponse = {
 let impls: Record<string, () => Promise<unknown>> = {}
 let storeRef: Store | null = null
 
-vi.mock("./auth-client", () => {
+vi.mock("./auth.client", () => {
     return {
         authClient: {
             getSession: async () => impls["getSession"]?.(),

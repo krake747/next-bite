@@ -26,7 +26,7 @@ export default defineConfig({
             {
                 // Convex queries are reactive: server push heals state, no manual
                 // invalidation step exists.
-                files: ["src/core/convex-client.tsx", "src/core/hooks.ts"],
+                files: ["src/api/convex.client.tsx", "src/core/hooks.ts"],
                 rules: ["react-doctor/query-mutation-missing-invalidation"],
             },
             {
@@ -43,14 +43,14 @@ export default defineConfig({
                     "src/routes/ds/-sections/**",
                     "src/ui/button.tsx",
                     "src/ui/icon-button.tsx",
-                    "src/core/convex-client.tsx",
+                    "src/api/convex.client.tsx",
                 ],
                 rules: ["react-doctor/only-export-components"],
             },
             {
                 // Auth renders a deliberate unknown-state on the server so the
                 // first client render matches hydration.
-                files: ["src/core/auth-provider.tsx"],
+                files: ["src/api/auth.provider.tsx"],
                 rules: ["react-doctor/no-hydration-branch-on-browser-global"],
             },
             {
@@ -69,7 +69,7 @@ export default defineConfig({
                 // Both effects are mount-once by design: the store subscribe
                 // and the Convex client proxy are unstable across renders, so
                 // listing them would re-subscribe in a loop.
-                files: ["src/core/auth-provider.tsx", "src/core/convex-client.tsx"],
+                files: ["src/api/auth.provider.tsx", "src/api/convex.client.tsx"],
                 rules: ["react-doctor/exhaustive-deps"],
             },
         ],

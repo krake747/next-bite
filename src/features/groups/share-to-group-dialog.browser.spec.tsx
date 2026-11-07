@@ -2,14 +2,14 @@ import { QueryClientProvider } from "@tanstack/react-query"
 import { fireEvent, render, screen, waitFor } from "@testing-library/react"
 import { describe, expect, test, vi } from "vitest"
 
-import { ConvexProvider } from "@api/convex-client"
-import { createSeededClient, seedKey, type MutationCall } from "@api/db/seeded-client"
+import { ConvexProvider } from "@api/convex.client"
+import { createSeededClient, seedKey, type MutationCall } from "@api/db/seeded.client"
 import { type Id } from "@convex/_generated/dataModel"
 
 import { ShareToGroupDialog } from "./share-to-group-dialog"
 
-vi.mock("@api/auth-client", async (importOriginal) => {
-    const original = await importOriginal<typeof import("@api/auth-client")>()
+vi.mock("@api/auth.client", async (importOriginal) => {
+    const original = await importOriginal<typeof import("@api/auth.client")>()
     return {
         ...original,
         getConvexSessionToken: vi.fn<() => Promise<string | null>>(async () => {
@@ -27,8 +27,8 @@ let testUser: { id: string; email: string; name: string } | null = {
 const mutationCalls: MutationCall[] = []
 const querySeeds = new Map<string, unknown>()
 
-vi.mock("@api/auth-provider", async (importOriginal) => {
-    const original = await importOriginal<typeof import("@api/auth-provider")>()
+vi.mock("@api/auth.provider", async (importOriginal) => {
+    const original = await importOriginal<typeof import("@api/auth.provider")>()
     const noop = async () => {
         await Promise.resolve()
     }

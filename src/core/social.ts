@@ -1,10 +1,10 @@
-import { useConvexMutation, useConvexQuery } from "@api/convex-client"
-import { type Id } from "@api/data-model"
+import { useConvexMutation, useConvexQuery } from "@api/convex.client"
+import { type Id } from "@api/data.model"
 import { api } from "@api/endpoints"
 
 import { useSessionStatus } from "./session"
-import { countReactions, type Viewer } from "./social-counts"
-import { isTempId } from "./temp-ids"
+import { countReactions, type Viewer } from "./social.counts"
+import { isTempId } from "./temp.ids"
 
 export type InterestInput = {
     readonly restaurantId: string

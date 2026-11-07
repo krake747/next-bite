@@ -1,4 +1,4 @@
-import { type Id } from "@api/data-model"
+import { type Id } from "@api/data.model"
 import { useMyGroups, useRestaurantShares, useShareWithGroup, useShareWithUser, useUnshare } from "@core/groups"
 import { useFriends } from "@core/social"
 import { Button } from "@ui/button"

@@ -1,6 +1,6 @@
 import { useState } from "react"
 
-import { type Id } from "@api/data-model"
+import { type Id } from "@api/data.model"
 import { clearError, errorFrom, type FormError } from "@core/outcome"
 import { useAddVisitMemory, useCleanupStorage, useVisitMemories, type ImageRecord } from "@core/restaurants"
 import { useAuth } from "@core/session"

@@ -2,10 +2,10 @@ import { noop } from "@tanstack/react-query"
 import { createFileRoute, useNavigate } from "@tanstack/react-router"
 import { Suspense, useState } from "react"
 
-import { hasCachedSession } from "@api/auth-store"
-import { useSuspenseConvexQuery } from "@api/convex-client"
-import { convexQueryOptions } from "@api/convex-options"
-import { type Id } from "@api/data-model"
+import { hasCachedSession } from "@api/auth.store"
+import { useSuspenseConvexQuery } from "@api/convex.client"
+import { convexQueryOptions } from "@api/convex.options"
+import { type Id } from "@api/data.model"
 import { api } from "@api/endpoints"
 import { type Restaurant } from "@core/restaurants"
 import { useAuth } from "@core/session"
@@ -18,7 +18,7 @@ import {
     useToggleLike,
     type RestaurantSocial,
 } from "@core/social"
-import { type Viewer } from "@core/social-counts"
+import { type Viewer } from "@core/social.counts"
 import { ShareToGroupDialog } from "@features/groups/share-to-group-dialog"
 import { PlanMealSection } from "@features/plans/meal-plans"
 import { RestaurantGallery } from "@features/restaurants/restaurant-gallery"

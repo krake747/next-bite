@@ -1,6 +1,6 @@
 import { useState } from "react"
 
-import { type Id } from "@api/data-model"
+import { type Id } from "@api/data.model"
 import { clearError, errorFrom, type FormError } from "@core/outcome"
 import { useCreatePlan, usePlansForGroup, usePlansForRestaurant, useUpdatePlanStatus } from "@core/plans"
 import { useAuth } from "@core/session"

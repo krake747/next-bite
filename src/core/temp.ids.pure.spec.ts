@@ -1,6 +1,6 @@
 import { describe, expect, test } from "vitest"
 
-import { assertRealId, isTempId, TEMP_ID_PREFIX } from "./temp-ids"
+import { assertRealId, isTempId, TEMP_ID_PREFIX } from "./temp.ids"
 
 describe("temp ids", () => {
     test("detects optimistic ids by prefix", () => {

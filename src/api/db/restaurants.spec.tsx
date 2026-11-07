@@ -6,8 +6,8 @@ import { describe, expect, test, vi } from "vitest"
 import { type Id } from "@convex/_generated/dataModel"
 import { useRestaurants } from "@core/restaurants"
 
-import { authClient } from "../auth-client"
-import { AuthProvider, useAuth as useProbeAuth } from "../auth-provider"
+import { authClient } from "../auth.client"
+import { AuthProvider, useAuth as useProbeAuth } from "../auth.provider"
 import {
     applyUpdateArgsToDraft,
     assertRealRestaurantId,
@@ -22,14 +22,14 @@ import {
     type RestaurantAddArgs,
     type RestaurantDoc,
 } from "./restaurants"
-import { createSeededClient } from "./seeded-client"
+import { createSeededClient } from "./seeded.client"
 
 const SESSION = "user-1"
 
 let injectedClient: ConvexReactClient | null = null
 
-vi.mock("@api/convex-client", async (importOriginal) => {
-    const original = await importOriginal<typeof import("@api/convex-client")>()
+vi.mock("@api/convex.client", async (importOriginal) => {
+    const original = await importOriginal<typeof import("@api/convex.client")>()
     return { ...original, useConvexClient: () => injectedClient }
 })
 
@@ -78,7 +78,7 @@ const { tokenMock } = vi.hoisted(() => ({
     }),
 }))
 
-vi.mock("../auth-client", () => ({
+vi.mock("../auth.client", () => ({
     authClient: {
         useSession: () => ({
             data: null,

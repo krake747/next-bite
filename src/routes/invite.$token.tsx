@@ -1,7 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router"
 import { Suspense, useEffect, useState } from "react"
 
-import { useSuspenseConvexQuery } from "@api/convex-client"
+import { useSuspenseConvexQuery } from "@api/convex.client"
 import { api } from "@api/endpoints"
 import { isSafeRedirectPath, useAcceptInvite } from "@core/groups"
 import { clearError, errorFrom, type FormError } from "@core/outcome"

@@ -2,7 +2,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import { render, screen, waitFor } from "@testing-library/react"
 import { describe, expect, test, vi } from "vitest"
 
-import { AuthProvider } from "./auth-provider"
+import { AuthProvider } from "./auth.provider"
 
 type FetchToken = (options: { forceRefreshToken: boolean }) => Promise<string | null>
 
@@ -31,7 +31,7 @@ vi.mock("convex/react", async (importOriginal) => {
     }
 })
 
-vi.mock("./auth-client", () => ({
+vi.mock("./auth.client", () => ({
     authClient: {
         useSession: () => ({
             data: {

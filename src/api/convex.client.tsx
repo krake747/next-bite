@@ -3,7 +3,7 @@ import { type ConvexReactClient } from "convex/react"
 import { type FunctionArgs, type FunctionReference, type FunctionReturnType } from "convex/server"
 import { createContext, use } from "react"
 
-import { convexQueryOptions } from "./convex-options"
+import { convexQueryOptions } from "./convex.options"
 
 const ConvexContext = createContext<ConvexReactClient | null>(null)
 

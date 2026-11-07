@@ -2,13 +2,13 @@ import { useQueryClient, type QueryClient } from "@tanstack/react-query"
 import { ConvexReactClient } from "convex/react"
 import { useState, useEffect, createContext, use } from "react"
 
-import { ConvexProvider } from "@api/convex-client"
+import { ConvexProvider } from "@api/convex.client"
 import { ConvexBetterAuthProvider } from "@convex-dev/better-auth/react"
 import { ConvexQueryClient } from "@convex-dev/react-query"
 import { env } from "@core/env"
 
-import { authClient } from "./auth-client"
-import { useAuthStore } from "./auth-store"
+import { authClient } from "./auth.client"
+import { useAuthStore } from "./auth.store"
 
 type AuthStore = ReturnType<typeof useAuthStore>
 

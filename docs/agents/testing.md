@@ -43,7 +43,7 @@ Pure logic, no DOM. Functions in `src/core/` are the primary target.
 ```ts
 import { describe, test, expect } from "vitest"
 
-import { formatFileSize } from "./image-utils"
+import { formatFileSize } from "./image.utils"
 
 describe("formatFileSize", () => {
   test("formats kilobytes", () => {
@@ -52,8 +52,8 @@ describe("formatFileSize", () => {
 })
 ```
 
-- Place tests alongside source: `src/core/image-utils.pure.spec.ts` next to
-  `src/core/image-utils.ts`
+- Place tests alongside source: `src/core/image.utils.pure.spec.ts` next to
+  `src/core/image.utils.ts`
 - Prefer testing exported functions at their public interface
 - Do not test implementation details (internals, private helpers)
 - Keep timeouts in `vite.config.ts` test projects, never `vi.setConfig` timeouts in spec files. The
@@ -100,9 +100,9 @@ not add Testcontainers or a live backend dependency to these tests.
 
 `AuthProvider` wraps children in its own live `ConvexProvider`, which shadows any test-injected
 client for hooks that read `useConvexQuery` directly. So route specs never inject through context.
-Instead: mock `@core/auth-provider` with a passthrough `AuthProvider` plus a scripted `useAuth`,
-wrap the tree in `ConvexProvider`, and serve seeded query results plus a mutation recorder through
-`createSeededClient` in `src/core/db/seeded-client.ts`. Build seed keys with its `seedKey` helper,
+Instead: mock `@api/auth.provider` with a passthrough `AuthProvider` plus a scripted `useAuth`, wrap
+the tree in `ConvexProvider`, and serve seeded query results plus a mutation recorder through
+`createSeededClient` in `src/api/db/seeded.client.ts`. Build seed keys with its `seedKey` helper,
 never hand-rolled strings; subscriptions spread args (`{...undefined}` is `{}`) while the cache keys
 the unspread value, and the helper already normalises that. Hooks that call `useQueryClient` need a
 `QueryClientProvider` in the wrapper.

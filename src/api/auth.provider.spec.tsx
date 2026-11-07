@@ -2,7 +2,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import { renderToString } from "react-dom/server"
 import { describe, expect, test } from "vitest"
 
-import { AuthProvider } from "./auth-provider"
+import { AuthProvider } from "./auth.provider"
 
 describe("AuthProvider server render", () => {
     test("renders children on the server instead of the loading placeholder", () => {

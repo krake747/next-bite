@@ -1,6 +1,6 @@
 import { describe, test, expect } from "vitest"
 
-import { validateImageFile, formatFileSize, MAX_FILE_SIZE } from "./image-utils"
+import { validateImageFile, formatFileSize, MAX_FILE_SIZE } from "./image.utils"
 
 describe("validateImageFile", () => {
     test.each(["image/jpeg", "image/png", "image/webp", "image/gif"])("accepts %s", (type) => {

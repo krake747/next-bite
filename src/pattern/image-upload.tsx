@@ -1,7 +1,7 @@
 import { ImageIcon, UploadIcon, XIcon } from "@phosphor-icons/react"
 import { useEffect, useRef, useState } from "react"
 
-import { type Id } from "@api/data-model"
+import { type Id } from "@api/data.model"
 import { MAX_IMAGES } from "@core/constants"
 import {
     extensionForMime,
@@ -11,7 +11,7 @@ import {
     MAX_FILE_SIZE,
     IMAGE_ACCEPT,
     IMAGE_TYPE_LABEL,
-} from "@core/image-utils"
+} from "@core/image.utils"
 import { clearError, errorFrom, type FormError } from "@core/outcome"
 import { useCleanupStorage, useDeleteImage, useUploadImage, type ImageRecord } from "@core/restaurants"
 import { cx } from "@ui/cva.config"
