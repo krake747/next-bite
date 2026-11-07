@@ -1,4 +1,4 @@
-import { useMutation, useQuery } from "@tanstack/react-query"
+import { useMutation, useQuery, useSuspenseQuery } from "@tanstack/react-query"
 import { type ConvexReactClient } from "convex/react"
 import { type FunctionArgs, type FunctionReference, type FunctionReturnType } from "convex/server"
 import { createContext, use } from "react"
@@ -46,6 +46,21 @@ export function useConvexQueryResult<Query extends FunctionReference<"query">>(
         return { data: undefined, isPending: false, isError: false }
     }
     return { data: result.data, isPending: result.isPending, isError: result.isError }
+}
+
+export function useSuspenseConvexQuery<Query extends FunctionReference<"query">>(
+    query: Query,
+    args?: FunctionArgs<Query>,
+): FunctionReturnType<Query> {
+    const client = use(ConvexContext)
+    if (client === null) {
+        throw new Error("useSuspenseConvexQuery needs a connected Convex client; render below a ready session gate.")
+    }
+    const shaped = convexQuery(query, (args ?? {}) as FunctionArgs<Query>)
+    return useSuspenseQuery({
+        queryKey: shaped.queryKey,
+        staleTime: shaped.staleTime ?? Infinity,
+    }).data
 }
 
 export function useConvexMutation<Mutation extends FunctionReference<"mutation">>(mutation: Mutation) {

@@ -1,9 +1,12 @@
 import { createFileRoute, Link } from "@tanstack/react-router"
-import { useState } from "react"
+import { Suspense, useState } from "react"
 
-import { useCreateGroup, useMyGroups } from "@core/hooks"
+import { api } from "@convex/_generated/api"
+import { useSuspenseConvexQuery } from "@core/convex-client"
+import { useCreateGroup, useSessionStatus } from "@core/hooks"
 import { clearError, errorFrom, type FormError } from "@core/outcome"
 import { EmptyState } from "@pattern/empty-state"
+import { QueryErrorState } from "@pattern/query-error"
 import { SignedOutGate } from "@routes/-components/signed-out-gate"
 import { PageContainer } from "@routes/-layouts/page-container"
 import { PageLayout } from "@routes/-layouts/page-layout"
@@ -15,7 +18,22 @@ import { control, fieldLabel } from "@ui/variants"
 
 export const Route = createFileRoute("/groups/")({
     component: GroupsPage,
+    errorComponent: GroupsError,
 })
+
+function GroupsError({ reset }: Readonly<{ reset: () => void }>) {
+    return (
+        <PageLayout>
+            <PageContainer>
+                <Header>
+                    <HeaderTitle>Groups</HeaderTitle>
+                    <HeaderSubtitle>Plan the next table together. Each group is a shared list.</HeaderSubtitle>
+                </Header>
+                <QueryErrorState reset={reset} />
+            </PageContainer>
+        </PageLayout>
+    )
+}
 
 function CreateGroupForm() {
     const createGroup = useCreateGroup()
@@ -73,8 +91,43 @@ function CreateGroupForm() {
     )
 }
 
+function GroupsView() {
+    const groups = useSuspenseConvexQuery(api.groups.listMyGroups)
+
+    return (
+        <>
+            <CreateGroupForm />
+            {groups.length === 0 ? (
+                <EmptyState
+                    title="No groups yet"
+                    body="Create your first group above, then add restaurants to its shared list."
+                    className="mt-6"
+                />
+            ) : (
+                <ul className="mt-6 grid gap-4 md:grid-cols-2">
+                    {groups.map(({ group, role }) => (
+                        <li key={group._id} className="rounded-card border border-border bg-surface p-5 shadow-card">
+                            <Link
+                                to="/groups/$groupId"
+                                params={{ groupId: group._id }}
+                                viewTransition
+                                className="font-display text-lg font-semibold text-balance text-foreground hover:text-primary"
+                            >
+                                {group.name}
+                            </Link>
+                            <p className="mt-1 text-sm text-muted-foreground">
+                                {role === "admin" ? "Admin" : "Member"}
+                            </p>
+                        </li>
+                    ))}
+                </ul>
+            )}
+        </>
+    )
+}
+
 function GroupsPage() {
-    const groups = useMyGroups()
+    const status = useSessionStatus()
 
     return (
         <PageLayout>
@@ -83,45 +136,23 @@ function GroupsPage() {
                     <HeaderTitle>Groups</HeaderTitle>
                     <HeaderSubtitle>Plan the next table together. Each group is a shared list.</HeaderSubtitle>
                 </Header>
-                <SignedOutGate context="your groups">
-                    {groups === undefined ? (
+                {status.kind !== "ready" ? (
+                    <SignedOutGate context="your groups">
                         <div className="pt-6">
                             <LoadingPlaceholder />
                         </div>
-                    ) : (
-                        <>
-                            <CreateGroupForm />
-                            {groups.length === 0 ? (
-                                <EmptyState
-                                    title="No groups yet"
-                                    body="Create your first group above, then add restaurants to its shared list."
-                                    className="mt-6"
-                                />
-                            ) : (
-                                <ul className="mt-6 grid gap-4 md:grid-cols-2">
-                                    {groups.map(({ group, role }) => (
-                                        <li
-                                            key={group._id}
-                                            className="rounded-card border border-border bg-surface p-5 shadow-card"
-                                        >
-                                            <Link
-                                                to="/groups/$groupId"
-                                                params={{ groupId: group._id }}
-                                                viewTransition
-                                                className="font-display text-lg font-semibold text-balance text-foreground hover:text-primary"
-                                            >
-                                                {group.name}
-                                            </Link>
-                                            <p className="mt-1 text-sm text-muted-foreground">
-                                                {role === "admin" ? "Admin" : "Member"}
-                                            </p>
-                                        </li>
-                                    ))}
-                                </ul>
-                            )}
-                        </>
-                    )}
-                </SignedOutGate>
+                    </SignedOutGate>
+                ) : (
+                    <Suspense
+                        fallback={
+                            <div className="pt-6">
+                                <LoadingPlaceholder />
+                            </div>
+                        }
+                    >
+                        <GroupsView />
+                    </Suspense>
+                )}
             </PageContainer>
         </PageLayout>
     )
