@@ -8,7 +8,7 @@
             "oauth": false,
             "headers": {
                 "Authorization": "Bearer {env:GITHUB_PERSONAL_ACCESS_TOKEN}",
-                "X-MCP-Toolsets": "context,pull_requests,repos,actions"
+                "X-MCP-Toolsets": "context,pull_requests,repos,actions,issues"
             }
         }
     }
