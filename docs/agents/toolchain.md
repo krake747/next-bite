@@ -135,3 +135,7 @@ pnpm test          # Vitest (all tiers)
 ```
 
 The lefthook pre-push hook runs `pnpm check` (see `ci-gate.md`).
+
+After changing `optimizeDeps`, test projects, or dependencies, run the affected tier once from a
+cold Vite cache (`rm -rf node_modules/.vite`) before pushing. Warm caches hide mid-run optimizer
+reloads that fail deterministically on CI, which is always cold.

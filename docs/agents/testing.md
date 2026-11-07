@@ -93,7 +93,9 @@ describe("Badge", () => {
   `await input.upload(files)`; open popups through the real path
 - `await expect.element(...)` auto-retries; use it instead of `waitFor`. Poll plain JS state with
   `await expect.poll(() => value).matcher(...)`; use `await vi.waitUntil(() => lookup, { message })`
-  for a lookup that turns truthy, never `vi.waitFor` around an assertion
+  for a lookup that turns truthy, never `vi.waitFor` around an assertion. When a faster wait newly
+  fails, it exposed a real race: fix the timing or assert the settled state, never slow the wait
+  back down
 - `@testing-library/jest-dom` matchers are auto-loaded via `src/vitest.setup.ts`
 
 ## MSW for HTTP
