@@ -33,16 +33,16 @@ export function FriendsFilter({
         <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-start">
             <div className="flex flex-1 flex-col gap-3">
                 <div className="flex flex-wrap items-center gap-2">
-                    <div className="flex items-center gap-1.5 text-stone-600">
+                    <div className="flex items-center gap-1.5 text-muted-foreground">
                         <Funnel
                             className={cx(
                                 "size-4",
-                                filter !== null && filter !== "" && "fill-stone-500 text-stone-600",
+                                filter !== null && filter !== "" && "fill-muted-foreground text-muted-foreground",
                             )}
                         />
                         <span className="text-xs font-medium tracking-wide uppercase">Filter</span>
                     </div>
-                    <div className="h-4 w-px bg-stone-200" />
+                    <div className="h-4 w-px bg-border" />
                     {friends?.map((friend: Readonly<{ name: string }>) => (
                         <button
                             key={friend.name}
@@ -51,8 +51,8 @@ export function FriendsFilter({
                             className={cx(
                                 "inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium transition-all",
                                 filter === friend.name
-                                    ? "bg-tomato-600 text-inverse shadow-sm"
-                                    : "bg-stone-100 text-stone-600 hover:bg-stone-200",
+                                    ? "bg-primary text-inverse shadow-sm"
+                                    : "bg-surface-muted text-muted-foreground hover:bg-border-strong",
                             )}
                         >
                             {friend.name}
@@ -64,7 +64,7 @@ export function FriendsFilter({
                             onClick={() => {
                                 handleFilter(null)
                             }}
-                            className="text-xs font-medium text-tomato-600 underline-offset-2 transition-colors hover:text-tomato-700 hover:underline"
+                            className="text-xs font-medium text-primary underline-offset-2 transition-colors hover:underline"
                         >
                             Clear
                         </button>
@@ -79,13 +79,13 @@ export function FriendsFilter({
                         className="w-full"
                     />
                     <div className="flex items-center gap-1.5">
-                        <ArrowUpDown className="size-3.5 text-stone-400" />
+                        <ArrowUpDown className="size-3.5 text-muted-foreground" />
                         <button
                             type="button"
                             onClick={() => {
                                 onSortChange(sortOrder === "added" ? "name" : "added")
                             }}
-                            className="text-xs font-medium whitespace-nowrap text-stone-600 transition-colors hover:text-tomato-600"
+                            className="text-xs font-medium whitespace-nowrap text-muted-foreground transition-colors hover:text-primary"
                         >
                             {sortOrder === "added" ? "Recently added" : "Name (A-Z)"}
                         </button>

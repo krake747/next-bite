@@ -33,7 +33,7 @@ export function RestaurantHeader({
     detailsHref?: string | undefined
 }>) {
     const heading = (
-        <h3 className="flex-1 font-display text-xl leading-7 font-semibold tracking-tight text-balance text-stone-900">
+        <h3 className="flex-1 font-display text-xl leading-7 font-semibold tracking-tight text-balance text-foreground">
             {name}
         </h3>
     )
@@ -45,10 +45,7 @@ export function RestaurantHeader({
                         <Link
                             to={detailsHref}
                             viewTransition
-                            className={cx(
-                                focusRing(),
-                                "flex-1 rounded-control transition-colors hover:text-tomato-700",
-                            )}
+                            className={cx(focusRing(), "flex-1 rounded-control transition-colors hover:text-primary")}
                         >
                             {heading}
                         </Link>
@@ -73,11 +70,11 @@ export function RestaurantHeader({
             </div>
 
             {(location !== undefined || openingHours !== undefined) && (
-                <div className="flex flex-col gap-2.5 rounded-xl bg-stone-50/60 p-3">
+                <div className="flex flex-col gap-2.5 rounded-xl bg-surface-muted/60 p-3">
                     {location !== undefined && location !== "" && (
-                        <div className="flex items-center gap-2.5 text-sm text-stone-600">
-                            <div className="flex size-6 items-center justify-center rounded-full bg-stone-100">
-                                <MapPin className="size-3.5 text-stone-400" />
+                        <div className="flex items-center gap-2.5 text-sm text-muted-foreground">
+                            <div className="flex size-6 items-center justify-center rounded-full bg-surface-muted">
+                                <MapPin className="size-3.5 text-muted-foreground" />
                             </div>
                             {hasLocation ? (
                                 <a
@@ -85,7 +82,7 @@ export function RestaurantHeader({
                                     target="_blank"
                                     rel="noopener noreferrer"
                                     title={location}
-                                    className="truncate transition-colors duration-200 hover:text-tomato-600"
+                                    className="truncate transition-colors duration-200 hover:text-primary"
                                 >
                                     {location}
                                 </a>

@@ -107,11 +107,11 @@ function GroupsPage() {
                                                 to="/groups/$groupId"
                                                 params={{ groupId: group._id }}
                                                 viewTransition
-                                                className="font-display text-lg font-semibold text-balance text-stone-900 hover:text-tomato-700"
+                                                className="font-display text-lg font-semibold text-balance text-foreground hover:text-primary"
                                             >
                                                 {group.name}
                                             </Link>
-                                            <p className="mt-1 text-sm text-stone-600">
+                                            <p className="mt-1 text-sm text-muted-foreground">
                                                 {role === "admin" ? "Admin" : "Member"}
                                             </p>
                                         </li>

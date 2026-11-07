@@ -14,7 +14,9 @@ export function SharedRestaurantList({
 }>) {
     if (items.length === 0) {
         return (
-            <p className="px-4 py-3 text-sm text-stone-600">No restaurants yet. Share somewhere you'd love to try.</p>
+            <p className="px-4 py-3 text-sm text-muted-foreground">
+                No restaurants yet. Share somewhere you'd love to try.
+            </p>
         )
     }
     return (
@@ -23,11 +25,14 @@ export function SharedRestaurantList({
                 <li key={item.id}>
                     <div className="flex items-center gap-2.5 px-4 py-2.5">
                         <div className="min-w-0 flex-1">
-                            <p className="truncate text-sm font-medium text-stone-900" title={item.name}>
+                            <p className="truncate text-sm font-medium text-foreground" title={item.name}>
                                 {item.name}
                             </p>
                             {item.ownerName !== undefined && item.ownerName !== "" && (
-                                <p className="truncate text-xs text-stone-600" title={`Added by ${item.ownerName}`}>
+                                <p
+                                    className="truncate text-xs text-muted-foreground"
+                                    title={`Added by ${item.ownerName}`}
+                                >
                                     Added by {item.ownerName}
                                 </p>
                             )}

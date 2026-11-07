@@ -23,8 +23,8 @@ function GroupNotFound() {
             <PageContainer>
                 <BackNav backTo="/groups" label="Back to groups" />
                 <div className="py-16 text-center">
-                    <p className="font-display text-2xl font-semibold text-balance text-stone-900">Group not found</p>
-                    <p className="mt-2 text-sm text-pretty text-stone-600">
+                    <p className="font-display text-2xl font-semibold text-balance text-foreground">Group not found</p>
+                    <p className="mt-2 text-sm text-pretty text-muted-foreground">
                         This group does not exist or was never shared with you.
                     </p>
                 </div>
@@ -47,9 +47,9 @@ function AddFromMyList({ groupId, sharedIds }: Readonly<{ groupId: Id<"groups">;
     const candidates = restaurants.filter((r) => !sharedIds.has(r._id))
     if (candidates.length === 0) {
         return (
-            <p className="pt-4 text-sm text-stone-600">
+            <p className="pt-4 text-sm text-muted-foreground">
                 Every restaurant you saved is already on this list.{" "}
-                <Link to="/" viewTransition className="font-medium text-tomato-700 hover:underline">
+                <Link to="/" viewTransition className="font-medium text-primary hover:underline">
                     Save another one
                 </Link>{" "}
                 to add it here.
@@ -64,8 +64,8 @@ function AddFromMyList({ groupId, sharedIds }: Readonly<{ groupId: Id<"groups">;
                     className="flex items-center justify-between gap-3 rounded-card border border-border bg-surface p-4 shadow-card"
                 >
                     <div className="min-w-0">
-                        <p className="truncate text-sm font-medium text-stone-900">{restaurant.name}</p>
-                        <p className="text-xs text-stone-600">{restaurant.cuisine}</p>
+                        <p className="truncate text-sm font-medium text-foreground">{restaurant.name}</p>
+                        <p className="text-xs text-muted-foreground">{restaurant.cuisine}</p>
                     </div>
                     <Button
                         size="sm"
@@ -121,11 +121,11 @@ function GroupRestaurantsSection({
                             to="/restaurants/$restaurantId"
                             params={{ restaurantId: shared._id }}
                             viewTransition
-                            className="font-display text-lg font-semibold text-balance text-stone-900 hover:text-tomato-700"
+                            className="font-display text-lg font-semibold text-balance text-foreground hover:text-primary"
                         >
                             {shared.name}
                         </Link>
-                        <p className="mt-1 text-sm text-stone-600">
+                        <p className="mt-1 text-sm text-muted-foreground">
                             {shared.cuisine} · {shared.ownerName}
                             {social !== undefined && (social.wantCount > 0 || social.beenCount > 0)
                                 ? ` · ${social.wantCount} want · ${social.beenCount} been`
@@ -197,12 +197,12 @@ function GroupDetail() {
                     <GroupMembers members={group.members.map((m) => ({ name: m.name }))} />
                 </section>
                 <section aria-label="Shared restaurants" className="pt-8">
-                    <h2 className="font-display text-2xl font-semibold text-balance text-stone-900">Shared list</h2>
+                    <h2 className="font-display text-2xl font-semibold text-balance text-foreground">Shared list</h2>
                     <GroupRestaurantsSection groupId={groupConvexId} restaurants={restaurants} myId={myId} />
                 </section>
                 {auth.isAuthenticated && (
                     <section aria-label="Add your restaurants" className="pt-8">
-                        <h2 className="font-display text-2xl font-semibold text-balance text-stone-900">
+                        <h2 className="font-display text-2xl font-semibold text-balance text-foreground">
                             Add your restaurants
                         </h2>
                         <AddFromMyList groupId={groupConvexId} sharedIds={sharedIds} />

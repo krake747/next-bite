@@ -115,8 +115,8 @@ function HomeFeed({
 }>) {
     return (
         <section aria-label="Latest activity" className="pt-10">
-            <h2 className="font-display text-2xl font-semibold text-balance text-stone-900">Latest activity</h2>
-            <p className="mt-1 text-stone-600">Fresh saves and shouts from your people.</p>
+            <h2 className="font-display text-2xl font-semibold text-balance text-foreground">Latest activity</h2>
+            <p className="mt-1 text-muted-foreground">Fresh saves and shouts from your people.</p>
             {feed.length === 0 ? (
                 <EmptyState
                     title="No crew activity yet"
@@ -173,8 +173,10 @@ function HomeDiscover({
     const filtered = filterRestaurants(restaurants, filterState.filter, filterState.search, sortOrder)
     return (
         <section aria-label="Discover" className="pt-10">
-            <h2 className="font-display text-2xl font-semibold text-balance text-stone-900">Discover</h2>
-            <p className="mt-1 text-stone-600">Every place on the short list. Filter by friend, search by craving.</p>
+            <h2 className="font-display text-2xl font-semibold text-balance text-foreground">Discover</h2>
+            <p className="mt-1 text-muted-foreground">
+                Every place on the short list. Filter by friend, search by craving.
+            </p>
             <div className="pt-4">
                 <FriendsFilter
                     filter={filterState.filter}
@@ -237,15 +239,17 @@ function LandingHero() {
             <BackgroundLayers />
             <div className="relative mx-auto w-full max-w-3xl px-4 py-14 text-center sm:px-6 sm:py-20 lg:py-24">
                 <LandingEyebrow />
-                <h1 className="mt-6 font-display text-5xl leading-tight font-semibold tracking-tight text-balance text-stone-900 sm:text-6xl lg:text-7xl">
+                <h1 className="mt-6 font-display text-5xl leading-tight font-semibold tracking-tight text-balance text-foreground sm:text-6xl lg:text-7xl">
                     Your friends have good taste
                 </h1>
-                <p className="mx-auto mt-6 max-w-xl text-xl leading-relaxed text-pretty text-stone-600">
+                <p className="mx-auto mt-6 max-w-xl text-xl leading-relaxed text-pretty text-muted-foreground">
                     Next Bite is the short list of places your people actually want to try. Save spots, vote want-to-go,
                     and pick the next dinner in minutes.
                 </p>
                 <LandingActions />
-                <p className="mt-4 text-sm text-stone-600">Free to start · No public reviews · Your list stays yours</p>
+                <p className="mt-4 text-sm text-muted-foreground">
+                    Free to start · No public reviews · Your list stays yours
+                </p>
             </div>
         </section>
     )
@@ -317,18 +321,22 @@ function Home() {
                         </div>
                     </>
                 ) : (
-                    <>
-                        <HomeFeed feed={feed} actions={actions} />
-                        <HomeDiscover
-                            restaurants={restaurantListState}
-                            sortOrder={sortOrder}
-                            onSortChange={setSortOrder}
-                            onAddClick={() => {
-                                setShowAddDialog(true)
-                            }}
-                            actions={actions}
-                        />
-                    </>
+                    <div className="grid lg:grid-cols-5 lg:gap-12">
+                        <div className="min-w-0 lg:col-span-2">
+                            <HomeFeed feed={feed} actions={actions} />
+                        </div>
+                        <div className="min-w-0 lg:col-span-3">
+                            <HomeDiscover
+                                restaurants={restaurantListState}
+                                sortOrder={sortOrder}
+                                onSortChange={setSortOrder}
+                                onAddClick={() => {
+                                    setShowAddDialog(true)
+                                }}
+                                actions={actions}
+                            />
+                        </div>
+                    </div>
                 )}
                 {actions.auth.isAuthenticated && (
                     <AddRestaurantDialog show={showAddDialog} onOpenChange={setShowAddDialog} />

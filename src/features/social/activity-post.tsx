@@ -15,8 +15,8 @@ function ActivityAuthorHeader({ author, time }: Readonly<{ author: ActivityAutho
         <div className="flex items-center gap-3 p-4 pb-0">
             <AvatarGroup members={[{ name: author.name, src: author.src }]} max={1} />
             <div>
-                <p className="text-sm font-semibold text-stone-900">{author.name}</p>
-                <p className="text-xs text-stone-600">{time}</p>
+                <p className="text-sm font-semibold text-foreground">{author.name}</p>
+                <p className="text-xs text-muted-foreground">{time}</p>
             </div>
         </div>
     )
@@ -37,8 +37,8 @@ function ActivityRestaurant({
         <div className="space-y-2">
             {showCover && <LazyImage src={cover} alt={name} aspectRatio="16/9" className="rounded-lg" />}
             <div>
-                <p className="font-display text-lg font-semibold text-balance text-stone-900">{name}</p>
-                {cuisine !== undefined && cuisine !== "" && <p className="text-sm text-stone-600">{cuisine}</p>}
+                <p className="font-display text-lg font-semibold text-balance text-foreground">{name}</p>
+                {cuisine !== undefined && cuisine !== "" && <p className="text-sm text-muted-foreground">{cuisine}</p>}
             </div>
         </div>
     )
@@ -87,7 +87,7 @@ export function ActivityPost({
         <article className="overflow-hidden rounded-card border border-border bg-surface shadow-card">
             <ActivityAuthorHeader author={author} time={time} />
             <div className="space-y-3 p-4">
-                <p className="text-body text-stone-800">{text}</p>
+                <p className="text-body text-foreground">{text}</p>
                 <ActivityRestaurant
                     name={restaurant.name}
                     cuisine={restaurant.cuisine}

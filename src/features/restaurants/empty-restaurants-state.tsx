@@ -35,11 +35,11 @@ export function EmptyRestaurantsState({
                 <div className="absolute -bottom-1 -left-1 size-2 rounded-full bg-mango-400/60" />
             </div>
 
-            <h3 className="mb-2 font-display text-xl font-semibold text-balance text-stone-900">
+            <h3 className="mb-2 font-display text-xl font-semibold text-balance text-foreground">
                 {isSearching ? "No matches found" : "The table is set, but empty"}
             </h3>
 
-            <p className="mb-6 max-w-sm text-stone-600">
+            <p className="mb-6 max-w-sm text-muted-foreground">
                 {isSearching ? (
                     "Try adjusting your filters or search to discover more restaurants."
                 ) : (

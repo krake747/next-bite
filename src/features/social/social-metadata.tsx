@@ -27,7 +27,7 @@ export function SocialMetadata({
     return (
         <div className="space-y-0.5">
             {lines.map((line) => (
-                <p key={line} className="text-sm text-stone-600">
+                <p key={line} className="text-sm text-muted-foreground">
                     {line}
                 </p>
             ))}

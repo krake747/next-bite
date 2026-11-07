@@ -50,10 +50,10 @@ function ProfileForm({
 
     return (
         <section aria-label={heading} className="pt-6">
-            <h2 className="font-display text-2xl font-semibold text-balance text-stone-900">{heading}</h2>
-            <p className="mt-1 text-sm text-stone-600">{subheading}</p>
+            <h2 className="font-display text-2xl font-semibold text-balance text-foreground">{heading}</h2>
+            <p className="mt-1 text-sm text-muted-foreground">{subheading}</p>
             <div className="mt-3 rounded-card border border-border bg-surface p-5 shadow-card">
-                <p className="text-sm text-stone-600">{email}</p>
+                <p className="text-sm text-muted-foreground">{email}</p>
                 <div className="mt-3 flex flex-col gap-3 sm:flex-row sm:items-end">
                     <div className="flex flex-1 flex-col gap-1.5">
                         <label htmlFor="profile-name" className={fieldLabel()}>
@@ -74,7 +74,7 @@ function ProfileForm({
                                 {error}
                             </p>
                         )}
-                        {saved && <p className="text-sm text-stone-600">Saved.</p>}
+                        {saved && <p className="text-sm text-muted-foreground">Saved.</p>}
                     </div>
                     <Button type="button" disabled={updateProfile.isPending} onClick={() => void handleSave()}>
                         Save
@@ -176,11 +176,11 @@ function PlacesSection({
 }: Readonly<{ title: string; restaurants: ReadonlyArray<Restaurant>; emptyText: string }>) {
     return (
         <section aria-label={title} className="pt-8">
-            <h2 className="font-display text-2xl font-semibold text-balance text-stone-900">
+            <h2 className="font-display text-2xl font-semibold text-balance text-foreground">
                 {title} · {restaurants.length}
             </h2>
             {restaurants.length === 0 ? (
-                <p className="pt-2 text-sm text-stone-600">{emptyText}</p>
+                <p className="pt-2 text-sm text-muted-foreground">{emptyText}</p>
             ) : (
                 <ul className="grid gap-3 pt-4 md:grid-cols-2">
                     {restaurants.map((restaurant) => (
@@ -192,11 +192,11 @@ function PlacesSection({
                                 to="/restaurants/$restaurantId"
                                 params={{ restaurantId: restaurant._id }}
                                 viewTransition
-                                className="font-display text-lg font-semibold text-balance text-stone-900 hover:text-tomato-700"
+                                className="font-display text-lg font-semibold text-balance text-foreground hover:text-primary"
                             >
                                 {restaurant.name}
                             </Link>
-                            <p className="mt-1 text-sm text-stone-600">
+                            <p className="mt-1 text-sm text-muted-foreground">
                                 {restaurant.cuisine} · {restaurant.address.label}
                             </p>
                         </li>

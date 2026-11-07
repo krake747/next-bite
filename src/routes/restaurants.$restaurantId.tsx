@@ -58,57 +58,63 @@ function DetailHero({
 }>) {
     return (
         <div className="overflow-hidden rounded-card border border-border bg-surface shadow-card">
-            <RestaurantGallery photos={photos} name={restaurant.name} cuisine={restaurant.cuisine} />
-            <RestaurantHeader
-                name={restaurant.name}
-                link={restaurant.details?.link}
-                ownerName={restaurant.ownerName}
-                wantCount={social.wantCount}
-                beenCount={social.beenCount}
-                location={restaurant.address.label}
-                hasLocation={restaurant.address.enrichment?.coords !== undefined}
-                openingHours={restaurant.address.enrichment?.openingHours}
-                onShowHours={onShowHours}
-            />
-            <div className="flex flex-wrap items-center gap-3 px-5 pb-2 md:px-4">
-                <RestaurantInterestButton
-                    wanted={social.wanted}
-                    wantCount={social.wantCount}
-                    onToggleWant={onToggleWant}
-                />
-                <ReactionBar
-                    reactions={{
-                        liked: social.liked,
-                        likeCount: social.likeCount,
-                        onToggleLike,
-                        commentCount: social.comments.length,
-                        onComment: () => {},
-                        wanted: social.wanted,
-                        wantCount: social.wantCount,
-                        onToggleWant,
-                    }}
-                />
-                {shareAction}
-            </div>
-            <div className="space-y-3 p-5 md:p-4">
-                {restaurant.details?.notes !== undefined && restaurant.details.notes !== "" && (
-                    <div>
-                        <h2 className="font-display text-lg font-semibold text-balance text-stone-900">
-                            Why it&apos;s recommended
-                        </h2>
-                        <p className="text-body mt-1 leading-relaxed text-pretty text-stone-700">
-                            {restaurant.details.notes}
-                        </p>
+            <div className="grid divide-border lg:grid-cols-5 lg:divide-x">
+                <div className="lg:col-span-3">
+                    <RestaurantGallery photos={photos} name={restaurant.name} cuisine={restaurant.cuisine} />
+                </div>
+                <div className="min-w-0 lg:col-span-2">
+                    <RestaurantHeader
+                        name={restaurant.name}
+                        link={restaurant.details?.link}
+                        ownerName={restaurant.ownerName}
+                        wantCount={social.wantCount}
+                        beenCount={social.beenCount}
+                        location={restaurant.address.label}
+                        hasLocation={restaurant.address.enrichment?.coords !== undefined}
+                        openingHours={restaurant.address.enrichment?.openingHours}
+                        onShowHours={onShowHours}
+                    />
+                    <div className="flex flex-wrap items-center gap-3 px-5 pb-2 md:px-4">
+                        <RestaurantInterestButton
+                            wanted={social.wanted}
+                            wantCount={social.wantCount}
+                            onToggleWant={onToggleWant}
+                        />
+                        <ReactionBar
+                            reactions={{
+                                liked: social.liked,
+                                likeCount: social.likeCount,
+                                onToggleLike,
+                                commentCount: social.comments.length,
+                                onComment: () => {},
+                                wanted: social.wanted,
+                                wantCount: social.wantCount,
+                                onToggleWant,
+                            }}
+                        />
+                        {shareAction}
                     </div>
-                )}
-                <SocialMetadata
-                    ownerName={restaurant.ownerName}
-                    wantCount={social.wantCount}
-                    beenCount={social.beenCount}
-                />
-                {social.interestedNames.length > 0 && (
-                    <AvatarGroup members={social.interestedNames.map((name) => ({ name }))} />
-                )}
+                    <div className="space-y-3 p-5 md:p-4">
+                        {restaurant.details?.notes !== undefined && restaurant.details.notes !== "" && (
+                            <div>
+                                <h2 className="font-display text-lg font-semibold text-balance text-foreground">
+                                    Why it&apos;s recommended
+                                </h2>
+                                <p className="text-body mt-1 leading-relaxed text-pretty text-foreground">
+                                    {restaurant.details.notes}
+                                </p>
+                            </div>
+                        )}
+                        <SocialMetadata
+                            ownerName={restaurant.ownerName}
+                            wantCount={social.wantCount}
+                            beenCount={social.beenCount}
+                        />
+                        {social.interestedNames.length > 0 && (
+                            <AvatarGroup members={social.interestedNames.map((name) => ({ name }))} />
+                        )}
+                    </div>
+                </div>
             </div>
         </div>
     )
@@ -120,7 +126,7 @@ function DetailPhotos({ photos }: Readonly<{ photos: ReadonlyArray<GalleryPhoto>
     }
     return (
         <div className="rounded-card border border-border bg-surface p-4 shadow-card">
-            <h2 className="font-display text-lg font-semibold text-balance text-stone-900">Friends&apos; photos</h2>
+            <h2 className="font-display text-lg font-semibold text-balance text-foreground">Friends&apos; photos</h2>
             <div className="pt-3">
                 <PhotoGallery photos={photos} />
             </div>
@@ -162,7 +168,9 @@ function DetailComments({
                     deleteComment.mutate({ id: asCommentId(id) })
                 }}
             />
-            {!isAuthenticated && <p className="pt-2 text-sm text-stone-600">Sign in to join the conversation.</p>}
+            {!isAuthenticated && (
+                <p className="pt-2 text-sm text-muted-foreground">Sign in to join the conversation.</p>
+            )}
         </div>
     )
 }
@@ -171,7 +179,7 @@ function DetailLoading() {
     return (
         <PageLayout>
             <PageContainer>
-                <p className="py-16 text-center text-sm text-stone-600">Loading…</p>
+                <p className="py-16 text-center text-sm text-muted-foreground">Loading…</p>
             </PageContainer>
         </PageLayout>
     )
@@ -183,8 +191,8 @@ function DetailNotFound() {
             <PageContainer>
                 <BackNav backTo="/" label="Back to restaurants" />
                 <div className="py-16 text-center">
-                    <p className="font-display text-2xl font-semibold text-balance text-stone-900">Spot not found</p>
-                    <p className="mt-2 text-sm text-pretty text-stone-600">
+                    <p className="font-display text-2xl font-semibold text-balance text-foreground">Spot not found</p>
+                    <p className="mt-2 text-sm text-pretty text-muted-foreground">
                         This page went out for snacks and never came back.
                     </p>
                 </div>
@@ -267,7 +275,7 @@ function RestaurantDetail() {
         <PageLayout>
             <PageContainer>
                 <BackNav backTo="/" label="Back to restaurants" />
-                <div className="mx-auto max-w-3xl space-y-6 pt-4">
+                <div className="mx-auto max-w-3xl space-y-6 pt-4 lg:max-w-5xl">
                     <DetailHero
                         restaurant={restaurant}
                         social={social}

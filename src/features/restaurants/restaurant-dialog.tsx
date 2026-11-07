@@ -67,7 +67,7 @@ export function RestaurantDialog(props: RestaurantDialogProps) {
                         )
                     ) : (
                         <div className="space-y-4 py-8 text-center">
-                            <p className="text-stone-600">{gateText}</p>
+                            <p className="text-muted-foreground">{gateText}</p>
                             <Button render={<Link to="/login" viewTransition />} className="w-full">
                                 Sign In
                             </Button>

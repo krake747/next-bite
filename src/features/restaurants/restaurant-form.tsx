@@ -195,7 +195,7 @@ export function RestaurantForm(props: Readonly<RestaurantFormProps>) {
             </div>
             {submitOutcome.kind !== "idle" && (
                 <div role={submitOutcome.kind === "failed" ? "alert" : "status"} className="space-y-2 pt-2">
-                    <p className="text-sm text-stone-600">{submitOutcome.message}</p>
+                    <p className="text-sm text-muted-foreground">{submitOutcome.message}</p>
                     {submitOutcome.kind === "uncertain" && (
                         <Button type="button" tone="secondary" onClick={handleRetry}>
                             Retry safely

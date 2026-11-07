@@ -40,15 +40,15 @@ export function ShareToGroupDialog({
             <DialogBackdrop>
                 <DialogPanel size="md" className="max-h-[85vh]">
                     <DialogTitle>Share</DialogTitle>
-                    <p className="mt-1 text-sm text-stone-600">
+                    <p className="mt-1 text-sm text-muted-foreground">
                         Share {restaurantName} with friends and groups. Only people you share with see it.
                     </p>
-                    <h3 className="pt-4 font-display text-base font-semibold text-stone-900">Friends</h3>
+                    <h3 className="pt-4 font-display text-base font-semibold text-foreground">Friends</h3>
                     <div className="pt-2">
                         {friends === undefined ? (
-                            <p className="text-sm text-stone-600">Loading friends…</p>
+                            <p className="text-sm text-muted-foreground">Loading friends…</p>
                         ) : friends.length === 0 ? (
-                            <p className="text-sm text-stone-600">
+                            <p className="text-sm text-muted-foreground">
                                 No friends yet. Add some from the Friends tab first.
                             </p>
                         ) : (
@@ -60,7 +60,7 @@ export function ShareToGroupDialog({
                                             key={friend.authUserId}
                                             className="flex items-center justify-between gap-3 rounded-card border border-border bg-surface p-3"
                                         >
-                                            <span className="truncate text-sm font-medium text-stone-900">
+                                            <span className="truncate text-sm font-medium text-foreground">
                                                 {friend.name}
                                             </span>
                                             {shared ? (
@@ -97,12 +97,12 @@ export function ShareToGroupDialog({
                             </ul>
                         )}
                     </div>
-                    <h3 className="pt-4 font-display text-base font-semibold text-stone-900">Groups</h3>
+                    <h3 className="pt-4 font-display text-base font-semibold text-foreground">Groups</h3>
                     <div className="pt-2">
                         {groups === undefined ? (
-                            <p className="text-sm text-stone-600">Loading groups…</p>
+                            <p className="text-sm text-muted-foreground">Loading groups…</p>
                         ) : groups.length === 0 ? (
-                            <p className="text-sm text-stone-600">
+                            <p className="text-sm text-muted-foreground">
                                 You are not in any group yet. Create one from the Groups tab first.
                             </p>
                         ) : (
@@ -114,7 +114,7 @@ export function ShareToGroupDialog({
                                             key={group._id}
                                             className="flex items-center justify-between gap-3 rounded-card border border-border bg-surface p-3"
                                         >
-                                            <span className="truncate text-sm font-medium text-stone-900">
+                                            <span className="truncate text-sm font-medium text-foreground">
                                                 {group.name}
                                             </span>
                                             {shared ? (

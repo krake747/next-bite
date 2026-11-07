@@ -46,7 +46,7 @@ export function PhotoGallery({
                     onClick={() => {
                         lightbox.openAt(3)
                     }}
-                    className="mt-2 cursor-pointer text-sm font-medium text-tomato-700 hover:text-tomato-600"
+                    className="mt-2 cursor-pointer text-sm font-medium text-primary hover:underline"
                 >
                     View all {photos.length} photos
                 </button>

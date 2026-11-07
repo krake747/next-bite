@@ -76,7 +76,7 @@ function InviteByEmailForm() {
                         {error}
                     </p>
                 )}
-                {sent && <p className="text-sm text-stone-600">Request sent.</p>}
+                {sent && <p className="text-sm text-muted-foreground">Request sent.</p>}
             </div>
             <Button type="submit" disabled={requestFriend.isPending}>
                 Send request
@@ -115,7 +115,7 @@ function RequestsSection() {
 
     return (
         <section aria-label="Friend requests" className="pt-8">
-            <h2 className="font-display text-2xl font-semibold text-balance text-stone-900">Requests</h2>
+            <h2 className="font-display text-2xl font-semibold text-balance text-foreground">Requests</h2>
             {error !== null && (
                 <p role="alert" className="pt-2 text-sm text-destructive">
                     {error}
@@ -128,8 +128,8 @@ function RequestsSection() {
                         className="flex items-center justify-between gap-3 rounded-card border border-border bg-surface p-4 shadow-card"
                     >
                         <div className="min-w-0">
-                            <p className="truncate text-sm font-medium text-stone-900">{request.name}</p>
-                            <p className="text-xs text-stone-600">Wants to be friends</p>
+                            <p className="truncate text-sm font-medium text-foreground">{request.name}</p>
+                            <p className="text-xs text-muted-foreground">Wants to be friends</p>
                         </div>
                         <Button
                             size="sm"
@@ -148,8 +148,8 @@ function RequestsSection() {
                         className="flex items-center justify-between gap-3 rounded-card border border-border bg-surface p-4 shadow-card"
                     >
                         <div className="min-w-0">
-                            <p className="truncate text-sm font-medium text-stone-900">{request.name}</p>
-                            <p className="text-xs text-stone-600">Request sent</p>
+                            <p className="truncate text-sm font-medium text-foreground">{request.name}</p>
+                            <p className="text-xs text-muted-foreground">Request sent</p>
                         </div>
                     </li>
                 ))}
@@ -164,7 +164,7 @@ function FriendDiscoveries({ ownerId, ownerName }: Readonly<{ ownerId: string; o
         return null
     }
     if (discoveries.length === 0) {
-        return <p className="pt-1 text-xs text-stone-600">No discoveries yet.</p>
+        return <p className="pt-1 text-xs text-muted-foreground">No discoveries yet.</p>
     }
     return (
         <ul className="space-y-1 pt-2">
@@ -174,11 +174,11 @@ function FriendDiscoveries({ ownerId, ownerName }: Readonly<{ ownerId: string; o
                         to="/restaurants/$restaurantId"
                         params={{ restaurantId: restaurant._id }}
                         viewTransition
-                        className="text-tomato-700 hover:underline"
+                        className="text-primary hover:underline"
                     >
                         {restaurant.name}
                     </Link>
-                    <span className="text-stone-600"> · {restaurant.cuisine}</span>
+                    <span className="text-muted-foreground"> · {restaurant.cuisine}</span>
                     <span className="sr-only"> by {ownerName}</span>
                 </li>
             ))}
@@ -234,7 +234,7 @@ function FriendsList() {
                         className="rounded-card border border-border bg-surface p-5 shadow-card"
                     >
                         <div className="flex items-center justify-between gap-3">
-                            <p className="truncate font-display text-lg font-semibold text-balance text-stone-900">
+                            <p className="truncate font-display text-lg font-semibold text-balance text-foreground">
                                 {friend.name}
                             </p>
                             <Button
@@ -268,7 +268,7 @@ function FriendsPage() {
                     <InviteByEmailForm />
                     <RequestsSection />
                     <section aria-label="Friends" className="pt-8">
-                        <h2 className="font-display text-2xl font-semibold text-balance text-stone-900">
+                        <h2 className="font-display text-2xl font-semibold text-balance text-foreground">
                             Your friends
                         </h2>
                         <FriendsList />

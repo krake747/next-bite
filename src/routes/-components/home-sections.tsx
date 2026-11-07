@@ -11,9 +11,7 @@ export type LandingStats = {
 }
 
 export function LandingEyebrow() {
-    return (
-        <p className="text-xs font-bold tracking-widest text-tomato-700 uppercase">Shared by friends, not algorithms</p>
-    )
+    return <p className="text-xs font-bold tracking-widest text-primary uppercase">Shared by friends, not algorithms</p>
 }
 
 export function LandingActions() {
@@ -59,22 +57,22 @@ export function CommunityStats({ stats }: Readonly<{ stats: LandingStats }>) {
     ]
     return (
         <section aria-label="Community activity" className="mx-auto w-full max-w-5xl px-4 pt-12 sm:px-6 lg:px-12">
-            <h2 className="text-center font-display text-2xl font-semibold text-balance text-stone-900">
+            <h2 className="text-center font-display text-2xl font-semibold text-balance text-foreground">
                 The short list keeps growing
             </h2>
-            <p className="mt-2 text-center text-stone-600">Live counts from friends sharing right now.</p>
+            <p className="mt-2 text-center text-muted-foreground">Live counts from friends sharing right now.</p>
             <dl className="mt-6 grid grid-cols-3 divide-x divide-border rounded-card border border-border bg-surface">
                 {statEntries.map((entry) => (
                     <div key={entry.label} className="flex flex-col px-4 py-5 text-center">
-                        <dt className="order-2 mt-1 text-sm text-stone-600">{entry.label}</dt>
-                        <dd className="order-1 font-display text-3xl font-semibold text-balance text-stone-900 tabular-nums sm:text-4xl">
+                        <dt className="order-2 mt-1 text-sm text-muted-foreground">{entry.label}</dt>
+                        <dd className="order-1 font-display text-3xl font-semibold text-balance text-foreground tabular-nums sm:text-4xl">
                             {entry.value}
                         </dd>
                     </div>
                 ))}
             </dl>
             {stats.recentAdds.length > 0 && (
-                <p className="mt-4 text-center text-sm text-stone-600">
+                <p className="mt-4 text-center text-sm text-muted-foreground">
                     Fresh on the list:{" "}
                     {stats.recentAdds.map((recent) => `${recent.name} (${recent.cuisine})`).join(" · ")}
                 </p>
@@ -101,18 +99,18 @@ const steps = [
 export function HowItWorks() {
     return (
         <section aria-label="How it works" className="mx-auto w-full max-w-5xl px-4 pt-12 pb-4 sm:px-6 lg:px-12">
-            <h2 className="text-center font-display text-2xl font-semibold text-balance text-stone-900">
+            <h2 className="text-center font-display text-2xl font-semibold text-balance text-foreground">
                 How it works
             </h2>
-            <p className="mt-2 text-center text-stone-600">Three steps between group chat chaos and a table.</p>
+            <p className="mt-2 text-center text-muted-foreground">Three steps between group chat chaos and a table.</p>
             <ol className="mx-auto mt-8 grid max-w-3xl gap-8 sm:grid-cols-3 sm:gap-6">
                 {steps.map((step, index) => (
-                    <li key={step.title} className="border-t-2 border-tomato-600 pt-4">
-                        <p className="font-display text-4xl font-semibold text-tomato-600 tabular-nums">{index + 1}</p>
-                        <p className="mt-2 font-display text-lg font-semibold text-balance text-stone-900">
+                    <li key={step.title} className="border-t-2 border-primary pt-4">
+                        <p className="font-display text-4xl font-semibold text-primary tabular-nums">{index + 1}</p>
+                        <p className="mt-2 font-display text-lg font-semibold text-balance text-foreground">
                             {step.title}
                         </p>
-                        <p className="mt-1 text-sm leading-relaxed text-stone-600">{step.body}</p>
+                        <p className="mt-1 text-sm leading-relaxed text-muted-foreground">{step.body}</p>
                     </li>
                 ))}
             </ol>
@@ -123,10 +121,10 @@ export function HowItWorks() {
 export function LandingCloser() {
     return (
         <section aria-label="Get started" className="mx-auto w-full max-w-3xl px-4 py-16 text-center sm:px-6">
-            <h2 className="font-display text-3xl font-semibold text-balance text-stone-900 sm:text-4xl">
+            <h2 className="font-display text-3xl font-semibold text-balance text-foreground sm:text-4xl">
                 Stop debating dinner in the chat.
             </h2>
-            <p className="mx-auto mt-3 max-w-md text-stone-600">
+            <p className="mx-auto mt-3 max-w-md text-muted-foreground">
                 Bring your people, build the short list, and always know where to go next.
             </p>
             <div className="mt-6 flex justify-center">

@@ -229,7 +229,7 @@ function RestaurantCardNotes({ notes }: Readonly<{ notes: string | null | undefi
                     "
                 </div>
                 <div className="border-l-2 border-tomato-400/50 bg-tomato-50/30 py-3 pr-3 pl-5">
-                    <p className="text-sm leading-relaxed text-stone-700 italic">{notes}</p>
+                    <p className="text-sm leading-relaxed text-foreground italic">{notes}</p>
                 </div>
             </div>
         </div>
@@ -255,16 +255,16 @@ function RestaurantCardMap({
                 onClick={() => {
                     setShowMap(!showMap)
                 }}
-                className="group/trigger flex w-full items-center justify-between rounded-xl border border-transparent px-3 py-2.5 text-sm text-stone-600 transition-colors duration-200 hover:border-border hover:bg-stone-50"
+                className="group/trigger flex w-full items-center justify-between rounded-xl border border-transparent px-3 py-2.5 text-sm text-muted-foreground transition-colors duration-200 hover:border-border hover:bg-surface-muted"
             >
                 <div className="flex items-center gap-3">
-                    <div className="flex size-7 items-center justify-center rounded-full bg-stone-100 transition-colors duration-200 group-hover/trigger:bg-tomato-100">
-                        <Navigation className="size-3.5 text-stone-600 transition-colors duration-200 group-hover/trigger:text-tomato-600" />
+                    <div className="flex size-7 items-center justify-center rounded-full bg-surface-muted transition-colors duration-200 group-hover/trigger:bg-tomato-100">
+                        <Navigation className="size-3.5 text-muted-foreground transition-colors duration-200 group-hover/trigger:text-tomato-600" />
                     </div>
                     <span className="font-medium">View on Map</span>
                 </div>
                 <ChevronDown
-                    className={`size-4 text-stone-400 transition-transform duration-300 ease-out-quad ${showMap ? "rotate-180" : ""}`}
+                    className={`size-4 text-muted-foreground transition-transform duration-300 ease-out-quad ${showMap ? "rotate-180" : ""}`}
                 />
             </button>
             {showMap && (
@@ -291,7 +291,7 @@ function RestaurantCardMap({
                             <AdvancedMarker position={location} title={restaurant.name ?? undefined} />
                         </Map>
                     </a>
-                    <p className="mt-2 text-center text-xs text-stone-600">Click map to get directions</p>
+                    <p className="mt-2 text-center text-xs text-muted-foreground">Click map to get directions</p>
                 </div>
             )}
         </div>
@@ -315,7 +315,7 @@ function DeleteConfirmDialog({
                 <DialogPanel size="sm">
                     <DialogTitle>Delete restaurant</DialogTitle>
                     <DialogDescription>
-                        Are you sure you want to delete <strong className="text-stone-900">{restaurantName}</strong>?
+                        Are you sure you want to delete <strong className="text-foreground">{restaurantName}</strong>?
                         This action cannot be undone.
                     </DialogDescription>
                     <div className="mt-6 flex justify-end gap-2">
