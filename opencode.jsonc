@@ -10,6 +10,10 @@
                 "Authorization": "Bearer {env:GITHUB_PERSONAL_ACCESS_TOKEN}",
                 "X-MCP-Toolsets": "context,pull_requests,repos,actions,issues"
             }
+        },
+        "playwright": {
+            "type": "local",
+            "command": ["npx", "-y", "@playwright/mcp@latest"]
         }
     }
 }
