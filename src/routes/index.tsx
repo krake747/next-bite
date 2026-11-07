@@ -3,15 +3,7 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router"
 import { useState } from "react"
 
 import { useFeedRestaurants, useRestaurants, useAuth, useLandingStats, type Restaurant } from "@core/hooks"
-import {
-    emptySocialSummary,
-    feedTextFor,
-    orderFeedByRecency,
-    useSocialSummaries,
-    useToggleInterest,
-    useToggleLike,
-    type RestaurantSocialSummary,
-} from "@core/social"
+import { feedTextFor, orderFeedByRecency } from "@core/social"
 import { useFilterState } from "@core/use-filter"
 import { FriendsFilter } from "@features/friends-filter"
 import { FriendsFilterSkeleton } from "@features/friends-filter"
@@ -28,6 +20,7 @@ import {
     LandingCloser,
     LandingEyebrow,
 } from "@routes/-components/home-sections"
+import { SocialActionsProvider, useSocialActions } from "@routes/-components/social-actions-provider"
 import { PageContainer } from "@routes/-layouts/page-container"
 import { PageLayout } from "@routes/-layouts/page-layout"
 import { BackgroundLayers } from "@ui/background-decoration"
@@ -63,56 +56,8 @@ function filterRestaurants(
     return filteredResult
 }
 
-function useSocialActions(restaurants: ReadonlyArray<Restaurant> | undefined) {
-    const navigate = useNavigate()
-    const auth = useAuth()
-    const summaries = useSocialSummaries(restaurants === undefined ? [] : restaurants.map((r) => r._id))
-    const toggleInterest = useToggleInterest()
-    const toggleLike = useToggleLike()
-
-    const goToLogin = () => {
-        void navigate({ to: "/login", viewTransition: true })
-    }
-
-    const goToDetail = (restaurant: Restaurant) => {
-        void navigate({
-            to: "/restaurants/$restaurantId",
-            params: { restaurantId: restaurant._id },
-            viewTransition: true,
-        })
-    }
-
-    const socialFor = (restaurant: Restaurant): RestaurantSocialSummary =>
-        summaries?.get(restaurant._id) ?? emptySocialSummary
-
-    const toggleWantFor = (restaurant: Restaurant) => () => {
-        if (!auth.isAuthenticated) {
-            goToLogin()
-            return
-        }
-        toggleInterest.mutate({ restaurantId: restaurant._id, status: "want" })
-    }
-
-    const toggleLikeFor = (restaurant: Restaurant) => () => {
-        if (!auth.isAuthenticated) {
-            goToLogin()
-            return
-        }
-        toggleLike.mutate({ restaurantId: restaurant._id })
-    }
-
-    return { auth, summaries, socialFor, toggleWantFor, toggleLikeFor, goToDetail, goToLogin }
-}
-
-type SocialActions = ReturnType<typeof useSocialActions>
-
-function HomeFeed({
-    feed,
-    actions,
-}: Readonly<{
-    feed: ReadonlyArray<Restaurant>
-    actions: SocialActions
-}>) {
+function HomeFeed({ feed }: Readonly<{ feed: ReadonlyArray<Restaurant> }>) {
+    const actions = useSocialActions()
     return (
         <section aria-label="Latest from friends" className="pt-10">
             <h2 className="font-display text-2xl font-semibold text-balance text-foreground">Latest from friends</h2>
@@ -156,13 +101,8 @@ function HomeFeed({
     )
 }
 
-function HomeDiscover({
-    restaurants,
-    actions,
-}: Readonly<{
-    restaurants: ReadonlyArray<Restaurant>
-    actions: SocialActions
-}>) {
+function HomeDiscover({ restaurants }: Readonly<{ restaurants: ReadonlyArray<Restaurant> }>) {
+    const actions = useSocialActions()
     const [sortOrder, setSortOrder] = useState<"added" | "name">("added")
     const filterState = useFilterState()
     const filtered = filterRestaurants(restaurants, filterState.filter, filterState.search, sortOrder)
@@ -285,11 +225,11 @@ function SignedOutHome() {
 function Home() {
     const restaurants = useRestaurants()
     const feedRestaurants = useFeedRestaurants()
+    const auth = useAuth()
     const restaurantListState = restaurants ?? []
     const feed = orderFeedByRecency(feedRestaurants ?? [])
-    const actions = useSocialActions([...feed, ...restaurantListState])
 
-    if (!actions.auth.isAuthenticated) {
+    if (!auth.isAuthenticated) {
         return <SignedOutHome />
     }
 
@@ -297,9 +237,7 @@ function Home() {
         <PageLayout>
             <PageContainer>
                 <Header>
-                    <HeaderTitle>
-                        What&apos;s next, {actions.auth.user?.name?.split(" ")[0] ?? "food lover"}?
-                    </HeaderTitle>
+                    <HeaderTitle>What&apos;s next, {auth.user?.name?.split(" ")[0] ?? "food lover"}?</HeaderTitle>
                     <HeaderSubtitle>
                         Your crew&apos;s latest saves. Jump back in and pick the next table.
                     </HeaderSubtitle>
@@ -321,14 +259,16 @@ function Home() {
                         </div>
                     </>
                 ) : (
-                    <div className="grid lg:grid-cols-5 lg:gap-12">
-                        <div className="min-w-0 lg:col-span-2">
-                            <HomeFeed feed={feed} actions={actions} />
+                    <SocialActionsProvider restaurants={[...feed, ...restaurantListState]}>
+                        <div className="grid lg:grid-cols-5 lg:gap-12">
+                            <div className="min-w-0 lg:col-span-2">
+                                <HomeFeed feed={feed} />
+                            </div>
+                            <div className="min-w-0 lg:col-span-3">
+                                <HomeDiscover restaurants={restaurantListState} />
+                            </div>
                         </div>
-                        <div className="min-w-0 lg:col-span-3">
-                            <HomeDiscover restaurants={restaurantListState} actions={actions} />
-                        </div>
-                    </div>
+                    </SocialActionsProvider>
                 )}
             </PageContainer>
         </PageLayout>
