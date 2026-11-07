@@ -24,7 +24,7 @@ import { api } from "@api/endpoints"
 import { FALLBACK_DISPLAY_NAME } from "./constants"
 import { env } from "./env"
 import { parseImageRecord, type ImageRecord } from "./schemas"
-import { retrySessionGate, useSessionKey, useSessionStatus } from "./session"
+import { gateId, retrySessionGate, useSessionKey, useSessionStatus } from "./session"
 
 function useSessionSyncRecovery(
     input: Readonly<{
@@ -102,8 +102,10 @@ export const useFeedRestaurants = () => useOwnerOrFeed("feed")
 
 export const useVisitMemories = (restaurantId: Id<"restaurants"> | undefined) => {
     const status = useSessionStatus()
-    const skip = status.kind !== "ready" || restaurantId === undefined
-    return useConvexQuery(api.restaurants.listVisitMemories, skip ? undefined : { restaurantId }, { skip })
+    const gated = gateId(status, restaurantId)
+    return useConvexQuery(api.restaurants.listVisitMemories, gated.skip ? undefined : { restaurantId: gated.id }, {
+        skip: gated.skip,
+    })
 }
 
 export const useAddVisitMemory = () => useConvexMutation(api.restaurants.addVisitMemory)
