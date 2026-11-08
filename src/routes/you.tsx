@@ -1,4 +1,3 @@
-import { SignOutIcon } from "@phosphor-icons/react"
 import { createFileRoute, Link } from "@tanstack/react-router"
 import { useState } from "react"
 
@@ -18,7 +17,6 @@ import { SettingsRow } from "@pattern/settings-row"
 import { SessionGate } from "@routes/-components/session-gate"
 import { PageContainer } from "@routes/-layouts/page-container"
 import { PageLayout } from "@routes/-layouts/page-layout"
-import { Button } from "@ui/button"
 import { cx } from "@ui/cva.config"
 import { Header, HeaderSubtitle, HeaderTitle } from "@ui/header"
 import { LoadingPlaceholder } from "@ui/loading"
@@ -199,6 +197,8 @@ export function AvatarSection({ avatarUrl }: Readonly<{ avatarUrl: string | unde
                     }}
                     maxFiles={1}
                     disabled={updateProfile.isPending}
+                    variant="avatar"
+                    ctaLabel={avatarUrl === undefined ? "Upload photo" : "Change photo"}
                 />
                 {error.kind === "error" && (
                     <p role="alert" className="pt-2 text-sm text-destructive">
@@ -247,30 +247,6 @@ function RestaurantsSection({
     )
 }
 
-function SignOutSection() {
-    const auth = useAuth()
-    return (
-        <section aria-label="Session" className="pt-8">
-            <div className="flex flex-col gap-3 rounded-card border border-border bg-surface p-5 shadow-card sm:flex-row sm:items-center sm:justify-between">
-                <div>
-                    <h2 className="font-display text-lg font-semibold text-balance text-foreground">Signed in</h2>
-                    <p className="mt-1 text-sm text-muted-foreground">{auth.user?.email ?? ""}</p>
-                </div>
-                <Button
-                    type="button"
-                    tone="secondary"
-                    onClick={() => {
-                        void auth.signOut()
-                    }}
-                >
-                    <SignOutIcon className="size-4" aria-hidden="true" />
-                    Sign Out
-                </Button>
-            </div>
-        </section>
-    )
-}
-
 function YouContent() {
     const restaurants = useRestaurants()
     const statuses = useSuspenseConvexQuery(api.social.listMyStatuses)
@@ -290,7 +266,6 @@ function YouContent() {
     return (
         <>
             <UserDetailsSection />
-            <SignOutSection />
             <RestaurantsSection
                 title="Saved"
                 restaurants={saved}

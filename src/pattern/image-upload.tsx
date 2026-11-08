@@ -1,4 +1,4 @@
-import { ImageIcon, UploadIcon, XIcon } from "@phosphor-icons/react"
+import { CircleNotchIcon, ImageIcon, UploadIcon, XIcon } from "@phosphor-icons/react"
 import { useEffect, useRef, useState } from "react"
 
 import { type Id } from "@api/data.model"
@@ -43,6 +43,8 @@ type ImageUploadProps = {
     readonly maxFiles?: number | undefined
     readonly restaurantId?: Id<"restaurants"> | undefined
     readonly onRemove?: ((storageId: Id<"_storage">) => void) | undefined
+    readonly variant?: "gallery" | "avatar" | undefined
+    readonly ctaLabel?: string | undefined
 }
 
 function mergeImages(
@@ -159,12 +161,14 @@ export function ImageUpload(props: Readonly<ImageUploadProps>) {
 
     return (
         <div className="space-y-4">
-            <div className="flex items-center justify-between">
-                <span className="text-sm font-medium text-foreground">Images</span>
-                <span className="text-xs text-muted-foreground">
-                    {props.images.length}/{props.maxFiles ?? MAX_IMAGES}
-                </span>
-            </div>
+            {props.variant !== "avatar" && (
+                <div className="flex items-center justify-between">
+                    <span className="text-sm font-medium text-foreground">Images</span>
+                    <span className="text-xs text-muted-foreground">
+                        {props.images.length}/{props.maxFiles ?? MAX_IMAGES}
+                    </span>
+                </div>
+            )}
 
             <ImageGrid
                 images={props.images}
@@ -177,12 +181,16 @@ export function ImageUpload(props: Readonly<ImageUploadProps>) {
                 disabled={props.disabled ?? false}
                 isUploading={isUploading}
                 canAddMore={props.images.length < (props.maxFiles ?? MAX_IMAGES)}
+                variant={props.variant}
+                ctaLabel={props.ctaLabel}
                 onFiles={(files) => {
                     void handleFiles(files)
                 }}
             />
 
-            {isUploading && <p className="text-center text-sm text-muted-foreground">Uploading…</p>}
+            {props.variant !== "avatar" && isUploading && (
+                <p className="text-center text-sm text-muted-foreground">Uploading…</p>
+            )}
 
             {uploadError.kind === "error" && <p className="text-sm text-destructive">{uploadError.message}</p>}
         </div>
@@ -243,15 +251,75 @@ function ImageGrid({
     )
 }
 
+function AvatarUploadButton({
+    isUploading,
+    ctaLabel,
+    fileInputRef,
+    onClick,
+    onDragEnter,
+    onDragLeave,
+    onDragOver,
+    onDrop,
+    onFileInputChange,
+}: Readonly<{
+    isUploading: boolean
+    ctaLabel: string | undefined
+    fileInputRef: React.RefObject<HTMLInputElement | null>
+    onClick: () => void
+    onDragEnter: (event: DragStateEvent) => void
+    onDragLeave: (event: DragStateEvent) => void
+    onDragOver: (event: DragStateEvent) => void
+    onDrop: (event: DropEvent) => void
+    onFileInputChange: (event: FileInputEvent) => void
+}>) {
+    return (
+        <>
+            <input
+                ref={fileInputRef}
+                type="file"
+                multiple
+                accept={IMAGE_ACCEPT}
+                data-slot="image-upload-input"
+                className="hidden"
+                onChange={onFileInputChange}
+            />
+            <button
+                type="button"
+                onClick={onClick}
+                onDragEnter={onDragEnter}
+                onDragLeave={onDragLeave}
+                onDragOver={onDragOver}
+                onDrop={onDrop}
+                disabled={isUploading}
+                className={cx(
+                    "flex w-full cursor-pointer items-center justify-center gap-2 rounded-control border border-dashed border-border px-3 py-2 text-sm text-muted-foreground hover:border-border-strong hover:text-foreground",
+                    isUploading && "pointer-events-none opacity-70",
+                )}
+            >
+                {isUploading ? (
+                    <CircleNotchIcon className="size-4 animate-spin" aria-hidden="true" />
+                ) : (
+                    <UploadIcon className="size-4" aria-hidden="true" />
+                )}
+                <span>{isUploading ? "Uploading…" : (ctaLabel ?? "Change photo")}</span>
+            </button>
+        </>
+    )
+}
+
 function UploadDropzone({
     disabled,
     isUploading,
     canAddMore,
+    variant,
+    ctaLabel,
     onFiles,
 }: Readonly<{
     disabled: boolean
     isUploading: boolean
     canAddMore: boolean
+    variant: "gallery" | "avatar" | undefined
+    ctaLabel: string | undefined
     onFiles: (files: FileListLike) => void
 }>) {
     const [isDragging, setIsDragging] = useState(false)
@@ -302,6 +370,22 @@ function UploadDropzone({
                 fileInputRef.current.value = ""
             }
         }
+    }
+
+    if (variant === "avatar") {
+        return (
+            <AvatarUploadButton
+                isUploading={isUploading}
+                ctaLabel={ctaLabel}
+                fileInputRef={fileInputRef}
+                onClick={handleClick}
+                onDragEnter={handleDragEnter}
+                onDragLeave={handleDragLeave}
+                onDragOver={handleDragOver}
+                onDrop={handleDrop}
+                onFileInputChange={handleFileInputChange}
+            />
+        )
     }
 
     return (

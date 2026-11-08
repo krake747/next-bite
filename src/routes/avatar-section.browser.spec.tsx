@@ -112,4 +112,19 @@ describe("AvatarSection", () => {
         await expect.element(screen.getByRole("alert")).toBeInTheDocument()
         await expect.element(screen.getByText("denied")).toBeInTheDocument()
     })
+
+    test("renders the compact upload button instead of the gallery chrome", async () => {
+        resetAvatar()
+        const screen = await renderAvatar("https://example.com/a.jpg")
+
+        await expect.element(screen.getByRole("button", { name: "Change photo" })).toBeInTheDocument()
+        await expect.element(screen.getByText("Images")).not.toBeInTheDocument()
+    })
+
+    test("labels the button for first upload without a photo", async () => {
+        resetAvatar()
+        const screen = await renderAvatar(undefined)
+
+        await expect.element(screen.getByRole("button", { name: "Upload photo" })).toBeInTheDocument()
+    })
 })
