@@ -11,6 +11,8 @@ import {
 } from "@phosphor-icons/react"
 import { Link, useMatchRoute } from "@tanstack/react-router"
 
+import { useConvexQuery } from "@api/convex.context"
+import { api } from "@api/endpoints"
 import { useAuth } from "@core/session"
 import { useOpenAddRestaurant } from "@features/restaurants/add-restaurant-provider"
 import { LazyImage } from "@pattern/lazy-image"
@@ -36,7 +38,6 @@ const destinations = [
     { label: "Home", to: "/", Icon: HouseIcon },
     { label: "Friends", to: "/friends", Icon: UsersIcon },
     { label: "Groups", to: "/groups", Icon: UsersThreeIcon },
-    { label: "You", to: "/you", Icon: UserCircleIcon },
 ] as const
 
 const item = cva({
@@ -44,14 +45,66 @@ const item = cva({
     composes: [focusRing],
 })
 
+function hasImageValue(image: string | null | undefined): image is string {
+    return image !== undefined && image !== null && image !== ""
+}
+
+type SessionUserLike = {
+    readonly name?: string | null | undefined
+    readonly email?: string | null | undefined
+    readonly image?: string | null | undefined
+}
+
+type CardIdentity = {
+    readonly name: string
+    readonly email: string
+    readonly image: string | undefined
+    readonly hasImage: boolean
+}
+
+function sessionIdentity(user: SessionUserLike | null | undefined): CardIdentity {
+    const image = user?.image ?? undefined
+    return {
+        name: user?.name ?? "You",
+        email: user?.email ?? "",
+        image,
+        hasImage: hasImageValue(image),
+    }
+}
+
+function profileIdentity(
+    profile: {
+        readonly name: string
+        readonly email: string
+        readonly avatar?: { readonly url?: string | null | undefined } | null | undefined
+    },
+    user: SessionUserLike | null | undefined,
+): CardIdentity {
+    const image = profile.avatar?.url ?? user?.image ?? undefined
+    return {
+        name: profile.name,
+        email: profile.email,
+        image,
+        hasImage: hasImageValue(image),
+    }
+}
+
+function useUserCardIdentity(): CardIdentity {
+    const auth = useAuth()
+    // The Convex profile is the source of truth for display identity; the
+    // auth session only refreshes at login, so it goes stale after a rename.
+    const profile = useConvexQuery(api.users.getMe)
+    if (profile?.status === "ready") {
+        return profileIdentity(profile.profile, auth.user)
+    }
+    return sessionIdentity(auth.user)
+}
+
 function SidebarUserMenu() {
     const auth = useAuth()
     const matchRoute = useMatchRoute()
     const isAccountActive = matchRoute({ to: "/you" }) !== false
-    const name = auth.user?.name ?? "You"
-    const email = auth.user?.email ?? ""
-    const image = auth.user?.image
-    const hasImage = image !== undefined && image !== null && image !== ""
+    const { name, email, image, hasImage } = useUserCardIdentity()
     return (
         <div className="group-data-[collapsible=icon]:hidden">
             <Popover>
@@ -111,7 +164,7 @@ export function AppNav() {
                 data-slot="app-nav"
                 className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-background/90 backdrop-blur-md"
             >
-                <div className="mx-auto grid w-full max-w-350 grid-cols-5 gap-1 px-2 pt-2 pb-[calc(0.5rem+env(safe-area-inset-bottom))]">
+                <div className="mx-auto grid w-full max-w-350 grid-cols-4 gap-1 px-2 pt-2 pb-[calc(0.5rem+env(safe-area-inset-bottom))]">
                     <AppLink to={destinations[0].to} label={destinations[0].label} Icon={destinations[0].Icon} />
                     <AppLink to={destinations[1].to} label={destinations[1].label} Icon={destinations[1].Icon} />
                     <button type="button" onClick={openAdd} className={cx(item(), "cursor-pointer")}>
@@ -119,7 +172,6 @@ export function AppNav() {
                         <span>Add</span>
                     </button>
                     <AppLink to={destinations[2].to} label={destinations[2].label} Icon={destinations[2].Icon} />
-                    <AppLink to={destinations[3].to} label={destinations[3].label} Icon={destinations[3].Icon} />
                 </div>
             </nav>
         )

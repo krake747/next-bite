@@ -45,7 +45,7 @@ vi.mock("@api/auth.provider", async (importOriginal) => {
     }
 })
 
-async function renderAt(path: string): Promise<void> {
+async function renderAt(path: string, extraSeeds?: ReadonlyMap<string, unknown>): Promise<void> {
     // The signed-out home reads the landing aggregate; unseeded queries fall back to an empty
     // list, which is not the aggregate shape, so seed it explicitly.
     const seeds = new Map<string, unknown>([
@@ -53,6 +53,7 @@ async function renderAt(path: string): Promise<void> {
             seedKey("landing:getStats", undefined),
             { totalRestaurants: 0, totalWants: 0, topCuisines: [], recentAdds: [] },
         ],
+        ...(extraSeeds ?? []),
     ])
     const backend = createSeededClient({ seeds })
     const router = createRouter({
@@ -80,7 +81,7 @@ afterEach(() => {
 })
 
 describe("app shell", () => {
-    test("shows five destinations with working links", async () => {
+    test("shows four destinations with working links", async () => {
         signIn()
         await renderAt("/")
 
@@ -88,7 +89,7 @@ describe("app shell", () => {
         expect(screen.getByRole("link", { name: "Friends" })).toHaveAttribute("href", "/friends")
         expect(screen.getByRole("button", { name: "Add" })).toBeInTheDocument()
         expect(screen.getByRole("link", { name: "Groups" })).toHaveAttribute("href", "/groups")
-        expect(screen.getByRole("link", { name: "You" })).toHaveAttribute("href", "/you")
+        expect(screen.queryByRole("link", { name: "You" })).not.toBeInTheDocument()
     })
 
     test("hides the nav for signed-out visitors", async () => {
@@ -120,6 +121,33 @@ describe("app shell", () => {
 
         await waitFor(() => {
             expect(screen.getByRole("heading", { name: "Groups" })).toBeInTheDocument()
+        })
+    })
+
+    test("shows the profile name in the user card when it differs from the session", async () => {
+        signIn()
+        await renderAt(
+            "/",
+            new Map([
+                [
+                    seedKey("users:getMe", undefined),
+                    {
+                        status: "ready",
+                        profile: {
+                            _id: "p1",
+                            authUserId: "user-1",
+                            name: "Alexander",
+                            email: "alex@example.com",
+                            createdAt: 1,
+                        },
+                    },
+                ],
+            ]),
+        )
+
+        // The session still says Alex; the card must prefer the Convex profile.
+        await waitFor(() => {
+            expect(screen.getByText("Alexander")).toBeInTheDocument()
         })
     })
 

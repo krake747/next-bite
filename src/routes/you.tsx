@@ -14,6 +14,7 @@ import { orderFeedByRecency } from "@core/social"
 import { ImageUpload } from "@pattern/image-upload"
 import { LazyImage } from "@pattern/lazy-image"
 import { QueryErrorState } from "@pattern/query-error"
+import { SettingsRow } from "@pattern/settings-row"
 import { SessionGate } from "@routes/-components/session-gate"
 import { PageContainer } from "@routes/-layouts/page-container"
 import { PageLayout } from "@routes/-layouts/page-layout"
@@ -21,7 +22,7 @@ import { Button } from "@ui/button"
 import { cx } from "@ui/cva.config"
 import { Header, HeaderSubtitle, HeaderTitle } from "@ui/header"
 import { LoadingPlaceholder } from "@ui/loading"
-import { control, fieldLabel } from "@ui/variants"
+import { control } from "@ui/variants"
 
 export const Route = createFileRoute("/you")({
     head: () => ({ meta: [{ title: "You - Next Bite" }] }),
@@ -57,66 +58,82 @@ function YouError({ reset }: Readonly<{ reset: () => void }>) {
 
 type Restaurant = Doc<"restaurants">
 
-function UserDetailsForm({
-    email,
-    initialName,
-    heading,
-    subheading,
-}: Readonly<{ email: string; initialName: string; heading: string; subheading: string }>) {
+function DisplayNameRow({ initialName }: Readonly<{ initialName: string }>) {
     const updateProfile = useUpdateProfile()
+    const [baseline, setBaseline] = useState(initialName)
     const [name, setName] = useState(initialName)
     const [error, setError] = useState<FormError>(clearError)
-    const [saved, setSaved] = useState(false)
 
-    const handleSave = async () => {
-        setError(clearError)
-        setSaved(false)
+    const handleBlur = async () => {
         const trimmed = name.trim()
+        if (trimmed === baseline.trim()) {
+            setError(clearError)
+            return
+        }
         if (trimmed === "") {
             setError({ kind: "error", message: "Name cannot be empty" })
             return
         }
+        setError(clearError)
         try {
             await updateProfile.mutateAsync({ name: trimmed })
-            setSaved(true)
+            setBaseline(trimmed)
         } catch (err) {
             setError(errorFrom(err, "Could not save your details"))
         }
     }
 
     return (
+        <SettingsRow label="Display name" description="How friends see you.">
+            <div className="flex w-full flex-col gap-1.5 sm:w-56">
+                <input
+                    value={name}
+                    aria-label="Display name"
+                    disabled={updateProfile.isPending}
+                    onChange={(event) => {
+                        setName(event.target.value)
+                    }}
+                    onBlur={() => {
+                        void handleBlur()
+                    }}
+                    maxLength={80}
+                    aria-invalid={error.kind === "error"}
+                    aria-describedby={error.kind === "error" ? "user-name-error" : undefined}
+                    className={cx(control(), error.kind === "error" && "border-destructive")}
+                />
+                {error.kind === "error" && (
+                    <p id="user-name-error" role="alert" className="text-sm text-destructive">
+                        {error.message}
+                    </p>
+                )}
+            </div>
+        </SettingsRow>
+    )
+}
+
+function ProfileCard({
+    email,
+    initialName,
+    avatarUrl,
+    heading,
+    subheading,
+}: Readonly<{
+    email: string
+    initialName: string
+    avatarUrl: string | undefined
+    heading: string
+    subheading: string
+}>) {
+    return (
         <section aria-label={heading} className="pt-6">
             <h2 className="font-display text-2xl font-semibold text-balance text-foreground">{heading}</h2>
             <p className="mt-1 text-sm text-muted-foreground">{subheading}</p>
-            <div className="mt-3 rounded-card border border-border bg-surface p-5 shadow-card">
-                <p className="text-sm text-muted-foreground">{email}</p>
-                <div className="mt-3 flex flex-col gap-3 sm:flex-row sm:items-end">
-                    <div className="flex flex-1 flex-col gap-1.5">
-                        <label htmlFor="user-name" className={fieldLabel()}>
-                            Display name
-                        </label>
-                        <input
-                            id="user-name"
-                            value={name}
-                            onChange={(event) => {
-                                setName(event.target.value)
-                            }}
-                            maxLength={80}
-                            aria-invalid={error.kind === "error"}
-                            aria-describedby={error.kind === "error" ? "user-name-error" : undefined}
-                            className={cx(control(), error.kind === "error" && "border-destructive")}
-                        />
-                        {error.kind === "error" && (
-                            <p id="user-name-error" role="alert" className="text-sm text-destructive">
-                                {error.message}
-                            </p>
-                        )}
-                        {saved && <p className="text-sm text-muted-foreground">Saved.</p>}
-                    </div>
-                    <Button type="button" disabled={updateProfile.isPending} onClick={() => void handleSave()}>
-                        Save
-                    </Button>
-                </div>
+            <div className="mt-3 divide-y divide-border rounded-card border border-border bg-surface px-5 shadow-card">
+                <AvatarSection avatarUrl={avatarUrl} />
+                <SettingsRow label="Email">
+                    <p className="text-sm font-medium text-foreground">{email}</p>
+                </SettingsRow>
+                <DisplayNameRow initialName={initialName} />
             </div>
         </section>
     )
@@ -128,24 +145,25 @@ function UserDetailsSection() {
 
     if (profile.status === "onboarding") {
         return (
-            <UserDetailsForm
+            <ProfileCard
+                key="onboarding"
                 email={auth.user?.email ?? ""}
                 initialName={auth.user?.name ?? ""}
+                avatarUrl={undefined}
                 heading="Complete your details"
                 subheading="Add your name so friends recognize you."
             />
         )
     }
     return (
-        <>
-            <AvatarSection avatarUrl={profile.profile.avatar?.url} />
-            <UserDetailsForm
-                email={profile.profile.email}
-                initialName={profile.profile.name}
-                heading="Your details"
-                subheading="Only you see this page."
-            />
-        </>
+        <ProfileCard
+            key={profile.profile.email}
+            email={profile.profile.email}
+            initialName={profile.profile.name}
+            avatarUrl={profile.profile.avatar?.url}
+            heading="Your details"
+            subheading="Only you see this page."
+        />
     )
 }
 
@@ -167,30 +185,28 @@ export function AvatarSection({ avatarUrl }: Readonly<{ avatarUrl: string | unde
     }
 
     return (
-        <section aria-label="Your photo" className="pt-6">
-            <div className="mt-3 flex items-center gap-4 rounded-card border border-border bg-surface p-5 shadow-card">
-                {avatarUrl !== undefined ? (
-                    <LazyImage src={avatarUrl} alt="Your photo" className="size-16 rounded-full object-cover" />
-                ) : (
-                    <div aria-hidden="true" className="size-16 rounded-full bg-surface-muted" />
+        <div className="flex items-center gap-4 py-4">
+            {avatarUrl !== undefined ? (
+                <LazyImage src={avatarUrl} alt="Your photo" className="size-16 rounded-full object-cover" />
+            ) : (
+                <div aria-hidden="true" className="size-16 rounded-full bg-surface-muted" />
+            )}
+            <div className="min-w-0 flex-1">
+                <ImageUpload
+                    images={[]}
+                    onImagesChange={(updated) => {
+                        void handleAvatar(updated)
+                    }}
+                    maxFiles={1}
+                    disabled={updateProfile.isPending}
+                />
+                {error.kind === "error" && (
+                    <p role="alert" className="pt-2 text-sm text-destructive">
+                        {error.message}
+                    </p>
                 )}
-                <div className="min-w-0 flex-1">
-                    <ImageUpload
-                        images={[]}
-                        onImagesChange={(updated) => {
-                            void handleAvatar(updated)
-                        }}
-                        maxFiles={1}
-                        disabled={updateProfile.isPending}
-                    />
-                    {error.kind === "error" && (
-                        <p role="alert" className="pt-2 text-sm text-destructive">
-                            {error.message}
-                        </p>
-                    )}
-                </div>
             </div>
-        </section>
+        </div>
     )
 }
 

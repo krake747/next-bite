@@ -116,7 +116,7 @@ describe("you screen", () => {
         expect(screen.getByText("Trattoria Verde")).toBeInTheDocument()
     })
 
-    test("saves an edited display name", async () => {
+    test("saves an edited display name on blur", async () => {
         testUser = { id: "user-1", email: "alex@example.com", name: "Alex" }
         querySeeds.clear()
         seedYou()
@@ -127,11 +127,52 @@ describe("you screen", () => {
             expect(screen.getByDisplayValue("Alex")).toBeInTheDocument()
         })
         fireEvent.change(screen.getByLabelText("Display name"), { target: { value: "Alexander" } })
-        fireEvent.click(screen.getByRole("button", { name: "Save" }))
+        fireEvent.blur(screen.getByLabelText("Display name"))
 
         await waitFor(() => {
             expect(mutationCalls).toContainEqual({ fn: "users:updateMe", args: { name: "Alexander" } })
         })
+        // Success is silent like the reference settings form: the persisted
+        // value and the absence of an alert are the confirmation.
+        expect(screen.getByDisplayValue("Alexander")).toBeInTheDocument()
+        expect(screen.queryByRole("alert")).not.toBeInTheDocument()
+    })
+
+    test("skips the update when the display name is unchanged", async () => {
+        testUser = { id: "user-1", email: "alex@example.com", name: "Alex" }
+        querySeeds.clear()
+        seedYou()
+        mutationCalls.length = 0
+        await renderAt("/you")
+
+        await waitFor(() => {
+            expect(screen.getByDisplayValue("Alex")).toBeInTheDocument()
+        })
+        // The blur handler returns before any async work, so this is deterministic.
+        // EnsureProfile records its own call on mount; only updateMe counts here.
+        fireEvent.blur(screen.getByLabelText("Display name"))
+
+        expect(mutationCalls.filter((call) => call.fn === "users:updateMe")).toHaveLength(0)
+        expect(screen.queryByRole("alert")).not.toBeInTheDocument()
+    })
+
+    test("shows an error for an empty display name", async () => {
+        testUser = { id: "user-1", email: "alex@example.com", name: "Alex" }
+        querySeeds.clear()
+        seedYou()
+        mutationCalls.length = 0
+        await renderAt("/you")
+
+        await waitFor(() => {
+            expect(screen.getByDisplayValue("Alex")).toBeInTheDocument()
+        })
+        fireEvent.change(screen.getByLabelText("Display name"), { target: { value: "   " } })
+        fireEvent.blur(screen.getByLabelText("Display name"))
+
+        await waitFor(() => {
+            expect(screen.getByRole("alert")).toHaveTextContent("Name cannot be empty")
+        })
+        expect(mutationCalls.filter((call) => call.fn === "users:updateMe")).toHaveLength(0)
     })
 
     test("shows the onboarding form without user details", async () => {
