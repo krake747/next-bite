@@ -1,10 +1,9 @@
-import { noop } from "@tanstack/react-query"
 import { createFileRoute, Link } from "@tanstack/react-router"
 import { Suspense, useState } from "react"
 
 import { hasCachedSession } from "@api/auth.store"
 import { useSuspenseConvexQuery } from "@api/convex.context"
-import { convexQueryOptions } from "@api/convex.options"
+import { convexQueryOptions, warmQueries } from "@api/convex.options"
 import { type Doc, type Id, toId } from "@api/data.model"
 import { api } from "@api/endpoints"
 import { useCreateInvite, useRevokeInvite, useShareWithGroup, useUnshare } from "@core/groups"
@@ -32,10 +31,10 @@ export const Route = createFileRoute("/groups/$groupId")({
             return null
         }
         const groupId = toId<"groups">(params.groupId)
-        // Best-effort warm-up only: the Suspense view below refetches on its own
-        // when this has not landed, so a failed warm-up stays silent by design.
-        void context.queryClient.query(convexQueryOptions(api.groups.getGroup, { groupId })).catch(noop)
-        void context.queryClient.query(convexQueryOptions(api.shares.listForGroup, { groupId })).catch(noop)
+        warmQueries(context.queryClient, [
+            convexQueryOptions(api.groups.getGroup, { groupId }),
+            convexQueryOptions(api.shares.listForGroup, { groupId }),
+        ])
         return null
     },
 })

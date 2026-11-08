@@ -1,10 +1,9 @@
 import { PlusIcon } from "@phosphor-icons/react"
-import { noop } from "@tanstack/react-query"
 import { createFileRoute, useNavigate } from "@tanstack/react-router"
 import { Suspense, useState } from "react"
 
 import { useSuspenseConvexQuery } from "@api/convex.context"
-import { convexQueryOptions } from "@api/convex.options"
+import { convexQueryOptions, warmQueries } from "@api/convex.options"
 import { api } from "@api/endpoints"
 import { useFeedRestaurants, useRestaurants, type Restaurant } from "@core/restaurants"
 import { useAuth } from "@core/session"
@@ -38,8 +37,7 @@ export const Route = createFileRoute("/")({
     loader: ({ context }) => {
         // Public landing stats warm for everyone; the authenticated feed below
         // rides live collections with their own preload, not this cache.
-        // A failed warm-up stays silent: the Suspense section refetches.
-        void context.queryClient.query(convexQueryOptions(api.landing.getStats)).catch(noop)
+        warmQueries(context.queryClient, [convexQueryOptions(api.landing.getStats)])
         return null
     },
 })

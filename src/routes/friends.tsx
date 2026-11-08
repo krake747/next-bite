@@ -1,23 +1,21 @@
-import { noop } from "@tanstack/react-query"
 import { createFileRoute, Link } from "@tanstack/react-router"
 import { Suspense, useState } from "react"
 
 import { hasCachedSession } from "@api/auth.store"
 import { useSuspenseConvexQuery } from "@api/convex.context"
-import { convexQueryOptions } from "@api/convex.options"
+import { convexQueryOptions, warmQueries } from "@api/convex.options"
 import { api } from "@api/endpoints"
 import { clearError, errorFrom, type FormError } from "@core/outcome"
 import { useSessionStatus } from "@core/session"
 import { useAcceptFriend, useRemoveFriend, useRequestFriendByEmail } from "@core/social"
 import { EmptyState } from "@pattern/empty-state"
 import { QueryErrorState } from "@pattern/query-error"
-import { SignedOutGate } from "@routes/-components/signed-out-gate"
+import { SessionGate } from "@routes/-components/session-gate"
 import { PageContainer } from "@routes/-layouts/page-container"
 import { PageLayout } from "@routes/-layouts/page-layout"
 import { Button } from "@ui/button"
 import { cx } from "@ui/cva.config"
 import { Header, HeaderSubtitle, HeaderTitle } from "@ui/header"
-import { LoadingPlaceholder } from "@ui/loading"
 import { control, fieldLabel } from "@ui/variants"
 
 export const Route = createFileRoute("/friends")({
@@ -28,10 +26,10 @@ export const Route = createFileRoute("/friends")({
         if (!hasCachedSession()) {
             return null
         }
-        // Best-effort warm-up only: the Suspense views below refetch on their own
-        // when this has not landed, so a failed warm-up stays silent by design.
-        void context.queryClient.query(convexQueryOptions(api.friendships.listFriends)).catch(noop)
-        void context.queryClient.query(convexQueryOptions(api.friendships.listFriendRequests)).catch(noop)
+        warmQueries(context.queryClient, [
+            convexQueryOptions(api.friendships.listFriends),
+            convexQueryOptions(api.friendships.listFriendRequests),
+        ])
         return null
     },
 })
@@ -296,23 +294,9 @@ function FriendsPage() {
                     <HeaderTitle>Friends</HeaderTitle>
                     <HeaderSubtitle>See what your friends are craving. Friend connections live here.</HeaderSubtitle>
                 </Header>
-                {status.kind !== "ready" ? (
-                    <SignedOutGate context="your friends">
-                        <div className="pt-6">
-                            <LoadingPlaceholder />
-                        </div>
-                    </SignedOutGate>
-                ) : (
-                    <Suspense
-                        fallback={
-                            <div className="pt-6">
-                                <LoadingPlaceholder />
-                            </div>
-                        }
-                    >
-                        <FriendsView />
-                    </Suspense>
-                )}
+                <SessionGate status={status} context="your friends">
+                    <FriendsView />
+                </SessionGate>
             </PageContainer>
         </PageLayout>
     )

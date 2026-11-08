@@ -1,23 +1,21 @@
-import { noop } from "@tanstack/react-query"
 import { createFileRoute, Link } from "@tanstack/react-router"
-import { Suspense, useState } from "react"
+import { useState } from "react"
 
 import { hasCachedSession } from "@api/auth.store"
 import { useSuspenseConvexQuery } from "@api/convex.context"
-import { convexQueryOptions } from "@api/convex.options"
+import { convexQueryOptions, warmQueries } from "@api/convex.options"
 import { api } from "@api/endpoints"
 import { useCreateGroup } from "@core/groups"
 import { clearError, errorFrom, type FormError } from "@core/outcome"
 import { useSessionStatus } from "@core/session"
 import { EmptyState } from "@pattern/empty-state"
 import { QueryErrorState } from "@pattern/query-error"
-import { SignedOutGate } from "@routes/-components/signed-out-gate"
+import { SessionGate } from "@routes/-components/session-gate"
 import { PageContainer } from "@routes/-layouts/page-container"
 import { PageLayout } from "@routes/-layouts/page-layout"
 import { Button } from "@ui/button"
 import { cx } from "@ui/cva.config"
 import { Header, HeaderSubtitle, HeaderTitle } from "@ui/header"
-import { LoadingPlaceholder } from "@ui/loading"
 import { control, fieldLabel } from "@ui/variants"
 
 export const Route = createFileRoute("/groups/")({
@@ -27,9 +25,7 @@ export const Route = createFileRoute("/groups/")({
         if (!hasCachedSession()) {
             return null
         }
-        // Best-effort warm-up only: the Suspense view below refetches on its own
-        // when this has not landed, so a failed warm-up stays silent by design.
-        void context.queryClient.query(convexQueryOptions(api.groups.listMyGroups)).catch(noop)
+        warmQueries(context.queryClient, [convexQueryOptions(api.groups.listMyGroups)])
         return null
     },
 })
@@ -149,23 +145,9 @@ function GroupsPage() {
                     <HeaderTitle>Groups</HeaderTitle>
                     <HeaderSubtitle>Plan the next table together. Each group is a shared list.</HeaderSubtitle>
                 </Header>
-                {status.kind !== "ready" ? (
-                    <SignedOutGate context="your groups">
-                        <div className="pt-6">
-                            <LoadingPlaceholder />
-                        </div>
-                    </SignedOutGate>
-                ) : (
-                    <Suspense
-                        fallback={
-                            <div className="pt-6">
-                                <LoadingPlaceholder />
-                            </div>
-                        }
-                    >
-                        <GroupsView />
-                    </Suspense>
-                )}
+                <SessionGate status={status} context="your groups">
+                    <GroupsView />
+                </SessionGate>
             </PageContainer>
         </PageLayout>
     )

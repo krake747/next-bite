@@ -1,10 +1,9 @@
-import { noop } from "@tanstack/react-query"
 import { createFileRoute, useNavigate } from "@tanstack/react-router"
 import { Suspense, useState } from "react"
 
 import { hasCachedSession } from "@api/auth.store"
 import { useSuspenseConvexQuery } from "@api/convex.context"
-import { convexQueryOptions } from "@api/convex.options"
+import { convexQueryOptions, warmQueries } from "@api/convex.options"
 import { toId } from "@api/data.model"
 import { api } from "@api/endpoints"
 import { type Restaurant } from "@core/restaurants"
@@ -44,13 +43,10 @@ export const Route = createFileRoute("/restaurants/$restaurantId")({
     errorComponent: RestaurantDetailError,
     loader: ({ context, params }) => {
         const restaurantId = toId<"restaurants">(params.restaurantId)
-        // Public detail warms for everyone; the social snapshot only when a
-        // session exists. Failures stay silent: the Suspense view refetches.
-        void context.queryClient.query(convexQueryOptions(api.restaurants.getById, { id: restaurantId })).catch(noop)
+        // Public detail warms for everyone; the social snapshot only when a session exists.
+        warmQueries(context.queryClient, [convexQueryOptions(api.restaurants.getById, { id: restaurantId })])
         if (hasCachedSession()) {
-            void context.queryClient
-                .query(convexQueryOptions(api.social.getForRestaurant, { restaurantId }))
-                .catch(noop)
+            warmQueries(context.queryClient, [convexQueryOptions(api.social.getForRestaurant, { restaurantId })])
         }
         return null
     },

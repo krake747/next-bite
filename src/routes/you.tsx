@@ -1,10 +1,9 @@
-import { noop } from "@tanstack/react-query"
 import { createFileRoute, Link } from "@tanstack/react-router"
-import { Suspense, useState } from "react"
+import { useState } from "react"
 
 import { hasCachedSession } from "@api/auth.store"
 import { useSuspenseConvexQuery } from "@api/convex.context"
-import { convexQueryOptions } from "@api/convex.options"
+import { convexQueryOptions, warmQueries } from "@api/convex.options"
 import { type Doc } from "@api/data.model"
 import { api } from "@api/endpoints"
 import { clearError, errorFrom, type FormError } from "@core/outcome"
@@ -14,7 +13,7 @@ import { orderFeedByRecency } from "@core/social"
 import { ImageUpload } from "@pattern/image-upload"
 import { LazyImage } from "@pattern/lazy-image"
 import { QueryErrorState } from "@pattern/query-error"
-import { SignedOutGate } from "@routes/-components/signed-out-gate"
+import { SessionGate } from "@routes/-components/session-gate"
 import { PageContainer } from "@routes/-layouts/page-container"
 import { PageLayout } from "@routes/-layouts/page-layout"
 import { Button } from "@ui/button"
@@ -31,12 +30,12 @@ export const Route = createFileRoute("/you")({
         if (!hasCachedSession()) {
             return null
         }
-        // Best-effort warm-up only: the Suspense view below refetches on its own
-        // when this has not landed, so a failed warm-up stays silent by design.
         // Owner restaurants ride a live collection, not this cache, so only the
         // profile and status queries warm here.
-        void context.queryClient.query(convexQueryOptions(api.users.getMe)).catch(noop)
-        void context.queryClient.query(convexQueryOptions(api.social.listMyStatuses)).catch(noop)
+        warmQueries(context.queryClient, [
+            convexQueryOptions(api.users.getMe),
+            convexQueryOptions(api.social.listMyStatuses),
+        ])
         return null
     },
 })
@@ -280,23 +279,9 @@ function YouPage() {
                     <HeaderTitle>You</HeaderTitle>
                     <HeaderSubtitle>Your details, saves, wants, and visits.</HeaderSubtitle>
                 </Header>
-                {status.kind !== "ready" ? (
-                    <SignedOutGate context="your details">
-                        <div className="pt-6">
-                            <LoadingPlaceholder />
-                        </div>
-                    </SignedOutGate>
-                ) : (
-                    <Suspense
-                        fallback={
-                            <div className="pt-6">
-                                <LoadingPlaceholder />
-                            </div>
-                        }
-                    >
-                        <YouContent />
-                    </Suspense>
-                )}
+                <SessionGate status={status} context="your details">
+                    <YouContent />
+                </SessionGate>
             </PageContainer>
         </PageLayout>
     )
