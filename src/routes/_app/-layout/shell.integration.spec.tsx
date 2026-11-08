@@ -5,7 +5,7 @@ import { afterEach, describe, expect, test, vi } from "vitest"
 import { ConvexProvider } from "@api/convex.context"
 import { createSeededClient, seedKey } from "@api/db/seeded.client"
 
-import { routeTree } from "../../routeTree.gen"
+import { routeTree } from "../../../routeTree.gen"
 
 vi.mock("@api/auth.sdk", async (importOriginal) => {
     const original = await importOriginal<typeof import("@api/auth.sdk")>()

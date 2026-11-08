@@ -1,6 +1,7 @@
 import { createFileRoute, Outlet } from "@tanstack/react-router"
 
 import { PageLayout } from "../-layouts/page-layout"
+import { AppShell } from "./-layout/shell"
 
 export const Route = createFileRoute("/_app")({
     component: AuthenticatedLayout,
@@ -12,7 +13,9 @@ function AuthenticatedLayout() {
     // behave exactly as before.
     return (
         <PageLayout>
-            <Outlet />
+            <AppShell>
+                <Outlet />
+            </AppShell>
         </PageLayout>
     )
 }

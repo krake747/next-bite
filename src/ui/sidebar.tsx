@@ -5,7 +5,7 @@ import { useEffect, useState } from "react"
 
 import { cva, cx, type VariantProps } from "@ui/cva.config"
 import { IconButton } from "@ui/icon-button"
-import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/tooltip"
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@ui/tooltip"
 
 import { cssVars } from "./css-vars"
 import { useIsMobile } from "./hooks/use-media-query"
@@ -182,33 +182,35 @@ export function SidebarTrigger({
     onClick,
     ...props
 }: Omit<React.ComponentProps<typeof IconButton>, "label" | "children">) {
-    const { isMobile, toggleSidebar } = useSidebar()
+    const { isMobile, state, toggleSidebar } = useSidebar()
     return (
-        <Tooltip>
-            <TooltipTrigger
-                render={
-                    <IconButton
-                        data-sidebar="trigger"
-                        data-slot="sidebar-trigger"
-                        label="Toggle sidebar"
-                        title=""
-                        tone="plain"
-                        size="sm"
-                        className={className}
-                        onClick={(event) => {
-                            onClick?.(event)
-                            toggleSidebar()
-                        }}
-                        {...props}
-                    >
-                        <SidebarSimpleIcon aria-hidden="true" />
-                    </IconButton>
-                }
-            />
-            <TooltipContent side="right" align="center" hidden={isMobile}>
-                Toggle sidebar
-            </TooltipContent>
-        </Tooltip>
+        <TooltipProvider delay={state === "collapsed" ? 0 : 400}>
+            <Tooltip>
+                <TooltipTrigger
+                    render={
+                        <IconButton
+                            data-sidebar="trigger"
+                            data-slot="sidebar-trigger"
+                            label="Toggle sidebar"
+                            title=""
+                            tone="plain"
+                            size="sm"
+                            className={className}
+                            onClick={(event) => {
+                                onClick?.(event)
+                                toggleSidebar()
+                            }}
+                            {...props}
+                        >
+                            <SidebarSimpleIcon aria-hidden="true" />
+                        </IconButton>
+                    }
+                />
+                <TooltipContent side="right" align="center" hidden={isMobile}>
+                    Toggle sidebar
+                </TooltipContent>
+            </Tooltip>
+        </TooltipProvider>
     )
 }
 
@@ -358,5 +360,64 @@ export function SidebarMenuButton({
             {comp}
             <TooltipContent side="right" align="center" hidden={state !== "collapsed" || isMobile} {...tooltipProps} />
         </Tooltip>
+    )
+}
+
+export function SidebarInset({ className, ...props }: React.ComponentProps<"main">) {
+    return (
+        <main
+            data-slot="sidebar-inset"
+            className={cx(
+                "relative flex w-full flex-1 flex-col bg-background md:peer-data-[variant=inset]:m-2 md:peer-data-[variant=inset]:ml-0 md:peer-data-[variant=inset]:rounded-xl md:peer-data-[variant=inset]:shadow-sm",
+                className,
+            )}
+            {...props}
+        />
+    )
+}
+
+export function SidebarGroup({ className, ...props }: React.ComponentProps<"div">) {
+    return (
+        <div
+            data-slot="sidebar-group"
+            data-sidebar="group"
+            className={cx("relative flex w-full min-w-0 flex-col p-2", className)}
+            {...props}
+        />
+    )
+}
+
+export function SidebarGroupLabel({
+    className,
+    render,
+    ...props
+}: useRender.ComponentProps<"div"> & React.ComponentProps<"div">) {
+    return useRender({
+        defaultTagName: "div",
+        props: mergeProps<"div">(
+            {
+                className: cx(
+                    "flex h-8 shrink-0 items-center rounded-control px-2 text-xs font-medium text-sidebar-foreground/70 ring-sidebar-ring outline-hidden transition-[margin,opacity] duration-200 ease-out-quad group-data-[collapsible=icon]:-mt-8 group-data-[collapsible=icon]:opacity-0 focus-visible:ring-2 [&>svg]:size-4 [&>svg]:shrink-0",
+                    className,
+                ),
+            },
+            props,
+        ),
+        render,
+        state: {
+            slot: "sidebar-group-label",
+            sidebar: "group-label",
+        },
+    })
+}
+
+export function SidebarGroupContent({ className, ...props }: React.ComponentProps<"div">) {
+    return (
+        <div
+            data-slot="sidebar-group-content"
+            data-sidebar="group-content"
+            className={cx("w-full text-sm", className)}
+            {...props}
+        />
     )
 }
