@@ -8,7 +8,6 @@ import { LandingActions, LandingCloser, TasteCards, TasteCardsSkeleton } from "@
 import { PageContainer } from "@routes/-layouts/page-container"
 import { PageLayout } from "@routes/-layouts/page-layout"
 import { BackgroundLayers } from "@ui/background-decoration"
-import { LoadingPlaceholder } from "@ui/loading"
 
 export const Route = createFileRoute("/")({
     head: () => ({ meta: [{ title: "Our next bite" }] }),
@@ -66,11 +65,9 @@ function SignedOutHome() {
 
 function Home() {
     const auth = useAuth()
-    // The signed-in home lives at /home under the app layout. The root stays
-    // the public landing page for everyone, including crawlers.
-    if (auth.isLoading) {
-        return <LoadingPlaceholder />
-    }
+    // Auth starts unknown on the server and the first client render. The public
+    // landing is that shared paint, so crawlers get real content and hydration
+    // matches. A resolved session moves to the signed-in home.
     if (auth.isAuthenticated) {
         return <Navigate to="/home" replace />
     }

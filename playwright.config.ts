@@ -1,4 +1,4 @@
-import { defineConfig } from "@playwright/test"
+import { defineConfig, devices } from "@playwright/test"
 
 export default defineConfig({
     testDir: "./e2e",
@@ -13,7 +13,7 @@ export default defineConfig({
         {
             name: "mobile",
             testMatch: ["public-ssr.spec.ts", "navigation.spec.ts", "restaurant-boundary.spec.ts"],
-            use: { viewport: { width: 390, height: 844 } },
+            use: { ...devices["Pixel 5"] },
         },
         {
             name: "desktop",
