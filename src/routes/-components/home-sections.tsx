@@ -65,7 +65,7 @@ function TasteCard({ taste }: Readonly<{ taste: LandingTaste }>) {
             </div>
             {taste.imageUrl !== undefined && (
                 <div className="px-4">
-                    <LazyImage src={taste.imageUrl} alt={taste.name} aspectRatio="16/10" className="rounded-lg" />
+                    <LazyImage src={taste.imageUrl} alt={taste.name} ratio={16 / 10} className="rounded-lg" />
                 </div>
             )}
             <div className="p-4 pt-3">

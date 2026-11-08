@@ -35,7 +35,7 @@ function ActivityRestaurant({
     const showCover = cover !== undefined && cover !== ""
     return (
         <div className="space-y-2">
-            {showCover && <LazyImage src={cover} alt={name} aspectRatio="16/9" className="rounded-lg" />}
+            {showCover && <LazyImage src={cover} alt={name} ratio={16 / 9} className="rounded-lg" />}
             <div>
                 <p className="font-display text-lg font-semibold text-balance text-foreground">{name}</p>
                 {cuisine !== undefined && cuisine !== "" && <p className="text-sm text-muted-foreground">{cuisine}</p>}

@@ -28,7 +28,7 @@ export function PhotoGallery({
                         <LazyImage
                             src={photo.url}
                             alt={photo.author ? `Photo by ${photo.author}` : `Photo ${index + 1}`}
-                            aspectRatio="1"
+                            ratio={1 / 1}
                         />
                         {photo.author !== undefined && photo.author !== "" && (
                             <span className="absolute bottom-1 left-1 rounded-full bg-scrim px-2 py-0.5 text-xs font-medium whitespace-nowrap text-inverse">

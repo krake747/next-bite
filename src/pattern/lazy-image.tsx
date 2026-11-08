@@ -1,5 +1,6 @@
 import { useState } from "react"
 
+import { AspectRatio } from "@ui/aspect-ratio"
 import { cx } from "@ui/cva.config"
 
 const MAX_LOADED_IMAGES = 100
@@ -43,21 +44,13 @@ type LazyImageProps = {
     readonly alt: string
     readonly loading?: "eager" | "lazy" | undefined
     readonly decoding?: "sync" | "async" | "auto" | undefined
-    readonly aspectRatio?: string | undefined
+    readonly ratio?: number | undefined
     readonly className?: string | undefined
     readonly style?: Readonly<{ readonly transform?: string }> | undefined
     readonly draggable?: boolean | undefined
 }
 
-export function LazyImage({
-    src,
-    alt,
-    aspectRatio,
-    className,
-    loading,
-    decoding,
-    ...imgProps
-}: Readonly<LazyImageProps>) {
+export function LazyImage({ src, alt, ratio, className, loading, decoding, ...imgProps }: Readonly<LazyImageProps>) {
     const [isLoaded, setIsLoaded] = useState(src !== undefined && src !== "" ? loadedImages.has(src) : false)
     const [hasError, setHasError] = useState(false)
 
@@ -72,12 +65,8 @@ export function LazyImage({
         setHasError(true)
     }
 
-    return (
-        <div
-            data-slot="lazy-image"
-            className={cx("relative overflow-hidden", aspectRatio !== undefined && aspectRatio !== "" && "w-full")}
-            style={aspectRatio !== undefined && aspectRatio !== "" ? { aspectRatio } : undefined}
-        >
+    const content = (
+        <>
             {!isLoaded && !hasError && <div className="absolute inset-0 bg-surface-muted" />}
 
             {hasError && (
@@ -98,6 +87,20 @@ export function LazyImage({
                     {...imgProps}
                 />
             )}
-        </div>
+        </>
+    )
+
+    if (ratio === undefined) {
+        return (
+            <div data-slot="lazy-image" className="relative overflow-hidden">
+                {content}
+            </div>
+        )
+    }
+
+    return (
+        <AspectRatio ratio={ratio} className="w-full overflow-hidden">
+            {content}
+        </AspectRatio>
     )
 }

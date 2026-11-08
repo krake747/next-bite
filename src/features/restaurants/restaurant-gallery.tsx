@@ -2,6 +2,7 @@ import { ForkKnifeIcon, ImagesIcon } from "@phosphor-icons/react"
 
 import { Lightbox, useLightbox, type GalleryPhoto } from "@pattern/gallery"
 import { LazyImage } from "@pattern/lazy-image"
+import { AspectRatio } from "@ui/aspect-ratio"
 import { Badge } from "@ui/badge"
 
 export function RestaurantGallery({
@@ -21,10 +22,10 @@ export function RestaurantGallery({
 
     return (
         <>
-            <div className="relative aspect-2/1 w-full overflow-hidden">
+            <AspectRatio ratio={2 / 1} className="w-full overflow-hidden">
                 {hasImages ? (
                     <>
-                        <LazyImage src={cover} alt={`${name} - main image`} aspectRatio="2/1" />
+                        <LazyImage src={cover} alt={`${name} - main image`} ratio={2 / 1} />
                         <div className="pointer-events-none absolute inset-0 bg-linear-to-t from-black/70 via-black/20 to-transparent" />
                     </>
                 ) : (
@@ -61,7 +62,7 @@ export function RestaurantGallery({
                         </button>
                     </div>
                 )}
-            </div>
+            </AspectRatio>
             <Lightbox lightbox={lightbox} />
         </>
     )
