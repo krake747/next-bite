@@ -17,13 +17,8 @@ const refCallbackSchema = v.custom<FieldElementProps["ref"]>(
     "Expected a ref callback function",
 )
 
-export function FieldWrapper({ errors, children }: Readonly<{ errors: unknown; children: React.ReactNode }>) {
-    return (
-        <div className="flex flex-col gap-1.5">
-            {children}
-            <FieldErrors errors={errors} />
-        </div>
-    )
+export function FieldWrapper({ children }: Readonly<{ children: React.ReactNode }>) {
+    return <div className="flex flex-col gap-1.5">{children}</div>
 }
 
 type InputProps = Omit<FieldElementProps, "onChange" | "ref"> & {
@@ -235,7 +230,7 @@ export function Select(props: Readonly<SelectProps>) {
     )
 }
 
-function FieldErrors({ errors, id }: Readonly<{ errors: unknown; id?: string | undefined }>) {
+export function FieldErrors({ errors, id }: Readonly<{ errors: unknown; id?: string | undefined }>) {
     const message = Array.isArray(errors) && typeof errors[0] === "string" ? errors[0] : null
     return message !== null && message !== "" ? (
         <div id={id} role="alert" className="flex items-center gap-1.5 text-sm text-destructive">

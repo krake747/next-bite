@@ -2,16 +2,16 @@ import { Field, Form, useField, useForm } from "@formisch/react"
 import * as v from "valibot"
 
 import { useAuth } from "@core/session"
-import { FieldWrapper, Input } from "@ui/field"
+import { Input } from "@ui/field"
 
 import { PendingButton } from "./pending-button"
 
 const OtpEmailSchema = v.object({
-    email: v.pipe(v.string(), v.email()),
+    email: v.pipe(v.string(), v.email("Enter a valid email address")),
 })
 
 const OtpCodeSchema = v.object({
-    code: v.pipe(v.string(), v.minLength(6)),
+    code: v.pipe(v.string(), v.minLength(6, "Enter the 6-character code")),
 })
 
 export function OtpForm({
@@ -24,9 +24,9 @@ export function OtpForm({
     onEmailChange: (email: string | undefined) => void
 }>) {
     const auth = useAuth()
-    const emailForm = useForm({ schema: OtpEmailSchema })
+    const emailForm = useForm({ schema: OtpEmailSchema, validate: "submit", revalidate: "input" })
     const emailField = useField(emailForm, { path: ["email"] })
-    const codeForm = useForm({ schema: OtpCodeSchema })
+    const codeForm = useForm({ schema: OtpCodeSchema, validate: "submit", revalidate: "input" })
     const codeField = useField(codeForm, { path: ["code"] })
 
     const handleSend = async (output: Readonly<{ email: string }>) => {
@@ -53,16 +53,14 @@ export function OtpForm({
             <Form of={emailForm} onSubmit={handleSend} className="space-y-4">
                 <Field of={emailForm} path={["email"]}>
                     {() => (
-                        <FieldWrapper errors={emailField.errors}>
-                            <Input
-                                input={emailField.input}
-                                errors={emailField.errors}
-                                type="email"
-                                label="Email"
-                                placeholder="you@example.com"
-                                {...emailField.props}
-                            />
-                        </FieldWrapper>
+                        <Input
+                            input={emailField.input}
+                            errors={emailField.errors}
+                            type="email"
+                            label="Email"
+                            placeholder="you@example.com"
+                            {...emailField.props}
+                        />
                     )}
                 </Field>
                 <PendingButton type="submit" tone="secondary" className="w-full" pending={auth.isLoading}>
@@ -88,15 +86,13 @@ export function OtpForm({
             </p>
             <Field of={codeForm} path={["code"]}>
                 {() => (
-                    <FieldWrapper errors={codeField.errors}>
-                        <Input
-                            input={codeField.input}
-                            errors={codeField.errors}
-                            label="Code"
-                            placeholder="123456"
-                            {...codeField.props}
-                        />
-                    </FieldWrapper>
+                    <Input
+                        input={codeField.input}
+                        errors={codeField.errors}
+                        label="Code"
+                        placeholder="123456"
+                        {...codeField.props}
+                    />
                 )}
             </Field>
             <PendingButton type="submit" className="w-full" pending={auth.isLoading}>

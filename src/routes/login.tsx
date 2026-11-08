@@ -11,7 +11,7 @@ import { PendingButton } from "@routes/-components/pending-button"
 import { AuthDivider, SocialButtons } from "@routes/-components/social-buttons"
 import { AuthLayout } from "@routes/-layouts/auth-layout"
 import { ErrorBanner } from "@ui/error-banner"
-import { FieldWrapper, Input } from "@ui/field"
+import { Input } from "@ui/field"
 import { LoadingPlaceholder } from "@ui/loading"
 import { TextLink } from "@ui/text-link"
 
@@ -20,8 +20,8 @@ const LoginSearchSchema = v.object({
 })
 
 const LoginSchema = v.object({
-    email: v.pipe(v.string(), v.email()),
-    password: v.pipe(v.string(), v.minLength(8)),
+    email: v.pipe(v.string(), v.email("Enter a valid email address")),
+    password: v.pipe(v.string(), v.minLength(8, "Use at least 8 characters")),
 })
 
 type LoginInput = v.InferInput<typeof LoginSchema>
@@ -37,7 +37,7 @@ function LoginPage() {
     const { redirect: redirectTo } = Route.useSearch()
     const auth = useAuth()
 
-    const form = useForm({ schema: LoginSchema })
+    const form = useForm({ schema: LoginSchema, validate: "submit", revalidate: "input" })
     const emailField = useField(form, { path: ["email"] })
     const passwordField = useField(form, { path: ["password"] })
     const methods = useAuthMethods()
@@ -91,30 +91,26 @@ function LoginPage() {
             <Form of={form} onSubmit={handleEmailSubmit} className="space-y-4">
                 <Field of={form} path={["email"]}>
                     {() => (
-                        <FieldWrapper errors={emailField.errors}>
-                            <Input
-                                input={emailField.input}
-                                errors={emailField.errors}
-                                type="email"
-                                label="Email"
-                                placeholder="you@example.com"
-                                {...emailField.props}
-                            />
-                        </FieldWrapper>
+                        <Input
+                            input={emailField.input}
+                            errors={emailField.errors}
+                            type="email"
+                            label="Email"
+                            placeholder="you@example.com"
+                            {...emailField.props}
+                        />
                     )}
                 </Field>
                 <Field of={form} path={["password"]}>
                     {() => (
-                        <FieldWrapper errors={passwordField.errors}>
-                            <Input
-                                input={passwordField.input}
-                                errors={passwordField.errors}
-                                type="password"
-                                label="Password"
-                                placeholder="••••••••"
-                                {...passwordField.props}
-                            />
-                        </FieldWrapper>
+                        <Input
+                            input={passwordField.input}
+                            errors={passwordField.errors}
+                            type="password"
+                            label="Password"
+                            placeholder="••••••••"
+                            {...passwordField.props}
+                        />
                     )}
                 </Field>
                 <PendingButton type="submit" className="w-full" pending={auth.isLoading}>

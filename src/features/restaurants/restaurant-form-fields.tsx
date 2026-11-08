@@ -3,7 +3,7 @@ import { Field, setInput, useField, type FormStore } from "@formisch/react"
 import { RestaurantSchema } from "@core/schemas"
 import { EmojiRating } from "@pattern/emoji-rating"
 import { PlacesAutocomplete } from "@pattern/places-autocomplete"
-import { FieldWrapper, Input, Textarea } from "@ui/field"
+import { FieldErrors, FieldWrapper, Input, Textarea } from "@ui/field"
 import { fieldLabel } from "@ui/variants"
 
 type RestaurantFormStore = FormStore<typeof RestaurantSchema>
@@ -15,28 +15,24 @@ export function NameCuisineFields({ form }: Readonly<{ form: RestaurantFormStore
         <div className="grid grid-cols-2 gap-4">
             <Field of={form} path={["name"]}>
                 {() => (
-                    <FieldWrapper errors={nameField.errors}>
-                        <Input
-                            input={nameField.input}
-                            errors={nameField.errors}
-                            label="Restaurant name"
-                            placeholder="The fancy burger restaurant"
-                            {...nameField.props}
-                        />
-                    </FieldWrapper>
+                    <Input
+                        input={nameField.input}
+                        errors={nameField.errors}
+                        label="Restaurant name"
+                        placeholder="The fancy burger restaurant"
+                        {...nameField.props}
+                    />
                 )}
             </Field>
             <Field of={form} path={["cuisine"]}>
                 {() => (
-                    <FieldWrapper errors={cuisineField.errors}>
-                        <Input
-                            input={cuisineField.input}
-                            errors={cuisineField.errors}
-                            label="Cuisine"
-                            placeholder="Burgers, Italian, etc."
-                            {...cuisineField.props}
-                        />
-                    </FieldWrapper>
+                    <Input
+                        input={cuisineField.input}
+                        errors={cuisineField.errors}
+                        label="Cuisine"
+                        placeholder="Burgers, Italian, etc."
+                        {...cuisineField.props}
+                    />
                 )}
             </Field>
         </div>
@@ -54,13 +50,14 @@ export function LocationSection({
     return (
         <Field of={form} path={["location"]}>
             {() => (
-                <FieldWrapper errors={locationField.errors}>
+                <FieldWrapper>
                     <PlacesAutocomplete
                         value={locationField.input ?? ""}
                         onChange={onLocationChange}
                         label="Location"
                         placeholder="Search for a restaurant…"
                     />
+                    <FieldErrors errors={locationField.errors} />
                 </FieldWrapper>
             )}
         </Field>
@@ -72,16 +69,14 @@ export function NotesSection({ form }: Readonly<{ form: RestaurantFormStore }>) 
     return (
         <Field of={form} path={["notes"]}>
             {() => (
-                <FieldWrapper errors={notesField.errors}>
-                    <Textarea
-                        input={notesField.input}
-                        errors={notesField.errors}
-                        label="Notes"
-                        placeholder="What to order…"
-                        rows={3}
-                        {...notesField.props}
-                    />
-                </FieldWrapper>
+                <Textarea
+                    input={notesField.input}
+                    errors={notesField.errors}
+                    label="Notes"
+                    placeholder="What to order…"
+                    rows={3}
+                    {...notesField.props}
+                />
             )}
         </Field>
     )
@@ -92,16 +87,14 @@ export function LinkField({ form }: Readonly<{ form: RestaurantFormStore }>) {
     return (
         <Field of={form} path={["link"]}>
             {() => (
-                <FieldWrapper errors={linkField.errors}>
-                    <Input
-                        input={linkField.input}
-                        errors={linkField.errors}
-                        type="url"
-                        label="Menu link"
-                        placeholder="https://menu.com/…"
-                        {...linkField.props}
-                    />
-                </FieldWrapper>
+                <Input
+                    input={linkField.input}
+                    errors={linkField.errors}
+                    type="url"
+                    label="Menu link"
+                    placeholder="https://menu.com/…"
+                    {...linkField.props}
+                />
             )}
         </Field>
     )
@@ -113,7 +106,7 @@ export function RatingSection({ form }: Readonly<{ form: RestaurantFormStore }>)
     return (
         <Field of={form} path={["rating"]}>
             {() => (
-                <FieldWrapper errors={ratingField.errors}>
+                <FieldWrapper>
                     <fieldset>
                         <legend className={fieldLabel()}>Rating</legend>
                         <div className="mt-2">
@@ -125,6 +118,7 @@ export function RatingSection({ form }: Readonly<{ form: RestaurantFormStore }>)
                             />
                         </div>
                     </fieldset>
+                    <FieldErrors errors={ratingField.errors} />
                 </FieldWrapper>
             )}
         </Field>
