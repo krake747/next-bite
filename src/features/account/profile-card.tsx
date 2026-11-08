@@ -82,7 +82,7 @@ function ProfileCard({
             <h2 className="px-4 font-display text-2xl font-semibold text-balance text-foreground">{heading}</h2>
             <p className="mt-1 px-4 text-sm text-muted-foreground">{subheading}</p>
             <div className="mt-3 divide-y divide-border rounded-card border border-border bg-surface px-4 shadow-card">
-                <AvatarSection avatarUrl={avatarUrl} />
+                <AvatarSection avatarUrl={avatarUrl} name={initialName} />
                 <SettingsRow label="Email">
                     <p className="text-sm font-medium text-foreground">{email}</p>
                 </SettingsRow>
@@ -120,7 +120,10 @@ export function UserDetailsSection() {
     )
 }
 
-export function AvatarSection({ avatarUrl }: Readonly<{ avatarUrl: string | undefined }>) {
+export function AvatarSection({
+    avatarUrl,
+    name,
+}: Readonly<{ avatarUrl: string | undefined; name?: string | undefined }>) {
     const updateProfile = useUpdateProfile()
     const [error, setError] = useState<FormError>(clearError)
 
@@ -157,36 +160,67 @@ export function AvatarSection({ avatarUrl }: Readonly<{ avatarUrl: string | unde
                     void handleAvatar(updated)
                 }}
                 maxFiles={1}
-                disabled={updateProfile.isPending}
+                // The trigger owns its disabled state so the button stays
+                // mounted through the whole upload-then-save flow. Passing the
+                // mutation pending state here would unmount the dropzone
+                // mid-flow and flash the avatar out and back in.
+                disabled={false}
                 variant="avatar"
-                trigger={({ openPicker, isUploading }) => (
-                    <button
-                        type="button"
-                        onClick={openPicker}
-                        disabled={updateProfile.isPending || isUploading}
-                        aria-label={avatarUrl === undefined ? "Upload photo" : "Change photo"}
-                        className={cx(
-                            focusRing(),
-                            "group relative size-16 shrink-0 cursor-pointer rounded-full disabled:cursor-wait",
-                        )}
-                    >
-                        {avatarUrl !== undefined ? (
-                            <LazyImage src={avatarUrl} alt="Your photo" className="size-16 rounded-full object-cover" />
-                        ) : (
-                            <div aria-hidden="true" className="size-16 rounded-full bg-surface-muted" />
-                        )}
-                        <span
-                            aria-hidden="true"
-                            className="absolute inset-0 flex items-center justify-center rounded-full bg-scrim/60 opacity-0 transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100"
-                        >
-                            {isUploading ? (
-                                <CircleNotchIcon className="size-5 animate-spin text-inverse" />
-                            ) : (
-                                <UploadIcon className="size-5 text-inverse" />
+                trigger={({ openPicker, isUploading }) => {
+                    const trimmed = name?.trim() ?? ""
+                    const initial = trimmed === "" ? undefined : trimmed.charAt(0).toUpperCase()
+                    const busy = isUploading || updateProfile.isPending
+                    return (
+                        <button
+                            type="button"
+                            onClick={openPicker}
+                            disabled={busy}
+                            aria-label={avatarUrl === undefined ? "Upload photo" : "Change photo"}
+                            className={cx(
+                                focusRing(),
+                                "group relative size-16 shrink-0 cursor-pointer rounded-full disabled:cursor-wait",
                             )}
-                        </span>
-                    </button>
-                )}
+                        >
+                            {avatarUrl !== undefined ? (
+                                <LazyImage
+                                    src={avatarUrl}
+                                    alt="Your photo"
+                                    className="size-16 rounded-full object-cover"
+                                />
+                            ) : initial === undefined ? (
+                                <div aria-hidden="true" className="size-16 rounded-full bg-surface-muted" />
+                            ) : (
+                                <div
+                                    aria-hidden="true"
+                                    className="flex size-16 items-center justify-center rounded-full bg-surface-muted font-display text-xl font-semibold text-muted-foreground"
+                                >
+                                    {initial}
+                                </div>
+                            )}
+                            <span
+                                aria-hidden="true"
+                                className={cx(
+                                    "absolute inset-0 flex items-center justify-center rounded-full bg-scrim/60 transition-opacity",
+                                    busy
+                                        ? "opacity-100"
+                                        : "opacity-0 group-hover:opacity-100 group-focus-visible:opacity-100",
+                                )}
+                            >
+                                {busy ? (
+                                    <CircleNotchIcon className="size-5 animate-spin text-inverse" />
+                                ) : (
+                                    <UploadIcon className="size-5 text-inverse" />
+                                )}
+                            </span>
+                            <span
+                                aria-hidden="true"
+                                className="absolute -right-0.5 -bottom-0.5 flex size-6 items-center justify-center rounded-full bg-surface-muted text-muted-foreground ring-2 ring-surface"
+                            >
+                                <UploadIcon className="size-3" />
+                            </span>
+                        </button>
+                    )
+                }}
             />
             <div className="min-w-0 flex-1">
                 {avatarUrl !== undefined && (
@@ -199,7 +233,7 @@ export function AvatarSection({ avatarUrl }: Readonly<{ avatarUrl: string | unde
                             void handleRemove()
                         }}
                     >
-                        Remove
+                        Remove photo
                     </Button>
                 )}
                 {error.kind === "error" && (

@@ -11,11 +11,10 @@ import { orderFeedByRecency } from "@core/social"
 import { QueryErrorState } from "@pattern/query-error"
 import { SessionGate } from "@routes/-components/session-gate"
 import { PageContainer } from "@routes/-layouts/page-container"
-import { PageLayout } from "@routes/-layouts/page-layout"
 import { Header, HeaderSubtitle, HeaderTitle } from "@ui/header"
 import { LoadingPlaceholder } from "@ui/loading"
 
-export const Route = createFileRoute("/you")({
+export const Route = createFileRoute("/_app/you")({
     head: () => ({ meta: [{ title: "You - Next Bite" }] }),
     component: YouPage,
     errorComponent: YouError,
@@ -32,15 +31,13 @@ export const Route = createFileRoute("/you")({
 
 function YouError({ reset }: Readonly<{ reset: () => void }>) {
     return (
-        <PageLayout>
-            <PageContainer>
-                <Header>
-                    <HeaderTitle>You</HeaderTitle>
-                    <HeaderSubtitle>Your saved restaurants, wants, and visits.</HeaderSubtitle>
-                </Header>
-                <QueryErrorState reset={reset} />
-            </PageContainer>
-        </PageLayout>
+        <PageContainer>
+            <Header>
+                <HeaderTitle>You</HeaderTitle>
+                <HeaderSubtitle>Your saved restaurants, wants, and visits.</HeaderSubtitle>
+            </Header>
+            <QueryErrorState reset={reset} />
+        </PageContainer>
     )
 }
 
@@ -124,19 +121,17 @@ function YouPage() {
     const status = useSessionStatus()
 
     return (
-        <PageLayout>
-            <PageContainer>
-                <div className="mx-auto flex w-full max-w-2xl flex-col gap-8">
-                    <section aria-label="You" className="px-4 pt-8 sm:pt-10">
-                        <h1 className="font-display text-3xl font-semibold tracking-tight text-balance text-foreground sm:text-4xl">
-                            You
-                        </h1>
-                    </section>
-                    <SessionGate status={status} context="your lists">
-                        <YouContent />
-                    </SessionGate>
-                </div>
-            </PageContainer>
-        </PageLayout>
+        <PageContainer>
+            <div className="mx-auto flex w-full max-w-2xl flex-col gap-8">
+                <section aria-label="You" className="px-4 pt-8 sm:pt-10">
+                    <h1 className="font-display text-3xl font-semibold tracking-tight text-balance text-foreground sm:text-4xl">
+                        You
+                    </h1>
+                </section>
+                <SessionGate status={status} context="your lists">
+                    <YouContent />
+                </SessionGate>
+            </div>
+        </PageContainer>
     )
 }

@@ -17,12 +17,11 @@ import { EmptyState } from "@pattern/empty-state"
 import { QueryErrorState } from "@pattern/query-error"
 import { BackNav } from "@routes/-layouts/back-nav"
 import { PageContainer } from "@routes/-layouts/page-container"
-import { PageLayout } from "@routes/-layouts/page-layout"
 import { Button } from "@ui/button"
 import { Header, HeaderSubtitle, HeaderTitle } from "@ui/header"
 import { LoadingPlaceholder } from "@ui/loading"
 
-export const Route = createFileRoute("/groups/$groupId")({
+export const Route = createFileRoute("/_app/groups/$groupId")({
     head: () => ({ meta: [{ title: "Group details" }] }),
     component: GroupDetail,
     errorComponent: GroupDetailError,
@@ -41,30 +40,26 @@ export const Route = createFileRoute("/groups/$groupId")({
 
 function GroupDetailError({ reset }: Readonly<{ reset: () => void }>) {
     return (
-        <PageLayout>
-            <PageContainer>
-                <BackNav backTo="/groups" label="Back to groups" />
-                <div className="pt-4">
-                    <QueryErrorState reset={reset} />
-                </div>
-            </PageContainer>
-        </PageLayout>
+        <PageContainer>
+            <BackNav backTo="/groups" label="Back to groups" />
+            <div className="pt-4">
+                <QueryErrorState reset={reset} />
+            </div>
+        </PageContainer>
     )
 }
 
 function GroupNotFound() {
     return (
-        <PageLayout>
-            <PageContainer>
-                <BackNav backTo="/groups" label="Back to groups" />
-                <div className="py-16 text-center">
-                    <p className="font-display text-2xl font-semibold text-balance text-foreground">Group not found</p>
-                    <p className="mt-2 text-sm text-pretty text-muted-foreground">
-                        This group does not exist or was never shared with you.
-                    </p>
-                </div>
-            </PageContainer>
-        </PageLayout>
+        <PageContainer>
+            <BackNav backTo="/groups" label="Back to groups" />
+            <div className="py-16 text-center">
+                <p className="font-display text-2xl font-semibold text-balance text-foreground">Group not found</p>
+                <p className="mt-2 text-sm text-pretty text-muted-foreground">
+                    This group does not exist or was never shared with you.
+                </p>
+            </div>
+        </PageContainer>
     )
 }
 
@@ -277,35 +272,33 @@ function GroupDetailView() {
         userId !== undefined && userId !== "" ? { kind: "signed-in", id: userId } : { kind: "signed-out" }
 
     return (
-        <PageLayout>
-            <PageContainer>
-                <BackNav backTo="/groups" label="Back to groups" />
-                <Header>
-                    <HeaderTitle>{group.group.name}</HeaderTitle>
-                    <HeaderSubtitle>
-                        {group.members.length} {group.members.length === 1 ? "member" : "members"} ·{" "}
-                        {group.role === "admin" ? "Admin" : "Member"}
-                    </HeaderSubtitle>
-                </Header>
-                <section aria-label="Members" className="pt-6">
-                    <GroupMembers members={group.members.map((m) => ({ name: m.name }))} />
+        <PageContainer>
+            <BackNav backTo="/groups" label="Back to groups" />
+            <Header>
+                <HeaderTitle>{group.group.name}</HeaderTitle>
+                <HeaderSubtitle>
+                    {group.members.length} {group.members.length === 1 ? "member" : "members"} ·{" "}
+                    {group.role === "admin" ? "Admin" : "Member"}
+                </HeaderSubtitle>
+            </Header>
+            <section aria-label="Members" className="pt-6">
+                <GroupMembers members={group.members.map((m) => ({ name: m.name }))} />
+            </section>
+            {auth.isAuthenticated && <GroupInviteSection groupId={groupConvexId} />}
+            <PlanSection groupId={groupConvexId} />
+            <section aria-label="Shared restaurants" className="pt-8">
+                <h2 className="font-display text-2xl font-semibold text-balance text-foreground">Shared list</h2>
+                <GroupRestaurantsSection groupId={groupConvexId} restaurants={restaurants} viewer={viewer} />
+            </section>
+            {auth.isAuthenticated && (
+                <section aria-label="Add your restaurants" className="pt-8">
+                    <h2 className="font-display text-2xl font-semibold text-balance text-foreground">
+                        Add your restaurants
+                    </h2>
+                    <AddFromMyList groupId={groupConvexId} sharedIds={sharedIds} />
                 </section>
-                {auth.isAuthenticated && <GroupInviteSection groupId={groupConvexId} />}
-                <PlanSection groupId={groupConvexId} />
-                <section aria-label="Shared restaurants" className="pt-8">
-                    <h2 className="font-display text-2xl font-semibold text-balance text-foreground">Shared list</h2>
-                    <GroupRestaurantsSection groupId={groupConvexId} restaurants={restaurants} viewer={viewer} />
-                </section>
-                {auth.isAuthenticated && (
-                    <section aria-label="Add your restaurants" className="pt-8">
-                        <h2 className="font-display text-2xl font-semibold text-balance text-foreground">
-                            Add your restaurants
-                        </h2>
-                        <AddFromMyList groupId={groupConvexId} sharedIds={sharedIds} />
-                    </section>
-                )}
-            </PageContainer>
-        </PageLayout>
+            )}
+        </PageContainer>
     )
 }
 
@@ -314,14 +307,12 @@ function GroupDetail() {
 
     if (status.kind !== "ready") {
         return (
-            <PageLayout>
-                <PageContainer>
-                    <BackNav backTo="/groups" label="Back to groups" />
-                    <div className="pt-4">
-                        <LoadingPlaceholder />
-                    </div>
-                </PageContainer>
-            </PageLayout>
+            <PageContainer>
+                <BackNav backTo="/groups" label="Back to groups" />
+                <div className="pt-4">
+                    <LoadingPlaceholder />
+                </div>
+            </PageContainer>
         )
     }
     return (
@@ -333,13 +324,11 @@ function GroupDetail() {
 
 function GroupDetailLoading() {
     return (
-        <PageLayout>
-            <PageContainer>
-                <BackNav backTo="/groups" label="Back to groups" />
-                <div className="pt-4">
-                    <LoadingPlaceholder />
-                </div>
-            </PageContainer>
-        </PageLayout>
+        <PageContainer>
+            <BackNav backTo="/groups" label="Back to groups" />
+            <div className="pt-4">
+                <LoadingPlaceholder />
+            </div>
+        </PageContainer>
     )
 }

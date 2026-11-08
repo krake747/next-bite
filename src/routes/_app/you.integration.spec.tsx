@@ -6,7 +6,7 @@ import { ConvexProvider } from "@api/convex.context"
 import { type RestaurantDoc } from "@api/db/restaurants"
 import { createSeededClient, seedKey, type MutationCall } from "@api/db/seeded.client"
 
-import { routeTree } from "../routeTree.gen"
+import { routeTree } from "../../routeTree.gen"
 
 type TestUser = { id: string; email: string; name: string }
 

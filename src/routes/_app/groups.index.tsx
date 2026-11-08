@@ -12,13 +12,12 @@ import { EmptyState } from "@pattern/empty-state"
 import { QueryErrorState } from "@pattern/query-error"
 import { SessionGate } from "@routes/-components/session-gate"
 import { PageContainer } from "@routes/-layouts/page-container"
-import { PageLayout } from "@routes/-layouts/page-layout"
 import { Button } from "@ui/button"
 import { cx } from "@ui/cva.config"
 import { Header, HeaderSubtitle, HeaderTitle } from "@ui/header"
 import { control, fieldLabel } from "@ui/variants"
 
-export const Route = createFileRoute("/groups/")({
+export const Route = createFileRoute("/_app/groups/")({
     component: GroupsPage,
     errorComponent: GroupsError,
     loader: ({ context }) => {
@@ -32,15 +31,13 @@ export const Route = createFileRoute("/groups/")({
 
 function GroupsError({ reset }: Readonly<{ reset: () => void }>) {
     return (
-        <PageLayout>
-            <PageContainer>
-                <Header>
-                    <HeaderTitle>Groups</HeaderTitle>
-                    <HeaderSubtitle>Plan the next table together. Each group is a shared list.</HeaderSubtitle>
-                </Header>
-                <QueryErrorState reset={reset} />
-            </PageContainer>
-        </PageLayout>
+        <PageContainer>
+            <Header>
+                <HeaderTitle>Groups</HeaderTitle>
+                <HeaderSubtitle>Plan the next table together. Each group is a shared list.</HeaderSubtitle>
+            </Header>
+            <QueryErrorState reset={reset} />
+        </PageContainer>
     )
 }
 
@@ -138,16 +135,14 @@ function GroupsPage() {
     const status = useSessionStatus()
 
     return (
-        <PageLayout>
-            <PageContainer>
-                <Header>
-                    <HeaderTitle>Groups</HeaderTitle>
-                    <HeaderSubtitle>Plan the next table together. Each group is a shared list.</HeaderSubtitle>
-                </Header>
-                <SessionGate status={status} context="your groups">
-                    <GroupsView />
-                </SessionGate>
-            </PageContainer>
-        </PageLayout>
+        <PageContainer>
+            <Header>
+                <HeaderTitle>Groups</HeaderTitle>
+                <HeaderSubtitle>Plan the next table together. Each group is a shared list.</HeaderSubtitle>
+            </Header>
+            <SessionGate status={status} context="your groups">
+                <GroupsView />
+            </SessionGate>
+        </PageContainer>
     )
 }

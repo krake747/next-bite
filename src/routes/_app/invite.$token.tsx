@@ -9,12 +9,11 @@ import { useAuth } from "@core/session"
 import { QueryErrorState } from "@pattern/query-error"
 import { BackNav } from "@routes/-layouts/back-nav"
 import { PageContainer } from "@routes/-layouts/page-container"
-import { PageLayout } from "@routes/-layouts/page-layout"
 import { Button } from "@ui/button"
 import { Header, HeaderSubtitle, HeaderTitle } from "@ui/header"
 import { LoadingPlaceholder } from "@ui/loading"
 
-export const Route = createFileRoute("/invite/$token")({
+export const Route = createFileRoute("/_app/invite/$token")({
     head: () => ({ meta: [{ title: "Group invitation" }] }),
     component: InvitePage,
     // No loader here: the preview args carry `now: Date.now()`, so a warmed key
@@ -24,7 +23,7 @@ export const Route = createFileRoute("/invite/$token")({
 
 function InviteLoadError({ reset }: Readonly<{ reset: () => void }>) {
     return (
-        <PageLayout>
+        <>
             <Header>
                 <HeaderTitle>Invitation unavailable</HeaderTitle>
                 <HeaderSubtitle>This link is invalid, expired, or was revoked.</HeaderSubtitle>
@@ -35,13 +34,13 @@ function InviteLoadError({ reset }: Readonly<{ reset: () => void }>) {
                     <QueryErrorState reset={reset} />
                 </div>
             </PageContainer>
-        </PageLayout>
+        </>
     )
 }
 
 function InviteError({ message }: Readonly<{ message: string }>) {
     return (
-        <PageLayout>
+        <>
             <Header>
                 <HeaderTitle>Invitation unavailable</HeaderTitle>
                 <HeaderSubtitle>{message}</HeaderSubtitle>
@@ -54,7 +53,7 @@ function InviteError({ message }: Readonly<{ message: string }>) {
                     </Link>
                 </p>
             </PageContainer>
-        </PageLayout>
+        </>
     )
 }
 
@@ -105,7 +104,7 @@ function InviteView() {
 
     if (!auth.isAuthenticated) {
         return (
-            <PageLayout>
+            <>
                 <Header>
                     <HeaderTitle>{preview.groupName ?? "A group"} invited you</HeaderTitle>
                     <HeaderSubtitle>
@@ -135,7 +134,7 @@ function InviteView() {
                         </Button>
                     </div>
                 </PageContainer>
-            </PageLayout>
+            </>
         )
     }
 
@@ -144,7 +143,7 @@ function InviteView() {
     }
 
     return (
-        <PageLayout>
+        <>
             <Header>
                 <HeaderTitle>Joining {preview.groupName ?? "the group"}</HeaderTitle>
                 <HeaderSubtitle>Hang tight while we add you.</HeaderSubtitle>
@@ -155,7 +154,7 @@ function InviteView() {
                     <LoadingPlaceholder />
                 </div>
             </PageContainer>
-        </PageLayout>
+        </>
     )
 }
 
@@ -163,14 +162,12 @@ function InvitePage() {
     return (
         <Suspense
             fallback={
-                <PageLayout>
-                    <PageContainer>
-                        <BackNav backTo="/" label="Back home" />
-                        <div className="pt-4">
-                            <LoadingPlaceholder />
-                        </div>
-                    </PageContainer>
-                </PageLayout>
+                <PageContainer>
+                    <BackNav backTo="/" label="Back home" />
+                    <div className="pt-4">
+                        <LoadingPlaceholder />
+                    </div>
+                </PageContainer>
             }
         >
             <InviteView />

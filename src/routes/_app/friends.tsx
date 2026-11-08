@@ -12,13 +12,12 @@ import { EmptyState } from "@pattern/empty-state"
 import { QueryErrorState } from "@pattern/query-error"
 import { SessionGate } from "@routes/-components/session-gate"
 import { PageContainer } from "@routes/-layouts/page-container"
-import { PageLayout } from "@routes/-layouts/page-layout"
 import { Button } from "@ui/button"
 import { cx } from "@ui/cva.config"
 import { Header, HeaderSubtitle, HeaderTitle } from "@ui/header"
 import { control, fieldLabel } from "@ui/variants"
 
-export const Route = createFileRoute("/friends")({
+export const Route = createFileRoute("/_app/friends")({
     head: () => ({ meta: [{ title: "Friends - Next Bite" }] }),
     component: FriendsPage,
     errorComponent: FriendsError,
@@ -36,15 +35,13 @@ export const Route = createFileRoute("/friends")({
 
 function FriendsError({ reset }: Readonly<{ reset: () => void }>) {
     return (
-        <PageLayout>
-            <PageContainer>
-                <Header>
-                    <HeaderTitle>Friends</HeaderTitle>
-                    <HeaderSubtitle>See what your friends are craving. Friend connections live here.</HeaderSubtitle>
-                </Header>
-                <QueryErrorState reset={reset} />
-            </PageContainer>
-        </PageLayout>
+        <PageContainer>
+            <Header>
+                <HeaderTitle>Friends</HeaderTitle>
+                <HeaderSubtitle>See what your friends are craving. Friend connections live here.</HeaderSubtitle>
+            </Header>
+            <QueryErrorState reset={reset} />
+        </PageContainer>
     )
 }
 
@@ -287,16 +284,14 @@ function FriendsPage() {
     const status = useSessionStatus()
 
     return (
-        <PageLayout>
-            <PageContainer>
-                <Header>
-                    <HeaderTitle>Friends</HeaderTitle>
-                    <HeaderSubtitle>See what your friends are craving. Friend connections live here.</HeaderSubtitle>
-                </Header>
-                <SessionGate status={status} context="your friends">
-                    <FriendsView />
-                </SessionGate>
-            </PageContainer>
-        </PageLayout>
+        <PageContainer>
+            <Header>
+                <HeaderTitle>Friends</HeaderTitle>
+                <HeaderSubtitle>See what your friends are craving. Friend connections live here.</HeaderSubtitle>
+            </Header>
+            <SessionGate status={status} context="your friends">
+                <FriendsView />
+            </SessionGate>
+        </PageContainer>
     )
 }

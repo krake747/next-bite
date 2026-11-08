@@ -33,11 +33,10 @@ import { QueryErrorState } from "@pattern/query-error"
 import { SocialMetadata } from "@pattern/social-metadata"
 import { BackNav } from "@routes/-layouts/back-nav"
 import { PageContainer } from "@routes/-layouts/page-container"
-import { PageLayout } from "@routes/-layouts/page-layout"
 import { Button } from "@ui/button"
 import { OpeningHoursDialog } from "@ui/opening-hours-dialog"
 
-export const Route = createFileRoute("/restaurants/$restaurantId")({
+export const Route = createFileRoute("/_app/restaurants/$restaurantId")({
     head: () => ({ meta: [{ title: "Restaurant details" }] }),
     component: RestaurantDetail,
     errorComponent: RestaurantDetailError,
@@ -54,14 +53,12 @@ export const Route = createFileRoute("/restaurants/$restaurantId")({
 
 function RestaurantDetailError({ reset }: Readonly<{ reset: () => void }>) {
     return (
-        <PageLayout>
-            <PageContainer>
-                <BackNav backTo="/" label="Back to restaurants" />
-                <div className="pt-4">
-                    <QueryErrorState reset={reset} />
-                </div>
-            </PageContainer>
-        </PageLayout>
+        <PageContainer>
+            <BackNav backTo="/" label="Back to restaurants" />
+            <div className="pt-4">
+                <QueryErrorState reset={reset} />
+            </div>
+        </PageContainer>
     )
 }
 
@@ -232,29 +229,23 @@ function DetailComments({
 
 function DetailLoading() {
     return (
-        <PageLayout>
-            <PageContainer>
-                <p className="py-16 text-center text-sm text-muted-foreground">Loading…</p>
-            </PageContainer>
-        </PageLayout>
+        <PageContainer>
+            <p className="py-16 text-center text-sm text-muted-foreground">Loading…</p>
+        </PageContainer>
     )
 }
 
 function DetailNotFound() {
     return (
-        <PageLayout>
-            <PageContainer>
-                <BackNav backTo="/" label="Back to restaurants" />
-                <div className="py-16 text-center">
-                    <p className="font-display text-2xl font-semibold text-balance text-foreground">
-                        Restaurant not found
-                    </p>
-                    <p className="mt-2 text-sm text-pretty text-muted-foreground">
-                        This page went out for snacks and never came back.
-                    </p>
-                </div>
-            </PageContainer>
-        </PageLayout>
+        <PageContainer>
+            <BackNav backTo="/" label="Back to restaurants" />
+            <div className="py-16 text-center">
+                <p className="font-display text-2xl font-semibold text-balance text-foreground">Restaurant not found</p>
+                <p className="mt-2 text-sm text-pretty text-muted-foreground">
+                    This page went out for snacks and never came back.
+                </p>
+            </div>
+        </PageContainer>
     )
 }
 
@@ -302,23 +293,21 @@ function RestaurantDetailView() {
     const photos = restaurant.images.map((img) => ({ url: img.url, author: img.displayName ?? restaurant.ownerName }))
 
     return (
-        <PageLayout>
-            <PageContainer>
-                <BackNav backTo="/" label="Back to restaurants" />
-                <div className="mx-auto max-w-3xl space-y-6 pt-4 lg:max-w-5xl">
-                    <DetailHero
-                        restaurant={restaurant}
-                        social={social}
-                        photos={photos}
-                        shareAction={<DetailShare restaurant={restaurant} />}
-                    />
-                    <DetailPhotos photos={photos} />
-                    <PlanSection restaurantId={restaurant._id} />
-                    <VisitMemories restaurantId={restaurant._id} />
-                    <DetailComments restaurant={restaurant} social={social} />
-                </div>
-            </PageContainer>
-        </PageLayout>
+        <PageContainer>
+            <BackNav backTo="/" label="Back to restaurants" />
+            <div className="mx-auto max-w-3xl space-y-6 pt-4 lg:max-w-5xl">
+                <DetailHero
+                    restaurant={restaurant}
+                    social={social}
+                    photos={photos}
+                    shareAction={<DetailShare restaurant={restaurant} />}
+                />
+                <DetailPhotos photos={photos} />
+                <PlanSection restaurantId={restaurant._id} />
+                <VisitMemories restaurantId={restaurant._id} />
+                <DetailComments restaurant={restaurant} social={social} />
+            </div>
+        </PageContainer>
     )
 }
 

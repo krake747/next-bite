@@ -5,7 +5,7 @@ import { describe, expect, test, vi } from "vitest"
 import { ConvexProvider } from "@api/convex.context"
 import { createSeededClient, seedKey, type MutationCall } from "@api/db/seeded.client"
 
-import { routeTree } from "../routeTree.gen"
+import { routeTree } from "../../routeTree.gen"
 
 type TestUser = { id: string; email: string; name: string }
 
