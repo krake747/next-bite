@@ -111,9 +111,8 @@ export function EmojiRating({
                             aria-pressed={isActive}
                             className={cx(
                                 focusRing(),
-                                "hit-area-2 flex size-8 cursor-pointer items-center justify-center rounded-control text-lg transition-transform duration-150 sm:size-9 sm:text-xl",
+                                "hit-area-2 flex size-8 cursor-pointer items-center justify-center rounded-control text-lg sm:size-9 sm:text-xl",
                                 "disabled:cursor-not-allowed disabled:opacity-40",
-                                isActive ? "scale-110" : "hover:scale-105",
                                 isActive ? "opacity-100" : "opacity-40 grayscale hover:opacity-70",
                             )}
                             style={isActive ? { color: activeColor } : undefined}
@@ -123,7 +122,7 @@ export function EmojiRating({
                     )
                 })}
             </div>
-            <p className="max-w-full text-center text-sm leading-snug font-medium text-balance text-tomato-700 transition-colors duration-150">
+            <p className="max-w-full text-center text-sm leading-snug font-medium text-balance text-tomato-700">
                 {selectedTitle}
             </p>
         </div>

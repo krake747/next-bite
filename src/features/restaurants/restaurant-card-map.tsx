@@ -14,7 +14,7 @@ export function RestaurantCardMapView({
                 href={directionsUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="mt-2 block aspect-video w-full cursor-pointer overflow-hidden rounded-xl border border-border shadow-inner transition-shadow duration-200 hover:shadow-md"
+                className="mt-2 block aspect-video w-full cursor-pointer overflow-hidden rounded-xl border border-border shadow-inner"
                 title="Get directions"
             >
                 <Map

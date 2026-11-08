@@ -9,7 +9,7 @@ export function PendingButton({
 }: Readonly<{ pending: boolean | undefined } & Omit<React.ComponentProps<typeof Button>, "disabled" | "aria-busy">>) {
     return (
         <Button disabled={pending} aria-busy={pending} {...props}>
-            {pending === true && <CircleNotchIcon className="size-4 animate-spin" />}
+            {pending === true && <CircleNotchIcon className="size-4" />}
             {children}
         </Button>
     )

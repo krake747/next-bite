@@ -85,7 +85,7 @@ function DetailHero({
     const [showHours, setShowHours] = useState(false)
 
     const goToLogin = () => {
-        void navigate({ to: "/login", viewTransition: true })
+        void navigate({ to: "/login" })
     }
 
     const toggleWant = () => {

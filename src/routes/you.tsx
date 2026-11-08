@@ -215,7 +215,6 @@ function RestaurantsSection({
                             <Link
                                 to="/restaurants/$restaurantId"
                                 params={{ restaurantId: restaurant._id }}
-                                viewTransition
                                 className="font-display text-lg font-semibold text-balance text-foreground hover:text-primary"
                             >
                                 {restaurant.name}

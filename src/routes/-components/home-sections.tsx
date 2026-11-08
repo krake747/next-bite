@@ -17,10 +17,10 @@ export function LandingEyebrow() {
 export function LandingActions() {
     return (
         <div className="mt-8 flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
-            <Button render={<Link to="/signup" viewTransition />} size="lg">
+            <Button render={<Link to="/signup" />} size="lg">
                 Get Started
             </Button>
-            <Button render={<Link to="/login" viewTransition />} tone="secondary" size="lg">
+            <Button render={<Link to="/login" />} tone="secondary" size="lg">
                 Sign In
             </Button>
         </div>

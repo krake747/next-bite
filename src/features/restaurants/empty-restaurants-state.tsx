@@ -61,7 +61,7 @@ export function EmptyRestaurantsState({
                     <Button
                         tone="secondary"
                         onClick={() => {
-                            void navigate({ to: "/login", viewTransition: true })
+                            void navigate({ to: "/login" })
                         }}
                     >
                         <SparkleIcon className="size-4" />

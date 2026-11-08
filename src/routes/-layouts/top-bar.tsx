@@ -13,11 +13,7 @@ export function TopBar() {
             className="sticky top-0 z-40 w-full border-b border-border bg-background/80 backdrop-blur-md"
         >
             <div className="mx-auto flex h-14 w-full max-w-350 items-center justify-between px-4 sm:px-6 lg:px-12">
-                <Link
-                    to="/"
-                    viewTransition
-                    className="flex items-center gap-2 text-foreground transition-colors duration-150 ease hover:text-tomato-600"
-                >
+                <Link to="/" className="flex items-center gap-2 text-foreground hover:text-tomato-600">
                     <div className="flex size-8 items-center justify-center rounded-lg bg-tomato-100 text-tomato-600">
                         <ForkKnifeIcon className="size-4" aria-hidden="true" />
                     </div>
@@ -36,7 +32,7 @@ function AuthButton() {
     const auth = useAuth()
 
     if (!auth.isAuthenticated) {
-        return <Button render={<Link to="/login" viewTransition />}>Sign In</Button>
+        return <Button render={<Link to="/login" />}>Sign In</Button>
     }
 
     return (

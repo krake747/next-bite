@@ -20,7 +20,7 @@ function ReactionButton({ pressed, count, label, onToggle, children }: ReactionB
             aria-label={`${label}, ${count}`}
             className={cx(
                 focusRing(),
-                "hit-area-2 inline-flex min-h-11 cursor-pointer items-center gap-1.5 rounded-full px-2.5 py-1 text-sm transition-colors",
+                "hit-area-2 inline-flex min-h-11 cursor-pointer items-center gap-1.5 rounded-full px-2.5 py-1 text-sm",
                 pressed ? "text-primary" : "text-muted-foreground hover:bg-surface-muted hover:text-foreground",
             )}
         >

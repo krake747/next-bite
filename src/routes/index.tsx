@@ -169,7 +169,7 @@ function HomeHeader({ name, count }: Readonly<{ name: string; count: number }>) 
             </p>
             <div className="mt-6 flex flex-wrap items-center gap-3">
                 <Button onClick={openAdd}>
-                    <PlusIcon className="size-4 transition-transform duration-200 group-hover:rotate-90" />
+                    <PlusIcon className="size-4" />
                     Add Restaurant
                 </Button>
                 {count > 0 && <HeaderBadge count={count} />}

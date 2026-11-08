@@ -36,8 +36,7 @@ function DesignSystemIndex() {
                                         <Link
                                             to="/ds/$sectionId"
                                             params={{ sectionId: entry.meta.id }}
-                                            viewTransition
-                                            className="block rounded-card border border-border bg-surface p-5 shadow-card transition-shadow hover:shadow-popover"
+                                            className="block rounded-card border border-border bg-surface p-5 shadow-card"
                                         >
                                             <p className="font-display text-lg font-semibold text-balance text-stone-900">
                                                 {entry.meta.title}

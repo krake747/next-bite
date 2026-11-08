@@ -54,10 +54,9 @@ export function AuthLayout({
                 <div className="mt-4 text-center">
                     <Link
                         to="/"
-                        viewTransition
-                        className="group inline-flex items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-foreground"
+                        className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"
                     >
-                        <ForkKnifeIcon className="size-4 transition-transform group-hover:-rotate-12" />
+                        <ForkKnifeIcon className="size-4" />
                         Back to home
                     </Link>
                 </div>

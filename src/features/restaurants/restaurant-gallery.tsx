@@ -54,7 +54,7 @@ export function RestaurantGallery({
                             onClick={() => {
                                 lightbox.openAt(0)
                             }}
-                            className="flex items-center gap-1.5 rounded-full bg-surface/95 px-2.5 py-1 text-xs font-medium text-foreground shadow-lg backdrop-blur-md transition-colors duration-200 hover:bg-surface"
+                            className="flex items-center gap-1.5 rounded-full bg-surface/95 px-2.5 py-1 text-xs font-medium text-foreground shadow-lg backdrop-blur-md hover:bg-surface"
                         >
                             <ImagesIcon className="size-3.5" />
                             {photos.length > 1 ? <span>{photos.length} photos</span> : <span>View</span>}

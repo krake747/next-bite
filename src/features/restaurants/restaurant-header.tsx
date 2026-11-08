@@ -40,11 +40,7 @@ export function RestaurantHeader({
             <div className="flex flex-col gap-1">
                 <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between md:gap-3">
                     {detailsHref !== undefined ? (
-                        <Link
-                            to={detailsHref}
-                            viewTransition
-                            className={cx(focusRing(), "flex-1 rounded-control transition-colors hover:text-primary")}
-                        >
+                        <Link to={detailsHref} className={cx(focusRing(), "flex-1 rounded-control hover:text-primary")}>
                             {heading}
                         </Link>
                     ) : (
@@ -55,7 +51,7 @@ export function RestaurantHeader({
                             href={link}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="flex shrink-0 items-center gap-1.5 rounded-full bg-tomato-50 px-3 py-1.5 text-xs font-medium text-tomato-700 transition-colors duration-200 hover:bg-tomato-100"
+                            className="flex shrink-0 items-center gap-1.5 rounded-full bg-tomato-50 px-3 py-1.5 text-xs font-medium text-tomato-700 hover:bg-tomato-100"
                             title="View menu"
                         >
                             <ForkKnifeIcon className="size-3.5" />
@@ -80,7 +76,7 @@ export function RestaurantHeader({
                                     target="_blank"
                                     rel="noopener noreferrer"
                                     title={location}
-                                    className="truncate transition-colors duration-200 hover:text-primary"
+                                    className="truncate hover:text-primary"
                                 >
                                     {location}
                                 </a>

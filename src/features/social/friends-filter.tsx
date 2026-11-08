@@ -50,7 +50,7 @@ export function FriendsFilter({
                                     type="button"
                                     onClick={toggleFilter(friend.authUserId)}
                                     className={cx(
-                                        "inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium transition-all",
+                                        "inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium",
                                         filter === friend.authUserId
                                             ? "bg-primary text-inverse shadow-sm"
                                             : "bg-surface-muted text-muted-foreground hover:bg-border-strong",
@@ -67,7 +67,7 @@ export function FriendsFilter({
                             onClick={() => {
                                 handleFilter("")
                             }}
-                            className="text-xs font-medium text-primary underline-offset-2 transition-colors hover:underline"
+                            className="text-xs font-medium text-primary underline-offset-2 hover:underline"
                         >
                             Clear
                         </button>
@@ -88,7 +88,7 @@ export function FriendsFilter({
                             onClick={() => {
                                 onSortChange(sortOrder === "added" ? "name" : "added")
                             }}
-                            className="text-xs font-medium whitespace-nowrap text-muted-foreground transition-colors hover:text-primary"
+                            className="text-xs font-medium whitespace-nowrap text-muted-foreground hover:text-primary"
                         >
                             {sortOrder === "added" ? "Recently added" : "Name (A-Z)"}
                         </button>

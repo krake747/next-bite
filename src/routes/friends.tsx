@@ -187,7 +187,6 @@ function FriendDiscoveries({ ownerId, ownerName }: Readonly<{ ownerId: string; o
                     <Link
                         to="/restaurants/$restaurantId"
                         params={{ restaurantId: restaurant._id }}
-                        viewTransition
                         className="text-primary hover:underline"
                     >
                         {restaurant.name}

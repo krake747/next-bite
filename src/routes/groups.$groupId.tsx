@@ -84,7 +84,7 @@ function AddFromMyList({ groupId, sharedIds }: Readonly<{ groupId: Id<"groups">;
         return (
             <p className="pt-4 text-sm text-muted-foreground">
                 Every restaurant you saved is already on this list.{" "}
-                <Link to="/" viewTransition className="font-medium text-primary hover:underline">
+                <Link to="/" className="font-medium text-primary hover:underline">
                     Save another one
                 </Link>{" "}
                 to add it here.
@@ -148,7 +148,6 @@ function GroupRestaurantsSection({
                         <Link
                             to="/restaurants/$restaurantId"
                             params={{ restaurantId: shared._id }}
-                            viewTransition
                             className="font-display text-lg font-semibold text-balance text-foreground hover:text-primary"
                         >
                             {shared.name}

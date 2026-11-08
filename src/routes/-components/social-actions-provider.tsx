@@ -41,14 +41,13 @@ export function SocialActionsProvider({
     const toggleLike = useToggleLike()
 
     const goToLogin = () => {
-        void navigate({ to: "/login", viewTransition: true })
+        void navigate({ to: "/login" })
     }
 
     const goToDetail = (restaurant: Restaurant) => {
         void navigate({
             to: "/restaurants/$restaurantId",
             params: { restaurantId: restaurant._id },
-            viewTransition: true,
         })
     }
 

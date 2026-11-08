@@ -13,13 +13,13 @@ const destinations = [
 ] as const
 
 const item = cva({
-    base: "flex flex-col items-center gap-1 rounded-xl px-2 py-1.5 text-[11px] font-medium text-muted-foreground transition-colors duration-150 ease hover:bg-surface-muted hover:text-foreground data-[status=active]:bg-tomato-100 data-[status=active]:text-tomato-700 md:w-full md:flex-row md:gap-3 md:px-3 md:py-2 md:text-sm",
+    base: "flex flex-col items-center gap-1 rounded-xl px-2 py-1.5 text-[11px] font-medium text-muted-foreground hover:bg-surface-muted hover:text-foreground data-[status=active]:bg-tomato-100 data-[status=active]:text-tomato-700 md:w-full md:flex-row md:gap-3 md:px-3 md:py-2 md:text-sm",
     composes: [focusRing],
 })
 
 function AppLink({ to, label, Icon }: Readonly<{ to: string; label: string; Icon: typeof HouseIcon }>) {
     return (
-        <Link to={to} viewTransition className={cx(item())}>
+        <Link to={to} className={cx(item())}>
             <Icon className="size-5 shrink-0 md:size-4" aria-hidden="true" />
             <span>{label}</span>
         </Link>

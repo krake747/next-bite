@@ -49,7 +49,7 @@ function InviteError({ message }: Readonly<{ message: string }>) {
             <PageContainer>
                 <BackNav backTo="/" label="Back home" />
                 <p className="pt-6">
-                    <Link to="/" viewTransition className="font-medium text-primary hover:underline">
+                    <Link to="/" className="font-medium text-primary hover:underline">
                         Back to Next Bite
                     </Link>
                 </p>

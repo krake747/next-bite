@@ -60,7 +60,7 @@ export function LightboxView() {
                     <LazyImage
                         src={currentImage}
                         alt={`Image ${viewer.currentIndex + 1}`}
-                        className="max-h-[80vh] max-w-full object-contain transition-transform duration-150 select-none"
+                        className="max-h-[80vh] max-w-full object-contain select-none"
                         style={{
                             transform: `translate(${zoomPan.pan.x}px, ${zoomPan.pan.y}px) scale(${zoomPan.zoom}) rotate(${zoomPan.rotation}deg)`,
                         }}

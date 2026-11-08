@@ -20,7 +20,7 @@ export const Route = createFileRoute("/ds")({
 
 const navLink = cx(
     focusRing(),
-    "block rounded-control px-3 py-1.5 text-sm text-stone-600 transition-colors hover:bg-stone-100 hover:text-stone-900",
+    "block rounded-control px-3 py-1.5 text-sm text-stone-600 hover:bg-stone-100 hover:text-stone-900",
 )
 const navLinkActive = "bg-surface-muted text-stone-900"
 
@@ -31,7 +31,6 @@ function DesignSystemNav() {
                 <div>
                     <Link
                         to="/ds"
-                        viewTransition
                         className={navLink}
                         activeProps={{ className: navLinkActive }}
                         activeOptions={{ exact: true }}
@@ -52,7 +51,6 @@ function DesignSystemNav() {
                                         <Link
                                             to="/ds/$sectionId"
                                             params={{ sectionId: entry.meta.id }}
-                                            viewTransition
                                             className={navLink}
                                             activeProps={{ className: navLinkActive }}
                                         >

@@ -71,7 +71,7 @@ function LoginPage() {
             subtitle="Sign in to continue to your next bite"
             footerLink={
                 <p className="text-sm text-muted-foreground">
-                    New to Next Bite? <TextLink render={<Link to="/signup" viewTransition />}>Sign up</TextLink>
+                    New to Next Bite? <TextLink render={<Link to="/signup" />}>Sign up</TextLink>
                 </p>
             }
         >

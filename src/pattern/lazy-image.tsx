@@ -78,7 +78,7 @@ export function LazyImage({
             className={cx("relative overflow-hidden", aspectRatio !== undefined && aspectRatio !== "" && "w-full")}
             style={aspectRatio !== undefined && aspectRatio !== "" ? { aspectRatio } : undefined}
         >
-            {!isLoaded && !hasError && <div className="absolute inset-0 animate-pulse bg-surface-muted" />}
+            {!isLoaded && !hasError && <div className="absolute inset-0 bg-surface-muted" />}
 
             {hasError && (
                 <div className="absolute inset-0 flex items-center justify-center bg-surface-muted">
@@ -92,11 +92,7 @@ export function LazyImage({
                     alt={alt}
                     loading={loading ?? "lazy"}
                     decoding={decoding ?? "async"}
-                    className={cx(
-                        "size-full object-cover transition-opacity duration-200 ease-out-quad",
-                        isLoaded ? "opacity-100" : "opacity-0",
-                        className,
-                    )}
+                    className={cx("size-full object-cover", isLoaded ? "opacity-100" : "opacity-0", className)}
                     onLoad={handleLoad}
                     onError={handleError}
                     {...imgProps}

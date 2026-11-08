@@ -323,7 +323,7 @@ function UploadDropzone({
                 onDragOver={handleDragOver}
                 onDrop={handleDrop}
                 className={cx(
-                    "flex w-full cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed p-6 transition-colors",
+                    "flex w-full cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed p-6",
                     isDragging ? "border-primary bg-primary/10" : "border-border hover:border-border-strong",
                     isUploading && "pointer-events-none opacity-50",
                 )}
@@ -367,7 +367,7 @@ function ImagePreview({
                 <button
                     type="button"
                     onClick={onRemove}
-                    className="hit-area-2 absolute top-1 right-1 rounded-full bg-destructive p-2 text-inverse opacity-0 shadow-md transition-opacity duration-150 ease group-hover:opacity-100 hover:bg-destructive/90 focus:opacity-100 focus-visible:opacity-100 active:opacity-100 pointer-coarse:opacity-100"
+                    className="hit-area-2 absolute top-1 right-1 rounded-full bg-destructive p-2 text-inverse shadow-md hover:bg-destructive/90"
                     aria-label="Remove image"
                 >
                     <XIcon className="size-3" aria-hidden="true" />

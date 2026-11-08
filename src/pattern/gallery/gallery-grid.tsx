@@ -23,12 +23,7 @@ export function GalleryGrid({
                         aria-label={`Open image ${index + 1}`}
                         className="group relative aspect-square overflow-hidden rounded-lg focus-visible:outline-ring"
                     >
-                        <LazyImage
-                            src={imageUrl}
-                            alt={`Image ${index + 1}`}
-                            aspectRatio="1"
-                            className="transition-transform duration-200 ease-out-quad group-hover:scale-105"
-                        />
+                        <LazyImage src={imageUrl} alt={`Image ${index + 1}`} aspectRatio="1" />
                     </button>
                 ))}
             </div>

@@ -278,16 +278,6 @@
     --hit-area-b: calc(--value([*]) * -1);
 }
 
-@media (prefers-reduced-motion: no-preference) {
-    @view-transition {
-        navigation: auto;
-    }
-
-    ::view-transition-image-pair(root) {
-        overflow: hidden;
-    }
-}
-
 @media (prefers-reduced-motion: reduce) {
     *,
     *::before,

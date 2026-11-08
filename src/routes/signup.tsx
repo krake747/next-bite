@@ -82,7 +82,7 @@ function SignupPage() {
             subtitle="Create your login to start adding restaurants"
             footerLink={
                 <p className="text-sm text-muted-foreground">
-                    Already have a login? <TextLink render={<Link to="/login" viewTransition />}>Sign in</TextLink>
+                    Already have a login? <TextLink render={<Link to="/login" />}>Sign in</TextLink>
                 </p>
             }
         >

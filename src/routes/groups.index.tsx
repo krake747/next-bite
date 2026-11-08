@@ -119,7 +119,6 @@ function GroupsView() {
                             <Link
                                 to="/groups/$groupId"
                                 params={{ groupId: group._id }}
-                                viewTransition
                                 className="font-display text-lg font-semibold text-balance text-foreground hover:text-primary"
                             >
                                 {group.name}
