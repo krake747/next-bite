@@ -79,7 +79,7 @@ vi.mock("@api/auth.provider", async (importOriginal) => {
     return {
         ...original,
         AuthProvider: ({ children }: Readonly<{ children: React.ReactNode }>) => <div>{children}</div>,
-        useAuth: () => ({
+        useAuthContext: () => ({
             isAuthenticated: true,
             isLoading: false,
             user: { id: "user-1", email: "alex@example.com", name: "Alex" },

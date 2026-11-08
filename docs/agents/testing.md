@@ -113,12 +113,13 @@ not add Testcontainers or a live backend dependency to these tests.
 
 `AuthProvider` wraps children in its own live `ConvexProvider`, which shadows any test-injected
 client for hooks that read `useConvexQuery` directly. So route specs never inject through context.
-Instead: mock `@api/auth.provider` with a passthrough `AuthProvider` plus a scripted `useAuth`, wrap
-the tree in `ConvexProvider`, and serve seeded query results plus a mutation recorder through
-`createSeededClient` in `src/api/db/seeded.client.ts`. Build seed keys with its `seedKey` helper,
-never hand-rolled strings; subscriptions spread args (`{...undefined}` is `{}`) while the cache keys
-the unspread value, and the helper already normalises that. Hooks that call `useQueryClient` need a
-`QueryClientProvider` in the wrapper.
+Instead: mock `@api/auth.provider` with a passthrough `AuthProvider` plus a scripted
+`useAuthContext` (session re-exports it as `useAuth`), wrap the tree in `ConvexProvider`, and serve
+seeded query results plus a mutation recorder through `createSeededClient` in
+`src/api/db/seeded.client.ts`. Build seed keys with its `seedKey` helper, never hand-rolled strings;
+subscriptions spread args (`{...undefined}` is `{}`) while the cache keys the unspread value, and
+the helper already normalises that. Hooks that call `useQueryClient` need a `QueryClientProvider` in
+the wrapper.
 
 ## Configuration
 
