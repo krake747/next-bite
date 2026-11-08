@@ -38,9 +38,14 @@ function stripUndefined<T extends Record<string, unknown>>(output: T): StripUnde
     return stripped as StripUndefined<T>
 }
 
-type SubmitOutcome = { kind: "idle" } | { kind: "uncertain"; message: string } | { kind: "failed"; message: string }
+type SubmitPhase =
+    | { kind: "editing" }
+    | { kind: "saving" }
+    | { kind: "uncertain"; message: string }
+    | { kind: "failed"; message: string }
+    | { kind: "committed" }
 
-function toSubmitOutcome(error: unknown): Exclude<SubmitOutcome, { kind: "idle" }> {
+function toFailedPhase(error: unknown): Extract<SubmitPhase, { kind: "uncertain" } | { kind: "failed" }> {
     if (SyncTimeoutError.is(error)) {
         return {
             kind: "uncertain",
@@ -49,12 +54,6 @@ function toSubmitOutcome(error: unknown): Exclude<SubmitOutcome, { kind: "idle" 
         }
     }
     return { kind: "failed", message: error instanceof Error ? error.message : "Saving failed." }
-}
-
-type SubmitGuard = {
-    submitted: boolean
-    uncertain: boolean
-    pending: boolean
 }
 
 function SubmitButton({ mode, saving }: Readonly<{ mode: "add" | "edit"; saving: boolean }>) {
@@ -69,34 +68,36 @@ function useSubmitDiscard(args: {
     onDiscardReady: (discard: () => Promise<void>) => void
     gallery: Pick<GalleryDraft, "discardChanges">
     resetForm: () => void
-    guardRef: { current: SubmitGuard }
+    phaseRef: { readonly current: SubmitPhase }
 }): void {
-    const { onDiscardReady, gallery, resetForm, guardRef } = args
+    const { onDiscardReady, gallery, resetForm, phaseRef } = args
     useEffect(() => {
         onDiscardReady(async () => {
             // A committed submit handed its images to persisted ownership. A
-            // pending or uncertain submit may still commit with these images
+            // saving or uncertain submit may still commit with these images
             // attached. None of those states may clean: reset the local draft
-            // and leave stored files for the backend either way.
-            const guard = guardRef.current
-            if (guard.submitted || guard.uncertain || guard.pending) {
+            // and leave stored files for the backend either way. Read through
+            // the ref: discard fires synchronously inside the submit close
+            // path, before the phase state commit re-renders.
+            const phase = phaseRef.current
+            if (phase.kind === "saving" || phase.kind === "uncertain" || phase.kind === "committed") {
                 resetForm()
                 return
             }
             await gallery.discardChanges()
             resetForm()
         })
-    }, [onDiscardReady, gallery, resetForm, guardRef])
+    }, [onDiscardReady, gallery, resetForm, phaseRef])
 }
 
-function SubmitOutcomeBanner({ outcome, onRetry }: Readonly<{ outcome: SubmitOutcome; onRetry: () => void }>) {
-    if (outcome.kind === "idle") {
+function SubmitPhaseBanner({ phase, onRetry }: Readonly<{ phase: SubmitPhase; onRetry: () => void }>) {
+    if (phase.kind !== "uncertain" && phase.kind !== "failed") {
         return null
     }
     return (
-        <div role={outcome.kind === "failed" ? "alert" : "status"} className="space-y-2 pt-2">
-            <p className="text-sm text-muted-foreground">{outcome.message}</p>
-            {outcome.kind === "uncertain" && (
+        <div role={phase.kind === "failed" ? "alert" : "status"} className="space-y-2 pt-2">
+            <p className="text-sm text-muted-foreground">{phase.message}</p>
+            {phase.kind === "uncertain" && (
                 <Button type="button" tone="secondary" onClick={onRetry}>
                     Retry safely
                 </Button>
@@ -150,8 +151,7 @@ function useSubmitDraft(args: {
     add: (input: RestaurantAddArgs) => Promise<unknown>
     update: (input: RestaurantUpdateArgs) => Promise<unknown>
 }): {
-    submitOutcome: SubmitOutcome
-    isSaving: boolean
+    submitPhase: SubmitPhase
     handleSubmit: (output: RestaurantFormOutput) => Promise<void>
     handleRetry: () => void
 } {
@@ -160,26 +160,27 @@ function useSubmitDraft(args: {
     // on the same key instead of duplicating the restaurant. A fresh mount is
     // a new draft with a new identity.
     const [clientMutationId, setClientMutationId] = useState(() => crypto.randomUUID())
-    const [submitOutcome, setSubmitOutcome] = useState<SubmitOutcome>({ kind: "idle" })
-    const [isSaving, setIsSaving] = useState(false)
-    const guardRef = useRef<SubmitGuard>({ submitted: false, uncertain: false, pending: false })
+    // One shape, two clocks: state renders the banner and button, while the ref
+    // serves the synchronous discard read inside the submit close path (state
+    // commits after close fires). The single setter below keeps them together.
+    const [submitPhase, setSubmitPhaseState] = useState<SubmitPhase>({ kind: "editing" })
+    const phaseRef = useRef<SubmitPhase>(submitPhase)
+    const setSubmitPhase = (phase: SubmitPhase) => {
+        phaseRef.current = phase
+        setSubmitPhaseState(phase)
+    }
     const lastOutputRef = useRef<RestaurantFormOutput | null>(null)
 
     useSubmitDiscard({
         onDiscardReady: args.onDiscardReady,
         gallery: args.gallery,
         resetForm: args.resetForm,
-        guardRef,
+        phaseRef,
     })
 
     const handleSubmit = async (output: RestaurantFormOutput) => {
         lastOutputRef.current = output
-        const guard = guardRef.current
-        guard.submitted = false
-        guard.uncertain = false
-        guard.pending = true
-        setIsSaving(true)
-        setSubmitOutcome({ kind: "idle" })
+        setSubmitPhase({ kind: "saving" })
         try {
             if (args.target.mode === "add") {
                 await submitNewRestaurant({
@@ -198,18 +199,11 @@ function useSubmitDraft(args: {
             }
             await args.gallery.commitSubmit()
             args.resetForm()
-            guard.submitted = true
-            guard.pending = false
-            setIsSaving(false)
+            setSubmitPhase({ kind: "committed" })
             setClientMutationId(crypto.randomUUID())
             args.onSuccess()
         } catch (error) {
-            guard.pending = false
-            setIsSaving(false)
-            if (SyncTimeoutError.is(error)) {
-                guard.uncertain = true
-            }
-            setSubmitOutcome(toSubmitOutcome(error))
+            setSubmitPhase(toFailedPhase(error))
             console.error(`Error ${args.target.mode === "add" ? "adding" : "updating"} restaurant:`, error)
         }
     }
@@ -221,7 +215,7 @@ function useSubmitDraft(args: {
         }
     }
 
-    return { submitOutcome, isSaving, handleSubmit, handleRetry }
+    return { submitPhase, handleSubmit, handleRetry }
 }
 
 export function RestaurantForm(props: Readonly<RestaurantFormProps>) {
@@ -300,9 +294,9 @@ export function RestaurantForm(props: Readonly<RestaurantFormProps>) {
                 >
                     Cancel
                 </Button>
-                <SubmitButton mode={props.mode} saving={submit.isSaving} />
+                <SubmitButton mode={props.mode} saving={submit.submitPhase.kind === "saving"} />
             </div>
-            <SubmitOutcomeBanner outcome={submit.submitOutcome} onRetry={submit.handleRetry} />
+            <SubmitPhaseBanner phase={submit.submitPhase} onRetry={submit.handleRetry} />
         </Form>
     )
 }
