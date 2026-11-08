@@ -120,7 +120,7 @@ function SignupPage() {
     const auth = useAuth()
 
     const goHome = () => {
-        const safeRedirect = isSafeRedirectPath(redirectTo) ? redirectTo : "/"
+        const safeRedirect = isSafeRedirectPath(redirectTo) ? redirectTo : "/home"
         void navigate({ to: safeRedirect, replace: true, from: Route.fullPath })
     }
 

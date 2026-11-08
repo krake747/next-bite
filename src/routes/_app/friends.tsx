@@ -6,8 +6,10 @@ import { useSuspenseConvexQuery } from "@api/convex.context"
 import { convexQueryOptions, warmQueries } from "@api/convex.options"
 import { api } from "@api/endpoints"
 import { clearError, errorFrom, type FormError } from "@core/outcome"
+import { useRestaurants } from "@core/restaurants"
 import { useSessionStatus } from "@core/session"
 import { useAcceptFriend, useRemoveFriend, useRequestFriendByEmail } from "@core/social"
+import { useOpenAddRestaurant } from "@features/restaurants/add-restaurant-provider"
 import { EmptyState } from "@pattern/empty-state"
 import { QueryErrorState } from "@pattern/query-error"
 import { SessionGate } from "@routes/-components/session-gate"
@@ -15,6 +17,7 @@ import { PageContainer } from "@routes/-layouts/page-container"
 import { Button } from "@ui/button"
 import { cx } from "@ui/cva.config"
 import { Header, HeaderSubtitle, HeaderTitle } from "@ui/header"
+import { Skeleton } from "@ui/skeleton"
 import { control, fieldLabel } from "@ui/variants"
 
 export const Route = createFileRoute("/_app/friends")({
@@ -86,6 +89,12 @@ function InviteByEmailForm() {
                     value={email}
                     onChange={(event) => {
                         setEmail(event.target.value)
+                        if (error.kind === "error") {
+                            setError(clearError)
+                        }
+                        if (sent) {
+                            setSent(false)
+                        }
                     }}
                     placeholder="friend@example.com"
                     maxLength={254}
@@ -139,7 +148,7 @@ function RequestsSection() {
                 {requests.incoming.map((request) => (
                     <li
                         key={request.authUserId}
-                        className="flex items-center justify-between gap-3 rounded-card border border-border bg-surface p-4 shadow-card"
+                        className="flex items-center justify-between gap-3 rounded-card border border-border bg-surface p-5 shadow-card"
                     >
                         <div className="min-w-0">
                             <p className="truncate text-sm font-medium text-foreground">{request.name}</p>
@@ -159,7 +168,7 @@ function RequestsSection() {
                 {requests.outgoing.map((request) => (
                     <li
                         key={request.authUserId}
-                        className="flex items-center justify-between gap-3 rounded-card border border-border bg-surface p-4 shadow-card"
+                        className="flex items-center justify-between gap-3 rounded-card border border-border bg-surface p-5 shadow-card"
                     >
                         <div className="min-w-0">
                             <p className="truncate text-sm font-medium text-foreground">{request.name}</p>
@@ -175,24 +184,48 @@ function RequestsSection() {
 function FriendDiscoveries({ ownerId, ownerName }: Readonly<{ ownerId: string; ownerName: string }>) {
     const discoveries = useSuspenseConvexQuery(api.friendships.listDiscoveries, { friendAuthUserId: ownerId })
     if (discoveries.length === 0) {
-        return <p className="pt-1 text-xs text-muted-foreground">No discoveries yet.</p>
+        return (
+            <p className="pt-2 text-sm text-muted-foreground">
+                When {ownerName} adds restaurants, the latest 5 show up here and in your Home feed.
+            </p>
+        )
     }
     return (
         <ul className="space-y-1 pt-2">
             {discoveries.map((restaurant) => (
-                <li key={restaurant._id} className="truncate text-sm">
+                <li key={restaurant._id}>
                     <Link
                         to="/restaurants/$restaurantId"
                         params={{ restaurantId: restaurant._id }}
-                        className="text-primary hover:underline"
+                        className="flex min-h-11 items-center gap-1.5 rounded-lg px-2 text-sm hover:bg-surface-muted focus-visible:bg-surface-muted"
                     >
-                        {restaurant.name}
+                        <span className="truncate font-medium text-primary">{restaurant.name}</span>
+                        <span className="shrink-0 text-muted-foreground">· {restaurant.cuisine}</span>
+                        <span className="sr-only"> by {ownerName}</span>
                     </Link>
-                    <span className="text-muted-foreground"> · {restaurant.cuisine}</span>
-                    <span className="sr-only"> by {ownerName}</span>
                 </li>
             ))}
         </ul>
+    )
+}
+
+function OwnListNudge() {
+    const restaurants = useRestaurants()
+    const openAdd = useOpenAddRestaurant()
+    // Only relevant before Kevin has anything of his own: once he adds places,
+    // the loop is running and the nudge would be noise.
+    if (restaurants === undefined || restaurants.length > 0) {
+        return null
+    }
+    return (
+        <div className="mt-6 flex flex-col gap-3 rounded-card border border-border bg-surface p-5 shadow-card sm:flex-row sm:items-center sm:justify-between">
+            <p className="text-sm text-muted-foreground">
+                Anything you add to your own lists shows up on your friends&apos; side too.
+            </p>
+            <Button tone="secondary" size="sm" onClick={openAdd} className="shrink-0">
+                Add a restaurant
+            </Button>
+        </div>
     )
 }
 
@@ -230,6 +263,7 @@ function FriendsList() {
                     {error.message}
                 </p>
             )}
+            <OwnListNudge />
             <ul className="grid gap-4 pt-6 md:grid-cols-2">
                 {friends.map((friend) => (
                     <li
@@ -261,7 +295,14 @@ function FriendsList() {
 
 function FriendDiscoveriesBoundary({ ownerId, ownerName }: Readonly<{ ownerId: string; ownerName: string }>) {
     return (
-        <Suspense fallback={null}>
+        <Suspense
+            fallback={
+                <div className="space-y-1.5 pt-2" aria-hidden="true">
+                    <Skeleton className="h-4 w-3/4" />
+                    <Skeleton className="h-4 w-1/2" />
+                </div>
+            }
+        >
             <FriendDiscoveries ownerId={ownerId} ownerName={ownerName} />
         </Suspense>
     )

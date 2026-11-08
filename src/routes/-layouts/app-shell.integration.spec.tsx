@@ -83,9 +83,9 @@ afterEach(() => {
 describe("app shell", () => {
     test("shows five destinations with working links", async () => {
         signIn()
-        await renderAt("/")
+        await renderAt("/home")
 
-        expect(screen.getByRole("link", { name: "Home" })).toHaveAttribute("href", "/")
+        expect(screen.getByRole("link", { name: "Home" })).toHaveAttribute("href", "/home")
         expect(screen.getByRole("link", { name: "Friends" })).toHaveAttribute("href", "/friends")
         expect(screen.getByRole("button", { name: "Add" })).toBeInTheDocument()
         expect(screen.getByRole("link", { name: "Groups" })).toHaveAttribute("href", "/groups")
@@ -103,6 +103,17 @@ describe("app shell", () => {
         }
     })
 
+    test("redirects signed-in visitors from the landing root to home", async () => {
+        signIn()
+        await renderAt("/")
+
+        // The root stays the public landing page; authenticated visitors land
+        // on the app home instead of seeing landing content with a sidebar.
+        await waitFor(() => {
+            expect(screen.getByRole("link", { name: "Home" })).toHaveAttribute("href", "/home")
+        })
+    })
+
     test("marks the current destination", async () => {
         signIn()
         await renderAt("/friends")
@@ -113,7 +124,7 @@ describe("app shell", () => {
 
     test("navigates between destinations", async () => {
         signIn()
-        await renderAt("/")
+        await renderAt("/home")
 
         // Same happy-dom reason as the dialog test below: userEvent stalls on this
         // navigation, fireEvent drives the same Link deterministically.
@@ -127,7 +138,7 @@ describe("app shell", () => {
     test("shows the profile name in the user card when it differs from the session", async () => {
         signIn()
         await renderAt(
-            "/",
+            "/home",
             new Map([
                 [
                     seedKey("users:getMe", undefined),
@@ -153,7 +164,7 @@ describe("app shell", () => {
 
     test("opens the add flow from the Add destination", async () => {
         signIn()
-        await renderAt("/")
+        await renderAt("/home")
 
         // userEvent hangs with the dialog focus trap under happy-dom; fireEvent is deterministic here.
         fireEvent.click(screen.getByRole("button", { name: "Add" }))

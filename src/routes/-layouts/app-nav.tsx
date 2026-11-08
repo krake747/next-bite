@@ -36,7 +36,7 @@ import { TooltipProvider } from "@ui/tooltip"
 import { focusRing } from "@ui/variants"
 
 const destinations = [
-    { label: "Home", to: "/", Icon: HouseIcon },
+    { label: "Home", to: "/home", Icon: HouseIcon },
     { label: "Friends", to: "/friends", Icon: UsersIcon },
     { label: "Groups", to: "/groups", Icon: UsersThreeIcon },
     { label: "You", to: "/you", Icon: UserIcon },
@@ -221,7 +221,7 @@ export function AppNav() {
                     <SidebarHeader>
                         <div className="flex items-center gap-1">
                             <Link
-                                to="/"
+                                to="/home"
                                 aria-label="Next Bite home"
                                 className="flex min-w-0 flex-1 items-center gap-2 rounded-lg px-3 py-2 text-foreground group-data-[collapsible=icon]:hidden hover:text-tomato-600"
                             >
@@ -240,7 +240,8 @@ export function AppNav() {
                                     <SidebarMenuButton
                                         render={<Link to={destination.to} />}
                                         isActive={
-                                            matchRoute({ to: destination.to, fuzzy: destination.to !== "/" }) !== false
+                                            matchRoute({ to: destination.to, fuzzy: destination.to !== "/home" }) !==
+                                            false
                                         }
                                         tooltip={destination.label}
                                     >

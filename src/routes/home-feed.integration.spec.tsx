@@ -66,7 +66,7 @@ async function renderHome(
     const backend = createSeededClient({ seeds, liveRows: feed })
     const router = createRouter({
         routeTree,
-        history: createMemoryHistory({ initialEntries: ["/"] }),
+        history: createMemoryHistory({ initialEntries: ["/home"] }),
         context: { queryClient: backend.queryClient },
     })
     await router.load()
@@ -84,7 +84,7 @@ describe("home friends feed", () => {
     test("shows a friend's discovery in latest activity", async () => {
         await renderHome([ownedRestaurant("Trattoria Verde", { id: "anna", name: "Anna" }, "r1")])
 
-        const activity = screen.getByLabelText("Latest from friends")
+        const activity = screen.getByLabelText("Latest activity")
         expect(within(activity).getByText("Trattoria Verde")).toBeInTheDocument()
     })
 
@@ -102,7 +102,7 @@ describe("home friends feed", () => {
             [{ authUserId: "user-2", name: "Ben" }],
         )
 
-        const saved = screen.getByLabelText("Saved restaurants")
+        const saved = screen.getByLabelText("Latest activity")
         expect(within(saved).getByText("Trattoria Verde")).toBeInTheDocument()
         expect(within(saved).queryByRole("button", { name: "Ben" })).toBeNull()
     })
@@ -116,7 +116,7 @@ describe("home friends feed", () => {
             [{ authUserId: "user-2", name: "Ben" }],
         )
 
-        const saved = screen.getByLabelText("Saved restaurants")
+        const saved = screen.getByLabelText("Latest activity")
         await waitFor(() => {
             expect(within(saved).getByRole("button", { name: "Ben" })).toBeInTheDocument()
         })

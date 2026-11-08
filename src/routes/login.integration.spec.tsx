@@ -257,7 +257,7 @@ describe("login OTP step", () => {
         })
 
         await waitFor(() => {
-            expect(router.state.location.pathname).toBe("/")
+            expect(router.state.location.pathname).toBe("/home")
         })
     })
 
@@ -305,7 +305,7 @@ describe("login OTP step", () => {
         })
 
         await waitFor(() => {
-            expect(router.state.location.pathname).toBe("/")
+            expect(router.state.location.pathname).toBe("/home")
         })
     })
 

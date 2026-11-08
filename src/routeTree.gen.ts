@@ -18,6 +18,7 @@ import { Route as SignupRouteImport } from './routes/signup'
 import { Route as AppAccountRouteImport } from './routes/_app/account'
 import { Route as AppFriendsRouteImport } from './routes/_app/friends'
 import { Route as AppGroupsRouteImport } from './routes/_app/groups'
+import { Route as AppHomeRouteImport } from './routes/_app/home'
 import { Route as AppYouRouteImport } from './routes/_app/you'
 import { Route as DsIndexRouteImport } from './routes/ds/index'
 import { Route as DsSectionIdRouteImport } from './routes/ds/$sectionId'
@@ -70,6 +71,11 @@ const AppGroupsRoute = AppGroupsRouteImport.update({
   path: '/groups',
   getParentRoute: () => AppRouteRoute,
 } as any)
+const AppHomeRoute = AppHomeRouteImport.update({
+  id: '/home',
+  path: '/home',
+  getParentRoute: () => AppRouteRoute,
+} as any)
 const AppYouRoute = AppYouRouteImport.update({
   id: '/you',
   path: '/you',
@@ -116,6 +122,7 @@ export interface FileRoutesByFullPath {
   '/account': typeof AppAccountRoute
   '/friends': typeof AppFriendsRoute
   '/groups': typeof AppGroupsRouteWithChildren
+  '/home': typeof AppHomeRoute
   '/you': typeof AppYouRoute
   '/ds/$sectionId': typeof DsSectionIdRoute
   '/ds/': typeof DsIndexRoute
@@ -131,6 +138,7 @@ export interface FileRoutesByTo {
   '/signup': typeof SignupRoute
   '/account': typeof AppAccountRoute
   '/friends': typeof AppFriendsRoute
+  '/home': typeof AppHomeRoute
   '/you': typeof AppYouRoute
   '/ds/$sectionId': typeof DsSectionIdRoute
   '/ds': typeof DsIndexRoute
@@ -150,6 +158,7 @@ export interface FileRoutesById {
   '/_app/account': typeof AppAccountRoute
   '/_app/friends': typeof AppFriendsRoute
   '/_app/groups': typeof AppGroupsRouteWithChildren
+  '/_app/home': typeof AppHomeRoute
   '/_app/you': typeof AppYouRoute
   '/ds/$sectionId': typeof DsSectionIdRoute
   '/ds/': typeof DsIndexRoute
@@ -169,6 +178,7 @@ export interface FileRouteTypes {
     | '/account'
     | '/friends'
     | '/groups'
+    | '/home'
     | '/you'
     | '/ds/$sectionId'
     | '/ds/'
@@ -184,6 +194,7 @@ export interface FileRouteTypes {
     | '/signup'
     | '/account'
     | '/friends'
+    | '/home'
     | '/you'
     | '/ds/$sectionId'
     | '/ds'
@@ -202,6 +213,7 @@ export interface FileRouteTypes {
     | '/_app/account'
     | '/_app/friends'
     | '/_app/groups'
+    | '/_app/home'
     | '/_app/you'
     | '/ds/$sectionId'
     | '/ds/'
@@ -285,6 +297,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppGroupsRouteImport
       parentRoute: typeof AppRouteRoute
     }
+    '/_app/home': {
+      id: '/_app/home'
+      path: '/home'
+      fullPath: '/home'
+      preLoaderRoute: typeof AppHomeRouteImport
+      parentRoute: typeof AppRouteRoute
+    }
     '/_app/you': {
       id: '/_app/you'
       path: '/you'
@@ -355,6 +374,7 @@ interface AppRouteRouteChildren {
   AppAccountRoute: typeof AppAccountRoute
   AppFriendsRoute: typeof AppFriendsRoute
   AppGroupsRoute: typeof AppGroupsRouteWithChildren
+  AppHomeRoute: typeof AppHomeRoute
   AppYouRoute: typeof AppYouRoute
   AppInviteTokenRoute: typeof AppInviteTokenRoute
   AppRestaurantsRestaurantIdRoute: typeof AppRestaurantsRestaurantIdRoute
@@ -364,6 +384,7 @@ const AppRouteRouteChildren: AppRouteRouteChildren = {
   AppAccountRoute: AppAccountRoute,
   AppFriendsRoute: AppFriendsRoute,
   AppGroupsRoute: AppGroupsRouteWithChildren,
+  AppHomeRoute: AppHomeRoute,
   AppYouRoute: AppYouRoute,
   AppInviteTokenRoute: AppInviteTokenRoute,
   AppRestaurantsRestaurantIdRoute: AppRestaurantsRestaurantIdRoute,

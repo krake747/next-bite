@@ -46,9 +46,9 @@ function InviteError({ message }: Readonly<{ message: string }>) {
                 <HeaderSubtitle>{message}</HeaderSubtitle>
             </Header>
             <PageContainer>
-                <BackNav backTo="/" label="Back home" />
+                <BackNav backTo="/home" label="Back home" />
                 <p className="pt-6">
-                    <Link to="/" className="font-medium text-primary hover:underline">
+                    <Link to="/home" className="font-medium text-primary hover:underline">
                         Back to Next Bite
                     </Link>
                 </p>

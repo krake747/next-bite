@@ -4,7 +4,7 @@ import { cva, type VariantProps } from "@ui/cva.config"
 import { focusRing } from "@ui/variants"
 
 export const button = cva({
-    base: "group inline-flex cursor-pointer items-center justify-center font-semibold transition-colors duration-150 active:scale-[0.97] disabled:cursor-not-allowed disabled:bg-surface-muted disabled:text-muted-foreground disabled:shadow-none",
+    base: "group inline-flex min-h-11 cursor-pointer items-center justify-center font-semibold transition-colors duration-150 active:scale-[0.96] disabled:cursor-not-allowed disabled:bg-surface-muted disabled:text-muted-foreground disabled:shadow-none md:min-h-10",
     composes: [focusRing],
     variants: {
         tone: {

@@ -44,7 +44,7 @@ function LoginPage() {
     const [otpEmail, setOtpEmail] = useState<string | undefined>(undefined)
 
     const goHome = () => {
-        const safeRedirect = isSafeRedirectPath(redirectTo) ? redirectTo : "/"
+        const safeRedirect = isSafeRedirectPath(redirectTo) ? redirectTo : "/home"
         void navigate({ to: safeRedirect, replace: true, from: Route.fullPath })
     }
 

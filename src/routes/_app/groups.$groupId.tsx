@@ -79,7 +79,7 @@ function AddFromMyList({ groupId, sharedIds }: Readonly<{ groupId: Id<"groups">;
         return (
             <p className="pt-4 text-sm text-muted-foreground">
                 Every restaurant you saved is already on this list.{" "}
-                <Link to="/" className="font-medium text-primary hover:underline">
+                <Link to="/home" className="font-medium text-primary hover:underline">
                     Save another one
                 </Link>{" "}
                 to add it here.
