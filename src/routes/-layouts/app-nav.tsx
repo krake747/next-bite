@@ -17,8 +17,8 @@ import { useAuth } from "@core/session"
 import { useOpenAddRestaurant } from "@features/restaurants/add-restaurant-provider"
 import { LazyImage } from "@pattern/lazy-image"
 import { cva, cx } from "@ui/cva.config"
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@ui/dropdown-menu"
 import { useIsMobile } from "@ui/hooks/use-media-query"
-import { Popover, PopoverPanel, PopoverTrigger } from "@ui/popover"
 import {
     Sidebar,
     SidebarContent,
@@ -117,35 +117,27 @@ function UserAvatar({
     )
 }
 
-function AccountMenuPanel({
+function AccountMenuContent({
     name,
     email,
     isAccountActive,
     onSignOut,
 }: Readonly<{ name: string; email: string; isAccountActive: boolean; onSignOut: () => void }>) {
     return (
-        <PopoverPanel side="right" align="end" sideOffset={8} className="w-60">
+        <DropdownMenuContent side="right" align="end" sideOffset={8} className="w-60">
             <div className="mb-1 border-b border-border px-3 py-2.5">
                 <p className="truncate text-sm font-medium text-foreground">{name}</p>
                 <p className="truncate text-xs text-muted-foreground">{email}</p>
             </div>
-            <Link
-                to="/account"
-                data-active={isAccountActive}
-                className="flex w-full items-center gap-2 rounded-lg px-3 py-2.5 text-sm text-foreground hover:bg-surface-muted focus:outline-none focus-visible:bg-surface-muted data-active:bg-sidebar-accent data-active:font-medium data-active:text-sidebar-accent-foreground data-active:hover:bg-sidebar-accent"
-            >
+            <DropdownMenuItem active={isAccountActive} render={<Link to="/account" />}>
                 <UserCircleIcon className="size-4" aria-hidden="true" />
                 Account
-            </Link>
-            <button
-                type="button"
-                onClick={onSignOut}
-                className="flex w-full cursor-pointer items-center gap-2 rounded-lg px-3 py-2.5 text-sm text-foreground hover:bg-surface-muted focus:outline-none focus-visible:bg-surface-muted"
-            >
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={onSignOut}>
                 <SignOutIcon className="size-4" aria-hidden="true" />
                 Log out
-            </button>
-        </PopoverPanel>
+            </DropdownMenuItem>
+        </DropdownMenuContent>
     )
 }
 
@@ -158,28 +150,41 @@ function SidebarUserMenu() {
     const signOut = () => {
         void auth.signOut()
     }
-    if (state === "collapsed") {
-        return (
-            <Popover>
-                <PopoverTrigger tone="avatar" aria-label="Open account menu">
-                    <UserAvatar name={name} image={image} hasImage={hasImage} />
-                </PopoverTrigger>
-                <AccountMenuPanel name={name} email={email} isAccountActive={isAccountActive} onSignOut={signOut} />
-            </Popover>
-        )
-    }
     return (
-        <Popover>
-            <PopoverTrigger tone="card" aria-label="Open account menu">
-                <UserAvatar name={name} image={image} hasImage={hasImage} />
-                <span className="min-w-0 flex-1 text-left">
-                    <span className="block truncate text-sm font-medium text-foreground">{name}</span>
-                    <span className="block truncate text-xs text-muted-foreground">{email}</span>
-                </span>
-                <CaretUpDownIcon className="size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
-            </PopoverTrigger>
-            <AccountMenuPanel name={name} email={email} isAccountActive={isAccountActive} onSignOut={signOut} />
-        </Popover>
+        <DropdownMenu>
+            <DropdownMenuTrigger
+                aria-label="Open account menu"
+                render={
+                    state === "collapsed" ? (
+                        <button
+                            type="button"
+                            className={cx(
+                                focusRing(),
+                                "hit-area-2 inline-flex cursor-pointer items-center justify-center rounded-full hover:bg-surface-muted",
+                            )}
+                        >
+                            <UserAvatar name={name} image={image} hasImage={hasImage} />
+                        </button>
+                    ) : (
+                        <button
+                            type="button"
+                            className={cx(
+                                focusRing(),
+                                "hit-area-2 inline-flex w-full cursor-pointer items-center justify-start gap-3 rounded-xl px-3 py-2 text-left hover:bg-surface-muted",
+                            )}
+                        >
+                            <UserAvatar name={name} image={image} hasImage={hasImage} />
+                            <span className="min-w-0 flex-1 text-left">
+                                <span className="block truncate text-sm font-medium text-foreground">{name}</span>
+                                <span className="block truncate text-xs text-muted-foreground">{email}</span>
+                            </span>
+                            <CaretUpDownIcon className="size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
+                        </button>
+                    )
+                }
+            />
+            <AccountMenuContent name={name} email={email} isAccountActive={isAccountActive} onSignOut={signOut} />
+        </DropdownMenu>
     )
 }
 
@@ -194,7 +199,7 @@ export function AppNav() {
             <nav
                 aria-label="Primary"
                 data-slot="app-nav"
-                className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-background/90 backdrop-blur-md"
+                className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-surface/90 backdrop-blur-md"
             >
                 <div className="mx-auto grid w-full max-w-350 grid-cols-5 gap-1 px-2 pt-2 pb-[calc(0.5rem+env(safe-area-inset-bottom))]">
                     <AppLink to={destinations[0].to} label={destinations[0].label} Icon={destinations[0].Icon} />
