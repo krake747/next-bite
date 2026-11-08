@@ -134,14 +134,12 @@ export function LandingCloser() {
         <section aria-label="Get started" className="mx-auto w-full max-w-5xl px-4 py-12 sm:px-6 lg:px-12">
             <div className="flex flex-col gap-4 rounded-card border border-border bg-surface p-6 shadow-card sm:flex-row sm:items-center sm:justify-between">
                 <div className="flex items-start gap-4">
-                    <UsersThreeIcon className="size-8 shrink-0 text-muted-foreground" aria-hidden="true" />
+                    <UsersThreeIcon className="size-6 shrink-0 text-muted-foreground" aria-hidden="true" />
                     <div>
                         <h2 className="font-display text-lg font-semibold text-balance text-foreground">
                             Find your next favourite, together.
                         </h2>
-                        <p className="mt-1 text-sm text-muted-foreground">
-                            Get started and start saving spots with your friends.
-                        </p>
+                        <p className="mt-1 text-sm text-muted-foreground">Save spots with your friends.</p>
                     </div>
                 </div>
                 <ButtonLink to="/signup" size="lg" className="shrink-0">

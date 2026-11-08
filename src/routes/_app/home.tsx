@@ -102,7 +102,7 @@ function HomeDiscover({ restaurants }: Readonly<{ restaurants: ReadonlyArray<Res
     return (
         <section aria-label="Saved restaurants">
             <h2 className="font-display text-2xl font-semibold text-balance text-foreground">Saved restaurants</h2>
-            <p className="mt-1 text-muted-foreground">Every restaurant on your short list. Search by craving.</p>
+            <p className="mt-1 text-muted-foreground">Every restaurant on your short list.</p>
             <RestaurantList
                 restaurants={restaurants}
                 socialFor={actions.socialFor}
@@ -120,11 +120,9 @@ function HomeHeader({ name, count }: Readonly<{ name: string; count: number }>) 
     return (
         <section aria-label="Welcome back" className="pt-8 sm:pt-10">
             <h1 className="font-display text-3xl font-semibold tracking-tight text-balance text-foreground sm:text-4xl">
-                What&apos;s next, {name}?
+                Pick your next table, {name}.
             </h1>
-            <p className="mt-2 max-w-xl text-muted-foreground">
-                Your friends&apos; latest saves. Jump back in and pick the next table.
-            </p>
+            <p className="mt-2 max-w-xl text-muted-foreground">Your friends&apos; latest saves, newest first.</p>
             <div className="mt-4 flex flex-wrap items-center gap-3">
                 <Button onClick={openAdd}>
                     <PlusIcon className="size-4" />
