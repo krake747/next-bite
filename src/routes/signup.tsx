@@ -75,31 +75,29 @@ function SignupPage() {
         <AuthLayout
             icon={<UserIcon className="size-8" />}
             title={
-                <h2 className="relative font-display text-4xl font-semibold tracking-tight text-balance text-stone-900 sm:text-5xl">
+                <h2 className="font-display text-3xl font-semibold tracking-tight text-balance text-foreground sm:text-4xl">
                     Join Next Bite
-                    <svg
-                        className="absolute -bottom-2 left-1/2 h-2 w-24 -translate-x-1/2"
-                        viewBox="0 0 100 8"
-                        preserveAspectRatio="none"
-                    >
-                        <path
-                            d="M0 6 Q25 0 50 6 T100 6"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth="2"
-                            className="text-tomato-500"
-                        />
-                    </svg>
                 </h2>
             }
             subtitle="Create your login to start adding restaurants"
             footerLink={
-                <p className="text-sm text-stone-600">
+                <p className="text-sm text-muted-foreground">
                     Already have a login? <TextLink render={<Link to="/login" viewTransition />}>Sign in</TextLink>
                 </p>
             }
         >
             {bannerError !== undefined && <ErrorBanner>{bannerError}</ErrorBanner>}
+
+            {(methods?.google === true || methods?.github === true) && (
+                <>
+                    <SocialButtons
+                        google={methods.google}
+                        github={methods.github}
+                        redirect={isSafeRedirectPath(redirectTo) ? redirectTo : "/"}
+                    />
+                    <AuthDivider label="or use your email" />
+                </>
+            )}
 
             <Form of={form} onSubmit={handleSubmit} className="space-y-4">
                 <Field of={form} path={["name"]}>
@@ -162,16 +160,6 @@ function SignupPage() {
                     Sign up
                 </PendingButton>
             </Form>
-            {(methods?.google === true || methods?.github === true) && (
-                <>
-                    <AuthDivider />
-                    <SocialButtons
-                        google={methods.google}
-                        github={methods.github}
-                        redirect={isSafeRedirectPath(redirectTo) ? redirectTo : "/"}
-                    />
-                </>
-            )}
         </AuthLayout>
     )
 }

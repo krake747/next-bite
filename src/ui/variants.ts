@@ -5,9 +5,9 @@ export const focusRing = cva({
 })
 
 export const control = cva({
-    base: "w-full rounded-control border border-border bg-surface px-3 py-2.5 text-stone-900 transition-colors duration-150 placeholder:text-stone-600 hover:border-border-strong focus:border-ring focus:ring-1 focus:ring-ring focus:outline-none disabled:cursor-not-allowed disabled:bg-surface-muted disabled:text-muted-foreground",
+    base: "w-full rounded-control border border-border bg-surface px-3 py-2.5 text-base text-foreground transition-colors duration-150 placeholder:text-muted-foreground hover:border-border-strong focus:border-ring focus:ring-1 focus:ring-ring focus:outline-none disabled:cursor-not-allowed disabled:bg-surface-muted disabled:text-muted-foreground",
 })
 
 export const fieldLabel = cva({
-    base: "block text-sm font-medium text-stone-700",
+    base: "block text-sm font-medium text-foreground",
 })

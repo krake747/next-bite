@@ -74,7 +74,7 @@ export function OtpForm({
 
     return (
         <Form of={codeForm} onSubmit={handleVerify} className="space-y-4">
-            <p className="text-sm text-stone-600">
+            <p className="text-sm text-muted-foreground">
                 Code sent to {email}.{" "}
                 <button
                     type="button"

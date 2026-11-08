@@ -18,24 +18,27 @@ export function AuthLayout({
     footerLink: React.ReactNode
 }>) {
     return (
-        <div className="relative flex min-h-screen flex-col overflow-hidden bg-background">
-            <BackgroundLayers />
-            <div
-                className="pointer-events-none absolute inset-0 opacity-[0.015]"
-                style={{
-                    backgroundImage: `linear-gradient(color-mix(in oklch, var(--color-stone-900) 5%, transparent) 1px, transparent 1px), linear-gradient(90deg, color-mix(in oklch, var(--color-stone-900) 5%, transparent) 1px, transparent 1px)`,
-                    backgroundSize: "60px 60px",
-                }}
-            />
+        <div className="relative flex min-h-screen flex-col bg-background lg:flex-row">
+            <div className="relative hidden flex-1 flex-col justify-end overflow-hidden bg-primary p-12 text-inverse lg:flex">
+                <BackgroundLayers />
+                <div className="relative">
+                    <p className="font-display text-5xl leading-tight font-semibold tracking-tight text-balance">
+                        Good food.
+                        <br />
+                        Great company.
+                    </p>
+                    <p className="mt-4 max-w-md text-lg text-inverse/80">
+                        Your friends have good taste. Save spots together, vote want-to-go, and pick the next table in
+                        minutes.
+                    </p>
+                </div>
+            </div>
 
             <div className="relative z-10 flex flex-1 flex-col items-center justify-center px-4 py-12">
                 <div className="w-full max-w-md">
                     <div className="mb-8 text-center">
                         <div className="mx-auto mb-6 inline-flex">
-                            <div className="relative">
-                                <BrandIcon>{icon}</BrandIcon>
-                                <div className="absolute top-0 -right-2 size-3 rounded-full bg-mango-500" />
-                            </div>
+                            <BrandIcon>{icon}</BrandIcon>
                         </div>
                     </div>
                     {title}

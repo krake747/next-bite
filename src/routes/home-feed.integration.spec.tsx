@@ -77,7 +77,7 @@ async function renderHome(
         </ConvexProvider>,
     )
     await waitFor(() => {
-        expect(document.querySelector('[aria-label="Latest from friends"]')).toBeInTheDocument()
+        expect(document.querySelector('[aria-label="Welcome back"]')).toBeInTheDocument()
     })
 }
 
@@ -89,10 +89,12 @@ describe("home friends feed", () => {
         expect(within(activity).getByText("Trattoria Verde")).toBeInTheDocument()
     })
 
-    test("shows an empty state when no friend activity exists", async () => {
+    test("shows a single first-run empty state when nothing exists", async () => {
         await renderHome([])
 
-        expect(screen.getByText("No friend saves yet")).toBeInTheDocument()
+        expect(screen.getByLabelText("Saved restaurants")).toBeInTheDocument()
+        expect(screen.getByText("The table is set, but empty")).toBeInTheDocument()
+        expect(screen.queryByText("No friend saves yet")).not.toBeInTheDocument()
     })
 
     test("shows personal saves without friend pills", async () => {

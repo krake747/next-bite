@@ -64,31 +64,29 @@ function LoginPage() {
         <AuthLayout
             icon={<ForkKnifeIcon className="size-8" />}
             title={
-                <h2 className="relative font-display text-4xl font-semibold tracking-tight text-balance text-stone-900 sm:text-5xl">
+                <h2 className="font-display text-3xl font-semibold tracking-tight text-balance text-foreground sm:text-4xl">
                     Welcome back
-                    <svg
-                        className="absolute -bottom-2 left-1/2 h-2 w-24 -translate-x-1/2"
-                        viewBox="0 0 100 8"
-                        preserveAspectRatio="none"
-                    >
-                        <path
-                            d="M0 6 Q25 0 50 6 T100 6"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth="2"
-                            className="text-tomato-500"
-                        />
-                    </svg>
                 </h2>
             }
             subtitle="Sign in to continue to your next bite"
             footerLink={
-                <p className="text-sm text-stone-600">
-                    Do not have a login? <TextLink render={<Link to="/signup" viewTransition />}>Sign up</TextLink>
+                <p className="text-sm text-muted-foreground">
+                    New to Next Bite? <TextLink render={<Link to="/signup" viewTransition />}>Sign up</TextLink>
                 </p>
             }
         >
             {auth.error !== null && auth.error !== "" && <ErrorBanner>{auth.error}</ErrorBanner>}
+
+            {(methods?.google === true || methods?.github === true) && (
+                <>
+                    <SocialButtons
+                        google={methods.google}
+                        github={methods.github}
+                        redirect={isSafeRedirectPath(redirectTo) ? redirectTo : "/"}
+                    />
+                    <AuthDivider label="or use your email" />
+                </>
+            )}
 
             <Form of={form} onSubmit={handleEmailSubmit} className="space-y-4">
                 <Field of={form} path={["email"]}>
@@ -123,19 +121,9 @@ function LoginPage() {
                     Sign In
                 </PendingButton>
             </Form>
-            {(methods?.google === true || methods?.github === true) && (
-                <>
-                    <AuthDivider />
-                    <SocialButtons
-                        google={methods.google}
-                        github={methods.github}
-                        redirect={isSafeRedirectPath(redirectTo) ? redirectTo : "/"}
-                    />
-                </>
-            )}
             {methods?.emailOtp === true && (
                 <>
-                    <AuthDivider />
+                    <AuthDivider label="or use a code" />
                     <OtpForm onSuccess={goHome} email={otpEmail} onEmailChange={setOtpEmail} />
                 </>
             )}

@@ -1,5 +1,5 @@
 import { PlusIcon } from "@phosphor-icons/react"
-import { createFileRoute, useNavigate } from "@tanstack/react-router"
+import { createFileRoute } from "@tanstack/react-router"
 import { Suspense, useState } from "react"
 
 import { useSuspenseConvexQuery } from "@api/convex.context"
@@ -29,7 +29,7 @@ import { PageContainer } from "@routes/-layouts/page-container"
 import { PageLayout } from "@routes/-layouts/page-layout"
 import { BackgroundLayers } from "@ui/background-decoration"
 import { Button } from "@ui/button"
-import { Header, HeaderSubtitle, HeaderTitle, HeaderBadge } from "@ui/header"
+import { HeaderBadge } from "@ui/header"
 
 export const Route = createFileRoute("/")({
     head: () => ({ meta: [{ title: "Our next bite" }] }),
@@ -69,7 +69,7 @@ function filterRestaurants(
 function HomeFeed({ feed }: Readonly<{ feed: ReadonlyArray<Restaurant> }>) {
     const actions = useSocialActions()
     return (
-        <section aria-label="Latest from friends" className="pt-10">
+        <section aria-label="Latest from friends">
             <h2 className="font-display text-2xl font-semibold text-balance text-foreground">Latest from friends</h2>
             <p className="mt-1 text-muted-foreground">Fresh saves from your people.</p>
             {feed.length === 0 ? (
@@ -123,26 +123,26 @@ function HomeDiscover({ restaurants }: Readonly<{ restaurants: ReadonlyArray<Res
     const ownId = auth.user?.id
     const matchingIds = [...new Set(restaurants.map((restaurant) => restaurant.ownerId))].filter((id) => id !== ownId)
     return (
-        <section aria-label="Saved restaurants" className="pt-10">
+        <section aria-label="Saved restaurants">
             <h2 className="font-display text-2xl font-semibold text-balance text-foreground">Saved restaurants</h2>
             <p className="mt-1 text-muted-foreground">Every restaurant on your short list. Search by craving.</p>
-            <div className="pt-4">
-                <FriendsFilter
-                    filter={filterState.filter}
-                    handleFilter={(name) => {
-                        filterState.setFilter(name)
-                    }}
-                    search={filterState.search}
-                    handleSearch={(value) => {
-                        filterState.setSearch(value)
-                    }}
-                    sortOrder={sortOrder}
-                    onSortChange={setSortOrder}
-                    matchingIds={matchingIds}
-                >
-                    <HomeActions />
-                </FriendsFilter>
-            </div>
+            {restaurants.length > 0 && (
+                <div className="pt-4">
+                    <FriendsFilter
+                        filter={filterState.filter}
+                        handleFilter={(name) => {
+                            filterState.setFilter(name)
+                        }}
+                        search={filterState.search}
+                        handleSearch={(value) => {
+                            filterState.setSearch(value)
+                        }}
+                        sortOrder={sortOrder}
+                        onSortChange={setSortOrder}
+                        matchingIds={matchingIds}
+                    />
+                </div>
+            )}
             <RestaurantList
                 restaurants={filtered}
                 hasFilter={filterState.filter !== ""}
@@ -157,39 +157,24 @@ function HomeDiscover({ restaurants }: Readonly<{ restaurants: ReadonlyArray<Res
     )
 }
 
-function HomeHeaderButton() {
+function HomeHeader({ name, count }: Readonly<{ name: string; count: number }>) {
     const openAdd = useOpenAddRestaurant()
     return (
-        <Button onClick={openAdd}>
-            <PlusIcon className="size-4 transition-transform duration-200 group-hover:rotate-90" />
-            Add Restaurant
-        </Button>
-    )
-}
-
-function HomeActions() {
-    const navigate = useNavigate()
-    const auth = useAuth()
-    const openAdd = useOpenAddRestaurant()
-    return (
-        <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row">
-            {auth.isAuthenticated ? (
-                <Button tone="secondary" onClick={openAdd}>
+        <section aria-label="Welcome back" className="pt-8 sm:pt-10">
+            <h1 className="font-display text-3xl font-semibold tracking-tight text-balance text-foreground sm:text-4xl">
+                What&apos;s next, {name}?
+            </h1>
+            <p className="mt-2 max-w-xl text-muted-foreground">
+                Your friends&apos; latest saves. Jump back in and pick the next table.
+            </p>
+            <div className="mt-6 flex flex-wrap items-center gap-3">
+                <Button onClick={openAdd}>
                     <PlusIcon className="size-4 transition-transform duration-200 group-hover:rotate-90" />
                     Add Restaurant
                 </Button>
-            ) : (
-                <Button
-                    tone="secondary"
-                    onClick={() => {
-                        void navigate({ to: "/login", viewTransition: true })
-                    }}
-                >
-                    <PlusIcon className="size-4 transition-transform duration-200 group-hover:rotate-90" />
-                    Sign in to add
-                </Button>
-            )}
-        </div>
+                {count > 0 && <HeaderBadge count={count} />}
+            </div>
+        </section>
     )
 }
 
@@ -252,16 +237,7 @@ function Home() {
     return (
         <PageLayout>
             <PageContainer>
-                <Header>
-                    <HeaderTitle>What&apos;s next, {auth.user?.name?.split(" ")[0] ?? "food lover"}?</HeaderTitle>
-                    <HeaderSubtitle>
-                        Your friends&apos; latest saves. Jump back in and pick the next table.
-                    </HeaderSubtitle>
-                    <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center">
-                        <HomeHeaderButton />
-                        <HeaderBadge count={restaurantListState.length} />
-                    </div>
-                </Header>
+                <HomeHeader name={auth.user?.name?.split(" ")[0] ?? "food lover"} count={restaurantListState.length} />
                 {restaurants === undefined || feedRestaurants === undefined ? (
                     <>
                         <div className="pt-4">
@@ -274,9 +250,15 @@ function Home() {
                             <RestaurantCardSkeleton />
                         </div>
                     </>
+                ) : feed.length === 0 && restaurantListState.length === 0 ? (
+                    <SocialActionsProvider restaurants={[]}>
+                        <div className="mx-auto w-full max-w-xl pt-6">
+                            <HomeDiscover restaurants={restaurantListState} />
+                        </div>
+                    </SocialActionsProvider>
                 ) : (
                     <SocialActionsProvider restaurants={[...feed, ...restaurantListState]}>
-                        <div className="grid lg:grid-cols-5 lg:gap-12">
+                        <div className="grid gap-12 pt-10 lg:grid-cols-5 lg:gap-12">
                             <div className="min-w-0 lg:col-span-2">
                                 <HomeFeed feed={feed} />
                             </div>

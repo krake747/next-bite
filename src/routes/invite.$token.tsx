@@ -25,12 +25,12 @@ export const Route = createFileRoute("/invite/$token")({
 function InviteLoadError({ reset }: Readonly<{ reset: () => void }>) {
     return (
         <PageLayout>
+            <Header>
+                <HeaderTitle>Invitation unavailable</HeaderTitle>
+                <HeaderSubtitle>This link is invalid, expired, or was revoked.</HeaderSubtitle>
+            </Header>
             <PageContainer>
                 <BackNav backTo="/" label="Back home" />
-                <Header>
-                    <HeaderTitle>Invitation unavailable</HeaderTitle>
-                    <HeaderSubtitle>This link is invalid, expired, or was revoked.</HeaderSubtitle>
-                </Header>
                 <div className="pt-4">
                     <QueryErrorState reset={reset} />
                 </div>
@@ -42,12 +42,12 @@ function InviteLoadError({ reset }: Readonly<{ reset: () => void }>) {
 function InviteError({ message }: Readonly<{ message: string }>) {
     return (
         <PageLayout>
+            <Header>
+                <HeaderTitle>Invitation unavailable</HeaderTitle>
+                <HeaderSubtitle>{message}</HeaderSubtitle>
+            </Header>
             <PageContainer>
                 <BackNav backTo="/" label="Back home" />
-                <Header>
-                    <HeaderTitle>Invitation unavailable</HeaderTitle>
-                    <HeaderSubtitle>{message}</HeaderSubtitle>
-                </Header>
                 <p className="pt-6">
                     <Link to="/" viewTransition className="font-medium text-primary hover:underline">
                         Back to Next Bite
@@ -68,7 +68,6 @@ function InviteView() {
     const [accepted, setAccepted] = useState(false)
 
     const invitePath = `/invite/${token}`
-    const loginHref = `/login?redirect=${encodeURIComponent(invitePath)}`
 
     useEffect(() => {
         let cancelled = false
@@ -107,15 +106,15 @@ function InviteView() {
     if (!auth.isAuthenticated) {
         return (
             <PageLayout>
+                <Header>
+                    <HeaderTitle>{preview.groupName ?? "A group"} invited you</HeaderTitle>
+                    <HeaderSubtitle>
+                        {preview.invitedByName} shared a reusable group link. Sign in to join{" "}
+                        {preview.groupName ?? "the group"}.
+                    </HeaderSubtitle>
+                </Header>
                 <PageContainer>
                     <BackNav backTo="/" label="Back home" />
-                    <Header>
-                        <HeaderTitle>{preview.groupName ?? "A group"} invited you</HeaderTitle>
-                        <HeaderSubtitle>
-                            {preview.invitedByName} shared a reusable group link. Sign in to join{" "}
-                            {preview.groupName ?? "the group"}.
-                        </HeaderSubtitle>
-                    </Header>
                     <div className="flex flex-col gap-3 pt-6 sm:flex-row">
                         <Button
                             onClick={() => {
@@ -135,9 +134,6 @@ function InviteView() {
                             Sign up to join
                         </Button>
                     </div>
-                    <p className="pt-4 text-sm text-muted-foreground">
-                        Or continue directly: <a href={loginHref}>/login?redirect={encodeURIComponent(invitePath)}</a>
-                    </p>
                 </PageContainer>
             </PageLayout>
         )
@@ -149,12 +145,12 @@ function InviteView() {
 
     return (
         <PageLayout>
+            <Header>
+                <HeaderTitle>Joining {preview.groupName ?? "the group"}</HeaderTitle>
+                <HeaderSubtitle>Hang tight while we add you.</HeaderSubtitle>
+            </Header>
             <PageContainer>
                 <BackNav backTo="/groups" label="Back to groups" />
-                <Header>
-                    <HeaderTitle>Joining {preview.groupName ?? "the group"}</HeaderTitle>
-                    <HeaderSubtitle>Hang tight while we add you.</HeaderSubtitle>
-                </Header>
                 <div className="pt-4">
                     <LoadingPlaceholder />
                 </div>

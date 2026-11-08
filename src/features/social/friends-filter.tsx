@@ -22,7 +22,7 @@ export function FriendsFilter({
     sortOrder: "added" | "name"
     onSortChange: (order: "added" | "name") => void
     matchingIds: ReadonlyArray<string>
-    children: React.ReactNode
+    children?: React.ReactNode | undefined
 }>) {
     const friends = useFriends()
     const shownFriends = (friends ?? []).filter((friend) => matchingIds.includes(friend.authUserId))
@@ -96,7 +96,7 @@ export function FriendsFilter({
                 </div>
             </div>
 
-            <div className="flex shrink-0 flex-col gap-2 sm:flex-row">{children}</div>
+            <div className="flex shrink-0 flex-col gap-2 sm:flex-row">{children ?? null}</div>
         </div>
     )
 }
