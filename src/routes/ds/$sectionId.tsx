@@ -2,7 +2,6 @@ import { createFileRoute } from "@tanstack/react-router"
 
 import { useSessionStatus } from "@core/session"
 import { SessionGate } from "@routes/-components/session-gate"
-import { BackNav } from "@routes/-layouts/back-nav"
 
 import { designSystemSections } from "./-sections/registry"
 import { AnatomyTable } from "./-sections/token-table"
@@ -29,17 +28,11 @@ function DesignSystemSectionPage() {
     const status = useSessionStatus()
 
     if (entry === undefined) {
-        return (
-            <>
-                <BackNav backTo="/ds" label="Back to design system" />
-                <SectionNotFound />
-            </>
-        )
+        return <SectionNotFound />
     }
 
     return (
         <div className="mx-auto w-full max-w-3xl pb-10">
-            <BackNav backTo="/ds" label="Back to design system" />
             <h1 className="font-display text-3xl font-semibold tracking-tight text-balance text-foreground">
                 {entry.meta.title}
             </h1>
