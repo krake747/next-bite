@@ -31,6 +31,7 @@ import {
     SidebarRail,
     SidebarTrigger,
 } from "@ui/sidebar"
+import { useSidebar } from "@ui/sidebar.context"
 import { TooltipProvider } from "@ui/tooltip"
 import { focusRing } from "@ui/variants"
 
@@ -101,54 +102,84 @@ function useUserCardIdentity(): CardIdentity {
     return sessionIdentity(auth.user)
 }
 
+function UserAvatar({
+    name,
+    image,
+    hasImage,
+}: Readonly<{ name: string; image: string | undefined; hasImage: boolean }>) {
+    if (hasImage) {
+        return <LazyImage src={image} alt={name} className="size-8 rounded-full object-cover" />
+    }
+    return (
+        <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-surface-muted text-muted-foreground">
+            <UserIcon className="size-4" aria-hidden="true" />
+        </span>
+    )
+}
+
+function AccountMenuPanel({
+    name,
+    email,
+    isAccountActive,
+    onSignOut,
+}: Readonly<{ name: string; email: string; isAccountActive: boolean; onSignOut: () => void }>) {
+    return (
+        <PopoverPanel side="right" align="end" sideOffset={8} className="w-60">
+            <div className="mb-1 border-b border-border px-3 py-2.5">
+                <p className="truncate text-sm font-medium text-foreground">{name}</p>
+                <p className="truncate text-xs text-muted-foreground">{email}</p>
+            </div>
+            <Link
+                to="/account"
+                data-active={isAccountActive}
+                className="flex w-full items-center gap-2 rounded-lg px-3 py-2.5 text-sm text-foreground hover:bg-surface-muted focus:outline-none focus-visible:bg-surface-muted data-active:bg-sidebar-accent data-active:font-medium data-active:text-sidebar-accent-foreground data-active:hover:bg-sidebar-accent"
+            >
+                <UserCircleIcon className="size-4" aria-hidden="true" />
+                Account
+            </Link>
+            <button
+                type="button"
+                onClick={onSignOut}
+                className="flex w-full cursor-pointer items-center gap-2 rounded-lg px-3 py-2.5 text-sm text-foreground hover:bg-surface-muted focus:outline-none focus-visible:bg-surface-muted"
+            >
+                <SignOutIcon className="size-4" aria-hidden="true" />
+                Log out
+            </button>
+        </PopoverPanel>
+    )
+}
+
 function SidebarUserMenu() {
     const auth = useAuth()
     const matchRoute = useMatchRoute()
+    const { state } = useSidebar()
     const isAccountActive = matchRoute({ to: "/account" }) !== false
     const { name, email, image, hasImage } = useUserCardIdentity()
-    return (
-        <div className="group-data-[collapsible=icon]:hidden">
+    const signOut = () => {
+        void auth.signOut()
+    }
+    if (state === "collapsed") {
+        return (
             <Popover>
-                <PopoverTrigger tone="card" aria-label="Open account menu">
-                    {hasImage ? (
-                        <LazyImage src={image} alt={name} className="size-8 rounded-full object-cover" />
-                    ) : (
-                        <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-surface-muted text-muted-foreground">
-                            <UserIcon className="size-4" aria-hidden="true" />
-                        </span>
-                    )}
-                    <span className="min-w-0 flex-1 text-left">
-                        <span className="block truncate text-sm font-medium text-foreground">{name}</span>
-                        <span className="block truncate text-xs text-muted-foreground">{email}</span>
-                    </span>
-                    <CaretUpDownIcon className="size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
+                <PopoverTrigger tone="avatar" aria-label="Open account menu">
+                    <UserAvatar name={name} image={image} hasImage={hasImage} />
                 </PopoverTrigger>
-                <PopoverPanel side="right" align="end" sideOffset={8} className="w-60">
-                    <div className="mb-1 border-b border-border px-3 py-2.5">
-                        <p className="truncate text-sm font-medium text-foreground">{name}</p>
-                        <p className="truncate text-xs text-muted-foreground">{email}</p>
-                    </div>
-                    <Link
-                        to="/account"
-                        data-active={isAccountActive}
-                        className="flex w-full items-center gap-2 rounded-lg px-3 py-2.5 text-sm text-foreground hover:bg-surface-muted focus:outline-none focus-visible:bg-surface-muted data-active:bg-sidebar-accent data-active:font-medium data-active:text-sidebar-accent-foreground data-active:hover:bg-sidebar-accent"
-                    >
-                        <UserCircleIcon className="size-4" aria-hidden="true" />
-                        Account
-                    </Link>
-                    <button
-                        type="button"
-                        onClick={() => {
-                            void auth.signOut()
-                        }}
-                        className="flex w-full cursor-pointer items-center gap-2 rounded-lg px-3 py-2.5 text-sm text-foreground hover:bg-surface-muted focus:outline-none focus-visible:bg-surface-muted"
-                    >
-                        <SignOutIcon className="size-4" aria-hidden="true" />
-                        Log out
-                    </button>
-                </PopoverPanel>
+                <AccountMenuPanel name={name} email={email} isAccountActive={isAccountActive} onSignOut={signOut} />
             </Popover>
-        </div>
+        )
+    }
+    return (
+        <Popover>
+            <PopoverTrigger tone="card" aria-label="Open account menu">
+                <UserAvatar name={name} image={image} hasImage={hasImage} />
+                <span className="min-w-0 flex-1 text-left">
+                    <span className="block truncate text-sm font-medium text-foreground">{name}</span>
+                    <span className="block truncate text-xs text-muted-foreground">{email}</span>
+                </span>
+                <CaretUpDownIcon className="size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
+            </PopoverTrigger>
+            <AccountMenuPanel name={name} email={email} isAccountActive={isAccountActive} onSignOut={signOut} />
+        </Popover>
     )
 }
 
