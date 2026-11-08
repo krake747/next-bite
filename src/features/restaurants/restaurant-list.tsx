@@ -7,8 +7,6 @@ import { RestaurantCard } from "./restaurant-card"
 
 type RestaurantListProps = {
     restaurants: ReadonlyArray<Restaurant>
-    hasFilter?: boolean | undefined
-    hasSearch?: boolean | undefined
     onAddClick?: (() => void) | undefined
     socialFor?: ((restaurant: Restaurant) => RestaurantSocial | RestaurantSocialSummary) | undefined
     onToggleWant?: ((restaurant: Restaurant) => void) | undefined
@@ -17,8 +15,6 @@ type RestaurantListProps = {
 
 export function RestaurantList({
     restaurants,
-    hasFilter,
-    hasSearch,
     onAddClick,
     socialFor,
     onToggleWant,
@@ -46,11 +42,7 @@ export function RestaurantList({
                     )
                 })
             ) : (
-                <EmptyRestaurantsState
-                    hasFilter={hasFilter ?? false}
-                    hasSearch={hasSearch ?? false}
-                    onAddClick={onAddClick ?? openAdd}
-                />
+                <EmptyRestaurantsState onAddClick={onAddClick ?? openAdd} />
             )}
         </div>
     )

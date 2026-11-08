@@ -22,7 +22,7 @@ function DesignSystemIndex() {
             <div className="space-y-10 pt-6 pb-10">
                 {sectionGroups.map((group) => (
                     <section key={group} aria-label={group}>
-                        <h2 className="font-display text-2xl font-semibold text-balance text-stone-900">{group}</h2>
+                        <h2 className="font-display text-2xl font-semibold text-balance text-foreground">{group}</h2>
                         <ul className="grid gap-4 pt-4 md:grid-cols-2">
                             {Object.values(designSystemSections)
                                 .filter((entry) => entry.meta.group === group)
@@ -38,10 +38,12 @@ function DesignSystemIndex() {
                                             params={{ sectionId: entry.meta.id }}
                                             className="block rounded-card border border-border bg-surface p-5 shadow-card"
                                         >
-                                            <p className="font-display text-lg font-semibold text-balance text-stone-900">
+                                            <p className="font-display text-lg font-semibold text-balance text-foreground">
                                                 {entry.meta.title}
                                             </p>
-                                            <p className="mt-1 text-sm text-pretty text-stone-600">{entry.meta.body}</p>
+                                            <p className="mt-1 text-sm text-pretty text-muted-foreground">
+                                                {entry.meta.body}
+                                            </p>
                                         </Link>
                                     </li>
                                 ))}

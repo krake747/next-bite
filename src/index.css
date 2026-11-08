@@ -203,6 +203,11 @@
     }
 }
 
+/* Search inputs render their own clear control; the native cancel button would double it. */
+input[type="search"]::-webkit-search-cancel-button {
+    display: none;
+}
+
 /* Touch-target hit-area utilities.
    Expand the interactive area via ::before without changing layout.
    hit-area-2 on a size-8 button yields a 48px target. Shared base holds the
