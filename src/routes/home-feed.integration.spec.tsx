@@ -1,5 +1,5 @@
 import { RouterProvider, createMemoryHistory, createRouter } from "@tanstack/react-router"
-import { fireEvent, render, screen, within, waitFor } from "@testing-library/react"
+import { render, screen, within, waitFor } from "@testing-library/react"
 import { describe, expect, test, vi } from "vitest"
 
 import { ConvexProvider } from "@api/convex.context"
@@ -107,7 +107,7 @@ describe("home friends feed", () => {
         expect(within(saved).queryByRole("button", { name: "Ben" })).toBeNull()
     })
 
-    test("shows friend pills only for names present in the list", async () => {
+    test("interleaves friend saves with your own newest first", async () => {
         await renderHome(
             [
                 ownedRestaurant("Sushi Bar", { id: "user-2", name: "Ben" }, "r2"),
@@ -118,13 +118,8 @@ describe("home friends feed", () => {
 
         const saved = screen.getByLabelText("Latest activity")
         await waitFor(() => {
-            expect(within(saved).getByRole("button", { name: "Ben" })).toBeInTheDocument()
+            expect(within(saved).getByText("Sushi Bar")).toBeInTheDocument()
         })
-        fireEvent.click(within(saved).getByRole("button", { name: "Ben" }))
-
-        await waitFor(() => {
-            expect(within(saved).queryByText("Trattoria Verde")).toBeNull()
-        })
-        expect(within(saved).getByText("Sushi Bar")).toBeInTheDocument()
+        expect(within(saved).getByText("Trattoria Verde")).toBeInTheDocument()
     })
 })

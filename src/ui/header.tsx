@@ -85,12 +85,9 @@ export function HeaderSubtitle({ children, className, ...props }: Readonly<React
 
 export function HeaderBadge({ count }: Readonly<{ count: number }>) {
     return (
-        <p
-            data-slot="header-badge"
-            className="mt-8 inline-flex items-center gap-2 rounded-full border border-border bg-surface px-4 py-1.5 text-sm text-foreground"
-        >
-            <span className="font-semibold text-foreground tabular-nums">{count}</span>
-            places to try
+        <p data-slot="header-badge" className="text-sm text-muted-foreground">
+            <span className="font-semibold text-foreground tabular-nums">{count}</span>{" "}
+            {count === 1 ? "place" : "places"} to try
         </p>
     )
 }
