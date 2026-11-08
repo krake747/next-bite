@@ -22,7 +22,7 @@ test("serves the design system heading in raw HTML", async ({ request }) => {
     expect(response.ok()).toBe(true)
     const html = await response.text()
     expect(html).toContain("Design system")
-    expect(html).not.toContain(loadingFallback)
+    expect(html).toContain("Sign in")
 })
 
 test("serves stub headings in raw HTML", async ({ request }) => {

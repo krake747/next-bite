@@ -1,7 +1,6 @@
 import { createFileRoute, Outlet, redirect } from "@tanstack/react-router"
 
 import { env } from "@core/env"
-import { PageLayout } from "@routes/-layouts/page-layout"
 
 import { DesignSystemShell } from "./-layout/shell"
 
@@ -16,11 +15,12 @@ export const Route = createFileRoute("/ds")({
 })
 
 function DesignSystemShellRoute() {
+    // No PageLayout here on purpose: the design system is an authed-only
+    // dev tool, so it never shows the signed-out TopBar and Footer. Each
+    // page gates its own demos behind the session instead.
     return (
-        <PageLayout>
-            <DesignSystemShell>
-                <Outlet />
-            </DesignSystemShell>
-        </PageLayout>
+        <DesignSystemShell>
+            <Outlet />
+        </DesignSystemShell>
     )
 }

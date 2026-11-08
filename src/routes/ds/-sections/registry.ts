@@ -1,13 +1,8 @@
-import { AvatarsDemo, avatarsMeta } from "./avatars"
-import { ButtonsDemo, buttonsMeta } from "./buttons"
-import { CardsDemo, cardsMeta } from "./cards"
-import { FieldsDemo, fieldsMeta } from "./fields"
-import { OverlaysDemo, overlaysMeta } from "./overlays"
 import { PaletteDemo, paletteMeta } from "./palette"
 import { ShapeDemo, shapeMeta } from "./shape"
 import { TypographyDemo, typographyMeta } from "./typography"
 
-export type SectionGroup = "Tokens" | "Actions" | "Forms" | "Content" | "Overlay"
+export type SectionGroup = "Tokens"
 
 export type SectionMeta = {
     readonly id: string
@@ -24,15 +19,10 @@ export type SectionEntry = {
     readonly Demo: () => React.JSX.Element
 }
 
-export const sectionGroups: ReadonlyArray<SectionGroup> = ["Tokens", "Actions", "Forms", "Content", "Overlay"]
+export const sectionGroups: ReadonlyArray<SectionGroup> = ["Tokens"]
 
 export const designSystemSections: Readonly<Record<string, SectionEntry>> = {
     [paletteMeta.id]: { meta: paletteMeta, Demo: PaletteDemo },
     [typographyMeta.id]: { meta: typographyMeta, Demo: TypographyDemo },
     [shapeMeta.id]: { meta: shapeMeta, Demo: ShapeDemo },
-    [buttonsMeta.id]: { meta: buttonsMeta, Demo: ButtonsDemo },
-    [fieldsMeta.id]: { meta: fieldsMeta, Demo: FieldsDemo },
-    [cardsMeta.id]: { meta: cardsMeta, Demo: CardsDemo },
-    [avatarsMeta.id]: { meta: avatarsMeta, Demo: AvatarsDemo },
-    [overlaysMeta.id]: { meta: overlaysMeta, Demo: OverlaysDemo },
 }

@@ -1,5 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router"
 
+import { useSessionStatus } from "@core/session"
+import { SessionGate } from "@routes/-components/session-gate"
 import { BackNav } from "@routes/-layouts/back-nav"
 
 import { designSystemSections } from "./-sections/registry"
@@ -24,6 +26,7 @@ function SectionNotFound() {
 function DesignSystemSectionPage() {
     const { sectionId } = Route.useParams()
     const entry = designSystemSections[sectionId]
+    const status = useSessionStatus()
 
     if (entry === undefined) {
         return (
@@ -41,9 +44,11 @@ function DesignSystemSectionPage() {
                 {entry.meta.title}
             </h1>
             <p className="mt-2 font-mono text-xs text-muted-foreground">{entry.meta.importPath}</p>
-            <div className="pt-6">
-                <entry.Demo />
-            </div>
+            <SessionGate status={status} context="the design system">
+                <div className="pt-6">
+                    <entry.Demo />
+                </div>
+            </SessionGate>
             <h2 className="pt-8 font-display text-xl font-semibold text-balance text-foreground">Usage</h2>
             <p className="mt-1 text-muted-foreground">{entry.meta.body}</p>
             {entry.meta.anatomy !== undefined && (

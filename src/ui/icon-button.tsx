@@ -28,9 +28,8 @@ const iconButton = cva({
 })
 
 type IconButtonProps = VariantProps<typeof iconButton> &
-    Omit<React.ComponentProps<typeof BaseButton>, "aria-label" | "children" | "type"> & {
+    Omit<React.ComponentProps<typeof BaseButton>, "aria-label" | "type"> & {
         readonly label: string
-        readonly children: React.ReactNode
     }
 
 export function IconButton({ tone, size, label, title, className, children, ...props }: Readonly<IconButtonProps>) {
