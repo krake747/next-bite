@@ -27,7 +27,7 @@ export function extensionForMime(mimeType: string): string {
     }
 }
 
-export const IMAGE_PROCESS_DEFAULTS = { maxWidth: FULL_SIZE_WIDTH, quality: 0.9 } as const
+const IMAGE_PROCESS_DEFAULTS = { maxWidth: FULL_SIZE_WIDTH, quality: 0.9 } as const
 
 type ProcessedImage = {
     blob: Blob

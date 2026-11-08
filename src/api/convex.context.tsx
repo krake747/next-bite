@@ -27,7 +27,7 @@ export function useConvexQuery<Query extends FunctionReference<"query">>(
     return useConvexQueryResult(query, args, options).data
 }
 
-export function useConvexQueryResult<Query extends FunctionReference<"query">>(
+function useConvexQueryResult<Query extends FunctionReference<"query">>(
     query: Query,
     args?: FunctionArgs<Query>,
     options?: Readonly<{ skip?: boolean | undefined }>,
