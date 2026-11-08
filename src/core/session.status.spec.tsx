@@ -42,7 +42,6 @@ vi.mock("@api/auth.provider", async (importOriginal) => {
             initializeAuth: noop,
             signInWithPassword: noop,
             signUpWithPassword: noop,
-            signInWithSocial: noop,
             requestOtp: noop,
             verifyOtp: noop,
             signOut: noop,

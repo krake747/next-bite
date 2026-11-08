@@ -95,7 +95,6 @@ vi.mock("@api/auth.provider", async (importOriginal) => {
                 initializeAuth: noop,
                 signInWithPassword: noop,
                 signUpWithPassword: noop,
-                signInWithSocial: noop,
                 requestOtp: async (_email: string) => {
                     return fakeAuthStep("Could not send code")
                 },
@@ -113,8 +112,6 @@ const querySeeds = new Map<string, unknown>()
 function seedAuthMethods(): void {
     querySeeds.set(seedKey("auth:getAuthMethods", undefined), {
         password: true,
-        google: false,
-        github: false,
         emailOtp: true,
     })
 }

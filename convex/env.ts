@@ -47,32 +47,6 @@ export function googleMapsApiKey(): string | undefined {
     return isPresent(key) ? key : undefined
 }
 
-export function hasGoogleEnv(): boolean {
-    return isPresent(env.GOOGLE_CLIENT_ID) && isPresent(env.GOOGLE_CLIENT_SECRET)
-}
-
-export function googleCredentials(): { clientId: string; clientSecret: string } | null {
-    const clientId = env.GOOGLE_CLIENT_ID
-    const clientSecret = env.GOOGLE_CLIENT_SECRET
-    if (!isPresent(clientId) || !isPresent(clientSecret)) {
-        return null
-    }
-    return { clientId, clientSecret }
-}
-
-export function hasGithubEnv(): boolean {
-    return isPresent(env.GITHUB_CLIENT_ID) && isPresent(env.GITHUB_CLIENT_SECRET)
-}
-
-export function githubCredentials(): { clientId: string; clientSecret: string } | null {
-    const clientId = env.GITHUB_CLIENT_ID
-    const clientSecret = env.GITHUB_CLIENT_SECRET
-    if (!isPresent(clientId) || !isPresent(clientSecret)) {
-        return null
-    }
-    return { clientId, clientSecret }
-}
-
 export function isEmailOtpEnabled(): boolean {
     return env.AUTH_EMAIL_OTP_ENABLED === "true"
 }

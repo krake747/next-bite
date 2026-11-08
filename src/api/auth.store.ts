@@ -271,17 +271,6 @@ export function useAuthStore() {
         return authenticateWithPassword("signUp", { name, email, password })
     }
 
-    const signInWithSocial = async (provider: "google" | "github", redirect?: string): Promise<boolean> => {
-        return runAuthStep("Social sign in failed", async () => {
-            const safeRedirect =
-                redirect !== undefined && redirect.startsWith("/") && !redirect.startsWith("//") ? redirect : "/"
-            const result = await authClient.signIn.social({ provider, callbackURL: safeRedirect })
-            if (result.error) {
-                throwAuthError(result.error.message, "Social sign in failed")
-            }
-        })
-    }
-
     const requestOtp = async (email: string): Promise<boolean> => {
         return runAuthStep("Could not send code", async () => {
             const result = await authClient.emailOtp.sendVerificationOtp({ email, type: "sign-in" })
@@ -325,7 +314,6 @@ export function useAuthStore() {
         initializeAuth,
         signInWithPassword,
         signUpWithPassword,
-        signInWithSocial,
         requestOtp,
         verifyOtp,
         signOut,

@@ -9,16 +9,7 @@ import { type DataModel } from "./_generated/dataModel"
 import { query } from "./_generated/server"
 import authConfig from "./auth.config"
 import { sendOtpEmail } from "./email"
-import {
-    getValidatedConvexSiteUrl,
-    githubCredentials,
-    googleCredentials,
-    hasGithubEnv,
-    hasGoogleEnv,
-    hasMailgunConfig,
-    isEmailOtpEnabled,
-    isMailDevFallback,
-} from "./env"
+import { getValidatedConvexSiteUrl, hasMailgunConfig, isEmailOtpEnabled, isMailDevFallback } from "./env"
 
 const convexSiteUrl = getValidatedConvexSiteUrl()
 
@@ -29,8 +20,6 @@ export const getAuthMethods = query({
     args: {},
     handler: () => ({
         password: true,
-        google: hasGoogleEnv(),
-        github: hasGithubEnv(),
         // OTP is offered only when a code can actually be delivered: flag on plus either a
         // working mail configuration or the explicit local dev fallback.
         emailOtp: isEmailOtpEnabled() && (hasMailgunConfig() || isMailDevFallback()),
@@ -38,8 +27,6 @@ export const getAuthMethods = query({
 })
 
 export const createAuth = (ctx: GenericCtx<DataModel>) => {
-    const google = googleCredentials()
-    const github = githubCredentials()
     return betterAuth({
         baseURL: convexSiteUrl,
         trustedOrigins: [convexSiteUrl, "http://localhost:5173", "https://nextbite.kevinkraemer.com"],
@@ -49,18 +36,6 @@ export const createAuth = (ctx: GenericCtx<DataModel>) => {
             requireEmailVerification: false,
             autoSignIn: true,
             minPasswordLength: 8,
-        },
-        socialProviders: {
-            ...(google !== null
-                ? {
-                      google,
-                  }
-                : {}),
-            ...(github !== null
-                ? {
-                      github,
-                  }
-                : {}),
         },
         plugins: [
             // Same deliverability gate as getAuthMethods: no OTP endpoints when no code can

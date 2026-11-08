@@ -24,8 +24,6 @@ describe("auth methods", () => {
         const t = setup()
         await expect(t.query(api.auth.getAuthMethods, {})).resolves.toEqual({
             password: true,
-            google: false,
-            github: false,
             emailOtp: false,
         })
     })

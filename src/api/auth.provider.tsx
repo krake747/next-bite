@@ -34,7 +34,6 @@ const serverAuthStore: AuthStore = {
     initializeAuth: noopServerAuthStep,
     signInWithPassword: noopServerAuthResult,
     signUpWithPassword: noopServerAuthResult,
-    signInWithSocial: noopServerAuthResult,
     requestOtp: noopServerAuthResult,
     verifyOtp: noopServerAuthResult,
     signOut: noopServerAuthStep,

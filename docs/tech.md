@@ -64,8 +64,8 @@ Convex is the source of truth. TanStack DB is a reactive view, not a second data
 Owner: `convex/auth.ts`, `src/api/auth.sdk.ts`, ADR-0005.
 
 - Better Auth owns identity and sessions. Convex owns profiles and authorization.
-- Methods: Google OAuth, then email OTP. Invitation-first flow preserves invite context across auth
-  and accepts idempotently.
+- Methods: password plus email OTP (magic email). No OAuth providers. Invitation-first flow
+  preserves invite context across auth and accepts idempotently.
 - Never trust client-provided user IDs. Derive the user from authenticated context in every backend
   function.
 

@@ -165,8 +165,6 @@ export function useEnsureProfile(): void {
 
 export type AuthMethods = {
     readonly password: boolean
-    readonly google: boolean
-    readonly github: boolean
     readonly emailOtp: boolean
 }
 

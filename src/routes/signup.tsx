@@ -6,9 +6,9 @@ import * as v from "valibot"
 
 import { isSafeRedirectPath } from "@core/groups"
 import { useAuth, useAuthMethods } from "@core/session"
+import { AuthDivider } from "@routes/-components/auth-divider"
 import { OtpForm } from "@routes/-components/otp-form"
 import { PendingButton } from "@routes/-components/pending-button"
-import { AuthDivider, SocialButtons } from "@routes/-components/social-buttons"
 import { AuthLayout } from "@routes/-layouts/auth-layout"
 import { ErrorBanner } from "@ui/error-banner"
 import { Input } from "@ui/field"
@@ -97,22 +97,12 @@ function SignupPasswordForm({ onSuccess }: Readonly<{ onSuccess: () => void }>) 
     )
 }
 
-function SignupAlternatives({
-    redirectTo,
-    onOtpSuccess,
-}: Readonly<{ redirectTo: string | undefined; onOtpSuccess: () => void }>) {
+function SignupAlternatives({ onOtpSuccess }: Readonly<{ onOtpSuccess: () => void }>) {
     const methods = useAuthMethods()
     const [otpEmail, setOtpEmail] = useState<string | undefined>(undefined)
-    const safeRedirect = isSafeRedirectPath(redirectTo) ? redirectTo : "/"
 
     return (
         <>
-            {(methods?.google === true || methods?.github === true) && (
-                <>
-                    <SocialButtons google={methods.google} github={methods.github} redirect={safeRedirect} />
-                    <AuthDivider label="or use your email" />
-                </>
-            )}
             <SignupPasswordForm onSuccess={onOtpSuccess} />
             {methods?.emailOtp === true && (
                 <>
@@ -155,7 +145,7 @@ function SignupPage() {
         >
             {auth.error !== null && auth.error !== "" && <ErrorBanner>{auth.error}</ErrorBanner>}
 
-            <SignupAlternatives redirectTo={redirectTo} onOtpSuccess={goHome} />
+            <SignupAlternatives onOtpSuccess={goHome} />
         </AuthLayout>
     )
 }

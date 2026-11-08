@@ -6,9 +6,9 @@ import * as v from "valibot"
 
 import { isSafeRedirectPath } from "@core/groups"
 import { useAuth, useAuthMethods } from "@core/session"
+import { AuthDivider } from "@routes/-components/auth-divider"
 import { OtpForm } from "@routes/-components/otp-form"
 import { PendingButton } from "@routes/-components/pending-button"
-import { AuthDivider, SocialButtons } from "@routes/-components/social-buttons"
 import { AuthLayout } from "@routes/-layouts/auth-layout"
 import { ErrorBanner } from "@ui/error-banner"
 import { Input } from "@ui/field"
@@ -76,17 +76,6 @@ function LoginPage() {
             }
         >
             {auth.error !== null && auth.error !== "" && <ErrorBanner>{auth.error}</ErrorBanner>}
-
-            {(methods?.google === true || methods?.github === true) && (
-                <>
-                    <SocialButtons
-                        google={methods.google}
-                        github={methods.github}
-                        redirect={isSafeRedirectPath(redirectTo) ? redirectTo : "/"}
-                    />
-                    <AuthDivider label="or use your email" />
-                </>
-            )}
 
             <Form of={form} onSubmit={handleEmailSubmit} className="space-y-4">
                 <Field of={form} path={["email"]}>
