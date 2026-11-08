@@ -4,7 +4,7 @@
         "patterns": ["."]
     },
     "duplicates": {
-        "minOccurrences": 3
+        "minOccurrences": 5
     },
     "rules": {
         "unused-dependencies": "warn",

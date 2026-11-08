@@ -5,6 +5,7 @@ import { useEffect, useState } from "react"
 
 import { cva, cx, type VariantProps } from "@ui/cva.config"
 import { IconButton } from "@ui/icon-button"
+import { Skeleton } from "@ui/skeleton"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@ui/tooltip"
 
 import { cssVars } from "./css-vars"
@@ -389,6 +390,121 @@ export function SidebarMenuAction({
         state: {
             slot: "sidebar-menu-action",
             sidebar: "menu-action",
+        },
+    })
+}
+
+export function SidebarMenuBadge({ className, ...props }: React.ComponentProps<"div">) {
+    return (
+        <div
+            data-slot="sidebar-menu-badge"
+            data-sidebar="menu-badge"
+            className={cx(
+                "pointer-events-none absolute right-1 flex h-5 min-w-5 items-center justify-center rounded-control px-1 text-xs font-medium text-sidebar-foreground tabular-nums select-none group-data-[collapsible=icon]:hidden peer-hover/menu-button:text-sidebar-accent-foreground peer-data-[size=default]/menu-button:top-1.5 peer-data-[size=lg]/menu-button:top-2.5 peer-data-[size=sm]/menu-button:top-1 peer-data-active/menu-button:text-sidebar-accent-foreground",
+                className,
+            )}
+            {...props}
+        />
+    )
+}
+
+export function SidebarMenuSkeleton({
+    className,
+    showIcon = false,
+    ...props
+}: React.ComponentProps<"div"> & {
+    showIcon?: boolean
+}) {
+    return (
+        <div
+            data-slot="sidebar-menu-skeleton"
+            data-sidebar="menu-skeleton"
+            className={cx("flex h-8 items-center gap-2 rounded-control px-2", className)}
+            {...props}
+        >
+            {showIcon && <Skeleton className="size-4 rounded-control" data-sidebar="menu-skeleton-icon" />}
+            <Skeleton className="h-4 w-full" data-sidebar="menu-skeleton-text" />
+        </div>
+    )
+}
+
+export function SidebarMenuSub({ className, ...props }: React.ComponentProps<"ul">) {
+    return (
+        <ul
+            data-slot="sidebar-menu-sub"
+            data-sidebar="menu-sub"
+            className={cx(
+                "mx-3.5 flex min-w-0 translate-x-px flex-col gap-1 border-l border-sidebar-border px-2.5 py-0.5 group-data-[collapsible=icon]:hidden",
+                className,
+            )}
+            {...props}
+        />
+    )
+}
+
+export function SidebarMenuSubItem({ className, ...props }: React.ComponentProps<"li">) {
+    return (
+        <li
+            data-slot="sidebar-menu-sub-item"
+            data-sidebar="menu-sub-item"
+            className={cx("group/menu-sub-item relative", className)}
+            {...props}
+        />
+    )
+}
+
+export function SidebarMenuSubButton({
+    render,
+    size = "md",
+    isActive = false,
+    className,
+    ...props
+}: useRender.ComponentProps<"a"> &
+    React.ComponentProps<"a"> & {
+        size?: "sm" | "md"
+        isActive?: boolean
+    }) {
+    return useRender({
+        defaultTagName: "a",
+        props: mergeProps<"a">(
+            {
+                className: cx(
+                    "flex h-7 min-w-0 -translate-x-px items-center gap-2 overflow-hidden rounded-control px-2 text-sidebar-foreground ring-sidebar-ring outline-hidden group-data-[collapsible=icon]:hidden hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:ring-2 active:bg-sidebar-accent active:text-sidebar-accent-foreground disabled:pointer-events-none disabled:opacity-50 aria-disabled:pointer-events-none aria-disabled:opacity-50 data-[size=md]:text-sm data-[size=sm]:text-xs data-active:bg-sidebar-accent data-active:text-sidebar-accent-foreground [&>span:last-child]:truncate [&>svg]:size-4 [&>svg]:shrink-0 [&>svg]:text-sidebar-accent-foreground",
+                    className,
+                ),
+            },
+            props,
+        ),
+        render,
+        state: {
+            slot: "sidebar-menu-sub-button",
+            sidebar: "menu-sub-button",
+            size,
+            active: isActive,
+        },
+    })
+}
+
+export function SidebarGroupAction({
+    className,
+    render,
+    ...props
+}: useRender.ComponentProps<"button"> & React.ComponentProps<"button">) {
+    return useRender({
+        defaultTagName: "button",
+        props: mergeProps<"button">(
+            {
+                className: cx(
+                    "absolute top-3.5 right-3 flex aspect-square w-5 cursor-pointer items-center justify-center rounded-control p-0 text-sidebar-foreground ring-sidebar-ring outline-hidden transition-transform group-data-[collapsible=icon]:hidden after:absolute after:-inset-2 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:ring-2 md:after:hidden [&>svg]:size-4 [&>svg]:shrink-0",
+                    className,
+                ),
+            },
+            props,
+        ),
+        render,
+        state: {
+            slot: "sidebar-group-action",
+            sidebar: "group-action",
         },
     })
 }

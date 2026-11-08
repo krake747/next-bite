@@ -42,7 +42,6 @@ dist-ssr
 .fallow/
 
 .opencode/skills/
-nextbite.md
 
 # Playwright artifacts
 playwright-report/

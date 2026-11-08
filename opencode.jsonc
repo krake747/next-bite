@@ -14,6 +14,11 @@
         "playwright": {
             "type": "local",
             "command": ["npx", "-y", "@playwright/mcp@latest"]
+        },
+        "shadcn": {
+            "type": "local",
+            "command": ["npx", "shadcn@latest", "mcp"],
+            "enabled": true
         }
     }
 }

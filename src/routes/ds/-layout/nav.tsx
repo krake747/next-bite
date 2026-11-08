@@ -12,6 +12,9 @@ import {
     SidebarMenuAction,
     SidebarMenuButton,
     SidebarMenuItem,
+    SidebarMenuSub,
+    SidebarMenuSubButton,
+    SidebarMenuSubItem,
 } from "@ui/sidebar"
 import { control, focusRing } from "@ui/variants"
 
@@ -27,15 +30,14 @@ function isSectionActive(matchRoute: ReturnType<typeof useMatchRoute>, sectionId
 function ChildItem({ sectionId, id, title }: Readonly<{ sectionId: string; id: string; title: string }>) {
     const { hash } = useLocation()
     return (
-        <SidebarMenuItem key={id}>
-            <SidebarMenuButton
-                size="sm"
+        <SidebarMenuSubItem key={id}>
+            <SidebarMenuSubButton
                 isActive={hash === `#${id}`}
                 render={<Link to="/ds/$sectionId" params={{ sectionId }} hash={id} />}
             >
                 <span>{title}</span>
-            </SidebarMenuButton>
-        </SidebarMenuItem>
+            </SidebarMenuSubButton>
+        </SidebarMenuSubItem>
     )
 }
 
@@ -67,13 +69,11 @@ function ParentSection({ entry, pageActive }: Readonly<{ entry: SectionEntry; pa
                 <CaretDownIcon className={cx("transition-transform duration-150", open && "rotate-180")} />
             </SidebarMenuAction>
             {open && (
-                <div className="pl-4">
-                    <SidebarMenu>
-                        {children.map((child) => (
-                            <ChildItem key={child.id} sectionId={entry.meta.id} id={child.id} title={child.title} />
-                        ))}
-                    </SidebarMenu>
-                </div>
+                <SidebarMenuSub>
+                    {children.map((child) => (
+                        <ChildItem key={child.id} sectionId={entry.meta.id} id={child.id} title={child.title} />
+                    ))}
+                </SidebarMenuSub>
             )}
         </SidebarMenuItem>
     )
