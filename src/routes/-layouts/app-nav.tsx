@@ -1,8 +1,35 @@
-import { HouseIcon, PlusIcon, UserCircleIcon, UsersIcon, UsersThreeIcon } from "@phosphor-icons/react"
-import { Link } from "@tanstack/react-router"
+import {
+    CaretUpDownIcon,
+    ForkKnifeIcon,
+    HouseIcon,
+    PlusIcon,
+    SignOutIcon,
+    UserCircleIcon,
+    UserIcon,
+    UsersIcon,
+    UsersThreeIcon,
+} from "@phosphor-icons/react"
+import { Link, useMatchRoute } from "@tanstack/react-router"
 
+import { useAuth } from "@core/session"
 import { useOpenAddRestaurant } from "@features/restaurants/add-restaurant-provider"
+import { LazyImage } from "@pattern/lazy-image"
 import { cva, cx } from "@ui/cva.config"
+import { useIsMobile } from "@ui/hooks/use-media-query"
+import { Popover, PopoverPanel, PopoverTrigger } from "@ui/popover"
+import {
+    Sidebar,
+    SidebarContent,
+    SidebarFooter,
+    SidebarHeader,
+    SidebarMenu,
+    SidebarMenuButton,
+    SidebarMenuItem,
+    SidebarProvider,
+    SidebarRail,
+    SidebarTrigger,
+} from "@ui/sidebar"
+import { TooltipProvider } from "@ui/tooltip"
 import { focusRing } from "@ui/variants"
 
 const destinations = [
@@ -17,35 +44,144 @@ const item = cva({
     composes: [focusRing],
 })
 
-function AppLink({ to, label, Icon }: Readonly<{ to: string; label: string; Icon: typeof HouseIcon }>) {
+function SidebarUserMenu() {
+    const auth = useAuth()
+    const matchRoute = useMatchRoute()
+    const isAccountActive = matchRoute({ to: "/you" }) !== false
+    const name = auth.user?.name ?? "You"
+    const email = auth.user?.email ?? ""
+    const image = auth.user?.image
+    const hasImage = image !== undefined && image !== null && image !== ""
     return (
-        <Link to={to} className={cx(item())}>
-            <Icon className="size-5 shrink-0 md:size-4" aria-hidden="true" />
-            <span>{label}</span>
-        </Link>
+        <div className="group-data-[collapsible=icon]:hidden">
+            <Popover>
+                <PopoverTrigger tone="card" aria-label="Open account menu">
+                    {hasImage ? (
+                        <LazyImage src={image} alt={name} className="size-8 rounded-full object-cover" />
+                    ) : (
+                        <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-surface-muted text-muted-foreground">
+                            <UserIcon className="size-4" aria-hidden="true" />
+                        </span>
+                    )}
+                    <span className="min-w-0 flex-1 text-left">
+                        <span className="block truncate text-sm font-medium text-foreground">{name}</span>
+                        <span className="block truncate text-xs text-muted-foreground">{email}</span>
+                    </span>
+                    <CaretUpDownIcon className="size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
+                </PopoverTrigger>
+                <PopoverPanel side="right" align="end" sideOffset={8} className="w-60">
+                    <div className="mb-1 border-b border-border px-3 py-2.5">
+                        <p className="truncate text-sm font-medium text-foreground">{name}</p>
+                        <p className="truncate text-xs text-muted-foreground">{email}</p>
+                    </div>
+                    <Link
+                        to="/you"
+                        data-active={isAccountActive}
+                        className="flex w-full items-center gap-2 rounded-lg px-3 py-2.5 text-sm text-foreground hover:bg-surface-muted focus:outline-none focus-visible:bg-surface-muted data-active:bg-sidebar-accent data-active:font-medium data-active:text-sidebar-accent-foreground data-active:hover:bg-sidebar-accent"
+                    >
+                        <UserCircleIcon className="size-4" aria-hidden="true" />
+                        Account
+                    </Link>
+                    <button
+                        type="button"
+                        onClick={() => {
+                            void auth.signOut()
+                        }}
+                        className="flex w-full cursor-pointer items-center gap-2 rounded-lg px-3 py-2.5 text-sm text-foreground hover:bg-surface-muted focus:outline-none focus-visible:bg-surface-muted"
+                    >
+                        <SignOutIcon className="size-4" aria-hidden="true" />
+                        Log out
+                    </button>
+                </PopoverPanel>
+            </Popover>
+        </div>
     )
 }
 
 export function AppNav() {
     const openAdd = useOpenAddRestaurant()
+    const matchRoute = useMatchRoute()
+    const isMobile = useIsMobile()
     // Authenticated only: PageLayout renders no nav for signed-out visitors, who navigate
-    // through the TopBar sign-in action instead.
+    // through the TopBar instead. Mobile gets bottom tabs, desktop gets the sidebar.
+    if (isMobile) {
+        return (
+            <nav
+                aria-label="Primary"
+                data-slot="app-nav"
+                className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-background/90 backdrop-blur-md"
+            >
+                <div className="mx-auto grid w-full max-w-350 grid-cols-5 gap-1 px-2 pt-2 pb-[calc(0.5rem+env(safe-area-inset-bottom))]">
+                    <AppLink to={destinations[0].to} label={destinations[0].label} Icon={destinations[0].Icon} />
+                    <AppLink to={destinations[1].to} label={destinations[1].label} Icon={destinations[1].Icon} />
+                    <button type="button" onClick={openAdd} className={cx(item(), "cursor-pointer")}>
+                        <PlusIcon className="size-5 shrink-0" aria-hidden="true" />
+                        <span>Add</span>
+                    </button>
+                    <AppLink to={destinations[2].to} label={destinations[2].label} Icon={destinations[2].Icon} />
+                    <AppLink to={destinations[3].to} label={destinations[3].label} Icon={destinations[3].Icon} />
+                </div>
+            </nav>
+        )
+    }
     return (
-        <nav
-            aria-label="Primary"
-            data-slot="app-nav"
-            className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-background/90 backdrop-blur-md md:static md:z-auto md:w-56 md:shrink-0 md:border-t-0 md:border-r md:bg-transparent md:backdrop-blur-none"
-        >
-            <div className="mx-auto grid w-full max-w-350 grid-cols-5 gap-1 px-2 pt-2 pb-[calc(0.5rem+env(safe-area-inset-bottom))] md:flex md:flex-col md:gap-1 md:p-4">
-                <AppLink to={destinations[0].to} label={destinations[0].label} Icon={destinations[0].Icon} />
-                <AppLink to={destinations[1].to} label={destinations[1].label} Icon={destinations[1].Icon} />
-                <button type="button" onClick={openAdd} className={cx(item(), "cursor-pointer")}>
-                    <PlusIcon className="size-5 shrink-0 md:size-4" aria-hidden="true" />
-                    <span>Add</span>
-                </button>
-                <AppLink to={destinations[2].to} label={destinations[2].label} Icon={destinations[2].Icon} />
-                <AppLink to={destinations[3].to} label={destinations[3].label} Icon={destinations[3].Icon} />
-            </div>
-        </nav>
+        <TooltipProvider>
+            <SidebarProvider className="contents">
+                <Sidebar collapsible="icon">
+                    <SidebarHeader>
+                        <div className="flex items-center gap-1">
+                            <Link
+                                to="/"
+                                aria-label="Next Bite home"
+                                className="flex min-w-0 flex-1 items-center gap-2 rounded-lg px-3 py-2 text-foreground group-data-[collapsible=icon]:hidden hover:text-tomato-600"
+                            >
+                                <span className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-tomato-100 text-tomato-600">
+                                    <ForkKnifeIcon className="size-4" aria-hidden="true" />
+                                </span>
+                                <span className="truncate font-display text-lg font-semibold">Next Bite</span>
+                            </Link>
+                            <SidebarTrigger />
+                        </div>
+                    </SidebarHeader>
+                    <SidebarContent>
+                        <SidebarMenu>
+                            {destinations.map((destination) => (
+                                <SidebarMenuItem key={destination.to}>
+                                    <SidebarMenuButton
+                                        render={<Link to={destination.to} />}
+                                        isActive={
+                                            matchRoute({ to: destination.to, fuzzy: destination.to !== "/" }) !== false
+                                        }
+                                        tooltip={destination.label}
+                                    >
+                                        <destination.Icon aria-hidden="true" />
+                                        <span>{destination.label}</span>
+                                    </SidebarMenuButton>
+                                </SidebarMenuItem>
+                            ))}
+                            <SidebarMenuItem>
+                                <SidebarMenuButton onClick={openAdd} tooltip="Add">
+                                    <PlusIcon aria-hidden="true" />
+                                    <span>Add</span>
+                                </SidebarMenuButton>
+                            </SidebarMenuItem>
+                        </SidebarMenu>
+                    </SidebarContent>
+                    <SidebarFooter>
+                        <SidebarUserMenu />
+                    </SidebarFooter>
+                    <SidebarRail />
+                </Sidebar>
+            </SidebarProvider>
+        </TooltipProvider>
+    )
+}
+
+function AppLink({ to, label, Icon }: Readonly<{ to: string; label: string; Icon: typeof HouseIcon }>) {
+    return (
+        <Link to={to} className={cx(item())}>
+            <Icon className="size-5 shrink-0" aria-hidden="true" />
+            <span>{label}</span>
+        </Link>
     )
 }

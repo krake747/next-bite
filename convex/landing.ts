@@ -6,7 +6,14 @@ import { query } from "./_generated/server"
 import { STATS_COUNTER_KEY } from "./helpers"
 
 const topCuisineValidator = v.object({ cuisine: v.string(), count: v.number() })
-const recentAddValidator = v.object({ name: v.string(), cuisine: v.string(), createdAt: v.number() })
+const recentAddValidator = v.object({
+    name: v.string(),
+    cuisine: v.string(),
+    location: v.string(),
+    saverName: v.string(),
+    imageUrl: v.optional(v.string()),
+    createdAt: v.number(),
+})
 
 const statsValidator = v.object({
     totalRestaurants: v.number(),
@@ -19,7 +26,14 @@ type Stats = {
     totalRestaurants: number
     totalWants: number
     topCuisines: { cuisine: string; count: number }[]
-    recentAdds: { name: string; cuisine: string; createdAt: number }[]
+    recentAdds: {
+        name: string
+        cuisine: string
+        location: string
+        saverName: string
+        imageUrl?: string
+        createdAt: number
+    }[]
 }
 
 function topCuisinesFrom(counts: Record<string, number>): Stats["topCuisines"] {
@@ -31,11 +45,17 @@ function topCuisinesFrom(counts: Record<string, number>): Stats["topCuisines"] {
 }
 
 function recentAddsFrom(restaurants: Doc<"restaurants">[]): Stats["recentAdds"] {
-    return restaurants.map((restaurant) => ({
-        name: restaurant.name,
-        cuisine: restaurant.cuisine,
-        createdAt: restaurant.createdAt,
-    }))
+    return restaurants.map((restaurant) => {
+        const cover = restaurant.images[0]?.url
+        return {
+            name: restaurant.name,
+            cuisine: restaurant.cuisine,
+            location: restaurant.address.label,
+            saverName: restaurant.ownerName,
+            ...(cover === undefined ? {} : { imageUrl: cover }),
+            createdAt: restaurant.createdAt,
+        }
+    })
 }
 
 // Fallback for deployments seeded before the counters table existed. Exact but unbounded;

@@ -37,6 +37,8 @@ Load the documents below on demand for the task at hand. Treat their instruction
 - Contract, close, and status: `docs/agents/agent-contract.md`.
 - Worktrees and stacked PRs: `docs/agents/worktrees.md` and `docs/agents/stacked-prs.md`.
 - Terms or ADR questions: `docs/agents/domain.md` plus `GLOSSARY.md`.
+- Porting shadcn kit pieces: reference implementation lives at `/home/kk/captain/endeavour/src/ui/`;
+  mirror its split (context/hooks/tokens) and map its tokens to `index.css`.
 - Behavior proof from routes or specs: `docs/agents/verify.md`.
 - Shell and toolchain: `docs/agents/toolchain.md`.
 - Tests by tier: `docs/agents/testing.md`.

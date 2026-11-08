@@ -157,6 +157,7 @@ export default defineConfig({
             "nextbite/no-use-context": "error",
             "nextbite/no-export-list": "error",
             "nextbite/no-react-type-imports": "error",
+            "nextbite/no-button-as-link": "error",
             "nextbite/jsx-spread-last": "error",
             "nextbite/phosphor-icon-suffix": "error",
             "shadcn/no-restyle": [

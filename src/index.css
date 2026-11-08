@@ -65,6 +65,14 @@
     --color-inverse: oklch(1 0 0);
     --color-scrim: oklch(0 0 0 / 0.6);
 
+    /* Sidebar */
+    --color-sidebar: var(--color-background);
+    --color-sidebar-foreground: var(--color-foreground);
+    --color-sidebar-border: var(--color-border);
+    --color-sidebar-accent: var(--color-tomato-100);
+    --color-sidebar-accent-foreground: var(--color-tomato-700);
+    --color-sidebar-ring: var(--color-ring);
+
     /* Typography */
     --font-sans: "DM Sans Variable", system-ui, sans-serif;
     --font-display: "Bricolage Grotesque Variable", system-ui, sans-serif;

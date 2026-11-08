@@ -1,8 +1,8 @@
 import { PlusIcon } from "@phosphor-icons/react"
 import { createFileRoute } from "@tanstack/react-router"
-import { Suspense, useState } from "react"
+import { useState } from "react"
 
-import { useSuspenseConvexQuery } from "@api/convex.context"
+import { useConvexQuery } from "@api/convex.context"
 import { convexQueryOptions, warmQueries } from "@api/convex.options"
 import { api } from "@api/endpoints"
 import { useFeedRestaurants, useRestaurants, type Restaurant } from "@core/restaurants"
@@ -16,14 +16,7 @@ import { ActivityPost } from "@features/social/activity-post"
 import { FriendsFilter } from "@features/social/friends-filter"
 import { FriendsFilterSkeleton } from "@features/social/friends-filter"
 import { EmptyState } from "@pattern/empty-state"
-import {
-    CommunityStats,
-    CommunityStatsSkeleton,
-    HowItWorks,
-    LandingActions,
-    LandingCloser,
-    LandingEyebrow,
-} from "@routes/-components/home-sections"
+import { LandingActions, LandingCloser, TasteCards, TasteCardsSkeleton } from "@routes/-components/home-sections"
 import { SocialActionsProvider, useSocialActions } from "@routes/-components/social-actions-provider"
 import { PageContainer } from "@routes/-layouts/page-container"
 import { PageLayout } from "@routes/-layouts/page-layout"
@@ -182,30 +175,31 @@ function LandingHero() {
     return (
         <section aria-label="Welcome" className="relative overflow-hidden border-b border-border bg-background">
             <BackgroundLayers />
-            <div className="relative mx-auto w-full max-w-3xl px-4 py-14 text-center sm:px-6 sm:py-20 lg:py-24">
-                <LandingEyebrow />
-                <h1 className="mt-6 font-display text-5xl leading-tight font-semibold tracking-tight text-balance text-foreground sm:text-6xl lg:text-7xl">
-                    Your friends have good taste
+            <div className="relative mx-auto w-full max-w-3xl px-4 py-14 text-center sm:px-6 sm:py-20">
+                <h1 className="font-display text-4xl leading-tight font-semibold tracking-tight text-balance text-foreground sm:text-5xl">
+                    Your friends have good taste.
                 </h1>
                 <p className="mx-auto mt-6 max-w-xl text-xl leading-relaxed text-pretty text-muted-foreground">
-                    Next Bite is the short list of restaurants your people actually want to try. Save restaurants, vote
-                    want-to-go, and pick the next dinner in minutes.
+                    Save places to eat. See what your friends want to try. Make a plan together.
                 </p>
                 <LandingActions />
-                <p className="mt-4 text-sm text-muted-foreground">
-                    Free to start · No public reviews · Your list stays yours
-                </p>
             </div>
         </section>
     )
 }
 
 function LandingStatsSection() {
-    const stats = useSuspenseConvexQuery(api.landing.getStats)
+    // Non-suspense on purpose: the Convex client is null during SSR, and the
+    // suspense hook throws there. Undefined data renders the same skeleton the
+    // Suspense fallback used to, so server HTML stays complete.
+    const stats = useConvexQuery(api.landing.getStats)
+    if (stats === undefined) {
+        return <TasteCardsSkeleton />
+    }
     if (stats.totalRestaurants === 0) {
         return null
     }
-    return <CommunityStats stats={stats} />
+    return <TasteCards tastes={stats.recentAdds} />
 }
 
 function SignedOutHome() {
@@ -213,10 +207,7 @@ function SignedOutHome() {
         <PageLayout>
             <LandingHero />
             <PageContainer>
-                <Suspense fallback={<CommunityStatsSkeleton />}>
-                    <LandingStatsSection />
-                </Suspense>
-                <HowItWorks />
+                <LandingStatsSection />
                 <LandingCloser />
             </PageContainer>
         </PageLayout>

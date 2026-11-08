@@ -4,6 +4,7 @@ import {
     configArgumentSetsTimeout,
     expectedIconName,
     findImportVariable,
+    isButtonRenderedAsLink,
     isExemptIconImport,
     isIconNameTaken,
     isImportMetaEnvRead,
@@ -276,3 +277,58 @@ describe("configArgumentSetsTimeout", () => {
         expect(configArgumentSetsTimeout({ type: "Identifier", name: "config" })).toBe(false)
     })
 })
+
+describe("isButtonRenderedAsLink", () => {
+    test("flags Button rendered as Link or anchor", () => {
+        expect(isButtonRenderedAsLink(buttonWithRender("Link"))).toBe(true)
+        expect(isButtonRenderedAsLink(buttonWithRender("a"))).toBe(true)
+    })
+
+    test("ignores other elements, props, and render targets", () => {
+        expect(isButtonRenderedAsLink(buttonWithRender("TooltipTrigger"))).toBe(false)
+        expect(
+            isButtonRenderedAsLink({
+                type: "JSXOpeningElement",
+                name: { type: "JSXIdentifier", name: "button" },
+                attributes: [],
+            }),
+        ).toBe(false)
+        expect(
+            isButtonRenderedAsLink({
+                type: "JSXOpeningElement",
+                name: { type: "JSXIdentifier", name: "Button" },
+                attributes: [],
+            }),
+        ).toBe(false)
+        expect(
+            isButtonRenderedAsLink({
+                type: "JSXOpeningElement",
+                name: { type: "JSXIdentifier", name: "Button" },
+                attributes: [{ type: "JSXAttribute", name: { type: "JSXIdentifier", name: "tone" } }],
+            }),
+        ).toBe(false)
+    })
+})
+
+function buttonWithRender(rendered: string) {
+    return {
+        type: "JSXOpeningElement",
+        name: { type: "JSXIdentifier", name: "Button" },
+        attributes: [
+            {
+                type: "JSXAttribute",
+                name: { type: "JSXIdentifier", name: "render" },
+                value: {
+                    type: "JSXExpressionContainer",
+                    expression: {
+                        type: "JSXElement",
+                        openingElement: {
+                            type: "JSXOpeningElement",
+                            name: { type: "JSXIdentifier", name: rendered },
+                        },
+                    },
+                },
+            },
+        ],
+    }
+}

@@ -1,10 +1,9 @@
 import { ForkKnifeIcon } from "@phosphor-icons/react"
-import { Link } from "@tanstack/react-router"
 import { useRef } from "react"
 
 import { type Restaurant } from "@core/restaurants"
 import { useAuth } from "@core/session"
-import { Button } from "@ui/button"
+import { ButtonLink } from "@pattern/button-link"
 import { Dialog, DialogBackdrop, DialogPanel, DialogTitle } from "@ui/dialog"
 
 import { RestaurantForm } from "./restaurant-form"
@@ -69,9 +68,9 @@ export function RestaurantDialog(props: RestaurantDialogProps) {
                     ) : (
                         <div className="space-y-4 py-8 text-center">
                             <p className="text-muted-foreground">{gateText}</p>
-                            <Button render={<Link to="/login" />} className="w-full">
+                            <ButtonLink to="/login" className="w-full">
                                 Sign In
-                            </Button>
+                            </ButtonLink>
                         </div>
                     )}
                 </DialogPanel>

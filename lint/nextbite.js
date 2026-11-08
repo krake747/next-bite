@@ -2,6 +2,7 @@ import { definePlugin, defineRule } from "vite-plus/lint/plugins"
 
 import {
     configArgumentSetsTimeout,
+    isButtonRenderedAsLink,
     isImportMetaEnvRead,
     isPhosphorIconImport,
     isViSetConfigCall,
@@ -193,6 +194,29 @@ const phosphorIconSuffix = defineRule({
         }
     },
 })
+const noButtonAsLink = defineRule({
+    meta: {
+        type: "problem",
+        docs: {
+            description: "Do not render Button as a link; a Link styled with button() classes keeps link semantics.",
+        },
+        messages: {
+            unexpected:
+                "Button rendered as a link. Use ButtonLink from @pattern/button-link instead: Button render with a link either warns (nativeButton) or mistates semantics (role=button).",
+        },
+    },
+    create(context) {
+        return {
+            JSXOpeningElement(node) {
+                if (!isButtonRenderedAsLink(node)) {
+                    return
+                }
+                context.report({ node, messageId: "unexpected" })
+            },
+        }
+    },
+})
+
 export default definePlugin({
     meta: { name: "nextbite" },
     rules: {
@@ -202,6 +226,7 @@ export default definePlugin({
         "no-use-context": noUseContext,
         "no-export-list": noExportList,
         "no-direct-env-read": noDirectEnvRead,
+        "no-button-as-link": noButtonAsLink,
         "jsx-spread-last": jsxSpreadLast,
         "phosphor-icon-suffix": phosphorIconSuffix,
     },

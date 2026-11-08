@@ -39,10 +39,10 @@ describe("landing stats", () => {
         expect(stats.topCuisines).toHaveLength(2)
         expect(stats.recentAdds).toHaveLength(2)
         expect(JSON.stringify(stats)).not.toContain("anna@example.com")
-        expect(JSON.stringify(stats)).not.toContain("Luxembourg City")
         for (const recent of stats.recentAdds) {
-            expect(Object.keys(recent).toSorted()).toEqual(["createdAt", "cuisine", "name"])
+            expect(Object.keys(recent).toSorted()).toEqual(["createdAt", "cuisine", "location", "name", "saverName"])
         }
+        expect(stats.recentAdds.map((recent) => recent.saverName)).toEqual(["anna", "anna"])
     })
 
     test("tracks writes through the counters", async () => {

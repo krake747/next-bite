@@ -1,46 +1,127 @@
-import { Link } from "@tanstack/react-router"
+import { UsersThreeIcon } from "@phosphor-icons/react"
 
-import { Button } from "@ui/button"
+import { AvatarGroup } from "@pattern/avatar-group"
+import { ButtonLink } from "@pattern/button-link"
+import { LazyImage } from "@pattern/lazy-image"
 import { Skeleton } from "@ui/skeleton"
+
+export type LandingTaste = {
+    readonly name: string
+    readonly cuisine: string
+    readonly location: string
+    readonly saverName: string
+    readonly imageUrl?: string | undefined
+    readonly createdAt: number
+}
 
 export type LandingStats = {
     readonly totalRestaurants: number
     readonly totalWants: number
     readonly topCuisines: ReadonlyArray<{ readonly cuisine: string; readonly count: number }>
-    readonly recentAdds: ReadonlyArray<{ readonly name: string; readonly cuisine: string; readonly createdAt: number }>
+    readonly recentAdds: ReadonlyArray<LandingTaste>
 }
 
-export function LandingEyebrow() {
-    return <p className="text-xs font-bold tracking-widest text-primary uppercase">Shared by friends, not algorithms</p>
+export function timeAgo(timestamp: number, now: number = Date.now()): string {
+    const seconds = Math.max(0, Math.floor((now - timestamp) / 1000))
+    if (seconds < 60) {
+        return "just now"
+    }
+    const minutes = Math.floor(seconds / 60)
+    if (minutes < 60) {
+        return `${minutes}m ago`
+    }
+    const hours = Math.floor(minutes / 60)
+    if (hours < 24) {
+        return `${hours}h ago`
+    }
+    const days = Math.floor(hours / 24)
+    if (days < 7) {
+        return `${days}d ago`
+    }
+    return new Date(timestamp).toLocaleDateString()
 }
 
 export function LandingActions() {
     return (
         <div className="mt-8 flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
-            <Button render={<Link to="/signup" />} size="lg">
-                Get Started
-            </Button>
-            <Button render={<Link to="/login" />} tone="secondary" size="lg">
-                Sign In
-            </Button>
+            <ButtonLink to="/signup" size="lg">
+                Get started
+            </ButtonLink>
         </div>
     )
 }
 
-export function CommunityStatsSkeleton() {
+function TasteCard({ taste }: Readonly<{ taste: LandingTaste }>) {
+    const firstName = taste.saverName.split(" ")[0] ?? taste.saverName
+    const action = taste.imageUrl === undefined ? "saved a spot" : "shared a photo"
+    return (
+        <article className="overflow-hidden rounded-card border border-border bg-surface shadow-card">
+            <div className="flex items-center gap-3 p-4 pb-3">
+                <AvatarGroup members={[{ name: taste.saverName }]} max={1} />
+                <p className="flex-1 text-sm text-foreground">
+                    <strong className="font-semibold">{firstName}</strong> {action}
+                </p>
+                <p className="text-xs whitespace-nowrap text-muted-foreground">{timeAgo(taste.createdAt)}</p>
+            </div>
+            {taste.imageUrl !== undefined && (
+                <div className="px-4">
+                    <LazyImage src={taste.imageUrl} alt={taste.name} aspectRatio="16/10" className="rounded-lg" />
+                </div>
+            )}
+            <div className="p-4 pt-3">
+                <p className="font-display text-lg font-semibold text-balance text-foreground">{taste.name}</p>
+                <p className="mt-0.5 text-sm text-muted-foreground">
+                    {taste.cuisine} · {taste.location}
+                </p>
+            </div>
+        </article>
+    )
+}
+
+export function TasteCards({ tastes }: Readonly<{ tastes: ReadonlyArray<LandingTaste> }>) {
+    if (tastes.length === 0) {
+        return null
+    }
+    return (
+        <section
+            aria-label="Sample community activity"
+            className="mx-auto w-full max-w-5xl px-4 pt-12 sm:px-6 lg:px-12"
+        >
+            <h2 className="font-display text-2xl font-semibold text-balance text-foreground">A taste of Nextbite</h2>
+            <p className="mt-1 text-muted-foreground">Sample community activity</p>
+            <div className="mt-6 grid gap-6 sm:grid-cols-3">
+                {tastes.map((taste) => (
+                    <TasteCard key={`${taste.name}-${taste.createdAt}`} taste={taste} />
+                ))}
+            </div>
+        </section>
+    )
+}
+
+export function TasteCardsSkeleton() {
     return (
         <section
             aria-busy="true"
-            aria-label="Community activity"
+            aria-label="Sample community activity"
             className="mx-auto w-full max-w-5xl px-4 pt-12 sm:px-6 lg:px-12"
         >
-            <Skeleton className="mx-auto h-8 w-56" />
-            <Skeleton className="mx-auto mt-2 h-4 w-72" />
-            <div className="mt-6 grid grid-cols-3 divide-x divide-border rounded-card border border-border bg-surface">
+            <Skeleton className="h-8 w-56" />
+            <Skeleton className="mt-2 h-4 w-48" />
+            <div className="mt-6 grid gap-6 sm:grid-cols-3">
                 {[0, 1, 2].map((index) => (
-                    <div key={index} className="px-4 py-5">
-                        <Skeleton className="mx-auto h-9 w-16" />
-                        <Skeleton className="mx-auto mt-2 h-4 w-20" />
+                    <div key={index} className="overflow-hidden rounded-card border border-border bg-surface">
+                        <div className="flex items-center gap-3 p-4 pb-3">
+                            <Skeleton className="size-8 rounded-full" />
+                            <Skeleton className="h-4 flex-1 rounded" />
+                            <Skeleton className="h-3 w-10 rounded" />
+                        </div>
+                        <div className="px-4">
+                            <Skeleton className="aspect-16/10 w-full rounded-lg" />
+                        </div>
+                        <div className="p-4 pt-3">
+                            <Skeleton className="h-6 w-2/3 rounded" />
+                            <Skeleton className="mt-2 h-4 w-1/2 rounded" />
+                        </div>
                     </div>
                 ))}
             </div>
@@ -48,87 +129,24 @@ export function CommunityStatsSkeleton() {
     )
 }
 
-export function CommunityStats({ stats }: Readonly<{ stats: LandingStats }>) {
-    const topCuisine = stats.topCuisines[0]
-    const statEntries = [
-        { value: String(stats.totalRestaurants), label: "restaurants shared" },
-        { value: String(stats.totalWants), label: "wants saved" },
-        { value: topCuisine?.cuisine ?? "—", label: "top cuisine" },
-    ]
-    return (
-        <section aria-label="Community activity" className="mx-auto w-full max-w-5xl px-4 pt-12 sm:px-6 lg:px-12">
-            <h2 className="text-center font-display text-2xl font-semibold text-balance text-foreground">
-                The short list keeps growing
-            </h2>
-            <p className="mt-2 text-center text-muted-foreground">Live counts from friends sharing right now.</p>
-            <dl className="mt-6 grid grid-cols-3 divide-x divide-border rounded-card border border-border bg-surface">
-                {statEntries.map((entry) => (
-                    <div key={entry.label} className="flex flex-col px-4 py-5 text-center">
-                        <dt className="order-2 mt-1 text-sm text-muted-foreground">{entry.label}</dt>
-                        <dd className="order-1 font-display text-3xl font-semibold text-balance text-foreground tabular-nums sm:text-4xl">
-                            {entry.value}
-                        </dd>
-                    </div>
-                ))}
-            </dl>
-            {stats.recentAdds.length > 0 && (
-                <p className="mt-4 text-center text-sm text-muted-foreground">
-                    Fresh on the list:{" "}
-                    {stats.recentAdds.map((recent) => `${recent.name} (${recent.cuisine})`).join(" · ")}
-                </p>
-            )}
-        </section>
-    )
-}
-
-const steps = [
-    {
-        title: "Add restaurants",
-        body: "Save the restaurants your group keeps naming in the chat.",
-    },
-    {
-        title: "Vote want-to-go",
-        body: "Heart the ones you would actually show up for.",
-    },
-    {
-        title: "Pick the next bite",
-        body: "Open the list, see the overlap, stop debating dinner.",
-    },
-]
-
-export function HowItWorks() {
-    return (
-        <section aria-label="How it works" className="mx-auto w-full max-w-5xl px-4 pt-12 pb-4 sm:px-6 lg:px-12">
-            <h2 className="text-center font-display text-2xl font-semibold text-balance text-foreground">
-                How it works
-            </h2>
-            <p className="mt-2 text-center text-muted-foreground">Three steps between group chat chaos and a table.</p>
-            <ol className="mx-auto mt-8 grid max-w-3xl gap-8 sm:grid-cols-3 sm:gap-6">
-                {steps.map((step, index) => (
-                    <li key={step.title} className="border-t-2 border-primary pt-4">
-                        <p className="font-display text-4xl font-semibold text-primary tabular-nums">{index + 1}</p>
-                        <p className="mt-2 font-display text-lg font-semibold text-balance text-foreground">
-                            {step.title}
-                        </p>
-                        <p className="mt-1 text-sm leading-relaxed text-muted-foreground">{step.body}</p>
-                    </li>
-                ))}
-            </ol>
-        </section>
-    )
-}
-
 export function LandingCloser() {
     return (
-        <section aria-label="Get started" className="mx-auto w-full max-w-3xl px-4 py-16 text-center sm:px-6">
-            <h2 className="font-display text-3xl font-semibold text-balance text-foreground sm:text-4xl">
-                Stop debating dinner in the chat.
-            </h2>
-            <p className="mx-auto mt-3 max-w-md text-muted-foreground">
-                Bring your people, build the short list, and always know where to go next.
-            </p>
-            <div className="mt-6 flex justify-center">
-                <LandingActions />
+        <section aria-label="Get started" className="mx-auto w-full max-w-5xl px-4 py-12 sm:px-6 lg:px-12">
+            <div className="flex flex-col gap-4 rounded-card border border-border bg-surface p-6 shadow-card sm:flex-row sm:items-center sm:justify-between">
+                <div className="flex items-start gap-4">
+                    <UsersThreeIcon className="size-8 shrink-0 text-muted-foreground" aria-hidden="true" />
+                    <div>
+                        <h2 className="font-display text-lg font-semibold text-balance text-foreground">
+                            Find your next favourite, together.
+                        </h2>
+                        <p className="mt-1 text-sm text-muted-foreground">
+                            Get started and start saving spots with your friends.
+                        </p>
+                    </div>
+                </div>
+                <ButtonLink to="/signup" size="lg" className="shrink-0">
+                    Get started
+                </ButtonLink>
             </div>
         </section>
     )

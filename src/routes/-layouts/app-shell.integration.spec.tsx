@@ -1,6 +1,5 @@
 import { RouterProvider, createMemoryHistory, createRouter } from "@tanstack/react-router"
 import { fireEvent, render, screen, waitFor } from "@testing-library/react"
-import userEvent from "@testing-library/user-event"
 import { afterEach, describe, expect, test, vi } from "vitest"
 
 import { ConvexProvider } from "@api/convex.context"
@@ -113,10 +112,11 @@ describe("app shell", () => {
 
     test("navigates between destinations", async () => {
         signIn()
-        const user = userEvent.setup()
         await renderAt("/")
 
-        await user.click(screen.getByRole("link", { name: "Groups" }))
+        // Same happy-dom reason as the dialog test below: userEvent stalls on this
+        // navigation, fireEvent drives the same Link deterministically.
+        fireEvent.click(screen.getByRole("link", { name: "Groups" }))
 
         await waitFor(() => {
             expect(screen.getByRole("heading", { name: "Groups" })).toBeInTheDocument()

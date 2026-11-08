@@ -213,6 +213,71 @@ export function configArgumentSetsTimeout(argument) {
 }
 
 /**
+ * @typedef {object} JsxNameLike
+ * @property {string} type
+ * @property {string} name
+ *
+ * @typedef {object} JsxNodeLike
+ * @property {string} type
+ * @property {JsxNameLike} [name]
+ * @property {Array<JsxNodeLike>} [attributes]
+ * @property {JsxNodeLike} [value]
+ * @property {JsxNodeLike} [expression]
+ * @property {JsxNodeLike} [openingElement]
+ */
+
+/**
+ * @param {JsxNodeLike} node
+ * @returns {boolean}
+ */
+function isButtonElement(node) {
+    return node.name?.type === "JSXIdentifier" && node.name.name === "Button"
+}
+
+/**
+ * @param {JsxNodeLike} attribute
+ * @returns {JsxNodeLike | null}
+ */
+function renderExpression(attribute) {
+    if (attribute.type !== "JSXAttribute" || attribute.name?.name !== "render") {
+        return null
+    }
+    if (attribute.value?.type !== "JSXExpressionContainer") {
+        return null
+    }
+    return attribute.value.expression ?? null
+}
+
+/**
+ * @param {JsxNodeLike | null} expression
+ * @returns {string | null}
+ */
+function renderedElementName(expression) {
+    const name = expression?.openingElement?.name
+    if (expression?.type !== "JSXElement" || name?.type !== "JSXIdentifier") {
+        return null
+    }
+    return name.name
+}
+
+/**
+ * @param {JsxNodeLike} node
+ * @returns {boolean}
+ */
+export function isButtonRenderedAsLink(node) {
+    if (!isButtonElement(node)) {
+        return false
+    }
+    for (const attribute of node.attributes ?? []) {
+        const rendered = renderedElementName(renderExpression(attribute))
+        if (rendered === "a" || rendered === "Link") {
+            return true
+        }
+    }
+    return false
+}
+
+/**
  * @typedef {object} IconSpecifierLike
  * @property {string} type
  * @property {{ name: string }} local

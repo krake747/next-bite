@@ -1,10 +1,7 @@
-import { ForkKnifeIcon, SignOutIcon, UserIcon } from "@phosphor-icons/react"
+import { ForkKnifeIcon } from "@phosphor-icons/react"
 import { Link } from "@tanstack/react-router"
 
-import { useAuth } from "@core/session"
-import { LazyImage } from "@pattern/lazy-image"
-import { Button } from "@ui/button"
-import { Popover, PopoverPanel, PopoverTrigger } from "@ui/popover"
+import { ButtonLink } from "@pattern/button-link"
 
 export function TopBar() {
     return (
@@ -20,49 +17,13 @@ export function TopBar() {
                     <span className="font-display text-lg font-semibold">Next Bite</span>
                 </Link>
 
-                <div className="flex items-center gap-3">
-                    <AuthButton />
+                <div className="flex items-center gap-2">
+                    <ButtonLink to="/signup" tone="secondary">
+                        Get started
+                    </ButtonLink>
+                    <ButtonLink to="/login">Sign In</ButtonLink>
                 </div>
             </div>
         </div>
-    )
-}
-
-function AuthButton() {
-    const auth = useAuth()
-
-    if (!auth.isAuthenticated) {
-        return <Button render={<Link to="/login" />}>Sign In</Button>
-    }
-
-    return (
-        <Popover>
-            <PopoverTrigger tone="tinted" aria-label="Open your menu" className="size-8">
-                {auth.user?.image !== undefined && auth.user?.image !== null && auth.user.image !== "" ? (
-                    <LazyImage
-                        src={auth.user.image}
-                        alt={auth.user?.name ?? "UserIcon"}
-                        className="size-8 rounded-full object-cover"
-                    />
-                ) : (
-                    <UserIcon className="size-4" aria-hidden="true" />
-                )}
-            </PopoverTrigger>
-            <PopoverPanel className="w-56">
-                <div className="border-b border-border px-4 py-2">
-                    <p className="text-sm font-medium text-foreground">{auth.user?.name ?? "UserIcon"}</p>
-                    <p className="text-xs text-muted-foreground">{auth.user?.email}</p>
-                </div>
-                <button
-                    onClick={() => {
-                        void auth.signOut()
-                    }}
-                    className="flex w-full cursor-pointer items-center gap-2 px-4 py-2 text-sm text-foreground hover:bg-surface-muted focus:bg-surface-muted"
-                >
-                    <SignOutIcon className="size-4" aria-hidden="true" />
-                    Sign Out
-                </button>
-            </PopoverPanel>
-        </Popover>
     )
 }
