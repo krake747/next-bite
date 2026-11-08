@@ -7,7 +7,7 @@ import { ConvexProvider } from "@api/convex.context"
 import { createSeededClient } from "@api/db/seeded.client"
 import { type Id } from "@convex/_generated/dataModel"
 
-import { AvatarSection } from "./you"
+import { AvatarSection } from "../features/account/profile-card"
 
 // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- test-only storage id
 const storageId = (value: string): Id<"_storage"> => value as unknown as Id<"_storage">
@@ -113,18 +113,29 @@ describe("AvatarSection", () => {
         await expect.element(screen.getByText("denied")).toBeInTheDocument()
     })
 
-    test("renders the compact upload button instead of the gallery chrome", async () => {
+    test("renders the avatar itself as the upload trigger instead of gallery chrome", async () => {
         resetAvatar()
         const screen = await renderAvatar("https://example.com/a.jpg")
 
         await expect.element(screen.getByRole("button", { name: "Change photo" })).toBeInTheDocument()
+        await expect.element(screen.getByText("Remove")).toBeInTheDocument()
         await expect.element(screen.getByText("Images")).not.toBeInTheDocument()
     })
 
-    test("labels the button for first upload without a photo", async () => {
+    test("labels the avatar trigger for first upload without a photo", async () => {
         resetAvatar()
         const screen = await renderAvatar(undefined)
 
         await expect.element(screen.getByRole("button", { name: "Upload photo" })).toBeInTheDocument()
+    })
+
+    test("removes the photo through the profile update", async () => {
+        resetAvatar()
+        const screen = await renderAvatar("https://example.com/a.jpg")
+
+        await screen.getByRole("button", { name: "Remove" }).click()
+
+        await expect.poll(() => updateMutate).toHaveBeenCalledTimes(1)
+        expect(updateMutate).toHaveBeenCalledWith({ removeAvatar: true })
     })
 })

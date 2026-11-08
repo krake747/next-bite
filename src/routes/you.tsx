@@ -1,26 +1,19 @@
 import { createFileRoute, Link } from "@tanstack/react-router"
-import { useState } from "react"
 
 import { hasCachedSession } from "@api/auth.store"
 import { useSuspenseConvexQuery } from "@api/convex.context"
 import { convexQueryOptions, warmQueries } from "@api/convex.options"
 import { type Doc } from "@api/data.model"
 import { api } from "@api/endpoints"
-import { clearError, errorFrom, type FormError } from "@core/outcome"
-import { useRestaurants, type ImageRecord } from "@core/restaurants"
-import { useAuth, useUpdateProfile, useSessionStatus } from "@core/session"
+import { useRestaurants } from "@core/restaurants"
+import { useSessionStatus } from "@core/session"
 import { orderFeedByRecency } from "@core/social"
-import { ImageUpload } from "@pattern/image-upload"
-import { LazyImage } from "@pattern/lazy-image"
 import { QueryErrorState } from "@pattern/query-error"
-import { SettingsRow } from "@pattern/settings-row"
 import { SessionGate } from "@routes/-components/session-gate"
 import { PageContainer } from "@routes/-layouts/page-container"
 import { PageLayout } from "@routes/-layouts/page-layout"
-import { cx } from "@ui/cva.config"
 import { Header, HeaderSubtitle, HeaderTitle } from "@ui/header"
 import { LoadingPlaceholder } from "@ui/loading"
-import { control } from "@ui/variants"
 
 export const Route = createFileRoute("/you")({
     head: () => ({ meta: [{ title: "You - Next Bite" }] }),
@@ -31,11 +24,8 @@ export const Route = createFileRoute("/you")({
             return null
         }
         // Owner restaurants ride a live collection, not this cache, so only the
-        // profile and status queries warm here.
-        warmQueries(context.queryClient, [
-            convexQueryOptions(api.users.getMe),
-            convexQueryOptions(api.social.listMyStatuses),
-        ])
+        // status query warms here.
+        warmQueries(context.queryClient, [convexQueryOptions(api.social.listMyStatuses)])
         return null
     },
 })
@@ -46,7 +36,7 @@ function YouError({ reset }: Readonly<{ reset: () => void }>) {
             <PageContainer>
                 <Header>
                     <HeaderTitle>You</HeaderTitle>
-                    <HeaderSubtitle>Your details, saves, wants, and visits.</HeaderSubtitle>
+                    <HeaderSubtitle>Your saved restaurants, wants, and visits.</HeaderSubtitle>
                 </Header>
                 <QueryErrorState reset={reset} />
             </PageContainer>
@@ -56,172 +46,18 @@ function YouError({ reset }: Readonly<{ reset: () => void }>) {
 
 type Restaurant = Doc<"restaurants">
 
-function DisplayNameRow({ initialName }: Readonly<{ initialName: string }>) {
-    const updateProfile = useUpdateProfile()
-    const [baseline, setBaseline] = useState(initialName)
-    const [name, setName] = useState(initialName)
-    const [error, setError] = useState<FormError>(clearError)
-
-    const handleBlur = async () => {
-        const trimmed = name.trim()
-        if (trimmed === baseline.trim()) {
-            setError(clearError)
-            return
-        }
-        if (trimmed === "") {
-            setError({ kind: "error", message: "Name cannot be empty" })
-            return
-        }
-        setError(clearError)
-        try {
-            await updateProfile.mutateAsync({ name: trimmed })
-            setBaseline(trimmed)
-        } catch (err) {
-            setError(errorFrom(err, "Could not save your details"))
-        }
-    }
-
-    return (
-        <SettingsRow label="Display name" description="How friends see you.">
-            <div className="flex w-full flex-col gap-1.5 sm:w-56">
-                <input
-                    value={name}
-                    aria-label="Display name"
-                    disabled={updateProfile.isPending}
-                    onChange={(event) => {
-                        setName(event.target.value)
-                    }}
-                    onBlur={() => {
-                        void handleBlur()
-                    }}
-                    maxLength={80}
-                    aria-invalid={error.kind === "error"}
-                    aria-describedby={error.kind === "error" ? "user-name-error" : undefined}
-                    className={cx(control(), error.kind === "error" && "border-destructive")}
-                />
-                {error.kind === "error" && (
-                    <p id="user-name-error" role="alert" className="text-sm text-destructive">
-                        {error.message}
-                    </p>
-                )}
-            </div>
-        </SettingsRow>
-    )
-}
-
-function ProfileCard({
-    email,
-    initialName,
-    avatarUrl,
-    heading,
-    subheading,
-}: Readonly<{
-    email: string
-    initialName: string
-    avatarUrl: string | undefined
-    heading: string
-    subheading: string
-}>) {
-    return (
-        <section aria-label={heading} className="pt-6">
-            <h2 className="font-display text-2xl font-semibold text-balance text-foreground">{heading}</h2>
-            <p className="mt-1 text-sm text-muted-foreground">{subheading}</p>
-            <div className="mt-3 divide-y divide-border rounded-card border border-border bg-surface px-5 shadow-card">
-                <AvatarSection avatarUrl={avatarUrl} />
-                <SettingsRow label="Email">
-                    <p className="text-sm font-medium text-foreground">{email}</p>
-                </SettingsRow>
-                <DisplayNameRow initialName={initialName} />
-            </div>
-        </section>
-    )
-}
-
-function UserDetailsSection() {
-    const auth = useAuth()
-    const profile = useSuspenseConvexQuery(api.users.getMe)
-
-    if (profile.status === "onboarding") {
-        return (
-            <ProfileCard
-                key="onboarding"
-                email={auth.user?.email ?? ""}
-                initialName={auth.user?.name ?? ""}
-                avatarUrl={undefined}
-                heading="Complete your details"
-                subheading="Add your name so friends recognize you."
-            />
-        )
-    }
-    return (
-        <ProfileCard
-            key={profile.profile.email}
-            email={profile.profile.email}
-            initialName={profile.profile.name}
-            avatarUrl={profile.profile.avatar?.url}
-            heading="Your details"
-            subheading="Only you see this page."
-        />
-    )
-}
-
-export function AvatarSection({ avatarUrl }: Readonly<{ avatarUrl: string | undefined }>) {
-    const updateProfile = useUpdateProfile()
-    const [error, setError] = useState<FormError>(clearError)
-
-    const handleAvatar = async (images: ReadonlyArray<ImageRecord>) => {
-        const image = images[0]
-        if (image === undefined || updateProfile.isPending) {
-            return
-        }
-        setError(clearError)
-        try {
-            await updateProfile.mutateAsync({ avatar: { url: image.url, storageId: image.storageId } })
-        } catch (err) {
-            setError(errorFrom(err, "Could not save your photo"))
-        }
-    }
-
-    return (
-        <div className="flex items-center gap-4 py-4">
-            {avatarUrl !== undefined ? (
-                <LazyImage src={avatarUrl} alt="Your photo" className="size-16 rounded-full object-cover" />
-            ) : (
-                <div aria-hidden="true" className="size-16 rounded-full bg-surface-muted" />
-            )}
-            <div className="min-w-0 flex-1">
-                <ImageUpload
-                    images={[]}
-                    onImagesChange={(updated) => {
-                        void handleAvatar(updated)
-                    }}
-                    maxFiles={1}
-                    disabled={updateProfile.isPending}
-                    variant="avatar"
-                    ctaLabel={avatarUrl === undefined ? "Upload photo" : "Change photo"}
-                />
-                {error.kind === "error" && (
-                    <p role="alert" className="pt-2 text-sm text-destructive">
-                        {error.message}
-                    </p>
-                )}
-            </div>
-        </div>
-    )
-}
-
 function RestaurantsSection({
     title,
     restaurants,
     emptyText,
 }: Readonly<{ title: string; restaurants: ReadonlyArray<Restaurant>; emptyText: string }>) {
     return (
-        <section aria-label={title} className="pt-8">
-            <h2 className="font-display text-2xl font-semibold text-balance text-foreground">
+        <section aria-label={title}>
+            <h2 className="px-4 font-display text-2xl font-semibold text-balance text-foreground">
                 {title} · {restaurants.length}
             </h2>
             {restaurants.length === 0 ? (
-                <p className="pt-2 text-sm text-muted-foreground">{emptyText}</p>
+                <p className="px-4 pt-2 text-sm text-muted-foreground">{emptyText}</p>
             ) : (
                 <ul className="grid gap-3 pt-4 md:grid-cols-2">
                     {restaurants.map((restaurant) => (
@@ -264,8 +100,7 @@ function YouContent() {
     const been = saved.filter((r) => byStatus.get(r._id) === "been")
 
     return (
-        <>
-            <UserDetailsSection />
+        <div className="flex flex-col gap-8">
             <RestaurantsSection
                 title="Saved"
                 restaurants={saved}
@@ -281,7 +116,7 @@ function YouContent() {
                 restaurants={been}
                 emptyText="No visits yet. Mark Been on restaurants you tried."
             />
-        </>
+        </div>
     )
 }
 
@@ -291,13 +126,16 @@ function YouPage() {
     return (
         <PageLayout>
             <PageContainer>
-                <Header>
-                    <HeaderTitle>You</HeaderTitle>
-                    <HeaderSubtitle>Your details, saves, wants, and visits.</HeaderSubtitle>
-                </Header>
-                <SessionGate status={status} context="your details">
-                    <YouContent />
-                </SessionGate>
+                <div className="mx-auto flex w-full max-w-2xl flex-col gap-8">
+                    <section aria-label="You" className="px-4 pt-8 sm:pt-10">
+                        <h1 className="font-display text-3xl font-semibold tracking-tight text-balance text-foreground sm:text-4xl">
+                            You
+                        </h1>
+                    </section>
+                    <SessionGate status={status} context="your lists">
+                        <YouContent />
+                    </SessionGate>
+                </div>
             </PageContainer>
         </PageLayout>
     )

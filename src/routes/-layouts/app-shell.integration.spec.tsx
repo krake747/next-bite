@@ -81,7 +81,7 @@ afterEach(() => {
 })
 
 describe("app shell", () => {
-    test("shows four destinations with working links", async () => {
+    test("shows five destinations with working links", async () => {
         signIn()
         await renderAt("/")
 
@@ -89,7 +89,7 @@ describe("app shell", () => {
         expect(screen.getByRole("link", { name: "Friends" })).toHaveAttribute("href", "/friends")
         expect(screen.getByRole("button", { name: "Add" })).toBeInTheDocument()
         expect(screen.getByRole("link", { name: "Groups" })).toHaveAttribute("href", "/groups")
-        expect(screen.queryByRole("link", { name: "You" })).not.toBeInTheDocument()
+        expect(screen.getByRole("link", { name: "You" })).toHaveAttribute("href", "/you")
     })
 
     test("hides the nav for signed-out visitors", async () => {

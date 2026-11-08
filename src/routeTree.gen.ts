@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as SplatRouteImport } from './routes/$'
+import { Route as AccountRouteImport } from './routes/account'
 import { Route as DsRouteRouteImport } from './routes/ds/route'
 import { Route as FriendsRouteImport } from './routes/friends'
 import { Route as GroupsRouteImport } from './routes/groups'
@@ -32,6 +33,11 @@ const IndexRoute = IndexRouteImport.update({
 const SplatRoute = SplatRouteImport.update({
   id: '/$',
   path: '/$',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AccountRoute = AccountRouteImport.update({
+  id: '/account',
+  path: '/account',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DsRouteRoute = DsRouteRouteImport.update({
@@ -99,6 +105,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/ds': typeof DsRouteRouteWithChildren
   '/$': typeof SplatRoute
+  '/account': typeof AccountRoute
   '/friends': typeof FriendsRoute
   '/groups': typeof GroupsRouteWithChildren
   '/login': typeof LoginRoute
@@ -114,6 +121,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/$': typeof SplatRoute
+  '/account': typeof AccountRoute
   '/friends': typeof FriendsRoute
   '/login': typeof LoginRoute
   '/signup': typeof SignupRoute
@@ -130,6 +138,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/ds': typeof DsRouteRouteWithChildren
   '/$': typeof SplatRoute
+  '/account': typeof AccountRoute
   '/friends': typeof FriendsRoute
   '/groups': typeof GroupsRouteWithChildren
   '/login': typeof LoginRoute
@@ -148,6 +157,7 @@ export interface FileRouteTypes {
     | '/'
     | '/ds'
     | '/$'
+    | '/account'
     | '/friends'
     | '/groups'
     | '/login'
@@ -163,6 +173,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/$'
+    | '/account'
     | '/friends'
     | '/login'
     | '/signup'
@@ -178,6 +189,7 @@ export interface FileRouteTypes {
     | '/'
     | '/ds'
     | '/$'
+    | '/account'
     | '/friends'
     | '/groups'
     | '/login'
@@ -195,6 +207,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   DsRouteRoute: typeof DsRouteRouteWithChildren
   SplatRoute: typeof SplatRoute
+  AccountRoute: typeof AccountRoute
   FriendsRoute: typeof FriendsRoute
   GroupsRoute: typeof GroupsRouteWithChildren
   LoginRoute: typeof LoginRoute
@@ -218,6 +231,13 @@ declare module '@tanstack/react-router' {
       path: '/$'
       fullPath: '/$'
       preLoaderRoute: typeof SplatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/account': {
+      id: '/account'
+      path: '/account'
+      fullPath: '/account'
+      preLoaderRoute: typeof AccountRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/ds': {
@@ -337,6 +357,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   DsRouteRoute: DsRouteRouteWithChildren,
   SplatRoute: SplatRoute,
+  AccountRoute: AccountRoute,
   FriendsRoute: FriendsRoute,
   GroupsRoute: GroupsRouteWithChildren,
   LoginRoute: LoginRoute,

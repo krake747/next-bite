@@ -58,6 +58,26 @@ describe("users", () => {
         expect(me.profile.name).toBe("Cassie")
     })
 
+    test("clears the avatar with removeAvatar and leaves the rest intact", async () => {
+        const t = asUser("user-5")
+        await t.mutation(async (ctx) => {
+            const storageId = await ctx.storage.store(new Blob(["pixels"]))
+            await ctx.db.insert("profiles", {
+                authUserId: "user-5",
+                name: "Eve",
+                email: "eve@example.com",
+                avatar: { url: "https://example.com/a.jpg", storageId },
+                createdAt: 1,
+            })
+        })
+        await t.mutation(api.users.updateMe, { removeAvatar: true })
+        const me = await t.query(api.users.getMe, {})
+        expectReadyProfile(me)
+        expect(me.profile.avatar).toBeUndefined()
+        expect(me.profile.name).toBe("Eve")
+        expect(me.profile.email).toBe("eve@example.com")
+    })
+
     test("rejects anonymous callers", async () => {
         const t = setup()
         await expect(t.mutation(api.users.ensureProfile, { email: "anon@example.com" })).rejects.toThrow("Unauthorized")

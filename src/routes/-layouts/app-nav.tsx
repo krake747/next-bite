@@ -38,6 +38,7 @@ const destinations = [
     { label: "Home", to: "/", Icon: HouseIcon },
     { label: "Friends", to: "/friends", Icon: UsersIcon },
     { label: "Groups", to: "/groups", Icon: UsersThreeIcon },
+    { label: "You", to: "/you", Icon: UserIcon },
 ] as const
 
 const item = cva({
@@ -103,7 +104,7 @@ function useUserCardIdentity(): CardIdentity {
 function SidebarUserMenu() {
     const auth = useAuth()
     const matchRoute = useMatchRoute()
-    const isAccountActive = matchRoute({ to: "/you" }) !== false
+    const isAccountActive = matchRoute({ to: "/account" }) !== false
     const { name, email, image, hasImage } = useUserCardIdentity()
     return (
         <div className="group-data-[collapsible=icon]:hidden">
@@ -128,7 +129,7 @@ function SidebarUserMenu() {
                         <p className="truncate text-xs text-muted-foreground">{email}</p>
                     </div>
                     <Link
-                        to="/you"
+                        to="/account"
                         data-active={isAccountActive}
                         className="flex w-full items-center gap-2 rounded-lg px-3 py-2.5 text-sm text-foreground hover:bg-surface-muted focus:outline-none focus-visible:bg-surface-muted data-active:bg-sidebar-accent data-active:font-medium data-active:text-sidebar-accent-foreground data-active:hover:bg-sidebar-accent"
                     >
@@ -164,7 +165,7 @@ export function AppNav() {
                 data-slot="app-nav"
                 className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-background/90 backdrop-blur-md"
             >
-                <div className="mx-auto grid w-full max-w-350 grid-cols-4 gap-1 px-2 pt-2 pb-[calc(0.5rem+env(safe-area-inset-bottom))]">
+                <div className="mx-auto grid w-full max-w-350 grid-cols-5 gap-1 px-2 pt-2 pb-[calc(0.5rem+env(safe-area-inset-bottom))]">
                     <AppLink to={destinations[0].to} label={destinations[0].label} Icon={destinations[0].Icon} />
                     <AppLink to={destinations[1].to} label={destinations[1].label} Icon={destinations[1].Icon} />
                     <button type="button" onClick={openAdd} className={cx(item(), "cursor-pointer")}>
@@ -172,6 +173,7 @@ export function AppNav() {
                         <span>Add</span>
                     </button>
                     <AppLink to={destinations[2].to} label={destinations[2].label} Icon={destinations[2].Icon} />
+                    <AppLink to={destinations[3].to} label={destinations[3].label} Icon={destinations[3].Icon} />
                 </div>
             </nav>
         )

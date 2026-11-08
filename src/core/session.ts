@@ -3,7 +3,7 @@ import { useEffect, useState, useSyncExternalStore } from "react"
 
 import { useAuth as useAuthSource } from "@api/auth.provider"
 import { getConvexSessionToken } from "@api/auth.sdk"
-import { useConvexClient, useConvexMutation, useConvexQuery } from "@api/convex.context"
+import { useConvexClient, useConvexMutation, useConvexQuery, useSuspenseConvexQuery } from "@api/convex.context"
 import { api } from "@api/endpoints"
 
 import { sleep } from "./async"
@@ -134,6 +134,8 @@ export function gateId<T>(status: SessionStatus, id: T | undefined): GatedId<T> 
 }
 
 export const useAuth = useAuthSource
+
+export const useMyProfile = () => useSuspenseConvexQuery(api.users.getMe)
 
 export const useUpdateProfile = () => useConvexMutation(api.users.updateMe)
 

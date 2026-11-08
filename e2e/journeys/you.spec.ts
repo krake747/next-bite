@@ -22,11 +22,11 @@ test("profile edit, save, and want-state updates", async ({ page }) => {
     await page.getByRole("button", { name: "Create Account" }).click()
     await expect(page.getByRole("heading", { name: "Latest activity" })).toBeVisible({ timeout: 20000 })
 
-    await page.goto("/you")
+    await page.goto("/account")
     await expect(page.getByLabel("Display name")).toHaveValue(`You ${stamp}`, { timeout: 20000 })
     await page.getByLabel("Display name").fill(`Renamed ${stamp}`)
-    await page.getByRole("button", { name: "Save" }).click()
-    await expect(page.getByText("Saved.")).toBeVisible({ timeout: 20000 })
+    await page.getByLabel("Display name").press("Tab")
+    await expect(page.getByLabel("Display name")).toHaveValue(`Renamed ${stamp}`)
 
     await page.locator('nav[aria-label="Primary"]').getByRole("button", { name: "Add", exact: true }).click()
     await page.getByLabel("Restaurant name").fill(placeName)

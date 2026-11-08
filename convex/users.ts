@@ -86,10 +86,11 @@ export const updateMe = mutation({
     args: {
         name: v.optional(v.string()),
         avatar: v.optional(imageObjectValidator),
+        removeAvatar: v.optional(v.boolean()),
     },
     handler: async (ctx, args) => {
         const userId = await requireUserId(ctx)
-        if (args.name === undefined && args.avatar === undefined) {
+        if (args.name === undefined && args.avatar === undefined && args.removeAvatar !== true) {
             throw new Error("Nothing to update: provide name or avatar")
         }
         const profile = await ctx.db
@@ -117,6 +118,8 @@ export const updateMe = mutation({
         await ctx.db.patch(profile._id, {
             ...(args.name !== undefined ? { name: formatDisplayName(args.name) } : {}),
             ...(avatar !== undefined ? { avatar } : {}),
+            // Patching with undefined deletes the field; an omitted avatar means no change.
+            ...(args.removeAvatar === true ? { avatar: undefined } : {}),
         })
         return profile._id
     },
