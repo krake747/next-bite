@@ -4,7 +4,7 @@ import { useRef } from "react"
 import { type Restaurant } from "@core/restaurants"
 import { useAuth } from "@core/session"
 import { ButtonLink } from "@pattern/button-link"
-import { Dialog, DialogBackdrop, DialogPanel, DialogTitle } from "@ui/dialog"
+import { Dialog, DialogContent, DialogTitle } from "@ui/dialog"
 
 import { RestaurantForm } from "./restaurant-form"
 
@@ -38,43 +38,41 @@ export function RestaurantDialog(props: RestaurantDialogProps) {
     }
 
     return (
-        <Dialog show={props.show} onOpenChange={handleOpenChange}>
-            <DialogBackdrop>
-                <DialogPanel size="md" className="max-h-[85vh]">
-                    <div className="mb-6 flex items-center gap-3">
-                        <div className="flex size-10 items-center justify-center rounded-xl bg-linear-to-br from-tomato-500 to-tomato-600 text-inverse">
-                            <ForkKnifeIcon className="size-5" />
-                        </div>
-                        <DialogTitle size="lg">{title}</DialogTitle>
+        <Dialog open={props.show} onOpenChange={handleOpenChange}>
+            <DialogContent size="md" className="max-h-[85vh]">
+                <div className="mb-6 flex items-center gap-3">
+                    <div className="flex size-10 items-center justify-center rounded-xl bg-linear-to-br from-tomato-500 to-tomato-600 text-inverse">
+                        <ForkKnifeIcon className="size-5" />
                     </div>
+                    <DialogTitle size="lg">{title}</DialogTitle>
+                </div>
 
-                    {auth.isAuthenticated ? (
-                        props.mode === "add" ? (
-                            <RestaurantForm
-                                mode="add"
-                                onSuccess={close}
-                                onCancel={close}
-                                onDiscardReady={registerDiscard}
-                            />
-                        ) : (
-                            <RestaurantForm
-                                mode="edit"
-                                restaurant={props.restaurant}
-                                onSuccess={close}
-                                onCancel={close}
-                                onDiscardReady={registerDiscard}
-                            />
-                        )
+                {auth.isAuthenticated ? (
+                    props.mode === "add" ? (
+                        <RestaurantForm
+                            mode="add"
+                            onSuccess={close}
+                            onCancel={close}
+                            onDiscardReady={registerDiscard}
+                        />
                     ) : (
-                        <div className="space-y-4 py-8 text-center">
-                            <p className="text-muted-foreground">{gateText}</p>
-                            <ButtonLink to="/login" className="w-full">
-                                Sign In
-                            </ButtonLink>
-                        </div>
-                    )}
-                </DialogPanel>
-            </DialogBackdrop>
+                        <RestaurantForm
+                            mode="edit"
+                            restaurant={props.restaurant}
+                            onSuccess={close}
+                            onCancel={close}
+                            onDiscardReady={registerDiscard}
+                        />
+                    )
+                ) : (
+                    <div className="space-y-4 py-8 text-center">
+                        <p className="text-muted-foreground">{gateText}</p>
+                        <ButtonLink to="/login" className="w-full">
+                            Sign In
+                        </ButtonLink>
+                    </div>
+                )}
+            </DialogContent>
         </Dialog>
     )
 }

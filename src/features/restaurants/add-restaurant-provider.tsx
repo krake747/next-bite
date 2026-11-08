@@ -13,9 +13,9 @@ export function useOpenAddRestaurant(): () => void {
 export function AddRestaurantProvider({ children }: Readonly<{ children: React.ReactNode }>) {
     const auth = useAuth()
     const [show, setShow] = useState(false)
-    const [open] = useState(() => () => {
+    const open = () => {
         setShow(true)
-    })
+    }
     return (
         <AddRestaurantContext.Provider value={open}>
             {children}

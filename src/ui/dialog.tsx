@@ -4,21 +4,35 @@ import { XIcon } from "@phosphor-icons/react"
 import { cva, cx, type VariantProps } from "@ui/cva.config"
 import { IconButton } from "@ui/icon-button"
 
-export function Dialog({
-    show,
-    onOpenChange,
-    children,
-    ...props
-}: Readonly<
-    Omit<React.ComponentProps<typeof BaseDialog.Root>, "open" | "children"> & {
-        readonly show?: boolean | undefined
-        readonly children?: React.ReactNode | undefined
-    }
->) {
+export function Dialog({ children, ...props }: Readonly<React.ComponentProps<typeof BaseDialog.Root>>) {
     return (
-        <BaseDialog.Root open={show} onOpenChange={onOpenChange} {...props}>
-            <BaseDialog.Portal>{children}</BaseDialog.Portal>
+        <BaseDialog.Root data-slot="dialog" {...props}>
+            {children}
         </BaseDialog.Root>
+    )
+}
+
+export function DialogTrigger({ children, ...props }: Readonly<React.ComponentProps<typeof BaseDialog.Trigger>>) {
+    return (
+        <BaseDialog.Trigger data-slot="dialog-trigger" {...props}>
+            {children}
+        </BaseDialog.Trigger>
+    )
+}
+
+export function DialogPortal({ children, ...props }: Readonly<React.ComponentProps<typeof BaseDialog.Portal>>) {
+    return (
+        <BaseDialog.Portal data-slot="dialog-portal" {...props}>
+            {children}
+        </BaseDialog.Portal>
+    )
+}
+
+export function DialogClose({ children, ...props }: Readonly<React.ComponentProps<typeof BaseDialog.Close>>) {
+    return (
+        <BaseDialog.Close data-slot="dialog-close" {...props}>
+            {children}
+        </BaseDialog.Close>
     )
 }
 
@@ -41,17 +55,15 @@ const backdrop = cva({
     },
 })
 
-type DialogBackdropProps = VariantProps<typeof backdrop> & React.ComponentProps<typeof BaseDialog.Backdrop>
+type DialogOverlayProps = VariantProps<typeof backdrop> & React.ComponentProps<typeof BaseDialog.Backdrop>
 
-export function DialogBackdrop({ variant, tone, className, children, ...props }: Readonly<DialogBackdropProps>) {
+export function DialogOverlay({ variant, tone, className, ...props }: Readonly<DialogOverlayProps>) {
     return (
         <BaseDialog.Backdrop
-            data-slot="dialog-backdrop"
+            data-slot="dialog-overlay"
             className={cx(backdrop({ variant, tone }), className)}
             {...props}
-        >
-            {children}
-        </BaseDialog.Backdrop>
+        />
     )
 }
 
@@ -75,13 +87,65 @@ const panel = cva({
     },
 })
 
-type DialogPanelProps = VariantProps<typeof panel> & React.ComponentProps<typeof BaseDialog.Popup>
+type DialogContentProps = VariantProps<typeof panel> &
+    VariantProps<typeof backdrop> &
+    React.ComponentProps<typeof BaseDialog.Popup> & {
+        readonly showCloseButton?: boolean | undefined
+    }
 
-export function DialogPanel({ size, padding, className, children, ...props }: Readonly<DialogPanelProps>) {
+export function DialogContent({
+    size,
+    padding,
+    variant,
+    tone,
+    showCloseButton = true,
+    className,
+    children,
+    ref,
+    ...props
+}: Readonly<DialogContentProps>) {
     return (
-        <BaseDialog.Popup data-slot="dialog-panel" className={cx(panel({ size, padding }), className)} {...props}>
-            {children}
-        </BaseDialog.Popup>
+        <DialogPortal>
+            <DialogOverlay variant={variant} tone={tone} />
+            <BaseDialog.Popup
+                ref={ref}
+                data-slot="dialog-content"
+                className={cx(panel({ size, padding }), className)}
+                {...props}
+            >
+                {children}
+                {showCloseButton && (
+                    <BaseDialog.Close
+                        data-slot="dialog-close"
+                        render={
+                            <IconButton label="Close" tone="plain" className="absolute top-4 right-4">
+                                <XIcon className="size-4" aria-hidden="true" />
+                            </IconButton>
+                        }
+                    />
+                )}
+            </BaseDialog.Popup>
+        </DialogPortal>
+    )
+}
+
+export function DialogHeader({ className, ...props }: Readonly<React.ComponentProps<"div">>) {
+    return (
+        <div
+            data-slot="dialog-header"
+            className={cx("flex flex-col gap-2 text-center sm:text-left", className)}
+            {...props}
+        />
+    )
+}
+
+export function DialogFooter({ className, ...props }: Readonly<React.ComponentProps<"div">>) {
+    return (
+        <div
+            data-slot="dialog-footer"
+            className={cx("flex flex-col-reverse gap-2 sm:flex-row sm:justify-end", className)}
+            {...props}
+        />
     )
 }
 
@@ -126,43 +190,5 @@ export function DialogDescription({
         >
             {children}
         </BaseDialog.Description>
-    )
-}
-
-export function DialogCloseButton({
-    onClick,
-    className,
-}: Readonly<
-    { onClick: () => void } & Omit<React.ComponentProps<"button">, "onClick" | "type" | "children" | "aria-label">
->) {
-    return (
-        <IconButton
-            data-slot="dialog-close"
-            label="Close"
-            tone="plain"
-            onClick={onClick}
-            className={cx("hit-area-2 absolute top-4 right-4", className)}
-        >
-            <XIcon className="size-4" aria-hidden="true" />
-        </IconButton>
-    )
-}
-
-export function DialogAction({
-    render,
-    children,
-    ...props
-}: Readonly<
-    Omit<React.ComponentProps<typeof BaseDialog.Close>, "render"> & {
-        readonly render?: React.ReactElement | undefined
-    }
->) {
-    if (render !== undefined) {
-        return <BaseDialog.Close data-slot="dialog-action" render={render} {...props} />
-    }
-    return (
-        <BaseDialog.Close data-slot="dialog-action" {...props}>
-            {children}
-        </BaseDialog.Close>
     )
 }

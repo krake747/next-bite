@@ -28,18 +28,24 @@ attribute. Phosphor icons render no accessible name unless `alt` is set, so deco
 no `alt` prop; only meaningful icons get accessible names, on the parent element. Check: the browser
 spec queries the attribute for both states.
 
-## Prop types stay flat
+## Prop types compose, never omit to re-add
 
-Prefer `React.ComponentProps<"div">` and `useRender.ComponentProps<"a">` over hand-built
-intersections. Omit only props you genuinely narrow or forbid: a required `onClick`, or withholding
-Base UI's `render` passthrough. Never omit `className` or `children` just to re-add them with
-identical types. Destructure `children` explicitly instead of letting it ride inside `...props`, so
-the render output names what it renders. Name the passthrough spread `...props`, never `...rest`.
-Find candidates with `grep -rn 'Readonly<{' src/ui`: every hit must be a domain-prop component (data
-plus callbacks over composed output, such as `opening-hours`); all other primitives derive from
-`ComponentProps` or `useRender.ComponentProps`. Base prop shapes live in
-`node_modules/@base-ui/react/<component>/*.d.ts`. Check in review: every `Omit` names a prop whose
-type or presence differs from the source.
+A primitive's props are Base UI props plus CVA variant props plus whatever the wrapper adds,
+composed with `&`. Do not `Omit` `render` or `children` just to redeclare them; extend the Base type
+as-is and add your own props alongside it:
+
+```ts
+type DialogPanelProps = VariantProps<typeof panel> & React.ComponentProps<typeof BaseDialog.Popup>
+```
+
+The only `Omit` that belongs in `ui/` is withholding a prop entirely, such as a `render` passthrough
+the wrapper does not support. `DialogAction` narrowing `render` to element-or-children is the model,
+not an exception: the two-branch contract cannot honor render callbacks, so the type says so. What
+stays enforced: destructure `children` explicitly instead of letting it ride inside `...props`, so
+the render output names what it renders; name the passthrough spread `...props`, never `...rest`;
+use `useRender` for anything accepting a `render` prop. Base prop shapes live in
+`node_modules/@base-ui/react/<component>/*.d.ts`. Check in review: `children` is destructured and
+rendered; the spread is named `...props`; `render` goes through `useRender`.
 
 ## Every prop has a caller, extraction waits for the third copy
 

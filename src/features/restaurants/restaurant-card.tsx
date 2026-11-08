@@ -20,7 +20,7 @@ import { emptySocialSummary, type RestaurantSocial, type RestaurantSocialSummary
 import { EmojiRating } from "@pattern/emoji-rating"
 import { Button } from "@ui/button"
 import { Card } from "@ui/card"
-import { Dialog, DialogAction, DialogBackdrop, DialogDescription, DialogPanel, DialogTitle } from "@ui/dialog"
+import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogTitle } from "@ui/dialog"
 import { IconButton } from "@ui/icon-button"
 import { OpeningHoursDialog } from "@ui/opening-hours-dialog"
 
@@ -287,35 +287,33 @@ function DeleteConfirmDialog({
     restaurantName: string
 }>) {
     return (
-        <Dialog show={show} onOpenChange={onOpenChange}>
-            <DialogBackdrop>
-                <DialogPanel size="sm">
-                    <DialogTitle>Delete restaurant</DialogTitle>
-                    <DialogDescription>
-                        Are you sure you want to delete <strong className="text-foreground">{restaurantName}</strong>?
-                        This action cannot be undone.
-                    </DialogDescription>
-                    <div className="mt-6 flex justify-end gap-2">
-                        <DialogAction
-                            render={
-                                <Button tone="secondary" size="md">
-                                    Cancel
-                                </Button>
-                            }
-                        />
-                        <Button
-                            tone="destructive"
-                            size="md"
-                            onClick={() => {
-                                onConfirm()
-                                onOpenChange(false)
-                            }}
-                        >
-                            Delete
-                        </Button>
-                    </div>
-                </DialogPanel>
-            </DialogBackdrop>
+        <Dialog open={show} onOpenChange={onOpenChange}>
+            <DialogContent size="sm" showCloseButton={false}>
+                <DialogTitle>Delete restaurant</DialogTitle>
+                <DialogDescription>
+                    Are you sure you want to delete <strong className="text-foreground">{restaurantName}</strong>? This
+                    action cannot be undone.
+                </DialogDescription>
+                <DialogFooter className="mt-6">
+                    <DialogClose
+                        render={
+                            <Button tone="secondary" size="md">
+                                Cancel
+                            </Button>
+                        }
+                    />
+                    <Button
+                        tone="destructive"
+                        size="md"
+                        onClick={() => {
+                            onConfirm()
+                            onOpenChange(false)
+                        }}
+                    >
+                        Delete
+                    </Button>
+                </DialogFooter>
+            </DialogContent>
         </Dialog>
     )
 }

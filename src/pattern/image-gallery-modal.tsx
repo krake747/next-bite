@@ -1,7 +1,7 @@
 import { XIcon } from "@phosphor-icons/react"
 import { useEffect } from "react"
 
-import { Dialog, DialogBackdrop, DialogPanel, DialogTitle } from "@ui/dialog"
+import { Dialog, DialogContent, DialogTitle } from "@ui/dialog"
 
 import { GalleryGrid } from "./gallery/gallery-grid"
 import { GalleryViewer, useGalleryViewer } from "./gallery/gallery-viewer"
@@ -19,7 +19,7 @@ export function ImageGalleryModal({ images, show, onOpenChange, initialIndex }: 
         return null
     }
     return (
-        <Dialog show={show} onOpenChange={onOpenChange}>
+        <Dialog open={show} onOpenChange={onOpenChange}>
             <GalleryViewer images={images} initialIndex={initialIndex}>
                 <GalleryShell
                     show={show}
@@ -68,35 +68,36 @@ function GalleryShell({
     }
 
     return (
-        <DialogBackdrop variant="fullscreen" tone="darkest">
-            <DialogPanel
-                size="full"
-                padding="none"
-                ref={viewer.contentRef}
-                className="fixed inset-0 flex flex-col"
-                onKeyDown={handleKeyDown}
-                tabIndex={0}
-            >
-                <div className="flex items-center justify-between p-4">
-                    <DialogTitle tone="inverse">
-                        Image Gallery ({viewer.currentIndex + 1}/{viewer.images.length})
-                    </DialogTitle>
-                    <button
-                        type="button"
-                        onClick={onClose}
-                        className="rounded-full p-2 text-inverse hover:bg-surface/20"
-                        aria-label="Close gallery"
-                    >
-                        <XIcon className="size-6" />
-                    </button>
-                </div>
+        <DialogContent
+            size="full"
+            padding="none"
+            variant="fullscreen"
+            tone="darkest"
+            showCloseButton={false}
+            ref={viewer.contentRef}
+            className="fixed inset-0 flex flex-col"
+            onKeyDown={handleKeyDown}
+            tabIndex={0}
+        >
+            <div className="flex items-center justify-between p-4">
+                <DialogTitle tone="inverse">
+                    Image Gallery ({viewer.currentIndex + 1}/{viewer.images.length})
+                </DialogTitle>
+                <button
+                    type="button"
+                    onClick={onClose}
+                    className="rounded-full p-2 text-inverse hover:bg-surface/20"
+                    aria-label="Close gallery"
+                >
+                    <XIcon className="size-6" />
+                </button>
+            </div>
 
-                {viewer.mode === "grid" ? (
-                    <GalleryGrid images={viewer.images} onSelect={viewer.openLightbox} />
-                ) : (
-                    <LightboxView />
-                )}
-            </DialogPanel>
-        </DialogBackdrop>
+            {viewer.mode === "grid" ? (
+                <GalleryGrid images={viewer.images} onSelect={viewer.openLightbox} />
+            ) : (
+                <LightboxView />
+            )}
+        </DialogContent>
     )
 }

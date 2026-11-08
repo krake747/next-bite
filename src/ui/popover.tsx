@@ -37,9 +37,8 @@ export function PopoverTrigger({
 }
 
 type PopoverPanelProps = Readonly<
-    Omit<React.ComponentProps<typeof BasePopover.Positioner>, "children" | "className" | "sideOffset"> & {
+    React.ComponentProps<typeof BasePopover.Positioner> & {
         readonly className?: string | undefined
-        readonly children?: React.ReactNode | undefined
         readonly sideOffset?: number | undefined
     }
 >

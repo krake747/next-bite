@@ -53,7 +53,7 @@ function initials(name: string | undefined): string {
 }
 
 type AvatarProps = VariantProps<typeof avatar> &
-    Omit<React.ComponentProps<typeof BaseAvatar.Root>, "children"> & {
+    React.ComponentProps<typeof BaseAvatar.Root> & {
         readonly children: React.ReactNode
     }
 
