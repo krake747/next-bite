@@ -182,23 +182,33 @@ export function SidebarTrigger({
     onClick,
     ...props
 }: Omit<React.ComponentProps<typeof IconButton>, "label" | "children">) {
-    const { toggleSidebar } = useSidebar()
+    const { isMobile, toggleSidebar } = useSidebar()
     return (
-        <IconButton
-            data-sidebar="trigger"
-            data-slot="sidebar-trigger"
-            label="Toggle sidebar"
-            tone="plain"
-            size="sm"
-            className={className}
-            onClick={(event) => {
-                onClick?.(event)
-                toggleSidebar()
-            }}
-            {...props}
-        >
-            <SidebarSimpleIcon aria-hidden="true" />
-        </IconButton>
+        <Tooltip>
+            <TooltipTrigger
+                render={
+                    <IconButton
+                        data-sidebar="trigger"
+                        data-slot="sidebar-trigger"
+                        label="Toggle sidebar"
+                        title=""
+                        tone="plain"
+                        size="sm"
+                        className={className}
+                        onClick={(event) => {
+                            onClick?.(event)
+                            toggleSidebar()
+                        }}
+                        {...props}
+                    >
+                        <SidebarSimpleIcon aria-hidden="true" />
+                    </IconButton>
+                }
+            />
+            <TooltipContent side="right" align="center" hidden={isMobile}>
+                Toggle sidebar
+            </TooltipContent>
+        </Tooltip>
     )
 }
 
