@@ -17,6 +17,7 @@ type RouterContext = {
 
 export const Route = createRootRouteWithContext<RouterContext>()({
     head: () => ({
+        meta: [{ name: "viewport", content: "width=device-width, initial-scale=1" }],
         links: [
             {
                 rel: "preload",

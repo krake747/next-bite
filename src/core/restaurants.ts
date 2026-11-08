@@ -3,7 +3,6 @@ import { mutationOptions, useMutation, useQueryClient } from "@tanstack/react-qu
 import { type ConvexReactClient } from "convex/react"
 import { useEffect, useRef } from "react"
 
-import { useAuth as useAuthSource } from "@api/auth.provider"
 import { getConvexSessionToken } from "@api/auth.sdk"
 import { useConvexClient, useConvexQuery, useConvexMutation, useConvexAction } from "@api/convex.context"
 import { type Doc, type Id } from "@api/data.model"
@@ -24,7 +23,7 @@ import { api } from "@api/endpoints"
 import { FALLBACK_DISPLAY_NAME } from "./constants"
 import { env } from "./env"
 import { parseImageRecord, type ImageRecord } from "./schemas"
-import { gateId, retrySessionGate, useSessionKey, useSessionStatus } from "./session"
+import { gateId, retrySessionGate, useAuth, useSessionKey, useSessionStatus } from "./session"
 
 function useSessionSyncRecovery(
     input: Readonly<{
@@ -112,7 +111,7 @@ export const useAddVisitMemory = () => useConvexMutation(api.restaurants.addVisi
 
 export function useAddRestaurantWithHours() {
     const client = useConvexClient()
-    const auth = useAuthSource()
+    const auth = useAuth()
     return useMutation(
         mutationOptions({
             mutationFn: async (args: RestaurantAddArgs): Promise<Id<"restaurants">> => {

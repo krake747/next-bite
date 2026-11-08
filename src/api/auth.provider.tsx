@@ -39,7 +39,7 @@ const serverAuthStore: AuthStore = {
     signOut: noopServerAuthStep,
 }
 
-export function useAuth() {
+export function useAuthContext() {
     const ctx = use(AuthContext)
     if (!ctx) {
         throw new Error("useAuth must be used within AuthProvider")

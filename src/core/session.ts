@@ -1,7 +1,7 @@
 import { type ConvexReactClient } from "convex/react"
 import { useEffect, useState, useSyncExternalStore } from "react"
 
-import { useAuth as useAuthSource } from "@api/auth.provider"
+import { useAuthContext } from "@api/auth.provider"
 import { getConvexSessionToken } from "@api/auth.sdk"
 import { useConvexClient, useConvexMutation, useConvexQuery, useSuspenseConvexQuery } from "@api/convex.context"
 import { api } from "@api/endpoints"
@@ -75,7 +75,7 @@ export function retrySessionGate(): void {
 }
 
 export function useSessionStatus(options?: Readonly<{ timeoutMs?: number }>): SessionStatus {
-    const { isAuthenticated, isLoading, user } = useAuthSource()
+    const { isAuthenticated, isLoading, user } = useAuthContext()
     const client = useConvexClient()
     const gateGeneration = useSyncExternalStore(subscribeGateAttempt, getGateAttempt, getGateAttempt)
     const [gate, setGate] = useState<ConvexGate>({ userId: null, outcome: "probing" })
@@ -133,14 +133,14 @@ export function gateId<T>(status: SessionStatus, id: T | undefined): GatedId<T> 
     return { skip: false, id }
 }
 
-export const useAuth = useAuthSource
+export const useAuth = useAuthContext
 
 export const useMyProfile = () => useSuspenseConvexQuery(api.users.getMe)
 
 export const useUpdateProfile = () => useConvexMutation(api.users.updateMe)
 
 export function useEnsureProfile(): void {
-    const auth = useAuthSource()
+    const auth = useAuthContext()
     const client = useConvexClient()
     const sessionKey = useSessionKey()
     useEffect(() => {

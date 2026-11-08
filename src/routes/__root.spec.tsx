@@ -10,14 +10,23 @@ type FontPreload = {
     readonly crossOrigin: string
 }
 
+type RootHead = {
+    readonly meta: ReadonlyArray<{ readonly name?: string; readonly content?: string }>
+    readonly links: ReadonlyArray<FontPreload>
+}
+
+function rootHead(): RootHead {
+    expect(Route.options.head).toBeDefined()
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- spec-only narrowing of the route head fn to its payload
+    const head = Route.options.head as unknown as () => RootHead
+    return head()
+}
+
 describe("root head", () => {
     // Config-level contract, not rendered output: the framework consumes head() directly, so
-    // there is no DOM to query. This pins the two font preloads the first paint depends on.
+    // there is no DOM to query. Raw HTML coverage lives in the Playwright public SSR gate.
     test("preloads the above-the-fold display and body fonts", () => {
-        expect(Route.options.head).toBeDefined()
-        // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- spec-only narrowing of the route head fn to its links payload
-        const head = Route.options.head as unknown as () => { links: ReadonlyArray<FontPreload> }
-        const links = head().links
+        const links = rootHead().links
         expect(links).toHaveLength(2)
         expect(links.map((link) => `${link.rel} ${link.as} ${link.type} ${link.crossOrigin}`)).toEqual([
             "preload font font/woff2 anonymous",
@@ -27,5 +36,10 @@ describe("root head", () => {
         expect(hrefs).toContain("bricolage")
         expect(hrefs).toContain("dm-sans")
         expect(hrefs).toMatch(/\.woff2/)
+    })
+
+    test("sets one device-width viewport and leaves user zoom alone", () => {
+        const viewports = rootHead().meta.filter((meta) => meta.name === "viewport")
+        expect(viewports).toEqual([{ name: "viewport", content: "width=device-width, initial-scale=1" }])
     })
 })

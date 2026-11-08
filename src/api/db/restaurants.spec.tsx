@@ -5,8 +5,9 @@ import { describe, expect, test, vi } from "vitest"
 
 import { type Id } from "@convex/_generated/dataModel"
 import { useRestaurants } from "@core/restaurants"
+import { useAuth as useProbeAuth } from "@core/session"
 
-import { AuthProvider, useAuth as useProbeAuth } from "../auth.provider"
+import { AuthProvider } from "../auth.provider"
 import { authClient } from "../auth.sdk"
 import {
     applyUpdateArgsToDraft,
