@@ -1,5 +1,4 @@
 import { useAuth } from "@core/session"
-import { AddRestaurantProvider } from "@features/restaurants/add-restaurant-provider"
 
 import { Footer } from "./footer"
 import { TopBar } from "./top-bar"
@@ -16,11 +15,9 @@ export function PageLayout({ children }: Readonly<{ children: React.ReactNode }>
 
     return (
         <div data-slot="page-layout" className="flex min-h-screen flex-col">
-            <AddRestaurantProvider>
-                {!showNav && <TopBar />}
-                {showNav ? children : <main className="flex-1">{children}</main>}
-                {!showNav && <Footer />}
-            </AddRestaurantProvider>
+            {!showNav && <TopBar />}
+            {showNav ? children : <main className="flex-1">{children}</main>}
+            {!showNav && <Footer />}
         </div>
     )
 }

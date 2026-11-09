@@ -6,6 +6,7 @@ import {
     PencilLineIcon,
     TrashIcon,
 } from "@phosphor-icons/react"
+import { useNavigate } from "@tanstack/react-router"
 import { lazy, Suspense, useState } from "react"
 
 import {
@@ -23,7 +24,6 @@ import { Card } from "@ui/card"
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogTitle } from "@ui/dialog"
 import { IconButton } from "@ui/icon-button"
 
-import { EditRestaurantDialog } from "./edit-restaurant-dialog"
 import { OpeningHoursDialog } from "./opening-hours-dialog"
 import { RestaurantGallery } from "./restaurant-gallery"
 import { RestaurantHeader } from "./restaurant-header"
@@ -47,8 +47,9 @@ export function RestaurantCard({
         detailsHref?: string | undefined
     } & React.ComponentProps<typeof Card>
 >) {
-    const [dialog, setDialog] = useState<"closed" | "edit" | "hours" | "delete">("closed")
+    const [dialog, setDialog] = useState<"closed" | "hours" | "delete">("closed")
     const [isRefreshing, setIsRefreshing] = useState(false)
+    const navigate = useNavigate()
     const updateRestaurant = useUpdateRestaurant()
     const deleteRestaurant = useDeleteRestaurant()
     const auth = useAuth()
@@ -144,7 +145,9 @@ export function RestaurantCard({
                                     label="Edit restaurant"
                                     size="sm"
                                     onClick={() => {
-                                        setDialog("edit")
+                                        void navigate({
+                                            to: detailsHref ?? `/restaurants/${restaurant._id}`,
+                                        })
                                     }}
                                 >
                                     <PencilLineIcon className="size-3.5" />
@@ -191,11 +194,6 @@ export function RestaurantCard({
                 </div>
             </Card>
 
-            <EditRestaurantDialog
-                show={dialog === "edit"}
-                onOpenChange={handleDialogOpenChange}
-                restaurant={restaurant}
-            />
             <OpeningHoursDialog
                 show={dialog === "hours"}
                 onOpenChange={handleDialogOpenChange}

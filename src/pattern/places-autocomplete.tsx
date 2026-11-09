@@ -7,9 +7,18 @@ import { control, fieldLabel } from "@ui/variants"
 
 type Bias = Readonly<{ north: number; south: number; east: number; west: number }>
 
+export type PlaceSelection = {
+    readonly address: string
+    readonly name?: string | undefined
+    readonly lat?: number | undefined
+    readonly lng?: number | undefined
+    readonly placeId?: string | undefined
+    readonly primaryType?: string | undefined
+}
+
 type PlacesAutocompleteProps = {
     value: string
-    onChange: (value: string, lat?: number, lng?: number, placeId?: string) => void
+    onChange: (selection: PlaceSelection) => void
     placeholder?: string | undefined
     label?: string | undefined
     className?: string | undefined
@@ -41,7 +50,7 @@ function handlePlaceSelectEvent(event: unknown, onChange: PlacesAutocompleteProp
     const place = event.placePrediction.toPlace()
     void place
         .fetchFields({
-            fields: ["displayName", "formattedAddress", "location", "id"],
+            fields: ["displayName", "formattedAddress", "location", "id", "primaryType"],
         })
         .then(() => {
             const lat = place.location?.lat()
@@ -50,7 +59,18 @@ function handlePlaceSelectEvent(event: unknown, onChange: PlacesAutocompleteProp
                 [place.formattedAddress, place.displayName].find(
                     (part) => part !== null && part !== undefined && part !== "",
                 ) ?? ""
-            onChange(address, lat, lng, place.id ?? undefined)
+            onChange({
+                address,
+                ...(place.displayName !== null && place.displayName !== undefined && place.displayName !== ""
+                    ? { name: place.displayName }
+                    : {}),
+                ...(lat !== undefined ? { lat } : {}),
+                ...(lng !== undefined ? { lng } : {}),
+                ...(place.id !== undefined ? { placeId: place.id } : {}),
+                ...(place.primaryType !== null && place.primaryType !== undefined && place.primaryType !== ""
+                    ? { primaryType: place.primaryType }
+                    : {}),
+            })
         })
 }
 
@@ -143,7 +163,7 @@ export function PlacesAutocomplete({
                         value={value}
                         placeholder={placeholder}
                         onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
-                            onChange(event.currentTarget.value)
+                            onChange({ address: event.currentTarget.value })
                         }}
                         className={cx(control(), "absolute inset-0 z-10", "text-base md:text-sm")}
                         data-fallback-location

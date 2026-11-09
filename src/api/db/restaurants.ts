@@ -44,6 +44,7 @@ export type RestaurantAddArgs = {
     readonly notes?: string
     readonly link?: string
     readonly coords?: RestaurantCoords
+    readonly placeId?: string
     readonly images?: RestaurantImageInput[]
     readonly clientMutationId?: string
 }
@@ -131,6 +132,7 @@ export function toAddArgs(row: RestaurantDoc): RestaurantAddArgs {
         ...(row.details?.notes !== undefined && row.details.notes !== "" ? { notes: row.details.notes } : {}),
         ...(row.details?.link !== undefined && row.details.link !== "" ? { link: row.details.link } : {}),
         ...coordsArg(row.address.enrichment?.coords),
+        ...(row.address.enrichment?.placeId !== undefined ? { placeId: row.address.enrichment.placeId } : {}),
         images: copyStoredImages(row.images),
         ...(row.clientMutationId !== undefined ? { clientMutationId: row.clientMutationId } : {}),
     }
@@ -162,7 +164,14 @@ export function buildTempRestaurant(input: TempRestaurantInput): RestaurantDoc {
         cuisine: input.cuisine,
         address: {
             label: input.addressLabel,
-            ...(input.coords !== undefined ? { enrichment: { coords: { ...input.coords } } } : {}),
+            ...(input.coords !== undefined || input.placeId !== undefined
+                ? {
+                      enrichment: {
+                          ...(input.placeId !== undefined ? { placeId: input.placeId } : {}),
+                          ...(input.coords !== undefined ? { coords: { ...input.coords } } : {}),
+                      },
+                  }
+                : {}),
         },
         ...(input.notes !== undefined || input.link !== undefined
             ? {

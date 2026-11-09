@@ -14,7 +14,6 @@ import { Link, useMatchRoute } from "@tanstack/react-router"
 import { useConvexQuery } from "@api/convex.context"
 import { api } from "@api/endpoints"
 import { useAuth } from "@core/session"
-import { useOpenAddRestaurant } from "@features/restaurants/add-restaurant-provider"
 import { LazyImage } from "@pattern/lazy-image"
 import { cva, cx } from "@ui/cva.config"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@ui/dropdown-menu"
@@ -189,7 +188,6 @@ function SidebarUserMenu() {
 }
 
 export function AppNav() {
-    const openAdd = useOpenAddRestaurant()
     const matchRoute = useMatchRoute()
     const isMobile = useIsMobile()
     // Authenticated only: PageLayout renders no nav for signed-out visitors, who navigate
@@ -204,10 +202,7 @@ export function AppNav() {
                 <div className="mx-auto grid w-full max-w-350 grid-cols-5 gap-1 px-2 pt-2 pb-[calc(0.5rem+env(safe-area-inset-bottom))]">
                     <AppLink to={destinations[0].to} label={destinations[0].label} Icon={destinations[0].Icon} />
                     <AppLink to={destinations[1].to} label={destinations[1].label} Icon={destinations[1].Icon} />
-                    <button type="button" onClick={openAdd} className={cx(item(), "cursor-pointer")}>
-                        <PlusIcon className="size-5 shrink-0" aria-hidden="true" />
-                        <span>Add</span>
-                    </button>
+                    <AppLink to="/add" label="Add" Icon={PlusIcon} />
                     <AppLink to={destinations[2].to} label={destinations[2].label} Icon={destinations[2].Icon} />
                     <AppLink to={destinations[3].to} label={destinations[3].label} Icon={destinations[3].Icon} />
                 </div>
@@ -251,7 +246,7 @@ export function AppNav() {
                                 </SidebarMenuItem>
                             ))}
                             <SidebarMenuItem>
-                                <SidebarMenuButton onClick={openAdd} tooltip="Add">
+                                <SidebarMenuButton render={<Link to="/add" />} tooltip="Add">
                                     <PlusIcon aria-hidden="true" />
                                     <span>Add</span>
                                 </SidebarMenuButton>

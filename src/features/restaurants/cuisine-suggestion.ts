@@ -1,0 +1,59 @@
+const CUISINE_BY_PRIMARY_TYPE: Readonly<Record<string, string>> = {
+    italian_restaurant: "Italian",
+    pizza_restaurant: "Pizza",
+    sushi_restaurant: "Sushi",
+    japanese_restaurant: "Japanese",
+    ramen_restaurant: "Ramen",
+    chinese_restaurant: "Chinese",
+    mexican_restaurant: "Mexican",
+    indian_restaurant: "Indian",
+    thai_restaurant: "Thai",
+    vietnamese_restaurant: "Vietnamese",
+    korean_restaurant: "Korean",
+    french_restaurant: "French",
+    spanish_restaurant: "Spanish",
+    greek_restaurant: "Greek",
+    turkish_restaurant: "Turkish",
+    lebanese_restaurant: "Lebanese",
+    american_restaurant: "American",
+    hamburger_restaurant: "Burgers",
+    sandwich_shop: "Sandwiches",
+    steak_house: "Steakhouse",
+    seafood_restaurant: "Seafood",
+    barbecue_restaurant: "Barbecue",
+    mediterranean_restaurant: "Mediterranean",
+    middle_eastern_restaurant: "Middle Eastern",
+    latin_american_restaurant: "Latin American",
+    african_restaurant: "African",
+    european_restaurant: "European",
+    asian_restaurant: "Asian",
+    vegan_restaurant: "Vegan",
+    vegetarian_restaurant: "Vegetarian",
+    brunch_restaurant: "Brunch",
+    breakfast_restaurant: "Breakfast",
+    buffet_restaurant: "Buffet",
+    fast_food_restaurant: "Fast Food",
+    fine_dining_restaurant: "Fine Dining",
+    cafe: "Cafe",
+    coffee_shop: "Coffee",
+    bakery: "Bakery",
+    ice_cream_shop: "Ice Cream",
+    bubble_tea_shop: "Bubble Tea",
+    dessert_shop: "Desserts",
+    cocktail_bar: "Cocktails",
+    wine_bar: "Wine Bar",
+    pub: "Pub",
+    bar: "Bar",
+    deli: "Deli",
+    diner: "Diner",
+}
+
+// Starting text for the cuisine field after a Places pick. Explicit map only:
+// a wrong prefill costs more than an empty field, and non-food types
+// (grocery_store, market) must never masquerade as a cuisine.
+export function suggestCuisine(primaryType: string | undefined): string | undefined {
+    if (primaryType === undefined || primaryType === "") {
+        return undefined
+    }
+    return CUISINE_BY_PRIMARY_TYPE[primaryType]
+}

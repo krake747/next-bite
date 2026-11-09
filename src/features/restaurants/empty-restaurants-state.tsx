@@ -4,16 +4,9 @@ import { useNavigate } from "@tanstack/react-router"
 import { useAuth } from "@core/session"
 import { Button } from "@ui/button"
 
-import { useOpenAddRestaurant } from "./add-restaurant-provider"
-
-export function EmptyRestaurantsState({
-    onAddClick,
-}: Readonly<{
-    onAddClick?: (() => void) | undefined
-}>) {
+export function EmptyRestaurantsState() {
     const navigate = useNavigate()
     const auth = useAuth()
-    const openAdd = useOpenAddRestaurant()
 
     return (
         <div className="col-span-full flex flex-col items-center justify-center py-16 text-center">
@@ -32,7 +25,11 @@ export function EmptyRestaurantsState({
             </p>
 
             {auth.isAuthenticated ? (
-                <Button onClick={onAddClick ?? openAdd}>
+                <Button
+                    onClick={() => {
+                        void navigate({ to: "/add" })
+                    }}
+                >
                     <PlusIcon className="size-4" />
                     Add your first restaurant
                 </Button>

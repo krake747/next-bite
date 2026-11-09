@@ -1,4 +1,4 @@
-import { Form, reset, setInput, useForm } from "@formisch/react"
+import { Form, reset, setInput, useField, useForm } from "@formisch/react"
 import { useEffect, useRef, useState } from "react"
 
 import { type Id } from "@api/data.model"
@@ -6,15 +6,25 @@ import { SyncTimeoutError, type RestaurantAddArgs, type RestaurantUpdateArgs } f
 import { useAddRestaurantWithHours, useCleanupStorage, useUpdateRestaurant, type Restaurant } from "@core/restaurants"
 import { RestaurantSchema, type RestaurantOutput } from "@core/schemas"
 import { ImageUpload } from "@pattern/image-upload"
+import { type PlaceSelection } from "@pattern/places-autocomplete"
 import { Button } from "@ui/button"
 
+import { suggestCuisine } from "./cuisine-suggestion"
 import { LinkField, LocationSection, NameCuisineFields, NotesSection, RatingSection } from "./restaurant-form-fields"
 import { useRestaurantImages, type GalleryDraft } from "./use-restaurant-images"
 
 export type RestaurantFormProps =
     | {
           mode: "add"
-          onSuccess: () => void
+          initial?: Readonly<{
+              name: string
+              cuisine: string
+              location: string
+              lat?: number | undefined
+              lng?: number | undefined
+              placeId?: string | undefined
+          }>
+          onSuccess: (restaurantId: Id<"restaurants">) => void
           onCancel: () => void
           onDiscardReady: (discard: () => Promise<void>) => void
       }
@@ -64,6 +74,23 @@ function SubmitButton({ mode, saving }: Readonly<{ mode: "add" | "edit"; saving:
     )
 }
 
+// Owns the form's discard handshake from the outside: every exit path
+// (Cancel, success, switching drafts) runs the registered discard first so
+// staged uploads never strand, then continues. The noop default covers exits
+// before the form has mounted and registered.
+export function useFormDiscard(): {
+    registerDiscard: (discard: () => Promise<void>) => void
+    discard: () => Promise<void>
+} {
+    const discardRef = useRef<() => Promise<void>>(async () => {})
+    return {
+        registerDiscard: (discard) => {
+            discardRef.current = discard
+        },
+        discard: async () => discardRef.current(),
+    }
+}
+
 function useSubmitDiscard(args: {
     onDiscardReady: (discard: () => Promise<void>) => void
     gallery: Pick<GalleryDraft, "discardChanges">
@@ -107,17 +134,18 @@ function SubmitPhaseBanner({ phase, onRetry }: Readonly<{ phase: SubmitPhase; on
 }
 
 async function submitNewRestaurant(input: {
-    add: (args: RestaurantAddArgs) => Promise<unknown>
+    add: (args: RestaurantAddArgs) => Promise<Id<"restaurants">>
     gallery: Pick<GalleryDraft, "images">
-    output: Readonly<Omit<RestaurantOutput, "images" | "placeId">>
+    output: Readonly<Omit<RestaurantOutput, "images">>
     clientMutationId: string
-}): Promise<void> {
-    const { location, lat, lng, ...rest } = stripUndefined(input.output)
+}): Promise<Id<"restaurants">> {
+    const { location, lat, lng, placeId, ...rest } = stripUndefined(input.output)
     const coords = lat !== undefined && lng !== undefined ? { lat, lng } : undefined
-    await input.add({
+    return input.add({
         ...rest,
         addressLabel: location,
         ...(coords !== undefined ? { coords } : {}),
+        ...(placeId !== undefined ? { placeId } : {}),
         images: input.gallery.images,
         clientMutationId: input.clientMutationId,
     })
@@ -147,8 +175,8 @@ function useSubmitDraft(args: {
     gallery: GalleryDraft
     resetForm: () => void
     onDiscardReady: (discard: () => Promise<void>) => void
-    onSuccess: () => void
-    add: (input: RestaurantAddArgs) => Promise<unknown>
+    onSuccess: (restaurantId: Id<"restaurants"> | undefined) => void
+    add: (input: RestaurantAddArgs) => Promise<Id<"restaurants">>
     update: (input: RestaurantUpdateArgs) => Promise<unknown>
 }): {
     submitPhase: SubmitPhase
@@ -182,14 +210,16 @@ function useSubmitDraft(args: {
         lastOutputRef.current = output
         setSubmitPhase({ kind: "saving" })
         try {
-            if (args.target.mode === "add") {
-                await submitNewRestaurant({
-                    add: args.add,
-                    gallery: args.gallery,
-                    output,
-                    clientMutationId,
-                })
-            } else {
+            const createdId =
+                args.target.mode === "add"
+                    ? await submitNewRestaurant({
+                          add: args.add,
+                          gallery: args.gallery,
+                          output,
+                          clientMutationId,
+                      })
+                    : undefined
+            if (args.target.mode === "edit") {
                 await submitExistingRestaurant({
                     update: args.update,
                     gallery: args.gallery,
@@ -201,7 +231,7 @@ function useSubmitDraft(args: {
             args.resetForm()
             setSubmitPhase({ kind: "committed" })
             setClientMutationId(crypto.randomUUID())
-            args.onSuccess()
+            args.onSuccess(createdId)
         } catch (error) {
             setSubmitPhase(toFailedPhase(error))
             console.error(`Error ${args.target.mode === "add" ? "adding" : "updating"} restaurant:`, error)
@@ -244,8 +274,12 @@ export function RestaurantForm(props: Readonly<RestaurantFormProps>) {
                       rating: props.restaurant.rating,
                   },
               }
-            : {}),
+            : props.initial !== undefined
+              ? { initialInput: { ...props.initial } }
+              : {}),
     })
+    const nameField = useField(form, { path: ["name"] })
+    const cuisineField = useField(form, { path: ["cuisine"] })
 
     const submit = useSubmitDraft({
         target: props.mode === "add" ? { mode: "add" } : { mode: "edit", restaurantId: props.restaurant._id },
@@ -254,19 +288,39 @@ export function RestaurantForm(props: Readonly<RestaurantFormProps>) {
             reset(form)
         },
         onDiscardReady: props.onDiscardReady,
-        onSuccess: props.onSuccess,
+        onSuccess: (restaurantId) => {
+            if (props.mode === "add") {
+                if (restaurantId !== undefined) {
+                    props.onSuccess(restaurantId)
+                }
+            } else {
+                props.onSuccess()
+            }
+        },
         add: addRestaurantWithHours.mutateAsync,
         update: updateRestaurant.mutateAsync,
     })
 
-    const handleLocationChange = (address: string, lat?: number, lng?: number) => {
-        setInput(form, { path: ["location"], input: address })
-        if (lat !== undefined && lng !== undefined) {
-            setInput(form, { path: ["lat"], input: lat })
-            setInput(form, { path: ["lng"], input: lng })
+    const handleLocationChange = (selection: PlaceSelection) => {
+        setInput(form, { path: ["location"], input: selection.address })
+        if (selection.lat !== undefined && selection.lng !== undefined) {
+            setInput(form, { path: ["lat"], input: selection.lat })
+            setInput(form, { path: ["lng"], input: selection.lng })
         } else {
             setInput(form, { path: ["lat"], input: undefined })
             setInput(form, { path: ["lng"], input: undefined })
+        }
+        setInput(form, { path: ["placeId"], input: selection.placeId })
+        // Prefill only what the user has not typed yet; a pick never
+        // overwrites manual input.
+        if ((nameField.input ?? "") === "" && selection.name !== undefined && selection.name !== "") {
+            setInput(form, { path: ["name"], input: selection.name })
+        }
+        if ((cuisineField.input ?? "") === "") {
+            const suggested = suggestCuisine(selection.primaryType)
+            if (suggested !== undefined) {
+                setInput(form, { path: ["cuisine"], input: suggested })
+            }
         }
     }
 

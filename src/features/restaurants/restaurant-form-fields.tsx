@@ -3,7 +3,7 @@ import { Field, setInput, useField, type FormStore } from "@formisch/react"
 import { RestaurantSchema } from "@core/schemas"
 import { EmojiRating } from "@pattern/emoji-rating"
 import { FieldErrors, FieldWrapper, Input, Textarea } from "@pattern/field"
-import { PlacesAutocomplete } from "@pattern/places-autocomplete"
+import { PlacesAutocomplete, type PlaceSelection } from "@pattern/places-autocomplete"
 import { fieldLabel } from "@ui/variants"
 
 type RestaurantFormStore = FormStore<typeof RestaurantSchema>
@@ -44,7 +44,7 @@ export function LocationSection({
     onLocationChange,
 }: Readonly<{
     form: RestaurantFormStore
-    onLocationChange: (address: string, lat?: number, lng?: number) => void
+    onLocationChange: (selection: PlaceSelection) => void
 }>) {
     const locationField = useField(form, { path: ["location"] })
     return (

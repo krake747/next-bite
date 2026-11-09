@@ -4,17 +4,16 @@ import { createFileRoute } from "@tanstack/react-router"
 import { useFeedRestaurants, useRestaurants, type Restaurant } from "@core/restaurants"
 import { useAuth, useSessionStatus } from "@core/session"
 import { feedTextFor, orderFeedByRecency } from "@core/social"
-import { useOpenAddRestaurant } from "@features/restaurants/add-restaurant-provider"
 import { RestaurantCard } from "@features/restaurants/restaurant-card"
 import { RestaurantCardSkeleton } from "@features/restaurants/restaurant-card-skeleton"
 import { RestaurantList } from "@features/restaurants/restaurant-list"
 import { ActivityPost } from "@features/social/activity-post"
+import { ButtonLink } from "@pattern/button-link"
 import { EmptyState } from "@pattern/empty-state"
 import { HeaderBadge } from "@pattern/header"
 import { SessionGate } from "@routes/-components/session-gate"
 import { SocialActionsProvider, useSocialActions } from "@routes/-components/social-actions-provider"
 import { PageContainer } from "@routes/-layouts/page-container"
-import { Button } from "@ui/button"
 
 export const Route = createFileRoute("/_app/home")({
     head: () => ({ meta: [{ title: "Our next bite" }] }),
@@ -116,7 +115,6 @@ function HomeDiscover({ restaurants }: Readonly<{ restaurants: ReadonlyArray<Res
 }
 
 function HomeHeader({ name, count }: Readonly<{ name: string; count: number }>) {
-    const openAdd = useOpenAddRestaurant()
     return (
         <section aria-label="Welcome back" className="pt-8 sm:pt-10">
             <h1 className="font-display text-3xl font-semibold tracking-tight text-balance text-foreground sm:text-4xl">
@@ -124,10 +122,10 @@ function HomeHeader({ name, count }: Readonly<{ name: string; count: number }>) 
             </h1>
             <p className="mt-2 max-w-xl text-muted-foreground">Your friends&apos; latest saves, newest first.</p>
             <div className="mt-4 flex flex-wrap items-center gap-3">
-                <Button onClick={openAdd}>
+                <ButtonLink to="/add">
                     <PlusIcon className="size-4" />
                     Add Restaurant
-                </Button>
+                </ButtonLink>
                 {count > 0 && <HeaderBadge count={count} />}
             </div>
         </section>

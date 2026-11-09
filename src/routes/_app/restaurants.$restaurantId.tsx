@@ -21,6 +21,7 @@ import { type Viewer } from "@core/social.counts"
 import { ShareToGroupDialog } from "@features/groups/share-to-group-dialog"
 import { PlanSection } from "@features/plans/plans"
 import { OpeningHoursDialog } from "@features/restaurants/opening-hours-dialog"
+import { RestaurantForm, useFormDiscard } from "@features/restaurants/restaurant-form"
 import { RestaurantGallery } from "@features/restaurants/restaurant-gallery"
 import { RestaurantHeader } from "@features/restaurants/restaurant-header"
 import { RestaurantInterestButton } from "@features/restaurants/restaurant-interest-button"
@@ -80,6 +81,8 @@ function DetailHero({
     const toggleInterest = useToggleInterest()
     const toggleLike = useToggleLike()
     const [showHours, setShowHours] = useState(false)
+    const [editing, setEditing] = useState(false)
+    const isOwner = auth.isAuthenticated && auth.user !== null && restaurant.ownerId === auth.user.id
 
     const goToLogin = () => {
         void navigate({ to: "/login" })
@@ -103,71 +106,110 @@ function DetailHero({
 
     return (
         <div className="overflow-hidden rounded-card border border-border bg-surface shadow-card">
-            <div className="grid divide-border lg:grid-cols-5 lg:divide-x">
-                <div className="lg:col-span-3">
-                    <RestaurantGallery photos={photos} name={restaurant.name} cuisine={restaurant.cuisine} />
-                </div>
-                <div className="min-w-0 lg:col-span-2">
-                    <RestaurantHeader
-                        name={restaurant.name}
-                        link={restaurant.details?.link}
-                        ownerName={restaurant.ownerName}
-                        wantCount={social.wantCount}
-                        beenCount={social.beenCount}
-                        location={restaurant.address.label}
-                        hasLocation={restaurant.address.enrichment?.coords !== undefined}
-                        openingHours={restaurant.address.enrichment?.openingHours}
-                        onShowHours={() => {
-                            setShowHours(true)
-                        }}
-                    />
-                    <div className="flex flex-wrap items-center gap-3 px-5 pb-2 md:px-4">
-                        <RestaurantInterestButton
-                            wanted={social.wanted}
-                            wantCount={social.wantCount}
-                            onToggleWant={toggleWant}
-                        />
-                        <ReactionBar
-                            reactions={{
-                                liked: social.liked,
-                                likeCount: social.likeCount,
-                                onToggleLike: handleToggleLike,
-                                commentCount: social.comments.length,
-                                onComment: () => {},
-                                wanted: social.wanted,
-                                wantCount: social.wantCount,
-                                onToggleWant: toggleWant,
-                            }}
-                        />
-                        {shareAction}
+            {editing ? (
+                <DetailEditForm
+                    restaurant={restaurant}
+                    onDone={() => {
+                        setEditing(false)
+                    }}
+                />
+            ) : (
+                <div className="grid divide-border lg:grid-cols-5 lg:divide-x">
+                    <div className="lg:col-span-3">
+                        <RestaurantGallery photos={photos} name={restaurant.name} cuisine={restaurant.cuisine} />
                     </div>
-                    <div className="space-y-3 p-5 md:p-4">
-                        {restaurant.details?.notes !== undefined && restaurant.details.notes !== "" && (
-                            <div>
-                                <h2 className="font-display text-lg font-semibold text-balance text-foreground">
-                                    Why it&apos;s recommended
-                                </h2>
-                                <p className="text-body mt-1 leading-relaxed text-pretty text-foreground">
-                                    {restaurant.details.notes}
-                                </p>
-                            </div>
-                        )}
-                        <SocialMetadata
+                    <div className="min-w-0 lg:col-span-2">
+                        <RestaurantHeader
+                            name={restaurant.name}
+                            link={restaurant.details?.link}
                             ownerName={restaurant.ownerName}
                             wantCount={social.wantCount}
                             beenCount={social.beenCount}
+                            location={restaurant.address.label}
+                            hasLocation={restaurant.address.enrichment?.coords !== undefined}
+                            openingHours={restaurant.address.enrichment?.openingHours}
+                            onShowHours={() => {
+                                setShowHours(true)
+                            }}
                         />
-                        {social.interestedNames.length > 0 && (
-                            <AvatarGroup members={social.interestedNames.map((name) => ({ name }))} />
-                        )}
+                        <div className="flex flex-wrap items-center gap-3 px-5 pb-2 md:px-4">
+                            <RestaurantInterestButton
+                                wanted={social.wanted}
+                                wantCount={social.wantCount}
+                                onToggleWant={toggleWant}
+                            />
+                            <ReactionBar
+                                reactions={{
+                                    liked: social.liked,
+                                    likeCount: social.likeCount,
+                                    onToggleLike: handleToggleLike,
+                                    commentCount: social.comments.length,
+                                    onComment: () => {},
+                                    wanted: social.wanted,
+                                    wantCount: social.wantCount,
+                                    onToggleWant: toggleWant,
+                                }}
+                            />
+                            {isOwner && (
+                                <Button
+                                    tone="secondary"
+                                    onClick={() => {
+                                        setEditing(true)
+                                    }}
+                                >
+                                    Edit
+                                </Button>
+                            )}
+                            {shareAction}
+                        </div>
+                        <div className="space-y-3 p-5 md:p-4">
+                            {restaurant.details?.notes !== undefined && restaurant.details.notes !== "" && (
+                                <div>
+                                    <h2 className="font-display text-lg font-semibold text-balance text-foreground">
+                                        Why it&apos;s recommended
+                                    </h2>
+                                    <p className="text-body mt-1 leading-relaxed text-pretty text-foreground">
+                                        {restaurant.details.notes}
+                                    </p>
+                                </div>
+                            )}
+                            <SocialMetadata
+                                ownerName={restaurant.ownerName}
+                                wantCount={social.wantCount}
+                                beenCount={social.beenCount}
+                            />
+                            {social.interestedNames.length > 0 && (
+                                <AvatarGroup members={social.interestedNames.map((name) => ({ name }))} />
+                            )}
+                        </div>
                     </div>
                 </div>
-            </div>
+            )}
             <OpeningHoursDialog
                 show={showHours}
                 onOpenChange={setShowHours}
                 openingHours={restaurant.address.enrichment?.openingHours}
                 restaurantName={restaurant.name}
+            />
+        </div>
+    )
+}
+
+function DetailEditForm({ restaurant, onDone }: Readonly<{ restaurant: Restaurant; onDone: () => void }>) {
+    // Same ownership as the old dialog close: Cancel runs the form's discard
+    // first so staged uploads never strand, and the live query paints the
+    // saved edit the moment Convex syncs it. No refetch, no navigation.
+    const { registerDiscard, discard } = useFormDiscard()
+    return (
+        <div className="p-5 md:p-4">
+            <RestaurantForm
+                mode="edit"
+                restaurant={restaurant}
+                onSuccess={onDone}
+                onCancel={() => {
+                    void discard().then(onDone)
+                }}
+                onDiscardReady={registerDiscard}
             />
         </div>
     )

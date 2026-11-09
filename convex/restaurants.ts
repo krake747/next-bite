@@ -488,6 +488,7 @@ export const addWithOpeningHours = action({
         notes: v.optional(v.string()),
         link: v.optional(v.string()),
         coords: v.optional(coordsValidator),
+        placeId: v.optional(v.string()),
         images: v.optional(v.array(restaurantImageValidator)),
         clientMutationId: v.optional(v.string()),
     },
@@ -503,7 +504,13 @@ export const addWithOpeningHours = action({
             attachable.push({ image: img, record })
         }
 
-        const google = await lookupPlaceIdFromGoogle(args.name, args.addressLabel)
+        // A client-held placeId (from the Places picker) wins over the
+        // name/address guess: the user already confirmed the exact place.
+        const providedPlaceId = args.placeId !== undefined && args.placeId !== "" ? args.placeId : undefined
+        const google =
+            providedPlaceId !== undefined
+                ? { placeId: providedPlaceId, lat: undefined, lng: undefined }
+                : await lookupPlaceIdFromGoogle(args.name, args.addressLabel)
 
         const coords =
             google.lat !== undefined && google.lng !== undefined

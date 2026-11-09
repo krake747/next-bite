@@ -9,7 +9,7 @@ import { clearError, errorFrom, type FormError } from "@core/outcome"
 import { useRestaurants } from "@core/restaurants"
 import { useSessionStatus } from "@core/session"
 import { useAcceptFriend, useRemoveFriend, useRequestFriendByEmail } from "@core/social"
-import { useOpenAddRestaurant } from "@features/restaurants/add-restaurant-provider"
+import { ButtonLink } from "@pattern/button-link"
 import { EmptyState } from "@pattern/empty-state"
 import { Header, HeaderSubtitle, HeaderTitle } from "@pattern/header"
 import { QueryErrorState } from "@pattern/query-error"
@@ -211,7 +211,6 @@ function FriendDiscoveries({ ownerId, ownerName }: Readonly<{ ownerId: string; o
 
 function OwnListNudge() {
     const restaurants = useRestaurants()
-    const openAdd = useOpenAddRestaurant()
     // Only relevant before Kevin has anything of his own: once he adds places,
     // the loop is running and the nudge would be noise.
     if (restaurants === undefined || restaurants.length > 0) {
@@ -222,9 +221,9 @@ function OwnListNudge() {
             <p className="text-sm text-muted-foreground">
                 Anything you add to your own lists shows up on your friends&apos; side too.
             </p>
-            <Button tone="secondary" size="sm" onClick={openAdd} className="shrink-0">
+            <ButtonLink to="/add" tone="secondary" size="sm" className="shrink-0">
                 Add a restaurant
-            </Button>
+            </ButtonLink>
         </div>
     )
 }

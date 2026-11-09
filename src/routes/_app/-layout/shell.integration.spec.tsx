@@ -87,7 +87,7 @@ describe("app shell", () => {
 
         expect(screen.getByRole("link", { name: "Home" })).toHaveAttribute("href", "/home")
         expect(screen.getByRole("link", { name: "Friends" })).toHaveAttribute("href", "/friends")
-        expect(screen.getByRole("button", { name: "Add" })).toBeInTheDocument()
+        expect(screen.getByRole("link", { name: "Add" })).toHaveAttribute("href", "/add")
         expect(screen.getByRole("link", { name: "Groups" })).toHaveAttribute("href", "/groups")
         expect(screen.getByRole("link", { name: "You" })).toHaveAttribute("href", "/you")
     })
@@ -126,7 +126,7 @@ describe("app shell", () => {
         signIn()
         await renderAt("/home")
 
-        // Same happy-dom reason as the dialog test below: userEvent stalls on this
+        // Same happy-dom reason as elsewhere: userEvent stalls on this
         // navigation, fireEvent drives the same Link deterministically.
         fireEvent.click(screen.getByRole("link", { name: "Groups" }))
 
@@ -166,12 +166,13 @@ describe("app shell", () => {
         signIn()
         await renderAt("/home")
 
-        // userEvent hangs with the dialog focus trap under happy-dom; fireEvent is deterministic here.
-        fireEvent.click(screen.getByRole("button", { name: "Add" }))
+        // Same happy-dom reason as elsewhere: userEvent stalls on this
+        // navigation, fireEvent drives the same Link deterministically.
+        fireEvent.click(screen.getByRole("link", { name: "Add" }))
 
         await waitFor(
             () => {
-                expect(screen.getByRole("heading", { name: "Add Restaurant" })).toBeInTheDocument()
+                expect(screen.getByRole("heading", { name: "Add a restaurant" })).toBeInTheDocument()
             },
             { timeout: 5000 },
         )
