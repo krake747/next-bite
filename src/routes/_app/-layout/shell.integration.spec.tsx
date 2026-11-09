@@ -46,6 +46,13 @@ vi.mock("@api/auth.provider", async (importOriginal) => {
 })
 
 async function renderAt(path: string, extraSeeds?: ReadonlyMap<string, unknown>): Promise<void> {
+    // The _app beforeLoad redirects without a cached session, so mirror the
+    // mocked auth into the same localStorage slot hasCachedSession reads.
+    if (testUser === null) {
+        localStorage.removeItem("nb:session")
+    } else {
+        localStorage.setItem("nb:session", JSON.stringify(testUser))
+    }
     // The signed-out home reads the landing aggregate; unseeded queries fall back to an empty
     // list, which is not the aggregate shape, so seed it explicitly.
     const seeds = new Map<string, unknown>([
@@ -78,6 +85,7 @@ function signIn(): void {
 
 afterEach(() => {
     testUser = null
+    localStorage.removeItem("nb:session")
 })
 
 describe("app shell", () => {

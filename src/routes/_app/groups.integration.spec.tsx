@@ -53,6 +53,13 @@ function seedQuery(fn: string, args: unknown, value: unknown): void {
 }
 
 async function renderAt(path: string): Promise<void> {
+    // Mirror the mocked auth into the localStorage slot hasCachedSession
+    // reads, or the _app beforeLoad redirects to login before render.
+    if (testUser === null) {
+        localStorage.removeItem("nb:session")
+    } else {
+        localStorage.setItem("nb:session", JSON.stringify(testUser))
+    }
     const backend = createSeededClient({ seeds: querySeeds, calls: mutationCalls, mutateResult: "g9" })
     const router = createRouter({
         routeTree,
@@ -111,14 +118,28 @@ describe("groups list", () => {
         expect(screen.getByLabelText("New group")).toBeInTheDocument()
     })
 
-    test("asks signed-out visitors to sign in", async () => {
+    test("redirects signed-out visitors to login with a return path", async () => {
         testUser = null
         querySeeds.clear()
-        await renderAt("/groups")
+        localStorage.removeItem("nb:session")
+        const backend = createSeededClient({ seeds: querySeeds, calls: mutationCalls, mutateResult: "g9" })
+        const router = createRouter({
+            routeTree,
+            history: createMemoryHistory({ initialEntries: ["/groups"] }),
+            context: { queryClient: backend.queryClient },
+        })
+        await router.load()
+        render(
+            <ConvexProvider client={backend.client}>
+                <RouterProvider router={router} />
+            </ConvexProvider>,
+        )
 
         await waitFor(() => {
-            expect(screen.getByRole("link", { name: "Sign in" })).toBeInTheDocument()
+            expect(screen.getByRole("heading", { name: "Welcome back" })).toBeInTheDocument()
         })
+        expect(router.state.location.pathname).toBe("/login")
+        expect(router.state.location.search).toEqual({ redirect: "/groups" })
     })
 
     test("creates a group from the form", async () => {

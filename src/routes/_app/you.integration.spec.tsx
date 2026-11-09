@@ -78,6 +78,13 @@ function seedYou(): void {
 }
 
 async function renderAt(path: string): Promise<void> {
+    // Mirror the mocked auth into the localStorage slot hasCachedSession
+    // reads, or the _app beforeLoad redirects to login before render.
+    if (testUser === null) {
+        localStorage.removeItem("nb:session")
+    } else {
+        localStorage.setItem("nb:session", JSON.stringify(testUser))
+    }
     const backend = createSeededClient({ seeds: querySeeds, calls: mutationCalls, mutateResult: "p9" })
     const router = createRouter({
         routeTree,

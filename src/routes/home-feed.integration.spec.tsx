@@ -62,6 +62,9 @@ async function renderHome(
     feed: ReadonlyArray<RestaurantDoc>,
     friends: ReadonlyArray<{ authUserId: string; name: string }> = [],
 ): Promise<void> {
+    // The _app beforeLoad redirects without a cached session; auth here is
+    // always signed-in, so seed the slot hasCachedSession reads.
+    localStorage.setItem("nb:session", JSON.stringify({ id: "user-1", email: "alex@example.com", name: "Alex" }))
     const seeds = new Map<string, unknown>([[seedKey("friendships:listFriends", undefined), friends]])
     const backend = createSeededClient({ seeds, liveRows: feed })
     const router = createRouter({

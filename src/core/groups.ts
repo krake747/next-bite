@@ -27,5 +27,9 @@ export function isSafeRedirectPath(value: string | null | undefined): value is s
     if (typeof value !== "string" || !value.startsWith("/") || value.startsWith("//")) {
         return false
     }
-    return value === "/" || value.startsWith("/invite/") || value.startsWith("/groups/") || value === "/groups"
+    const exact = new Set(["/", "/home", "/friends", "/add", "/groups", "/you", "/account"])
+    if (exact.has(value)) {
+        return true
+    }
+    return value.startsWith("/invite/") || value.startsWith("/groups/") || value.startsWith("/restaurants/")
 }

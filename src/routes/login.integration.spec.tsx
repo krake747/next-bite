@@ -105,7 +105,17 @@ vi.mock("@api/auth.provider", async (importOriginal) => {
                     return fakeAuthStep("Could not send code")
                 },
                 verifyOtp: async (_email: string, _code: string) => {
-                    return fakeAuthStep("Invalid code")
+                    const ok = await fakeAuthStep("Invalid code")
+                    if (ok) {
+                        // Mirror the real store, which persists the session
+                        // before the page navigates: the _app beforeLoad
+                        // redirects without this cached session.
+                        localStorage.setItem(
+                            "nb:session",
+                            JSON.stringify({ id: "user-1", email: "alex@example.com", name: "Alex" }),
+                        )
+                    }
+                    return ok
                 },
                 signOut: noop,
             }
@@ -123,6 +133,7 @@ function seedAuthMethods(): void {
 }
 
 async function mountAt(path: string): Promise<AnyRouter> {
+    localStorage.removeItem("nb:session")
     const backend = createSeededClient({ seeds: querySeeds })
     const router = createRouter({
         routeTree,
