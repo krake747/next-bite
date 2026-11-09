@@ -59,6 +59,25 @@ Owned types carry `readonly` modifiers and `ReadonlyArray<T>`; unowned or inline
 use site with `Readonly<>`. Inline `export` and `use()` are lint-enforced (see `AGENTS.md`). Check
 in review.
 
+## Coupled lifecycles have explicit states and owners
+
+When related flags or fields jointly control a workflow, model its meaningful states and transitions
+explicitly, using a discriminated union or another small, centralized model. Keep independent
+toggles simple. No state-machine library or blanket rewrite is required.
+
+Name who owns each async operation and its results. A stale completion must not update a newer
+operation, draft, or session. Define success, failure, retry, cancel, and reset paths, including
+work that can finish after unmount.
+
+Canceling a request or timing out does not prove the server did not commit. For uncertain persisted
+operations, retain the operation identity and reconcile the result before retrying or cleaning up
+resources. Retries must be idempotent; cleanup must not delete committed or attached resources.
+
+Check: trace the reachable transitions and their guards, then read behavior tests for failure,
+retry, cancellation, reset, and late completion where relevant. Include uncertain server outcomes
+when persistence is involved. Tests should prove observable outcomes, not the chosen state
+representation.
+
 ## Tests assert behavior, not internals
 
 A test must fail when the behavior breaks and pass when only internals move. Tests that cannot fail
