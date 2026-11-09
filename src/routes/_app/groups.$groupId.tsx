@@ -176,10 +176,11 @@ function GroupRestaurantsSection({
         </ul>
     )
 }
+type InvitationLink = { readonly kind: "none" } | { readonly kind: "ready"; readonly token: string }
+
 function GroupInviteSection({ groupId }: Readonly<{ groupId: Id<"groups"> }>) {
     const createInvite = useCreateInvite()
     const revokeInvite = useRevokeInvite()
-    type InvitationLink = { readonly kind: "none" } | { readonly kind: "ready"; readonly token: string }
     const [token, setToken] = useState<InvitationLink>({ kind: "none" })
     const [error, setError] = useState<FormError>(clearError)
     const [copied, setCopied] = useState(false)

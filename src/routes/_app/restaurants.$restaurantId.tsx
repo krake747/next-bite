@@ -144,7 +144,12 @@ function DetailHero({
                                     likeCount: social.likeCount,
                                     onToggleLike: handleToggleLike,
                                     commentCount: social.comments.length,
-                                    onComment: () => {},
+                                    onComment: () => {
+                                        document.getElementById("detail-comments")?.scrollIntoView({
+                                            behavior: "smooth",
+                                            block: "start",
+                                        })
+                                    },
                                     wanted: social.wanted,
                                     wantCount: social.wantCount,
                                     onToggleWant: toggleWant,
@@ -242,7 +247,7 @@ function DetailComments({
     const isAuthenticated = auth.isAuthenticated
     const currentUser = auth.user?.name ?? auth.user?.email
     return (
-        <div className="rounded-card border border-border bg-surface p-4 shadow-card">
+        <div id="detail-comments" className="scroll-mt-4 rounded-card border border-border bg-surface p-4 shadow-card">
             <CommentList
                 comments={social.comments.map((comment) => ({
                     id: comment._id,
