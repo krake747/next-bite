@@ -37,7 +37,7 @@ function useConvexQueryResult<Query extends FunctionReference<"query">>(
     // disabled so no queryFn is needed, matching the old loading state.
     const skip = options?.skip ?? client === null
     const result = useQuery({
-        ...convexQueryOptions(query, args),
+        ...convexQueryOptions(query, args, options),
         enabled: !skip,
     })
     if (skip) {

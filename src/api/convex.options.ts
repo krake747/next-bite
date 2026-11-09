@@ -3,8 +3,19 @@ import { type FunctionArgs, type FunctionReference } from "convex/server"
 
 import { convexQuery } from "@convex-dev/react-query"
 
-export function convexQueryOptions<Query extends FunctionReference<"query">>(query: Query, args?: FunctionArgs<Query>) {
-    const shaped = convexQuery(query, (args ?? {}) as FunctionArgs<Query>)
+export function convexQueryOptions<Query extends FunctionReference<"query">>(
+    query: Query,
+    args?: FunctionArgs<Query>,
+    options?: Readonly<{ skip?: boolean | undefined }>,
+) {
+    // Skipped queries must carry the library's "skip" marker, not an empty
+    // args object: the connector subscribes cache entries by key shape alone,
+    // so a `{}` key would hit the backend (and fail validation) even while
+    // TanStack stays `enabled: false`.
+    const shaped =
+        options?.skip === true
+            ? convexQuery(query, "skip" as const)
+            : convexQuery(query, (args ?? {}) as FunctionArgs<Query>)
     return queryOptions({
         queryKey: shaped.queryKey,
         staleTime: shaped.staleTime ?? Infinity,
