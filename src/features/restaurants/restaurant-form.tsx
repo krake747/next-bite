@@ -1,4 +1,4 @@
-import { Form, reset, setInput, useField, useForm } from "@formisch/react"
+import { Form, reset, setInput, useField, useForm, type FormStore } from "@formisch/react"
 import { useEffect, useRef, useState } from "react"
 
 import { type Id } from "@api/data.model"
@@ -248,6 +248,80 @@ function useSubmitDraft(args: {
     return { submitPhase, handleSubmit, handleRetry }
 }
 
+type RestaurantFormStore = FormStore<typeof RestaurantSchema>
+
+function successFor(props: Readonly<RestaurantFormProps>): (restaurantId: Id<"restaurants"> | undefined) => void {
+    return (restaurantId) => {
+        if (props.mode === "add") {
+            if (restaurantId !== undefined) {
+                props.onSuccess(restaurantId)
+            }
+        } else {
+            props.onSuccess()
+        }
+    }
+}
+
+function applyPlaceSelection(
+    form: RestaurantFormStore,
+    selection: PlaceSelection,
+    nameInput: string | undefined,
+    cuisineInput: string | undefined,
+): void {
+    setInput(form, { path: ["location"], input: selection.address })
+    if (selection.lat !== undefined && selection.lng !== undefined) {
+        setInput(form, { path: ["lat"], input: selection.lat })
+        setInput(form, { path: ["lng"], input: selection.lng })
+    } else {
+        setInput(form, { path: ["lat"], input: undefined })
+        setInput(form, { path: ["lng"], input: undefined })
+    }
+    setInput(form, { path: ["placeId"], input: selection.placeId })
+    // Prefill only what the user has not typed yet; a pick never
+    // overwrites manual input.
+    if ((nameInput ?? "") === "" && selection.name !== undefined && selection.name !== "") {
+        setInput(form, { path: ["name"], input: selection.name })
+    }
+    if ((cuisineInput ?? "") === "") {
+        const suggested = suggestCuisine(selection.primaryType)
+        if (suggested !== undefined) {
+            setInput(form, { path: ["cuisine"], input: suggested })
+        }
+    }
+}
+
+function initialInputFor(props: Readonly<RestaurantFormProps>) {
+    return props.mode === "edit"
+        ? {
+              name: props.restaurant.name,
+              cuisine: props.restaurant.cuisine,
+              location: props.restaurant.address.label,
+              lat: props.restaurant.address.enrichment?.coords?.lat,
+              lng: props.restaurant.address.enrichment?.coords?.lng,
+              notes: props.restaurant.details?.notes ?? "",
+              link: props.restaurant.details?.link ?? "",
+              rating: props.restaurant.rating,
+          }
+        : props.initial !== undefined
+          ? { ...props.initial }
+          : undefined
+}
+
+function FormActions({
+    mode,
+    saving,
+    onCancel,
+}: Readonly<{ mode: "add" | "edit"; saving: boolean; onCancel: () => void }>) {
+    return (
+        <div className="flex justify-end gap-2 pt-2">
+            <Button type="button" tone="secondary" onClick={onCancel}>
+                Cancel
+            </Button>
+            <SubmitButton mode={mode} saving={saving} />
+        </div>
+    )
+}
+
 export function RestaurantForm(props: Readonly<RestaurantFormProps>) {
     const addRestaurantWithHours = useAddRestaurantWithHours()
     const updateRestaurant = useUpdateRestaurant()
@@ -259,24 +333,10 @@ export function RestaurantForm(props: Readonly<RestaurantFormProps>) {
         },
     })
 
+    const initialInput = initialInputFor(props)
     const form = useForm({
         schema: RestaurantSchema,
-        ...(props.mode === "edit"
-            ? {
-                  initialInput: {
-                      name: props.restaurant.name,
-                      cuisine: props.restaurant.cuisine,
-                      location: props.restaurant.address.label,
-                      lat: props.restaurant.address.enrichment?.coords?.lat,
-                      lng: props.restaurant.address.enrichment?.coords?.lng,
-                      notes: props.restaurant.details?.notes ?? "",
-                      link: props.restaurant.details?.link ?? "",
-                      rating: props.restaurant.rating,
-                  },
-              }
-            : props.initial !== undefined
-              ? { initialInput: { ...props.initial } }
-              : {}),
+        ...(initialInput !== undefined ? { initialInput } : {}),
     })
     const nameField = useField(form, { path: ["name"] })
     const cuisineField = useField(form, { path: ["cuisine"] })
@@ -288,40 +348,13 @@ export function RestaurantForm(props: Readonly<RestaurantFormProps>) {
             reset(form)
         },
         onDiscardReady: props.onDiscardReady,
-        onSuccess: (restaurantId) => {
-            if (props.mode === "add") {
-                if (restaurantId !== undefined) {
-                    props.onSuccess(restaurantId)
-                }
-            } else {
-                props.onSuccess()
-            }
-        },
+        onSuccess: successFor(props),
         add: addRestaurantWithHours.mutateAsync,
         update: updateRestaurant.mutateAsync,
     })
 
     const handleLocationChange = (selection: PlaceSelection) => {
-        setInput(form, { path: ["location"], input: selection.address })
-        if (selection.lat !== undefined && selection.lng !== undefined) {
-            setInput(form, { path: ["lat"], input: selection.lat })
-            setInput(form, { path: ["lng"], input: selection.lng })
-        } else {
-            setInput(form, { path: ["lat"], input: undefined })
-            setInput(form, { path: ["lng"], input: undefined })
-        }
-        setInput(form, { path: ["placeId"], input: selection.placeId })
-        // Prefill only what the user has not typed yet; a pick never
-        // overwrites manual input.
-        if ((nameField.input ?? "") === "" && selection.name !== undefined && selection.name !== "") {
-            setInput(form, { path: ["name"], input: selection.name })
-        }
-        if ((cuisineField.input ?? "") === "") {
-            const suggested = suggestCuisine(selection.primaryType)
-            if (suggested !== undefined) {
-                setInput(form, { path: ["cuisine"], input: suggested })
-            }
-        }
+        applyPlaceSelection(form, selection, nameField.input, cuisineField.input)
     }
 
     return (
@@ -338,18 +371,13 @@ export function RestaurantForm(props: Readonly<RestaurantFormProps>) {
                 }}
                 {...(props.mode === "edit" ? { restaurantId: props.restaurant._id } : {})}
             />
-            <div className="flex justify-end gap-2 pt-2">
-                <Button
-                    type="button"
-                    tone="secondary"
-                    onClick={() => {
-                        props.onCancel()
-                    }}
-                >
-                    Cancel
-                </Button>
-                <SubmitButton mode={props.mode} saving={submit.submitPhase.kind === "saving"} />
-            </div>
+            <FormActions
+                mode={props.mode}
+                saving={submit.submitPhase.kind === "saving"}
+                onCancel={() => {
+                    props.onCancel()
+                }}
+            />
             <SubmitPhaseBanner phase={submit.submitPhase} onRetry={submit.handleRetry} />
         </Form>
     )

@@ -1,22 +1,13 @@
-import { ArrowCounterClockwiseIcon, MagnifyingGlassIcon, PencilLineIcon, TrashIcon } from "@phosphor-icons/react"
-import { useNavigate } from "@tanstack/react-router"
 import { lazy, Suspense, useState } from "react"
 
-import {
-    useUpdateRestaurant,
-    useDeleteRestaurant,
-    useRefreshOpeningHours,
-    useLookupPlaceIdAndHours,
-    type Restaurant,
-} from "@core/restaurants"
-import { useAuth } from "@core/session"
+import { useUpdateRestaurant, useDeleteRestaurant, type Restaurant } from "@core/restaurants"
 import { emptySocialSummary, type RestaurantSocial, type RestaurantSocialSummary } from "@core/social"
 import { EmojiRating } from "@pattern/emoji-rating"
 import { Card } from "@ui/card"
-import { IconButton } from "@ui/icon-button"
 
 import { DeleteConfirmDialog } from "./delete-confirm-dialog"
 import { OpeningHoursDialog } from "./opening-hours-dialog"
+import { RestaurantCardActions } from "./restaurant-card-actions"
 import { RestaurantGallery } from "./restaurant-gallery"
 import { RestaurantHeader } from "./restaurant-header"
 import { RestaurantInterestButton } from "./restaurant-interest-button"
@@ -40,38 +31,11 @@ export function RestaurantCard({
     } & React.ComponentProps<typeof Card>
 >) {
     const [dialog, setDialog] = useState<"closed" | "hours" | "delete">("closed")
-    const [isRefreshing, setIsRefreshing] = useState(false)
-    const navigate = useNavigate()
     const updateRestaurant = useUpdateRestaurant()
     const deleteRestaurant = useDeleteRestaurant()
-    const auth = useAuth()
-    const refreshOpeningHours = useRefreshOpeningHours()
-    const lookupPlaceIdAndHours = useLookupPlaceIdAndHours()
 
     const enrichment = restaurant.address.enrichment
     const hasPlaceId = enrichment?.placeId !== undefined && enrichment?.placeId !== ""
-
-    const runHoursLookup = (lookup: {
-        mutate: (args: { restaurantId: Restaurant["_id"] }, opts: { onSettled: () => void }) => void
-    }) => {
-        setIsRefreshing(true)
-        lookup.mutate(
-            { restaurantId: restaurant._id },
-            {
-                onSettled: () => {
-                    setIsRefreshing(false)
-                },
-            },
-        )
-    }
-
-    const handleRefreshHours = () => {
-        runHoursLookup(refreshOpeningHours)
-    }
-
-    const handleFindHours = () => {
-        runHoursLookup(lookupPlaceIdAndHours)
-    }
 
     const handleDelete = () => {
         deleteRestaurant.mutate({ id: restaurant._id })
@@ -103,50 +67,14 @@ export function RestaurantCard({
                     name={restaurant.name}
                     cuisine={restaurant.cuisine}
                     actions={
-                        auth.isAuthenticated ? (
-                            <>
-                                {hasPlaceId ? (
-                                    <IconButton
-                                        label="Refresh hours"
-                                        size="sm"
-                                        disabled={isRefreshing}
-                                        onClick={handleRefreshHours}
-                                    >
-                                        <ArrowCounterClockwiseIcon className="size-3.5" />
-                                    </IconButton>
-                                ) : (
-                                    <IconButton
-                                        label="Find hours"
-                                        size="sm"
-                                        disabled={isRefreshing}
-                                        onClick={handleFindHours}
-                                    >
-                                        <MagnifyingGlassIcon className="size-3.5" />
-                                    </IconButton>
-                                )}
-                                <IconButton
-                                    label="Edit restaurant"
-                                    size="sm"
-                                    onClick={() => {
-                                        void navigate({
-                                            to: detailsHref ?? `/restaurants/${restaurant._id}`,
-                                        })
-                                    }}
-                                >
-                                    <PencilLineIcon className="size-3.5" />
-                                </IconButton>
-                                <IconButton
-                                    label="Delete restaurant"
-                                    size="sm"
-                                    tone="destructive"
-                                    onClick={() => {
-                                        setDialog("delete")
-                                    }}
-                                >
-                                    <TrashIcon className="size-3.5" />
-                                </IconButton>
-                            </>
-                        ) : undefined
+                        <RestaurantCardActions
+                            restaurantId={restaurant._id}
+                            detailsHref={detailsHref}
+                            hasPlaceId={hasPlaceId}
+                            onDeleteRequest={() => {
+                                setDialog("delete")
+                            }}
+                        />
                     }
                 />
                 <RestaurantHeader

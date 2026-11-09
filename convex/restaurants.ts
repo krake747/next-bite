@@ -12,7 +12,15 @@ import {
 } from "../src/core/restaurant.details"
 import { internal } from "./_generated/api"
 import { type Doc, type Id } from "./_generated/dataModel"
-import { query, mutation, action, internalQuery, internalMutation, type MutationCtx } from "./_generated/server"
+import {
+    query,
+    mutation,
+    action,
+    internalQuery,
+    internalMutation,
+    type ActionCtx,
+    type MutationCtx,
+} from "./_generated/server"
 import { googleMapsApiKey } from "./env"
 import { requireOwnedRestaurant, formatDisplayName, adjustStatsCounters, requireUserId } from "./helpers"
 import { coordsValidator, enrichmentValidator, openingHoursValidator, restaurantImageValidator } from "./validators"
@@ -480,6 +488,93 @@ export const feed = query({
     },
 })
 
+type AttachableUpload = {
+    readonly image: ImageInput
+    readonly record: NonNullable<UploadRecord>
+}
+
+type SubmittedImage = Infer<typeof restaurantImageValidator>
+
+async function collectAttachableUploads(
+    ctx: ActionCtx,
+    userId: string,
+    images: ReadonlyArray<SubmittedImage>,
+): Promise<AttachableUpload[]> {
+    const attachable: AttachableUpload[] = []
+    for (const img of images) {
+        const record = await ctx.runQuery(internal.uploads.lookupByStorage, { storageId: img.storageId })
+        assertAttachable(record, userId, null)
+        attachable.push({ image: img, record })
+    }
+    return attachable
+}
+
+async function resolveGooglePlace(
+    name: string,
+    addressLabel: string,
+    placeId: string | undefined,
+): Promise<GooglePlaceResult> {
+    // A client-held placeId (from the Places picker) wins over the
+    // name/address guess: the user already confirmed the exact place.
+    const providedPlaceId = placeId !== undefined && placeId !== "" ? placeId : undefined
+    if (providedPlaceId !== undefined) {
+        return { placeId: providedPlaceId, lat: undefined, lng: undefined }
+    }
+    return lookupPlaceIdFromGoogle(name, addressLabel)
+}
+
+function resolveCoords(
+    google: GooglePlaceResult,
+    fallback: { lat: number; lng: number } | undefined,
+): { lat: number; lng: number } | undefined {
+    if (google.lat !== undefined && google.lng !== undefined) {
+        return { lat: google.lat, lng: google.lng }
+    }
+    return fallback
+}
+
+async function resolveOpeningHours(placeId: string | undefined): Promise<OpeningHoursData | undefined> {
+    if (placeId === undefined || placeId === "") {
+        return undefined
+    }
+    return fetchOpeningHoursFromGoogle(placeId)
+}
+
+async function enrichAttachedImages(
+    ctx: ActionCtx,
+    attachable: ReadonlyArray<AttachableUpload>,
+    images: ReadonlyArray<SubmittedImage>,
+    userId: string,
+    ownerName: string,
+): Promise<ReturnType<typeof withServerMetadata>[]> {
+    return Promise.all(
+        attachable.map(async ({ image, record }) => {
+            const url =
+                (await ctx.storage.getUrl(image.storageId)) ??
+                images.find((candidate) => candidate.storageId === image.storageId)?.url
+            if (url === undefined) {
+                throw new Error("Uploaded image is missing its URL")
+            }
+            return withServerMetadata(image, { ownerId: userId, displayName: ownerName }, record, url)
+        }),
+    )
+}
+
+async function attachInsertedImages(
+    ctx: ActionCtx,
+    enrichedImages: ReadonlyArray<ReturnType<typeof withServerMetadata>>,
+    userId: string,
+    restaurantId: Id<"restaurants">,
+): Promise<void> {
+    for (const img of enrichedImages) {
+        await ctx.runMutation(internal.uploads.attach, {
+            storageId: img.storageId,
+            ownerId: userId,
+            restaurantId,
+        })
+    }
+}
+
 export const addWithOpeningHours = action({
     args: {
         name: v.string(),
@@ -497,45 +592,16 @@ export const addWithOpeningHours = action({
         assertRestaurantText(args)
         const images = args.images ?? []
         assertImageLimit(images)
-        const attachable: { image: ImageInput; record: NonNullable<UploadRecord> }[] = []
-        for (const img of images) {
-            const record = await ctx.runQuery(internal.uploads.lookupByStorage, { storageId: img.storageId })
-            assertAttachable(record, userId, null)
-            attachable.push({ image: img, record })
-        }
+        const attachable = await collectAttachableUploads(ctx, userId, images)
 
-        // A client-held placeId (from the Places picker) wins over the
-        // name/address guess: the user already confirmed the exact place.
-        const providedPlaceId = args.placeId !== undefined && args.placeId !== "" ? args.placeId : undefined
-        const google =
-            providedPlaceId !== undefined
-                ? { placeId: providedPlaceId, lat: undefined, lng: undefined }
-                : await lookupPlaceIdFromGoogle(args.name, args.addressLabel)
-
-        const coords =
-            google.lat !== undefined && google.lng !== undefined
-                ? { lat: google.lat, lng: google.lng }
-                : (args.coords ?? undefined)
-
-        let openingHours: OpeningHoursData | undefined
-        if (google.placeId !== undefined && google.placeId !== "") {
-            openingHours = await fetchOpeningHoursFromGoogle(google.placeId)
-        }
+        const google = await resolveGooglePlace(args.name, args.addressLabel, args.placeId)
+        const coords = resolveCoords(google, args.coords ?? undefined)
+        const openingHours = await resolveOpeningHours(google.placeId)
 
         const enrichment = buildEnrichment({ placeId: google.placeId, coords, openingHours })
         const ownerName = await ctx.runQuery(internal.restaurants._profileNameByAuthUser, { authUserId: userId })
         const details = cleanDetails({ notes: args.notes, link: args.link })
-        const enrichedImages = await Promise.all(
-            attachable.map(async ({ image, record }) => {
-                const url =
-                    (await ctx.storage.getUrl(image.storageId)) ??
-                    images.find((candidate) => candidate.storageId === image.storageId)?.url
-                if (url === undefined) {
-                    throw new Error("Uploaded image is missing its URL")
-                }
-                return withServerMetadata(image, { ownerId: userId, displayName: ownerName }, record, url)
-            }),
-        )
+        const enrichedImages = await enrichAttachedImages(ctx, attachable, images, userId, ownerName)
         const { restaurantId, duplicate } = await ctx.runMutation(internal.restaurants._insertRestaurant, {
             ownerId: userId,
             ownerName,
@@ -551,13 +617,7 @@ export const addWithOpeningHours = action({
         })
         // A duplicate retry returns the first call's id; its images are already attached.
         if (!duplicate) {
-            for (const img of enrichedImages) {
-                await ctx.runMutation(internal.uploads.attach, {
-                    storageId: img.storageId,
-                    ownerId: userId,
-                    restaurantId,
-                })
-            }
+            await attachInsertedImages(ctx, enrichedImages, userId, restaurantId)
         }
         return restaurantId
     },

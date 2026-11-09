@@ -85,6 +85,75 @@ async function processAndUpload(file: File, uploadImage: (file: File) => Promise
     return uploadImage(processedFile)
 }
 
+type UploadBatchDeps = {
+    readonly files: FileListLike
+    readonly existingCount: number
+    readonly maxFiles: number
+    readonly uploadImage: (file: Readonly<File>) => Promise<ImageRecord>
+    readonly claimBatch: () => () => boolean
+    readonly isMounted: () => boolean
+    readonly getLatestImages: () => ReadonlyArray<Readonly<ImageRecord>>
+    readonly cleanup: (args: { storageId: Id<"_storage"> }) => Promise<unknown>
+    readonly onImagesChange: (images: ReadonlyArray<Readonly<ImageRecord>>) => void
+    readonly setUploading: (uploading: boolean) => void
+    readonly setUploadError: (error: FormError) => void
+}
+
+async function discardStaleUpload(deps: UploadBatchDeps, result: ImageRecord): Promise<void> {
+    if (deps.isMounted()) {
+        deps.onImagesChange(mergeImages(deps.getLatestImages(), [result]))
+        return
+    }
+    await deps.cleanup({ storageId: result.storageId }).catch((error: unknown) => {
+        console.warn("Failed to cleanup cancelled upload:", result.storageId, error)
+    })
+}
+
+async function publishUpload(
+    deps: UploadBatchDeps,
+    uploaded: ImageRecord,
+    isCurrent: () => boolean,
+    published: ImageRecord[],
+): Promise<boolean> {
+    if (!isCurrent()) {
+        await discardStaleUpload(deps, uploaded)
+        return false
+    }
+    published.push(uploaded)
+    deps.onImagesChange(mergeImages(deps.getLatestImages(), published))
+    return true
+}
+
+async function runUploadBatch(deps: UploadBatchDeps): Promise<void> {
+    const filesToProcess = prepareFilesList(deps.files, deps.existingCount, deps.maxFiles)
+    if (filesToProcess.length === 0) {
+        return
+    }
+    const isCurrent = deps.claimBatch()
+    deps.setUploading(true)
+    deps.setUploadError(clearError)
+    const published: ImageRecord[] = []
+    try {
+        for (const file of filesToProcess) {
+            if (!isCurrent()) {
+                break
+            }
+            const uploaded = await processAndUpload(file, deps.uploadImage)
+            if (!(await publishUpload(deps, uploaded, isCurrent, published))) {
+                break
+            }
+        }
+    } catch (error) {
+        if (isCurrent()) {
+            deps.setUploadError(toUploadError(error))
+        }
+    } finally {
+        if (isCurrent()) {
+            deps.setUploading(false)
+        }
+    }
+}
+
 export function ImageUpload(props: Readonly<ImageUploadProps>) {
     const uploadImage = useUploadImage()
     const cleanupStorage = useCleanupStorage()
@@ -108,75 +177,33 @@ export function ImageUpload(props: Readonly<ImageUploadProps>) {
         }
     }, [])
 
-    const handleStaleCompletion = async (result: ImageRecord): Promise<void> => {
-        if (mountedRef.current) {
-            props.onImagesChange(mergeImages(latestImagesRef.current, [result]))
-        } else {
-            await cleanupStorage.mutateAsync({ storageId: result.storageId }).catch((error: unknown) => {
-                console.warn("Failed to cleanup cancelled upload:", result.storageId, error)
-            })
-        }
-    }
-
-    const trackUpload = async (
-        uploaded: ImageRecord,
-        isCurrent: () => boolean,
-        published: ImageRecord[],
-    ): Promise<boolean> => {
-        if (!isCurrent()) {
-            await handleStaleCompletion(uploaded)
-            return false
-        }
-        published.push(uploaded)
-        props.onImagesChange(mergeImages(latestImagesRef.current, published))
-        return true
+    const claimBatch = () => {
+        const batch = batchRef.current + 1
+        batchRef.current = batch
+        return () => batchRef.current === batch
     }
 
     const handleFiles = async (files: FileListLike) => {
-        const filesToProcess = prepareFilesList(files, props.images.length, props.maxFiles ?? MAX_IMAGES)
-        if (filesToProcess.length === 0) {
-            return
-        }
-
-        const batch = batchRef.current + 1
-        batchRef.current = batch
-        const isCurrent = () => batchRef.current === batch
-
-        setIsUploading(true)
-        setUploadError(clearError)
-
-        const published: ImageRecord[] = []
-        try {
-            for (const file of filesToProcess) {
-                if (!isCurrent()) {
-                    break
-                }
-                const uploaded = await processAndUpload(file, uploadImage)
-                if (!(await trackUpload(uploaded, isCurrent, published))) {
-                    break
-                }
-            }
-        } catch (error) {
-            if (isCurrent()) {
-                setUploadError(toUploadError(error))
-            }
-        } finally {
-            if (isCurrent()) {
-                setIsUploading(false)
-            }
-        }
+        await runUploadBatch({
+            files,
+            existingCount: props.images.length,
+            maxFiles: props.maxFiles ?? MAX_IMAGES,
+            uploadImage,
+            claimBatch,
+            isMounted: () => mountedRef.current,
+            getLatestImages: () => latestImagesRef.current,
+            cleanup: async (args) => {
+                await cleanupStorage.mutateAsync(args)
+            },
+            onImagesChange: props.onImagesChange,
+            setUploading: setIsUploading,
+            setUploadError,
+        })
     }
 
     return (
         <div className="space-y-4">
-            {props.variant !== "avatar" && (
-                <div className="flex items-center justify-between">
-                    <span className="text-sm font-medium text-foreground">Images</span>
-                    <span className="text-xs text-muted-foreground">
-                        {props.images.length}/{props.maxFiles ?? MAX_IMAGES}
-                    </span>
-                </div>
-            )}
+            <UploadHeader variant={props.variant} count={props.images.length} maxFiles={props.maxFiles ?? MAX_IMAGES} />
 
             <ImageGrid
                 images={props.images}
@@ -197,12 +224,45 @@ export function ImageUpload(props: Readonly<ImageUploadProps>) {
                 }}
             />
 
-            {props.variant !== "avatar" && isUploading && (
+            <UploadStatus variant={props.variant} isUploading={isUploading} uploadError={uploadError} />
+        </div>
+    )
+}
+
+function UploadHeader({
+    variant,
+    count,
+    maxFiles,
+}: Readonly<{
+    variant: "gallery" | "avatar" | undefined
+    count: number
+    maxFiles: number
+}>) {
+    if (variant === "avatar") {
+        return null
+    }
+    return (
+        <div className="flex items-center justify-between">
+            <span className="text-sm font-medium text-foreground">Images</span>
+            <span className="text-xs text-muted-foreground">
+                {count}/{maxFiles}
+            </span>
+        </div>
+    )
+}
+
+function UploadStatus({
+    variant,
+    isUploading,
+    uploadError,
+}: Readonly<{ variant: "gallery" | "avatar" | undefined; isUploading: boolean; uploadError: FormError }>) {
+    return (
+        <>
+            {variant !== "avatar" && isUploading && (
                 <p className="text-center text-sm text-muted-foreground">Uploading…</p>
             )}
-
             {uploadError.kind === "error" && <p className="text-sm text-destructive">{uploadError.message}</p>}
-        </div>
+        </>
     )
 }
 
