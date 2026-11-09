@@ -93,7 +93,9 @@ export function ImageUpload(props: Readonly<ImageUploadProps>) {
     const batchRef = useRef(0)
     const mountedRef = useRef(true)
     const latestImagesRef = useRef(props.images)
-    latestImagesRef.current = props.images
+    useEffect(() => {
+        latestImagesRef.current = props.images
+    }, [props.images])
 
     // A batch is owned by the mount that started it. Closing or unmounting the
     // dialog invalidates in-flight batches. While mounted, a late completion

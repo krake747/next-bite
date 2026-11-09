@@ -2,28 +2,17 @@ import { Select as BaseSelect } from "@base-ui/react/select"
 import { type FieldElementProps } from "@formisch/react"
 import { CaretDownIcon, CheckIcon, WarningCircleIcon } from "@phosphor-icons/react"
 import { useEffect, useId, useRef } from "react"
-import * as v from "valibot"
 
 import { cx } from "@ui/cva.config"
 import { control, fieldLabel } from "@ui/variants"
-
-const changeHandlerSchema = v.custom<FieldElementProps["onChange"]>(
-    (value) => typeof value === "function",
-    "Expected a change handler function",
-)
-
-const refCallbackSchema = v.custom<FieldElementProps["ref"]>(
-    (value) => typeof value === "function",
-    "Expected a ref callback function",
-)
 
 export function FieldWrapper({ children }: Readonly<{ children: React.ReactNode }>) {
     return <div className="flex flex-col gap-1.5">{children}</div>
 }
 
 type InputProps = Omit<FieldElementProps, "onChange" | "ref"> & {
-    readonly onChange: unknown
-    readonly ref: unknown
+    readonly onChange: FieldElementProps["onChange"]
+    readonly ref: FieldElementProps["ref"]
     readonly type?: string | undefined
     readonly placeholder?: string | undefined
     readonly label?: string | undefined
@@ -39,9 +28,7 @@ function hasErrors(errors: Readonly<[string, ...string[]]> | null): boolean {
 export function Input(props: Readonly<InputProps>) {
     const fallbackId = useId()
     const errorId = useId()
-    const { input, errors, type, placeholder, label, id, onChange, ref, ...inputProps } = props
-    const handleChange = v.parse(changeHandlerSchema, onChange)
-    const inputRef = v.parse(refCallbackSchema, ref)
+    const { input, errors, type, placeholder, label, id, onChange: handleChange, ref: inputRef, ...inputProps } = props
     const inputId = id ?? fallbackId
     const invalid = hasErrors(errors)
     return (
@@ -72,8 +59,8 @@ export function Input(props: Readonly<InputProps>) {
 }
 
 type TextareaProps = Omit<FieldElementProps, "onChange" | "ref"> & {
-    readonly onChange: unknown
-    readonly ref: unknown
+    readonly onChange: FieldElementProps["onChange"]
+    readonly ref: FieldElementProps["ref"]
     readonly placeholder?: string | undefined
     readonly label?: string | undefined
     readonly id?: string | undefined
@@ -85,9 +72,17 @@ type TextareaProps = Omit<FieldElementProps, "onChange" | "ref"> & {
 export function Textarea(props: Readonly<TextareaProps>) {
     const fallbackId = useId()
     const errorId = useId()
-    const { input, errors, placeholder, rows, label, id, onChange, ref, ...textareaProps } = props
-    const handleChange = v.parse(changeHandlerSchema, onChange)
-    const textareaRef = v.parse(refCallbackSchema, ref)
+    const {
+        input,
+        errors,
+        placeholder,
+        rows,
+        label,
+        id,
+        onChange: handleChange,
+        ref: textareaRef,
+        ...textareaProps
+    } = props
     const textareaId = id ?? fallbackId
     const invalid = hasErrors(errors)
     return (
@@ -123,8 +118,8 @@ type SelectOption = {
 }
 
 type SelectProps = Omit<FieldElementProps, "onChange" | "ref"> & {
-    readonly onChange: unknown
-    readonly ref: unknown
+    readonly onChange: FieldElementProps["onChange"]
+    readonly ref: FieldElementProps["ref"]
     readonly options: ReadonlyArray<SelectOption>
     readonly label?: string | undefined
     readonly id?: string | undefined
@@ -136,9 +131,7 @@ export function Select(props: Readonly<SelectProps>) {
     const fallbackId = useId()
     const labelId = useId()
     const errorId = useId()
-    const { input, errors, options, label, id, onChange, ref, ...selectProps } = props
-    const handleChange = v.parse(changeHandlerSchema, onChange)
-    const selectRef = v.parse(refCallbackSchema, ref)
+    const { input, errors, options, label, id, onChange: handleChange, ref: selectRef, ...selectProps } = props
     const selectId = id ?? fallbackId
     const hiddenRef = useRef<HTMLSelectElement | null>(null)
     const value = input ?? ""

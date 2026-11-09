@@ -1,3 +1,4 @@
+import { type FieldElement, type FieldElementProps } from "@formisch/react"
 import { describe, expect, test, vi } from "vitest"
 import { render } from "vitest-browser-react"
 
@@ -10,9 +11,9 @@ const options = [
 ]
 
 async function setup(input: string | undefined) {
-    const onChange = vi.fn<(event: Event) => void>()
-    let hiddenElement: HTMLSelectElement | null = null
-    const ref = vi.fn<(element: HTMLSelectElement | null) => void>((element) => {
+    const onChange = vi.fn<FieldElementProps["onChange"]>()
+    let hiddenElement: FieldElement | null = null
+    const ref = vi.fn<FieldElementProps["ref"]>((element) => {
         hiddenElement = element
     })
     const screen = await render(

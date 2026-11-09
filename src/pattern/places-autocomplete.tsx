@@ -79,10 +79,10 @@ function mountAutocomplete(params: {
     container: HTMLDivElement
     inputId: string
     locationBias: Bias
-    onChange: PlacesAutocompleteProps["onChange"]
+    onChangeRef: { readonly current: PlacesAutocompleteProps["onChange"] }
     setUseFallback: (visible: boolean) => void
 }): () => void {
-    const { placesLib, container, inputId, locationBias, onChange, setUseFallback } = params
+    const { placesLib, container, inputId, locationBias, onChangeRef, setUseFallback } = params
     const autocompleteElement = new placesLib.PlaceAutocompleteElement({
         includedPrimaryTypes: ["establishment"],
         locationBias: { ...locationBias },
@@ -93,7 +93,7 @@ function mountAutocomplete(params: {
     autocompleteElement.className = control()
 
     const onSelect = (event: Event) => {
-        handlePlaceSelectEvent(event, onChange)
+        handlePlaceSelectEvent(event, onChangeRef.current)
     }
     autocompleteElement.addEventListener("gmp-select", onSelect)
 
@@ -126,6 +126,11 @@ export function PlacesAutocomplete({
     const [useFallback, setUseFallback] = useState(true)
     const fallbackId = useId()
     const inputId = id ?? fallbackId
+    const onChangeRef = useRef(onChange)
+    useEffect(() => {
+        onChangeRef.current = onChange
+    }, [onChange])
+    const biasKey = `${locationBias.north},${locationBias.south},${locationBias.east},${locationBias.west}`
 
     useEffect(() => {
         const container = containerRef.current
@@ -138,14 +143,15 @@ export function PlacesAutocomplete({
             container,
             inputId,
             locationBias,
-            onChange,
+            onChangeRef,
             setUseFallback,
         })
         return () => {
             cleanup()
             initializedRef.current = false
         }
-    }, [placesLib, onChange, inputId, locationBias])
+        // biasKey is the value-identity of locationBias; onChange flows via ref so typing never remounts the element
+    }, [placesLib, inputId, biasKey])
 
     return (
         <div data-slot="places-autocomplete" className="flex flex-col gap-1.5">

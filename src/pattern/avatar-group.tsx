@@ -24,11 +24,18 @@ export function AvatarGroup({
         members.length === 0
             ? "No friends yet"
             : `${members.map((member) => member.name).join(", ")}${overflow > 0 ? ` and ${overflow} more` : ""}`
+    const seen = new Map<string, number>()
+    const keyFor = (member: AvatarMember): string => {
+        const base = `${member.name}__${member.src ?? ""}`
+        const occurrence = seen.get(base) ?? 0
+        seen.set(base, occurrence + 1)
+        return occurrence === 0 ? base : `${base}__${occurrence}`
+    }
 
     return (
         <div data-slot="avatar-group" className={cx("flex items-center", className)} role="group" aria-label={label}>
             {visible.map((member, index) => (
-                <Avatar key={`${member.name}-${index}`} size="sm" ring="surface" className={cx(index > 0 && "-ml-2")}>
+                <Avatar key={keyFor(member)} size="sm" ring="surface" className={cx(index > 0 ? "-ml-2" : undefined)}>
                     <AvatarImage src={member.src} alt={member.name} />
                     <AvatarFallback name={member.name} />
                 </Avatar>

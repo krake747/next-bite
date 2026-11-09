@@ -10,12 +10,18 @@ export function GalleryGrid({
     onSelect: (index: number) => void
     className?: string | undefined
 }>) {
+    const seen = new Map<string, number>()
+    const keyFor = (imageUrl: string): string => {
+        const occurrence = seen.get(imageUrl) ?? 0
+        seen.set(imageUrl, occurrence + 1)
+        return occurrence === 0 ? imageUrl : `${imageUrl}__${occurrence}`
+    }
     return (
         <div data-slot="gallery-grid" className={cx("flex-1 overflow-y-auto p-4", className)}>
             <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4">
                 {images.map((imageUrl, index) => (
                     <button
-                        key={`${imageUrl}-${index}`}
+                        key={keyFor(imageUrl)}
                         type="button"
                         onClick={() => {
                             onSelect(index)

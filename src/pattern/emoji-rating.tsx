@@ -35,15 +35,6 @@ const RATING_COLORS = [
     "oklch(0.9446 0.0248 29.93)",
 ] as const
 
-type FocusableButton = Readonly<{
-    readonly focus: (options: Readonly<{ readonly preventScroll: boolean }>) => void
-}>
-
-type RateClickEvent = Readonly<{
-    readonly preventDefault: () => void
-    readonly currentTarget: FocusableButton
-}>
-
 export function EmojiRating({
     rating,
     defaultRating,
@@ -74,7 +65,7 @@ export function EmojiRating({
 
     const activeColor = displayRating !== undefined ? RATING_COLORS[displayRating] : "oklch(0.5234 0.1645 33.24)"
 
-    const handleRate = async (index: number, button: FocusableButton) => {
+    const handleRate = async (index: number, button: HTMLButtonElement) => {
         if (!isControlled) {
             setUncontrolled(index)
         }
@@ -103,9 +94,9 @@ export function EmojiRating({
                                     setHoverRating(index)
                                 }
                             }}
-                            onClick={(e: RateClickEvent) => {
-                                e.preventDefault()
-                                void handleRate(index, e.currentTarget)
+                            onClick={(event: React.MouseEvent<HTMLButtonElement>) => {
+                                event.preventDefault()
+                                void handleRate(index, event.currentTarget)
                             }}
                             aria-label={EMOJI_LABELS[index]}
                             aria-pressed={isActive}

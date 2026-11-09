@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useEffect, useState } from "react"
 
 import { AspectRatio } from "@ui/aspect-ratio"
 import { cx } from "@ui/cva.config"
@@ -46,13 +46,18 @@ type LazyImageProps = {
     readonly decoding?: "sync" | "async" | "auto" | undefined
     readonly ratio?: number | undefined
     readonly className?: string | undefined
-    readonly style?: Readonly<{ readonly transform?: string }> | undefined
+    readonly style?: React.CSSProperties | undefined
     readonly draggable?: boolean | undefined
 }
 
 export function LazyImage({ src, alt, ratio, className, loading, decoding, ...imgProps }: Readonly<LazyImageProps>) {
     const [isLoaded, setIsLoaded] = useState(src !== undefined && src !== "" ? loadedImages.has(src) : false)
     const [hasError, setHasError] = useState(false)
+
+    useEffect(() => {
+        setIsLoaded(src !== undefined && src !== "" ? loadedImages.has(src) : false)
+        setHasError(false)
+    }, [src])
 
     const handleLoad = () => {
         if (src !== undefined && src !== "") {
@@ -92,7 +97,7 @@ export function LazyImage({ src, alt, ratio, className, loading, decoding, ...im
 
     if (ratio === undefined) {
         return (
-            <div data-slot="lazy-image" className="relative overflow-hidden">
+            <div data-slot="lazy-image" className={cx("relative overflow-hidden", className)}>
                 {content}
             </div>
         )
