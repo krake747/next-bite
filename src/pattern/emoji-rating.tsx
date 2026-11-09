@@ -26,6 +26,11 @@ const EMOJI_TITLES: Record<(typeof RATING_EMOJIS)[number], string> = {
 
 const RATING_COLORS = ["#b53920", "#db573d", "#eb6348", "#7d2b1f", "#f58974", "#fab5a7", "#fde7e3"] as const
 
+export function ratingEmoji(rating: number | null): string | null {
+    if (rating === null) return null
+    return RATING_EMOJIS[rating] ?? null
+}
+
 export function EmojiRating({
     rating,
     onRate,

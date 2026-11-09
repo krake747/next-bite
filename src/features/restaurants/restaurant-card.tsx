@@ -7,6 +7,7 @@ import MapPin from "lucide-react/icons/map-pin"
 import Navigation from "lucide-react/icons/navigation"
 import RotateCcw from "lucide-react/icons/rotate-ccw"
 import Search from "lucide-react/icons/search"
+import Share2 from "lucide-react/icons/share-2"
 import SquarePen from "lucide-react/icons/square-pen"
 import Trash2 from "lucide-react/icons/trash-2"
 import Utensils from "lucide-react/icons/utensils"
@@ -30,6 +31,7 @@ import { Card } from "@ui/card"
 import { OpeningHours } from "@ui/opening-hours"
 import { OpeningHoursDialog } from "@ui/opening-hours-dialog"
 
+import { BitePosterDialog } from "./bite-poster"
 import { EditRestaurantDialog } from "./edit-restaurant-dialog"
 
 export function RestaurantCard({ restaurant, ...cardProps }: { restaurant: Restaurant } & ComponentProps<typeof Card>) {
@@ -37,6 +39,7 @@ export function RestaurantCard({ restaurant, ...cardProps }: { restaurant: Resta
     const [showGallery, setShowGallery] = useState(false)
     const [showMap, setShowMap] = useState(false)
     const [showHours, setShowHours] = useState(false)
+    const [showPoster, setShowPoster] = useState(false)
     const [isRefreshing, setIsRefreshing] = useState(false)
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
     const updateRestaurant = useUpdateRestaurant()
@@ -102,6 +105,7 @@ export function RestaurantCard({ restaurant, ...cardProps }: { restaurant: Resta
                     setShowEdit={setShowEdit}
                     setShowGallery={setShowGallery}
                     setShowDeleteConfirm={setShowDeleteConfirm}
+                    setShowPoster={setShowPoster}
                     isAuthenticated={auth.isAuthenticated}
                     isRefreshing={isRefreshing}
                     hasPlaceId={hasPlaceId}
@@ -127,6 +131,7 @@ export function RestaurantCard({ restaurant, ...cardProps }: { restaurant: Resta
             </Card>
 
             <EditRestaurantDialog show={showEdit} onOpenChange={setShowEdit} restaurant={restaurant} />
+            <BitePosterDialog show={showPoster} onOpenChange={setShowPoster} restaurant={restaurant} />
             <ImageGalleryModal images={imageUrls} show={showGallery} onOpenChange={setShowGallery} />
             <OpeningHoursDialog
                 show={showHours}
@@ -152,6 +157,7 @@ function RestaurantCardImage({
     setShowEdit,
     setShowGallery,
     setShowDeleteConfirm,
+    setShowPoster,
     isAuthenticated,
     isRefreshing,
     hasPlaceId,
@@ -165,6 +171,7 @@ function RestaurantCardImage({
     setShowEdit: (show: boolean) => void
     setShowGallery: (show: boolean) => void
     setShowDeleteConfirm: (show: boolean) => void
+    setShowPoster: (show: boolean) => void
     isAuthenticated: boolean
     isRefreshing: boolean
     hasPlaceId: boolean
@@ -229,6 +236,15 @@ function RestaurantCardImage({
                             <Search className="size-3.5" aria-hidden="true" />
                         </button>
                     )}
+                    <button
+                        type="button"
+                        onClick={() => setShowPoster(true)}
+                        aria-label="Share poster"
+                        className="flex h-7 w-7 items-center justify-center rounded-full bg-white/90 text-neutral-600 shadow-md backdrop-blur-sm transition-all duration-200 hover:bg-white hover:text-neutral-900 hover:shadow-lg"
+                        title="Share poster"
+                    >
+                        <Share2 className="size-3.5" aria-hidden="true" />
+                    </button>
                     <button
                         type="button"
                         onClick={() => setShowEdit(true)}
