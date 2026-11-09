@@ -1,11 +1,10 @@
 {
     "$schema": "./node_modules/fallow/schema.json",
-    "entry": ["src/index.{ts,tsx,js,jsx}", "src/main.{ts,tsx,js,jsx}"],
     "workspaces": {
         "patterns": ["."]
     },
     "duplicates": {
-        "minOccurrences": 3
+        "minOccurrences": 5
     },
     "rules": {
         "unused-dependencies": "warn",
@@ -13,9 +12,15 @@
         "unused-file": "warn",
         "boundary-violation": "error"
     },
+    "audit": {
+        "deadCodeBaseline": "fallow/baseline.dead-code.json",
+        "healthBaseline": "fallow/baseline.health.json"
+    },
+    "ignoreFindings": ["cloudflare.config.ts", "doctor.config.ts"],
     "boundaries": {
         "zones": [
             { "name": "core", "patterns": ["src/core/**"] },
+            { "name": "api", "patterns": ["src/api/**"] },
             { "name": "ui", "patterns": ["src/ui/**"] },
             { "name": "pattern", "patterns": ["src/pattern/**"] },
             { "name": "features", "patterns": ["src/features/**"] },
@@ -23,11 +28,15 @@
             { "name": "convex", "patterns": ["convex/**"] }
         ],
         "rules": [
-            { "from": "core", "allow": ["core", "convex", "ui"] },
-            { "from": "ui", "allow": ["core", "ui"] },
-            { "from": "pattern", "allow": ["core", "ui", "pattern", "convex"] },
-            { "from": "features", "allow": ["core", "ui", "pattern", "features", "convex"] },
-            { "from": "routes", "allow": ["core", "ui", "pattern", "features", "convex", "routes"] },
+            { "from": "core", "allow": ["core", "api", "convex"] },
+            { "from": "api", "allow": ["api", "convex", "core"] },
+            { "from": "ui", "allow": ["ui"] },
+            { "from": "pattern", "allow": ["core", "ui", "pattern", "api"], "allowTypeOnly": ["convex"] },
+            { "from": "features", "allow": ["core", "ui", "pattern", "api"], "allowTypeOnly": ["convex"] },
+            {
+                "from": "routes",
+                "allow": ["core", "ui", "pattern", "features", "api", "convex", "routes"]
+            },
             { "from": "convex", "allow": ["convex", "core"] }
         ]
     }

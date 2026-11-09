@@ -1,7 +1,9 @@
-import type { ComponentProps } from "react"
+import { cx } from "@ui/cva.config"
 
-import { cx } from "@ui/variants"
-
-export function Skeleton({ className, ...props }: ComponentProps<"div">) {
-    return <div {...props} className={cx("animate-pulse rounded-lg bg-neutral-200 dark:bg-neutral-700", className)} />
+export function Skeleton({ className, children, ...props }: Readonly<React.ComponentProps<"div">>) {
+    return (
+        <div data-slot="skeleton" className={cx("animate-pulse rounded-control bg-stone-200", className)} {...props}>
+            {children}
+        </div>
+    )
 }

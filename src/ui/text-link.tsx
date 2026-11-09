@@ -1,19 +1,24 @@
-import { Link } from "@tanstack/react-router"
-import type { ComponentProps } from "react"
+import { useRender } from "@base-ui/react/use-render"
 
-import { cx } from "@ui/variants"
+import { cx } from "@ui/cva.config"
+import { focusRing } from "@ui/variants"
 
-type TextLinkProps = ComponentProps<typeof Link>
+type TextLinkProps = useRender.ComponentProps<"a">
 
-export function TextLink({ className, ...props }: TextLinkProps) {
-    return (
-        <Link
-            data-slot="text-link"
-            className={cx(
-                "font-semibold text-flame-pea-600 transition-colors hover:text-flame-pea-500 dark:text-flame-pea-400 dark:hover:text-flame-pea-300",
+export function TextLink({ render, ref, className, children, ...props }: Readonly<TextLinkProps>) {
+    return useRender({
+        defaultTagName: "a",
+        render,
+        ref,
+        state: { slot: "text-link" },
+        props: {
+            ...props,
+            children,
+            className: cx(
+                focusRing(),
+                "font-semibold text-tomato-600 decoration-from-font underline-offset-4 transition-colors duration-150 hover:text-tomato-500 hover:underline",
                 className,
-            )}
-            {...props}
-        />
-    )
+            ),
+        },
+    })
 }

@@ -1,15 +1,18 @@
-import { useForm, Field, Form } from "@formisch/react"
-import { createFileRoute, useNavigate } from "@tanstack/react-router"
-import UserIcon from "lucide-react/icons/user"
+import { useForm, Field, Form, useField } from "@formisch/react"
+import { UserIcon } from "@phosphor-icons/react"
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router"
 import { useState } from "react"
 import * as v from "valibot"
 
-import { useAuth } from "@core/hooks"
+import { isSafeRedirectPath } from "@core/groups"
+import { useAuth, useAuthMethods } from "@core/session"
+import { ErrorBanner } from "@pattern/error-banner"
+import { Input } from "@pattern/field"
+import { LoadingPlaceholder } from "@pattern/loading"
+import { AuthDivider } from "@routes/-components/auth-divider"
+import { OtpForm } from "@routes/-components/otp-form"
+import { PendingButton } from "@routes/-components/pending-button"
 import { AuthLayout } from "@routes/-layouts/auth-layout"
-import { Button } from "@ui/button"
-import { ErrorBanner } from "@ui/error-banner"
-import { FieldWrapper, Input } from "@ui/field"
-import { LoadingPlaceholder } from "@ui/loading"
 import { TextLink } from "@ui/text-link"
 
 const SignupSearchSchema = v.object({
@@ -17,10 +20,9 @@ const SignupSearchSchema = v.object({
 })
 
 const SignupSchema = v.object({
-    name: v.pipe(v.string(), v.minLength(1)),
-    email: v.pipe(v.string(), v.email()),
-    password: v.pipe(v.string(), v.minLength(8)),
-    confirmPassword: v.string(),
+    name: v.pipe(v.string(), v.minLength(1, "Enter your name")),
+    email: v.pipe(v.string(), v.email("Enter a valid email address")),
+    password: v.pipe(v.string(), v.minLength(8, "Use at least 8 characters")),
 })
 
 type SignupInput = v.InferInput<typeof SignupSchema>
@@ -31,130 +33,119 @@ export const Route = createFileRoute("/signup")({
     component: SignupPage,
 })
 
+function SignupPasswordForm({ onSuccess }: Readonly<{ onSuccess: () => void }>) {
+    const auth = useAuth()
+
+    const form = useForm({ schema: SignupSchema, validate: "submit", revalidate: "input" })
+    const nameField = useField(form, { path: ["name"] })
+    const emailField = useField(form, { path: ["email"] })
+    const passwordField = useField(form, { path: ["password"] })
+
+    const handleSubmit = async (output: Readonly<SignupInput>) => {
+        const ok = await auth.signUpWithPassword(output.name, output.email, output.password)
+        if (!ok) {
+            return
+        }
+        onSuccess()
+    }
+
+    return (
+        <Form of={form} onSubmit={handleSubmit} className="space-y-4">
+            <Field of={form} path={["name"]}>
+                {() => (
+                    <Input
+                        input={nameField.input}
+                        errors={nameField.errors}
+                        type="text"
+                        label="Name"
+                        placeholder="Your name"
+                        {...nameField.props}
+                    />
+                )}
+            </Field>
+            <Field of={form} path={["email"]}>
+                {() => (
+                    <Input
+                        input={emailField.input}
+                        errors={emailField.errors}
+                        type="email"
+                        label="Email"
+                        placeholder="you@example.com"
+                        {...emailField.props}
+                    />
+                )}
+            </Field>
+            <Field of={form} path={["password"]}>
+                {() => (
+                    <div>
+                        <Input
+                            input={passwordField.input}
+                            errors={passwordField.errors}
+                            type="password"
+                            label="Password"
+                            placeholder="••••••••"
+                            {...passwordField.props}
+                        />
+                        <p className="mt-1.5 text-xs text-muted-foreground">At least 8 characters.</p>
+                    </div>
+                )}
+            </Field>
+            <PendingButton type="submit" className="w-full" pending={auth.isLoading}>
+                Sign up
+            </PendingButton>
+        </Form>
+    )
+}
+
+function SignupAlternatives({ onOtpSuccess }: Readonly<{ onOtpSuccess: () => void }>) {
+    const methods = useAuthMethods()
+    const [otpEmail, setOtpEmail] = useState<string | undefined>(undefined)
+
+    return (
+        <>
+            <SignupPasswordForm onSuccess={onOtpSuccess} />
+            {methods?.emailOtp === true && (
+                <>
+                    <AuthDivider label="or use a code" />
+                    <OtpForm onSuccess={onOtpSuccess} email={otpEmail} onEmailChange={setOtpEmail} />
+                </>
+            )}
+        </>
+    )
+}
+
 function SignupPage() {
     const navigate = useNavigate()
     const { redirect: redirectTo } = Route.useSearch()
     const auth = useAuth()
 
-    const [passwordError, setPasswordError] = useState<string | null>(null)
-
-    const form = useForm({ schema: SignupSchema })
-
-    const handleSubmit = async (output: SignupInput) => {
-        setPasswordError(null)
-
-        if (output.password !== output.confirmPassword) {
-            setPasswordError("Passwords do not match")
-            return
-        }
-
-        try {
-            await auth.signUpWithPassword(output.name, output.email, output.password)
-            navigate({ to: redirectTo ?? "/", replace: true, from: Route.fullPath })
-        } catch {
-            return
-        }
+    const goHome = () => {
+        const safeRedirect = isSafeRedirectPath(redirectTo) ? redirectTo : "/home"
+        void navigate({ to: safeRedirect, replace: true, from: Route.fullPath })
     }
 
-    if (auth.isLoading) return <LoadingPlaceholder />
+    if (auth.isInitializing) {
+        return <LoadingPlaceholder />
+    }
 
     return (
         <AuthLayout
             icon={<UserIcon className="size-8" />}
             title={
-                <h2
-                    className="relative text-4xl font-semibold tracking-tight text-neutral-900 sm:text-5xl dark:text-white"
-                    style={{ fontFamily: "var(--font-display)" }}
-                >
+                <h2 className="font-display text-3xl font-semibold tracking-tight text-balance text-foreground sm:text-4xl">
                     Join Next Bite
-                    <svg
-                        className="absolute -bottom-2 left-1/2 h-2 w-24 -translate-x-1/2"
-                        viewBox="0 0 100 8"
-                        preserveAspectRatio="none"
-                    >
-                        <path
-                            d="M0 6 Q25 0 50 6 T100 6"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth="2"
-                            className="text-flame-pea-500 dark:text-flame-pea-400"
-                        />
-                    </svg>
                 </h2>
             }
-            subtitle="Create an account to start adding restaurants"
+            subtitle="Create your login to start adding restaurants"
             footerLink={
-                <p className="text-sm text-neutral-600 dark:text-neutral-400">
-                    Already have an account?{" "}
-                    <TextLink to="/login" viewTransition>
-                        Sign in
-                    </TextLink>
+                <p className="text-sm text-muted-foreground">
+                    Already have a login? <TextLink render={<Link to="/login" />}>Sign in</TextLink>
                 </p>
             }
         >
-            {(auth.error || passwordError) && <ErrorBanner>{passwordError || auth.error}</ErrorBanner>}
+            {auth.error !== null && auth.error !== "" && <ErrorBanner>{auth.error}</ErrorBanner>}
 
-            <Form of={form} onSubmit={handleSubmit} className="space-y-4">
-                <Field of={form} path={["name"]}>
-                    {(field) => (
-                        <FieldWrapper errors={field.errors}>
-                            <Input
-                                {...field.props}
-                                input={field.input}
-                                errors={field.errors}
-                                type="text"
-                                label="Name"
-                                placeholder="Your name"
-                            />
-                        </FieldWrapper>
-                    )}
-                </Field>
-                <Field of={form} path={["email"]}>
-                    {(field) => (
-                        <FieldWrapper errors={field.errors}>
-                            <Input
-                                {...field.props}
-                                input={field.input}
-                                errors={field.errors}
-                                type="email"
-                                label="Email"
-                                placeholder="you@example.com"
-                            />
-                        </FieldWrapper>
-                    )}
-                </Field>
-                <Field of={form} path={["password"]}>
-                    {(field) => (
-                        <FieldWrapper errors={field.errors}>
-                            <Input
-                                {...field.props}
-                                input={field.input}
-                                errors={field.errors}
-                                type="password"
-                                label="Password"
-                                placeholder="••••••••"
-                            />
-                        </FieldWrapper>
-                    )}
-                </Field>
-                <Field of={form} path={["confirmPassword"]}>
-                    {(field) => (
-                        <FieldWrapper errors={field.errors}>
-                            <Input
-                                {...field.props}
-                                input={field.input}
-                                errors={field.errors}
-                                type="password"
-                                label="Confirm password"
-                                placeholder="••••••••"
-                            />
-                        </FieldWrapper>
-                    )}
-                </Field>
-                <Button type="submit" className="w-full" disabled={auth.isLoading}>
-                    {auth.isLoading ? "Creating account..." : "Create Account"}
-                </Button>
-            </Form>
+            <SignupAlternatives onOtpSuccess={goHome} />
         </AuthLayout>
     )
 }

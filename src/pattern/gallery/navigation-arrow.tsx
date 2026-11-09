@@ -1,39 +1,36 @@
-import { cx } from "@ui/variants"
+import { CaretLeftIcon, CaretRightIcon } from "@phosphor-icons/react"
+
+import { cx } from "@ui/cva.config"
+import { IconButton } from "@ui/icon-button"
 
 export function NavigationArrow({
     direction,
     onClick,
     hidden,
     disabled,
-}: {
-    direction: "prev" | "next"
-    onClick: () => void
-    hidden?: boolean
-    disabled?: boolean
-}) {
+    className,
+    ...props
+}: Readonly<
+    {
+        direction: "prev" | "next"
+        onClick: (event: React.MouseEvent<HTMLButtonElement>) => void
+        hidden?: boolean | undefined
+    } & Omit<React.ComponentProps<"button">, "onClick" | "children" | "type" | "aria-label">
+>) {
     const isPrev = direction === "prev"
+    const Icon = isPrev ? CaretLeftIcon : CaretRightIcon
 
     return (
-        <button
-            type="button"
+        <IconButton
+            label={`${direction} image`}
+            tone="inverse"
+            size="lg"
             onClick={onClick}
             disabled={disabled}
-            className={cx(
-                "absolute z-10 rounded-full bg-white/20 p-3 text-white backdrop-blur-sm transition-colors duration-150 ease hover:bg-white/30",
-                isPrev ? "left-4" : "right-4",
-                hidden && "hidden",
-            )}
-            aria-label={`${direction} image`}
+            className={cx("absolute z-10", isPrev ? "left-4" : "right-4", hidden === true && "hidden", className)}
+            {...props}
         >
-            {isPrev ? (
-                <svg className="size-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7" />
-                </svg>
-            ) : (
-                <svg className="size-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
-                </svg>
-            )}
-        </button>
+            <Icon className="size-5" aria-hidden="true" />
+        </IconButton>
     )
 }

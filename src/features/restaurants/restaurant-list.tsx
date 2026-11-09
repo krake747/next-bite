@@ -1,60 +1,44 @@
-import { useEffect, useRef } from "react"
-
-import type { Restaurant } from "@core/hooks"
+import { type Restaurant } from "@core/restaurants"
+import { type RestaurantSocial, type RestaurantSocialSummary } from "@core/social"
 
 import { EmptyRestaurantsState } from "./empty-restaurants-state"
 import { RestaurantCard } from "./restaurant-card"
 
-const animatedRestaurantIds = new Set<string>()
-
 type RestaurantListProps = {
-    restaurants: Restaurant[]
-    hasFilter?: boolean
-    hasSearch?: boolean
-    onAddClick: () => void
-    sortOrder?: "added" | "name"
+    restaurants: ReadonlyArray<Restaurant>
+    socialFor?: ((restaurant: Restaurant) => RestaurantSocial | RestaurantSocialSummary) | undefined
+    onToggleWant?: ((restaurant: Restaurant) => void) | undefined
+    detailsHrefFor?: ((restaurant: Restaurant) => string) | undefined
 }
 
-export function RestaurantList({ restaurants, hasFilter, hasSearch, onAddClick, sortOrder }: RestaurantListProps) {
-    const previousSortOrder = useRef(sortOrder)
-
-    useEffect(() => {
-        if (sortOrder !== previousSortOrder.current) {
-            animatedRestaurantIds.clear()
-            previousSortOrder.current = sortOrder
-        }
-    }, [sortOrder])
-
-    const getAnimationProps = (restaurant: Restaurant, index: number) => {
-        if (sortOrder === "name") return {}
-        if (animatedRestaurantIds.has(restaurant._id)) return {}
-        animatedRestaurantIds.add(restaurant._id)
-        return {
-            className: "animate-card-enter",
-            style: { animationDelay: `${index * 100}ms` },
-        }
-    }
-
+export function RestaurantList({
+    restaurants,
+    socialFor,
+    onToggleWant,
+    detailsHrefFor,
+}: Readonly<RestaurantListProps>) {
     return (
         <div data-slot="restaurant-list" className="grid gap-8 md:grid-cols-2 md:gap-10">
             {restaurants.length > 0 ? (
-                restaurants.map((restaurant, index) => {
-                    const animationProps = getAnimationProps(restaurant, index)
+                restaurants.map((restaurant: Restaurant) => {
                     return (
                         <RestaurantCard
                             key={restaurant._id}
                             restaurant={restaurant}
-                            style={animationProps.style}
-                            className={animationProps.className}
+                            social={socialFor?.(restaurant)}
+                            onToggleWant={
+                                onToggleWant === undefined
+                                    ? undefined
+                                    : () => {
+                                          onToggleWant(restaurant)
+                                      }
+                            }
+                            detailsHref={detailsHrefFor?.(restaurant)}
                         />
                     )
                 })
             ) : (
-                <EmptyRestaurantsState
-                    hasFilter={hasFilter ?? false}
-                    hasSearch={hasSearch ?? false}
-                    onAddClick={onAddClick}
-                />
+                <EmptyRestaurantsState />
             )}
         </div>
     )

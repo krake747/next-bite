@@ -1,106 +1,177 @@
 import { useMapsLibrary } from "@vis.gl/react-google-maps"
-import { useRef, useState, useEffect } from "react"
+import { useRef, useState, useEffect, useId } from "react"
+import * as v from "valibot"
 
-type PlaceAutocompleteElement = new (options?: {
-    types?: string[]
-    locationBias?: { north: number; south: number; east: number; west: number }
-}) => HTMLElement & {
-    style: CSSStyleDeclaration & { colorScheme?: "light" | "dark" }
-    addEventListener(type: "gmp-select", listener: (event: PlaceSelectEvent) => void): void
+import { cx } from "@ui/cva.config"
+import { control, fieldLabel } from "@ui/variants"
+
+type Bias = Readonly<{ north: number; south: number; east: number; west: number }>
+
+export type PlaceSelection = {
+    readonly address: string
+    readonly name?: string | undefined
+    readonly lat?: number | undefined
+    readonly lng?: number | undefined
+    readonly placeId?: string | undefined
+    readonly primaryType?: string | undefined
 }
 
 type PlacesAutocompleteProps = {
     value: string
-    onChange: (value: string, lat?: number, lng?: number, placeId?: string) => void
-    placeholder?: string
-    label?: string
-    className?: string
+    onChange: (selection: PlaceSelection) => void
+    placeholder?: string | undefined
+    label?: string | undefined
+    className?: string | undefined
+    id?: string | undefined
+    locationBias?: Bias | undefined
 }
 
-type PlaceSelectEvent = {
-    placePrediction: {
-        toPlace(): {
-            fetchFields(options: { fields: string[] }): Promise<void>
-            location?: { lat(): number; lng(): number }
-            formattedAddress?: string
-            displayName?: string
-        }
+const DEFAULT_LOCATION_BIAS = {
+    north: 50.163,
+    south: 49.447,
+    east: 6.534,
+    west: 5.736,
+} as const
+
+const placeSelectEventSchema = v.object({
+    placePrediction: v.object({
+        toPlace: v.function(),
+    }),
+})
+
+function isPlaceSelectEvent(value: unknown): value is google.maps.places.PlacePredictionSelectEvent {
+    return v.is(placeSelectEventSchema, value)
+}
+
+function handlePlaceSelectEvent(event: unknown, onChange: PlacesAutocompleteProps["onChange"]): void {
+    if (!isPlaceSelectEvent(event)) {
+        return
+    }
+    const place = event.placePrediction.toPlace()
+    void place
+        .fetchFields({
+            fields: ["displayName", "formattedAddress", "location", "id", "primaryType"],
+        })
+        .then(() => {
+            const lat = place.location?.lat()
+            const lng = place.location?.lng()
+            const address =
+                [place.formattedAddress, place.displayName].find(
+                    (part) => part !== null && part !== undefined && part !== "",
+                ) ?? ""
+            onChange({
+                address,
+                ...(place.displayName !== null && place.displayName !== undefined && place.displayName !== ""
+                    ? { name: place.displayName }
+                    : {}),
+                ...(lat !== undefined ? { lat } : {}),
+                ...(lng !== undefined ? { lng } : {}),
+                ...(place.id !== undefined ? { placeId: place.id } : {}),
+                ...(place.primaryType !== null && place.primaryType !== undefined && place.primaryType !== ""
+                    ? { primaryType: place.primaryType }
+                    : {}),
+            })
+        })
+}
+
+function mountAutocomplete(params: {
+    placesLib: google.maps.PlacesLibrary
+    container: HTMLDivElement
+    inputId: string
+    locationBias: Bias
+    onChangeRef: { readonly current: PlacesAutocompleteProps["onChange"] }
+    setUseFallback: (visible: boolean) => void
+}): () => void {
+    const { placesLib, container, inputId, locationBias, onChangeRef, setUseFallback } = params
+    const autocompleteElement = new placesLib.PlaceAutocompleteElement({
+        includedPrimaryTypes: ["establishment"],
+        locationBias: { ...locationBias },
+    })
+    autocompleteElement.style.width = "100%"
+    autocompleteElement.style.colorScheme = "light"
+    autocompleteElement.id = inputId
+    autocompleteElement.className = control()
+
+    const onSelect = (event: Event) => {
+        handlePlaceSelectEvent(event, onChangeRef.current)
+    }
+    autocompleteElement.addEventListener("gmp-select", onSelect)
+
+    container.appendChild(autocompleteElement)
+    setUseFallback(false)
+
+    const observer = new MutationObserver(() => {
+        setUseFallback(container.children.length === 0)
+    })
+    observer.observe(container, { childList: true })
+    return () => {
+        observer.disconnect()
+        autocompleteElement.removeEventListener("gmp-select", onSelect)
+        autocompleteElement.remove()
     }
 }
 
-export function PlacesAutocomplete({ value, onChange, placeholder, label, className }: PlacesAutocompleteProps) {
+export function PlacesAutocomplete({
+    value,
+    onChange,
+    placeholder,
+    label,
+    className,
+    id,
+    locationBias = DEFAULT_LOCATION_BIAS,
+}: Readonly<PlacesAutocompleteProps>) {
     const placesLib = useMapsLibrary("places")
     const containerRef = useRef<HTMLDivElement>(null)
     const initializedRef = useRef(false)
     const [useFallback, setUseFallback] = useState(true)
+    const fallbackId = useId()
+    const inputId = id ?? fallbackId
+    const onChangeRef = useRef(onChange)
+    useEffect(() => {
+        onChangeRef.current = onChange
+    }, [onChange])
+    const biasKey = `${locationBias.north},${locationBias.south},${locationBias.east},${locationBias.west}`
 
     useEffect(() => {
         const container = containerRef.current
-        const places = placesLib
-        if (!places || !container || initializedRef.current) return
+        if (placesLib === null || container === null || initializedRef.current) {
+            return () => {}
+        }
         initializedRef.current = true
-
-        const PlaceAutocompleteElement = (places as unknown as { PlaceAutocompleteElement: PlaceAutocompleteElement })
-            .PlaceAutocompleteElement
-
-        const isDark = document.documentElement.classList.contains("dark")
-
-        const autocompleteElement = new PlaceAutocompleteElement({
-            types: ["establishment"],
-            locationBias: {
-                north: 50.163,
-                south: 49.447,
-                east: 6.534,
-                west: 5.736,
-            },
+        const cleanup = mountAutocomplete({
+            placesLib,
+            container,
+            inputId,
+            locationBias,
+            onChangeRef,
+            setUseFallback,
         })
-
-        autocompleteElement.style.width = "100%"
-        autocompleteElement.style.colorScheme = isDark ? "dark" : "light"
-
-        autocompleteElement.className =
-            "w-full rounded-lg border border-neutral-200 bg-white text-neutral-900 text-sm placeholder:text-neutral-400 focus:border-flame-pea-500 focus:outline-none focus:ring-1 focus:ring-flame-pea-500 dark:border-white/10 dark:bg-white/5 dark:text-white dark:placeholder:text-neutral-500 dark:focus:border-flame-pea-400 dark:focus:ring-flame-pea-400"
-
-        autocompleteElement.addEventListener("gmp-select", async (event: PlaceSelectEvent) => {
-            const placePrediction = event.placePrediction
-            if (!placePrediction) return
-
-            const place = placePrediction.toPlace()
-            await place.fetchFields({
-                fields: ["displayName", "formattedAddress", "location", "id"],
-            })
-
-            const lat = place.location?.lat()
-            const lng = place.location?.lng()
-            const address = place.formattedAddress || place.displayName || ""
-            const placeId = (place as unknown as { id?: string }).id
-
-            onChange(address, lat ?? undefined, lng ?? undefined, placeId)
-        })
-
-        container.appendChild(autocompleteElement)
-
-        setTimeout(() => {
-            if (container.children.length > 0) {
-                setUseFallback(false)
-            }
-        }, 500)
-    }, [placesLib, onChange])
+        return () => {
+            cleanup()
+            initializedRef.current = false
+        }
+        // biasKey is the value-identity of locationBias; onChange flows via ref so typing never remounts the element
+    }, [placesLib, inputId, biasKey])
 
     return (
-        <div className="space-y-1.5">
-            {label && (
-                <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300">{label}</label>
+        <div data-slot="places-autocomplete" className="flex flex-col gap-1.5">
+            {label !== undefined && label !== "" && (
+                <label htmlFor={inputId} className={fieldLabel()}>
+                    {label}
+                </label>
             )}
             <div className="relative">
                 <div ref={containerRef} className={className} />
                 {useFallback && (
                     <input
+                        id={inputId}
                         type="text"
                         value={value}
                         placeholder={placeholder}
-                        onChange={(e) => onChange(e.currentTarget.value)}
-                        className="absolute inset-0 z-10 w-full rounded-lg border border-neutral-200 bg-white px-3 py-2.5 text-sm text-neutral-900 placeholder:text-neutral-400 focus:border-flame-pea-500 focus:ring-1 focus:ring-flame-pea-500 focus:outline-none dark:border-white/10 dark:bg-white/5 dark:text-white dark:placeholder:text-neutral-500 dark:focus:border-flame-pea-400 dark:focus:ring-flame-pea-400"
+                        onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
+                            onChange({ address: event.currentTarget.value })
+                        }}
+                        className={cx(control(), "absolute inset-0 z-10", "text-base md:text-sm")}
                         data-fallback-location
                     />
                 )}

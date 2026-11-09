@@ -1,14 +1,18 @@
-import { useForm, Field, Form } from "@formisch/react"
-import { createFileRoute, useNavigate } from "@tanstack/react-router"
-import UtensilsCrossed from "lucide-react/icons/utensils-crossed"
+import { useForm, Field, Form, useField } from "@formisch/react"
+import { ForkKnifeIcon } from "@phosphor-icons/react"
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router"
+import { useState } from "react"
 import * as v from "valibot"
 
-import { useAuth } from "@core/hooks"
+import { isSafeRedirectPath } from "@core/groups"
+import { useAuth, useAuthMethods } from "@core/session"
+import { ErrorBanner } from "@pattern/error-banner"
+import { Input } from "@pattern/field"
+import { LoadingPlaceholder } from "@pattern/loading"
+import { AuthDivider } from "@routes/-components/auth-divider"
+import { OtpForm } from "@routes/-components/otp-form"
+import { PendingButton } from "@routes/-components/pending-button"
 import { AuthLayout } from "@routes/-layouts/auth-layout"
-import { Button } from "@ui/button"
-import { ErrorBanner } from "@ui/error-banner"
-import { FieldWrapper, Input } from "@ui/field"
-import { LoadingPlaceholder } from "@ui/loading"
 import { TextLink } from "@ui/text-link"
 
 const LoginSearchSchema = v.object({
@@ -16,8 +20,8 @@ const LoginSearchSchema = v.object({
 })
 
 const LoginSchema = v.object({
-    email: v.pipe(v.string(), v.email()),
-    password: v.pipe(v.string(), v.minLength(8)),
+    email: v.pipe(v.string(), v.email("Enter a valid email address")),
+    password: v.pipe(v.string(), v.minLength(8, "Use at least 8 characters")),
 })
 
 type LoginInput = v.InferInput<typeof LoginSchema>
@@ -33,88 +37,81 @@ function LoginPage() {
     const { redirect: redirectTo } = Route.useSearch()
     const auth = useAuth()
 
-    const form = useForm({ schema: LoginSchema })
+    const form = useForm({ schema: LoginSchema, validate: "submit", revalidate: "input" })
+    const emailField = useField(form, { path: ["email"] })
+    const passwordField = useField(form, { path: ["password"] })
+    const methods = useAuthMethods()
+    const [otpEmail, setOtpEmail] = useState<string | undefined>(undefined)
 
-    const handleEmailSubmit = async (output: LoginInput) => {
-        try {
-            await auth.signInWithPassword(output.email, output.password)
-            navigate({ to: redirectTo ?? "/", replace: true, from: Route.fullPath })
-        } catch {
-            return
-        }
+    const goHome = () => {
+        const safeRedirect = isSafeRedirectPath(redirectTo) ? redirectTo : "/home"
+        void navigate({ to: safeRedirect, replace: true, from: Route.fullPath })
     }
 
-    if (auth.isLoading) return <LoadingPlaceholder />
+    const handleEmailSubmit = async (output: Readonly<LoginInput>) => {
+        const ok = await auth.signInWithPassword(output.email, output.password)
+        if (!ok) {
+            return
+        }
+        goHome()
+    }
+
+    if (auth.isInitializing) {
+        return <LoadingPlaceholder />
+    }
 
     return (
         <AuthLayout
-            icon={<UtensilsCrossed className="size-8" />}
+            icon={<ForkKnifeIcon className="size-8" />}
             title={
-                <h2
-                    className="relative text-4xl font-semibold tracking-tight text-neutral-900 sm:text-5xl dark:text-white"
-                    style={{ fontFamily: "var(--font-display)" }}
-                >
+                <h2 className="font-display text-3xl font-semibold tracking-tight text-balance text-foreground sm:text-4xl">
                     Welcome back
-                    <svg
-                        className="absolute -bottom-2 left-1/2 h-2 w-24 -translate-x-1/2"
-                        viewBox="0 0 100 8"
-                        preserveAspectRatio="none"
-                    >
-                        <path
-                            d="M0 6 Q25 0 50 6 T100 6"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth="2"
-                            className="text-flame-pea-500 dark:text-flame-pea-400"
-                        />
-                    </svg>
                 </h2>
             }
             subtitle="Sign in to continue to your next bite"
             footerLink={
-                <p className="text-sm text-neutral-600 dark:text-neutral-400">
-                    Do not have an account?{" "}
-                    <TextLink to="/signup" viewTransition>
-                        Sign up
-                    </TextLink>
+                <p className="text-sm text-muted-foreground">
+                    New to Next Bite? <TextLink render={<Link to="/signup" />}>Sign up</TextLink>
                 </p>
             }
         >
-            {auth.error && <ErrorBanner>{auth.error}</ErrorBanner>}
+            {auth.error !== null && auth.error !== "" && <ErrorBanner>{auth.error}</ErrorBanner>}
 
             <Form of={form} onSubmit={handleEmailSubmit} className="space-y-4">
                 <Field of={form} path={["email"]}>
-                    {(field) => (
-                        <FieldWrapper errors={field.errors}>
-                            <Input
-                                {...field.props}
-                                input={field.input}
-                                errors={field.errors}
-                                type="email"
-                                label="Email"
-                                placeholder="you@example.com"
-                            />
-                        </FieldWrapper>
+                    {() => (
+                        <Input
+                            input={emailField.input}
+                            errors={emailField.errors}
+                            type="email"
+                            label="Email"
+                            placeholder="you@example.com"
+                            {...emailField.props}
+                        />
                     )}
                 </Field>
                 <Field of={form} path={["password"]}>
-                    {(field) => (
-                        <FieldWrapper errors={field.errors}>
-                            <Input
-                                {...field.props}
-                                input={field.input}
-                                errors={field.errors}
-                                type="password"
-                                label="Password"
-                                placeholder="••••••••"
-                            />
-                        </FieldWrapper>
+                    {() => (
+                        <Input
+                            input={passwordField.input}
+                            errors={passwordField.errors}
+                            type="password"
+                            label="Password"
+                            placeholder="••••••••"
+                            {...passwordField.props}
+                        />
                     )}
                 </Field>
-                <Button type="submit" className="w-full" disabled={auth.isLoading}>
-                    {auth.isLoading ? "Signing in..." : "Sign In"}
-                </Button>
+                <PendingButton type="submit" className="w-full" pending={auth.isLoading}>
+                    Sign In
+                </PendingButton>
             </Form>
+            {methods?.emailOtp === true && (
+                <>
+                    <AuthDivider label="or use a code" />
+                    <OtpForm onSuccess={goHome} email={otpEmail} onEmailChange={setOtpEmail} />
+                </>
+            )}
         </AuthLayout>
     )
 }

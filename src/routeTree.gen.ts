@@ -11,9 +11,22 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as SplatRouteImport } from './routes/$'
+import { Route as AppRouteRouteImport } from './routes/_app/route'
+import { Route as DsRouteRouteImport } from './routes/ds/route'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as SignupRouteImport } from './routes/signup'
-import { Route as WheelRouteImport } from './routes/wheel'
+import { Route as AppAccountRouteImport } from './routes/_app/account'
+import { Route as AppAddRouteImport } from './routes/_app/add'
+import { Route as AppFriendsRouteImport } from './routes/_app/friends'
+import { Route as AppGroupsRouteImport } from './routes/_app/groups'
+import { Route as AppHomeRouteImport } from './routes/_app/home'
+import { Route as AppYouRouteImport } from './routes/_app/you'
+import { Route as DsIndexRouteImport } from './routes/ds/index'
+import { Route as DsSectionIdRouteImport } from './routes/ds/$sectionId'
+import { Route as AppGroupsIndexRouteImport } from './routes/_app/groups.index'
+import { Route as AppGroupsGroupIdRouteImport } from './routes/_app/groups.$groupId'
+import { Route as AppInviteTokenRouteImport } from './routes/_app/invite.$token'
+import { Route as AppRestaurantsRestaurantIdRouteImport } from './routes/_app/restaurants.$restaurantId'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -23,6 +36,15 @@ const IndexRoute = IndexRouteImport.update({
 const SplatRoute = SplatRouteImport.update({
   id: '/$',
   path: '/$',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AppRouteRoute = AppRouteRouteImport.update({
+  id: '/_app',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DsRouteRoute = DsRouteRouteImport.update({
+  id: '/ds',
+  path: '/ds',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LoginRoute = LoginRouteImport.update({
@@ -35,48 +57,191 @@ const SignupRoute = SignupRouteImport.update({
   path: '/signup',
   getParentRoute: () => rootRouteImport,
 } as any)
-const WheelRoute = WheelRouteImport.update({
-  id: '/wheel',
-  path: '/wheel',
-  getParentRoute: () => rootRouteImport,
+const AppAccountRoute = AppAccountRouteImport.update({
+  id: '/account',
+  path: '/account',
+  getParentRoute: () => AppRouteRoute,
 } as any)
+const AppAddRoute = AppAddRouteImport.update({
+  id: '/add',
+  path: '/add',
+  getParentRoute: () => AppRouteRoute,
+} as any)
+const AppFriendsRoute = AppFriendsRouteImport.update({
+  id: '/friends',
+  path: '/friends',
+  getParentRoute: () => AppRouteRoute,
+} as any)
+const AppGroupsRoute = AppGroupsRouteImport.update({
+  id: '/groups',
+  path: '/groups',
+  getParentRoute: () => AppRouteRoute,
+} as any)
+const AppHomeRoute = AppHomeRouteImport.update({
+  id: '/home',
+  path: '/home',
+  getParentRoute: () => AppRouteRoute,
+} as any)
+const AppYouRoute = AppYouRouteImport.update({
+  id: '/you',
+  path: '/you',
+  getParentRoute: () => AppRouteRoute,
+} as any)
+const DsIndexRoute = DsIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => DsRouteRoute,
+} as any)
+const DsSectionIdRoute = DsSectionIdRouteImport.update({
+  id: '/$sectionId',
+  path: '/$sectionId',
+  getParentRoute: () => DsRouteRoute,
+} as any)
+const AppGroupsIndexRoute = AppGroupsIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AppGroupsRoute,
+} as any)
+const AppGroupsGroupIdRoute = AppGroupsGroupIdRouteImport.update({
+  id: '/$groupId',
+  path: '/$groupId',
+  getParentRoute: () => AppGroupsRoute,
+} as any)
+const AppInviteTokenRoute = AppInviteTokenRouteImport.update({
+  id: '/invite/$token',
+  path: '/invite/$token',
+  getParentRoute: () => AppRouteRoute,
+} as any)
+const AppRestaurantsRestaurantIdRoute =
+  AppRestaurantsRestaurantIdRouteImport.update({
+    id: '/restaurants/$restaurantId',
+    path: '/restaurants/$restaurantId',
+    getParentRoute: () => AppRouteRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/ds': typeof DsRouteRouteWithChildren
   '/$': typeof SplatRoute
   '/login': typeof LoginRoute
   '/signup': typeof SignupRoute
-  '/wheel': typeof WheelRoute
+  '/account': typeof AppAccountRoute
+  '/add': typeof AppAddRoute
+  '/friends': typeof AppFriendsRoute
+  '/groups': typeof AppGroupsRouteWithChildren
+  '/home': typeof AppHomeRoute
+  '/you': typeof AppYouRoute
+  '/ds/$sectionId': typeof DsSectionIdRoute
+  '/ds/': typeof DsIndexRoute
+  '/groups/$groupId': typeof AppGroupsGroupIdRoute
+  '/invite/$token': typeof AppInviteTokenRoute
+  '/restaurants/$restaurantId': typeof AppRestaurantsRestaurantIdRoute
+  '/groups/': typeof AppGroupsIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/$': typeof SplatRoute
   '/login': typeof LoginRoute
   '/signup': typeof SignupRoute
-  '/wheel': typeof WheelRoute
+  '/account': typeof AppAccountRoute
+  '/add': typeof AppAddRoute
+  '/friends': typeof AppFriendsRoute
+  '/home': typeof AppHomeRoute
+  '/you': typeof AppYouRoute
+  '/ds/$sectionId': typeof DsSectionIdRoute
+  '/ds': typeof DsIndexRoute
+  '/groups/$groupId': typeof AppGroupsGroupIdRoute
+  '/invite/$token': typeof AppInviteTokenRoute
+  '/restaurants/$restaurantId': typeof AppRestaurantsRestaurantIdRoute
+  '/groups': typeof AppGroupsIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/_app': typeof AppRouteRouteWithChildren
+  '/ds': typeof DsRouteRouteWithChildren
   '/$': typeof SplatRoute
   '/login': typeof LoginRoute
   '/signup': typeof SignupRoute
-  '/wheel': typeof WheelRoute
+  '/_app/account': typeof AppAccountRoute
+  '/_app/add': typeof AppAddRoute
+  '/_app/friends': typeof AppFriendsRoute
+  '/_app/groups': typeof AppGroupsRouteWithChildren
+  '/_app/home': typeof AppHomeRoute
+  '/_app/you': typeof AppYouRoute
+  '/ds/$sectionId': typeof DsSectionIdRoute
+  '/ds/': typeof DsIndexRoute
+  '/_app/groups/$groupId': typeof AppGroupsGroupIdRoute
+  '/_app/invite/$token': typeof AppInviteTokenRoute
+  '/_app/restaurants/$restaurantId': typeof AppRestaurantsRestaurantIdRoute
+  '/_app/groups/': typeof AppGroupsIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/$' | '/login' | '/signup' | '/wheel'
+  fullPaths:
+    | '/'
+    | '/ds'
+    | '/$'
+    | '/login'
+    | '/signup'
+    | '/account'
+    | '/add'
+    | '/friends'
+    | '/groups'
+    | '/home'
+    | '/you'
+    | '/ds/$sectionId'
+    | '/ds/'
+    | '/groups/$groupId'
+    | '/invite/$token'
+    | '/restaurants/$restaurantId'
+    | '/groups/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/$' | '/login' | '/signup' | '/wheel'
-  id: '__root__' | '/' | '/$' | '/login' | '/signup' | '/wheel'
+  to:
+    | '/'
+    | '/$'
+    | '/login'
+    | '/signup'
+    | '/account'
+    | '/add'
+    | '/friends'
+    | '/home'
+    | '/you'
+    | '/ds/$sectionId'
+    | '/ds'
+    | '/groups/$groupId'
+    | '/invite/$token'
+    | '/restaurants/$restaurantId'
+    | '/groups'
+  id:
+    | '__root__'
+    | '/'
+    | '/_app'
+    | '/ds'
+    | '/$'
+    | '/login'
+    | '/signup'
+    | '/_app/account'
+    | '/_app/add'
+    | '/_app/friends'
+    | '/_app/groups'
+    | '/_app/home'
+    | '/_app/you'
+    | '/ds/$sectionId'
+    | '/ds/'
+    | '/_app/groups/$groupId'
+    | '/_app/invite/$token'
+    | '/_app/restaurants/$restaurantId'
+    | '/_app/groups/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AppRouteRoute: typeof AppRouteRouteWithChildren
+  DsRouteRoute: typeof DsRouteRouteWithChildren
   SplatRoute: typeof SplatRoute
   LoginRoute: typeof LoginRoute
   SignupRoute: typeof SignupRoute
-  WheelRoute: typeof WheelRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -95,6 +260,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SplatRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_app': {
+      id: '/_app'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof AppRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/ds': {
+      id: '/ds'
+      path: '/ds'
+      fullPath: '/ds'
+      preLoaderRoute: typeof DsRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/login': {
       id: '/login'
       path: '/login'
@@ -109,23 +288,163 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SignupRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/wheel': {
-      id: '/wheel'
-      path: '/wheel'
-      fullPath: '/wheel'
-      preLoaderRoute: typeof WheelRouteImport
-      parentRoute: typeof rootRouteImport
+    '/_app/account': {
+      id: '/_app/account'
+      path: '/account'
+      fullPath: '/account'
+      preLoaderRoute: typeof AppAccountRouteImport
+      parentRoute: typeof AppRouteRoute
+    }
+    '/_app/add': {
+      id: '/_app/add'
+      path: '/add'
+      fullPath: '/add'
+      preLoaderRoute: typeof AppAddRouteImport
+      parentRoute: typeof AppRouteRoute
+    }
+    '/_app/friends': {
+      id: '/_app/friends'
+      path: '/friends'
+      fullPath: '/friends'
+      preLoaderRoute: typeof AppFriendsRouteImport
+      parentRoute: typeof AppRouteRoute
+    }
+    '/_app/groups': {
+      id: '/_app/groups'
+      path: '/groups'
+      fullPath: '/groups'
+      preLoaderRoute: typeof AppGroupsRouteImport
+      parentRoute: typeof AppRouteRoute
+    }
+    '/_app/home': {
+      id: '/_app/home'
+      path: '/home'
+      fullPath: '/home'
+      preLoaderRoute: typeof AppHomeRouteImport
+      parentRoute: typeof AppRouteRoute
+    }
+    '/_app/you': {
+      id: '/_app/you'
+      path: '/you'
+      fullPath: '/you'
+      preLoaderRoute: typeof AppYouRouteImport
+      parentRoute: typeof AppRouteRoute
+    }
+    '/ds/': {
+      id: '/ds/'
+      path: '/'
+      fullPath: '/ds/'
+      preLoaderRoute: typeof DsIndexRouteImport
+      parentRoute: typeof DsRouteRoute
+    }
+    '/ds/$sectionId': {
+      id: '/ds/$sectionId'
+      path: '/$sectionId'
+      fullPath: '/ds/$sectionId'
+      preLoaderRoute: typeof DsSectionIdRouteImport
+      parentRoute: typeof DsRouteRoute
+    }
+    '/_app/groups/': {
+      id: '/_app/groups/'
+      path: '/'
+      fullPath: '/groups/'
+      preLoaderRoute: typeof AppGroupsIndexRouteImport
+      parentRoute: typeof AppGroupsRoute
+    }
+    '/_app/groups/$groupId': {
+      id: '/_app/groups/$groupId'
+      path: '/$groupId'
+      fullPath: '/groups/$groupId'
+      preLoaderRoute: typeof AppGroupsGroupIdRouteImport
+      parentRoute: typeof AppGroupsRoute
+    }
+    '/_app/invite/$token': {
+      id: '/_app/invite/$token'
+      path: '/invite/$token'
+      fullPath: '/invite/$token'
+      preLoaderRoute: typeof AppInviteTokenRouteImport
+      parentRoute: typeof AppRouteRoute
+    }
+    '/_app/restaurants/$restaurantId': {
+      id: '/_app/restaurants/$restaurantId'
+      path: '/restaurants/$restaurantId'
+      fullPath: '/restaurants/$restaurantId'
+      preLoaderRoute: typeof AppRestaurantsRestaurantIdRouteImport
+      parentRoute: typeof AppRouteRoute
     }
   }
 }
 
+interface AppGroupsRouteChildren {
+  AppGroupsGroupIdRoute: typeof AppGroupsGroupIdRoute
+  AppGroupsIndexRoute: typeof AppGroupsIndexRoute
+}
+
+const AppGroupsRouteChildren: AppGroupsRouteChildren = {
+  AppGroupsGroupIdRoute: AppGroupsGroupIdRoute,
+  AppGroupsIndexRoute: AppGroupsIndexRoute,
+}
+
+const AppGroupsRouteWithChildren = AppGroupsRoute._addFileChildren(
+  AppGroupsRouteChildren,
+)
+
+interface AppRouteRouteChildren {
+  AppAccountRoute: typeof AppAccountRoute
+  AppAddRoute: typeof AppAddRoute
+  AppFriendsRoute: typeof AppFriendsRoute
+  AppGroupsRoute: typeof AppGroupsRouteWithChildren
+  AppHomeRoute: typeof AppHomeRoute
+  AppYouRoute: typeof AppYouRoute
+  AppInviteTokenRoute: typeof AppInviteTokenRoute
+  AppRestaurantsRestaurantIdRoute: typeof AppRestaurantsRestaurantIdRoute
+}
+
+const AppRouteRouteChildren: AppRouteRouteChildren = {
+  AppAccountRoute: AppAccountRoute,
+  AppAddRoute: AppAddRoute,
+  AppFriendsRoute: AppFriendsRoute,
+  AppGroupsRoute: AppGroupsRouteWithChildren,
+  AppHomeRoute: AppHomeRoute,
+  AppYouRoute: AppYouRoute,
+  AppInviteTokenRoute: AppInviteTokenRoute,
+  AppRestaurantsRestaurantIdRoute: AppRestaurantsRestaurantIdRoute,
+}
+
+const AppRouteRouteWithChildren = AppRouteRoute._addFileChildren(
+  AppRouteRouteChildren,
+)
+
+interface DsRouteRouteChildren {
+  DsSectionIdRoute: typeof DsSectionIdRoute
+  DsIndexRoute: typeof DsIndexRoute
+}
+
+const DsRouteRouteChildren: DsRouteRouteChildren = {
+  DsSectionIdRoute: DsSectionIdRoute,
+  DsIndexRoute: DsIndexRoute,
+}
+
+const DsRouteRouteWithChildren =
+  DsRouteRoute._addFileChildren(DsRouteRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AppRouteRoute: AppRouteRouteWithChildren,
+  DsRouteRoute: DsRouteRouteWithChildren,
   SplatRoute: SplatRoute,
   LoginRoute: LoginRoute,
   SignupRoute: SignupRoute,
-  WheelRoute: WheelRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { createStart } from '@tanstack/react-start'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+  }
+}

@@ -1,0 +1,115 @@
+name: Convex backend
+
+# Manual backend pipeline: typechecks, deploys functions and schema, then runs
+# data migrations in order. Environments map to GitHub Environments of the same
+# name, each holding its own CONVEX_DEPLOY_TOKEN deploy key. Prod should carry a
+# required-reviewer rule in the environment settings; this file cannot set that.
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: "Target Convex deployment"
+        required: true
+        default: "dev"
+        type: choice
+        options:
+          - dev
+          - prod
+      run_migrations:
+        description: "Run data migrations after deploy"
+        required: true
+        default: true
+        type: boolean
+      dry_run:
+        description: "Typecheck only, no deploy and no migrations"
+        required: true
+        default: true
+        type: boolean
+
+permissions:
+  contents: read
+
+concurrency:
+  group: convex-${{ inputs.environment }}
+  cancel-in-progress: false
+
+jobs:
+  gate:
+    name: Full local gate
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7
+
+      - uses: voidzero-dev/setup-vp@v1.22.0
+        with:
+          node-version-file: ".node-version"
+          cache: true
+
+      - name: Install dependencies
+        run: vp install
+
+      - name: Full local gate
+        run: vp run check:full
+
+  deploy:
+    name: Deploy functions and schema
+    needs: gate
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.environment }}
+    env:
+      CONVEX_DEPLOY_TOKEN: ${{ secrets.CONVEX_DEPLOY_TOKEN }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7
+
+      - uses: voidzero-dev/setup-vp@v1.22.0
+        with:
+          node-version-file: ".node-version"
+          cache: true
+
+      - name: Install dependencies
+        run: vp install
+
+      - name: Deploy backend
+        run: |
+          set -euo pipefail
+          if [[ "${{ inputs.dry_run }}" == "true" ]]; then
+            npx convex deploy --dry-run
+          else
+            npx convex deploy
+          fi
+
+  migrate:
+    name: Run data migrations
+    needs:
+      - deploy
+    if: ${{ !inputs.dry_run && inputs.run_migrations }}
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.environment }}
+    env:
+      CONVEX_DEPLOY_TOKEN: ${{ secrets.CONVEX_DEPLOY_TOKEN }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7
+
+      - uses: voidzero-dev/setup-vp@v1.22.0
+        with:
+          node-version-file: ".node-version"
+          cache: true
+
+      - name: Install dependencies
+        run: vp install
+
+      - name: Run migrations in order
+        run: |
+          set -euo pipefail
+          # Extend this list as new migrations land in convex/migrate.ts.
+          for migration in migrate:cleanupOrphanedStorage; do
+            echo "Running $migration"
+            npx convex run "$migration"
+          done

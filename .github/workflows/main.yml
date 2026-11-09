@@ -1,4 +1,4 @@
-name: Build Next Bite web app
+name: Main gate
 
 on:
   push:
@@ -6,27 +6,27 @@ on:
 
 jobs:
   build:
-    name: Build app
+    name: Full local gate
     runs-on: ubuntu-latest
-
-    strategy:
-      matrix:
-        node-version: [24.x, 25.x]
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v7
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v7
         with:
-          node-version: ${{ matrix.node-version }}
+          fetch-depth: 0
 
-      - name: Install pnpm
-        uses: pnpm/action-setup@v6
+      - uses: voidzero-dev/setup-vp@v1.22.0
+        with:
+          node-version-file: ".node-version"
+          cache: true
 
       - name: Install dependencies
-        run: pnpm install
+        run: vp install
 
-      - name: Build the app
-        run: pnpm build
+      - name: Install Playwright chromium
+        run: npx playwright install chromium --only-shell
+
+      - name: Full local gate
+        env:
+          FALLOW_AUDIT_BASE: origin/main
+        run: vp run check:full

@@ -1,0 +1,23 @@
+import { cx } from "@ui/cva.config"
+
+export function EmptyState({
+    title,
+    body,
+    className,
+}: Readonly<{
+    title: string
+    body?: string | undefined
+    className?: string | undefined
+}>) {
+    return (
+        <div
+            data-slot="empty-state"
+            className={cx("rounded-card border border-border bg-surface p-6 text-center shadow-card", className)}
+        >
+            <p className="font-display text-lg font-semibold text-balance text-foreground">{title}</p>
+            {body !== undefined && body !== "" && (
+                <p className="mx-auto mt-1 max-w-md text-sm text-pretty text-muted-foreground">{body}</p>
+            )}
+        </div>
+    )
+}

@@ -1,5 +1,14 @@
+// Folder-specific settings
+//
+// For a full list of overridable settings, and general information on folder-specific settings,
+// see the documentation: https://zed.dev/docs/configuring-zed#settings-files
 {
     "lsp": {
+        "tailwindcss-language-server": {
+            "settings": {
+                "classFunctions": ["cva", "cx"]
+            }
+        },
         "oxlint": {
             "initialization_options": {
                 "settings": {
@@ -15,16 +24,8 @@
         "oxfmt": {
             "initialization_options": {
                 "settings": {
-                    "configPath": null,
+                    "fmt.configPath": "./vite.config.ts",
                     "run": "onSave"
-                }
-            }
-        },
-        "tailwindcss-language-server": {
-            "settings": {
-                "classFunctions": ["cva", "cx"],
-                "experimental": {
-                    "classRegex": ["[cls|className]\\s\\:\\=\\s\"([^\"]*)"]
                 }
             }
         },
@@ -107,7 +108,7 @@
             ]
         },
         "TypeScript": {
-            "language_servers": ["tsgo", "!vtsls", "!typescript-language-server", "..."],
+            "language_servers": ["vtsls", "!typescript-language-server", "..."],
             "format_on_save": "on",
             "formatter": [
                 {
@@ -118,7 +119,7 @@
             ]
         },
         "TSX": {
-            "language_servers": ["tsgo", "!vtsls", "!typescript-language-server", "..."],
+            "language_servers": ["vtsls", "!typescript-language-server", "..."],
             "format_on_save": "on",
             "formatter": [
                 {

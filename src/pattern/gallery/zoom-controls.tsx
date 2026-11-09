@@ -1,80 +1,55 @@
-import Maximize from "lucide-react/icons/maximize"
-import Minimize from "lucide-react/icons/minimize"
-import RotateCcw from "lucide-react/icons/rotate-ccw"
-import ZoomIn from "lucide-react/icons/zoom-in"
-import ZoomOut from "lucide-react/icons/zoom-out"
+import {
+    ArrowCounterClockwiseIcon,
+    CornersInIcon,
+    CornersOutIcon,
+    MagnifyingGlassMinusIcon,
+    MagnifyingGlassPlusIcon,
+} from "@phosphor-icons/react"
 
 import { Button } from "@ui/button"
+import { IconButton } from "@ui/icon-button"
 
-export function ZoomControls({
-    zoom,
-    onZoomIn,
-    onZoomOut,
-    onRotate,
-    onToggleFullscreen,
-    onReset,
-    isFullscreen,
-    onBackToGrid,
-}: {
-    zoom: number
-    onZoomIn: () => void
-    onZoomOut: () => void
-    onRotate: () => void
-    onToggleFullscreen: () => void
-    onReset: () => void
-    isFullscreen: boolean
-    onBackToGrid: () => void
-}) {
+import { useGalleryViewer } from "./gallery-viewer"
+import { useZoomPan } from "./use-zoom-pan"
+
+type ZoomHandle = Pick<ReturnType<typeof useZoomPan>, "zoom" | "zoomIn" | "zoomOut" | "rotate" | "resetZoom">
+
+export function ZoomControls({ zoomPan }: Readonly<{ zoomPan: ZoomHandle }>) {
+    const viewer = useGalleryViewer()
     return (
         <div className="flex flex-wrap items-center justify-center gap-2 p-4">
             <div className="flex items-center gap-1">
-                <button
-                    type="button"
-                    onClick={onZoomOut}
-                    className="rounded-full bg-white/20 p-2 text-white backdrop-blur-sm transition-colors hover:bg-white/30"
-                    aria-label="Zoom out"
-                >
-                    <ZoomOut className="size-5" />
-                </button>
-                <span className="min-w-12 text-center text-sm text-white">{Math.round(zoom * 100)}%</span>
-                <button
-                    type="button"
-                    onClick={onZoomIn}
-                    className="rounded-full bg-white/20 p-2 text-white backdrop-blur-sm transition-colors hover:bg-white/30"
-                    aria-label="Zoom in"
-                >
-                    <ZoomIn className="size-5" />
-                </button>
+                <IconButton label="Zoom out" tone="inverse" size="xs" onClick={zoomPan.zoomOut}>
+                    <MagnifyingGlassMinusIcon className="size-4" aria-hidden="true" />
+                </IconButton>
+                <span className="min-w-12 text-center text-sm text-inverse">{Math.round(zoomPan.zoom * 100)}%</span>
+                <IconButton label="Zoom in" tone="inverse" size="xs" onClick={zoomPan.zoomIn}>
+                    <MagnifyingGlassPlusIcon className="size-4" aria-hidden="true" />
+                </IconButton>
             </div>
 
             <div className="flex items-center gap-1">
-                <button
-                    type="button"
-                    onClick={onRotate}
-                    className="rounded-full bg-white/20 p-2 text-white backdrop-blur-sm transition-colors hover:bg-white/30"
-                    aria-label="Rotate"
+                <IconButton label="Rotate" tone="inverse" size="xs" onClick={zoomPan.rotate}>
+                    <ArrowCounterClockwiseIcon className="size-4" aria-hidden="true" />
+                </IconButton>
+                <IconButton
+                    label={viewer.isFullscreen ? "Exit fullscreen" : "Fullscreen"}
+                    tone="inverse"
+                    size="xs"
+                    onClick={viewer.toggleFullscreen}
                 >
-                    <RotateCcw className="size-5" />
-                </button>
-                <button
-                    type="button"
-                    onClick={onToggleFullscreen}
-                    className="rounded-full bg-white/20 p-2 text-white backdrop-blur-sm transition-colors hover:bg-white/30"
-                    aria-label={isFullscreen ? "Exit fullscreen" : "Fullscreen"}
-                >
-                    {isFullscreen ? <Minimize className="size-5" /> : <Maximize className="size-5" />}
-                </button>
-                <button
-                    type="button"
-                    onClick={onReset}
-                    className="rounded-full bg-white/20 px-3 py-2 text-sm text-white backdrop-blur-sm transition-colors hover:bg-white/30"
-                    aria-label="Reset zoom"
-                >
+                    {viewer.isFullscreen ? (
+                        <CornersInIcon className="size-4" aria-hidden="true" />
+                    ) : (
+                        <CornersOutIcon className="size-4" aria-hidden="true" />
+                    )}
+                </IconButton>
+                <Button tone="secondary" size="sm" onClick={zoomPan.resetZoom} aria-label="Reset zoom">
                     Reset
-                </button>
+                </Button>
             </div>
 
-            <Button variant="secondary" size="md" onClick={onBackToGrid}>
+            <Button tone="secondary" size="md" onClick={viewer.backToGrid}>
                 Back to Grid
             </Button>
         </div>

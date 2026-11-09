@@ -1,9 +1,21 @@
 packages:
   - .
-  - .sandcastle
 
 allowBuilds:
   "@prisma/engines": true
   esbuild: true
   lefthook: true
   prisma: true
+  workerd: true
+
+permissions:
+  "@tanstack/db":
+    skills: true
+  "@tanstack/react-db":
+    skills: true
+  "@tanstack/react-router":
+    skills: true
+  "@tanstack/react-start":
+    skills: true
+  fallow:
+    skills: true

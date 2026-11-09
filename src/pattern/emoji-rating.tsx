@@ -1,6 +1,7 @@
 import { useState } from "react"
 
-import { cx } from "@ui/variants"
+import { cx } from "@ui/cva.config"
+import { focusRing } from "@ui/variants"
 
 const RATING_EMOJIS = ["🚑", "💩", "🤡", "😐", "😏", "😍", "🍆"] as const
 
@@ -24,53 +25,86 @@ const EMOJI_TITLES: Record<(typeof RATING_EMOJIS)[number], string> = {
     "🍆": "The food was horny and now so am I",
 }
 
-const RATING_COLORS = ["#b53920", "#db573d", "#eb6348", "#7d2b1f", "#f58974", "#fab5a7", "#fde7e3"] as const
+const RATING_COLORS = [
+    "oklch(0.5234 0.1645 33.24)",
+    "oklch(0.6248 0.171 33.01)",
+    "oklch(0.6662 0.1742 33.01)",
+    "oklch(0.4088 0.1165 30.94)",
+    "oklch(0.7427 0.1359 32.07)",
+    "oklch(0.8339 0.0834 31.75)",
+    "oklch(0.9446 0.0248 29.93)",
+] as const
 
 export function EmojiRating({
     rating,
+    defaultRating,
     onRate,
-}: {
-    rating: number | null
+    disabled,
+    className,
+}: Readonly<{
+    rating?: number | undefined
+    defaultRating?: number | undefined
     onRate: (rating: number) => void | Promise<void>
-}) {
-    const [hoverRating, setHoverRating] = useState<number | null>(null)
-
-    const displayRating = hoverRating ?? rating
+    disabled?: boolean | undefined
+    className?: string | undefined
+}>) {
+    const [hoverRating, setHoverRating] = useState<number | undefined>(undefined)
+    const [uncontrolled, setUncontrolled] = useState<number | undefined>(defaultRating)
+    const isControlled = rating !== undefined
+    const current = isControlled ? rating : uncontrolled
+    const displayRating = hoverRating ?? current
 
     const selectedTitle = (() => {
-        const idx = hoverRating ?? rating
-        if (idx === null) return "Tap an emoji to rate"
+        const idx = hoverRating ?? current
+        if (idx === undefined) {
+            return "Tap an emoji to rate"
+        }
         const emoji = RATING_EMOJIS[idx]
         return emoji !== undefined ? EMOJI_TITLES[emoji] : ""
     })()
 
-    const activeColor = displayRating !== null ? RATING_COLORS[displayRating] : "#b53920"
+    const activeColor = displayRating !== undefined ? RATING_COLORS[displayRating] : "oklch(0.5234 0.1645 33.24)"
 
     const handleRate = async (index: number, button: HTMLButtonElement) => {
+        if (!isControlled) {
+            setUncontrolled(index)
+        }
         await onRate(index)
         button.focus({ preventScroll: true })
     }
 
     return (
-        <div className="flex w-full flex-col items-center gap-2">
-            <div className="flex items-center gap-0.5" onMouseLeave={() => setHoverRating(null)}>
+        <div data-slot="emoji-rating" className={cx("flex w-full flex-col items-center gap-2", className)}>
+            <div
+                className="flex items-center gap-0.5"
+                onMouseLeave={() => {
+                    setHoverRating(undefined)
+                }}
+            >
                 {RATING_EMOJIS.map((emoji, index) => {
                     const isActive = displayRating === index
 
                     return (
                         <button
-                            key={index}
+                            key={emoji}
                             type="button"
-                            onMouseEnter={() => setHoverRating(index)}
-                            onClick={(e) => {
-                                e.preventDefault()
-                                void handleRate(index, e.currentTarget)
+                            disabled={disabled}
+                            onMouseEnter={() => {
+                                if (disabled !== true) {
+                                    setHoverRating(index)
+                                }
+                            }}
+                            onClick={(event: React.MouseEvent<HTMLButtonElement>) => {
+                                event.preventDefault()
+                                void handleRate(index, event.currentTarget)
                             }}
                             aria-label={EMOJI_LABELS[index]}
+                            aria-pressed={isActive}
                             className={cx(
-                                "flex size-8 items-center justify-center text-lg transition-all duration-200 focus:outline-none sm:size-9 sm:text-xl",
-                                isActive ? "scale-110" : "hover:scale-105",
-                                isActive ? "opacity-100" : "opacity-40 grayscale hover:opacity-70 hover:grayscale-50",
+                                focusRing(),
+                                "hit-area-2 flex size-8 cursor-pointer items-center justify-center rounded-control text-lg sm:size-9 sm:text-xl",
+                                "disabled:cursor-not-allowed disabled:opacity-40",
+                                isActive ? "opacity-100" : "opacity-40 grayscale hover:opacity-70",
                             )}
                             style={isActive ? { color: activeColor } : undefined}
                         >
@@ -79,7 +113,7 @@ export function EmojiRating({
                     )
                 })}
             </div>
-            <p className="max-w-full text-center text-sm leading-snug font-medium text-flame-pea-700 italic transition-colors duration-200 dark:text-flame-pea-400">
+            <p className="max-w-full text-center text-sm leading-snug font-medium text-balance text-tomato-700">
                 {selectedTitle}
             </p>
         </div>

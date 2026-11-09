@@ -1,6 +1,7 @@
-import { useState, type ComponentProps } from "react"
+import { useEffect, useState } from "react"
 
-import { cx } from "@ui/variants"
+import { AspectRatio } from "@ui/aspect-ratio"
+import { cx } from "@ui/cva.config"
 
 const MAX_LOADED_IMAGES = 100
 
@@ -27,7 +28,7 @@ class BoundedImageCache {
             }
         } else if (this.order.length >= this.maxSize) {
             const oldest = this.order.shift()
-            if (oldest) {
+            if (oldest !== undefined && oldest !== "") {
                 this.cache.delete(oldest)
             }
         }
@@ -38,20 +39,28 @@ class BoundedImageCache {
 
 const loadedImages = new BoundedImageCache(MAX_LOADED_IMAGES)
 
-type LazyImageProps = Omit<ComponentProps<"img">, "src"> & {
-    src?: string | undefined
-    alt: string
-    loading?: "eager" | "lazy"
-    decoding?: "sync" | "async" | "auto"
-    aspectRatio?: string
+type LazyImageProps = {
+    readonly src?: string | undefined
+    readonly alt: string
+    readonly loading?: "eager" | "lazy" | undefined
+    readonly decoding?: "sync" | "async" | "auto" | undefined
+    readonly ratio?: number | undefined
+    readonly className?: string | undefined
+    readonly style?: React.CSSProperties | undefined
+    readonly draggable?: boolean | undefined
 }
 
-export function LazyImage({ src, alt, aspectRatio, className, loading, decoding, ...imgProps }: LazyImageProps) {
-    const [isLoaded, setIsLoaded] = useState(src ? loadedImages.has(src) : false)
+export function LazyImage({ src, alt, ratio, className, loading, decoding, ...imgProps }: Readonly<LazyImageProps>) {
+    const [isLoaded, setIsLoaded] = useState(src !== undefined && src !== "" ? loadedImages.has(src) : false)
     const [hasError, setHasError] = useState(false)
 
+    useEffect(() => {
+        setIsLoaded(src !== undefined && src !== "" ? loadedImages.has(src) : false)
+        setHasError(false)
+    }, [src])
+
     const handleLoad = () => {
-        if (src) {
+        if (src !== undefined && src !== "") {
             loadedImages.add(src)
         }
         setIsLoaded(true)
@@ -61,37 +70,42 @@ export function LazyImage({ src, alt, aspectRatio, className, loading, decoding,
         setHasError(true)
     }
 
-    return (
-        <div
-            className={cx("relative overflow-hidden", aspectRatio && "w-full")}
-            style={aspectRatio ? { aspectRatio } : undefined}
-        >
-            {!isLoaded && !hasError && (
-                <div className="absolute inset-0 animate-pulse bg-[#e8e6e3] dark:bg-[#2d2b29]" />
-            )}
+    const content = (
+        <>
+            {!isLoaded && !hasError && <div className="absolute inset-0 bg-surface-muted" />}
 
             {hasError && (
-                <div className="absolute inset-0 flex items-center justify-center bg-[#f5f4f2] dark:bg-[#2d2b29]">
-                    <span className="text-sm text-neutral-500">Failed to load image</span>
+                <div className="absolute inset-0 flex items-center justify-center bg-surface-muted">
+                    <span className="text-sm text-muted-foreground">Failed to load image</span>
                 </div>
             )}
 
-            {src && (
+            {src !== undefined && src !== "" && (
                 <img
-                    {...imgProps}
                     src={src}
                     alt={alt}
                     loading={loading ?? "lazy"}
                     decoding={decoding ?? "async"}
-                    className={cx(
-                        "h-full w-full object-cover transition-opacity duration-200 ease-out",
-                        isLoaded ? "opacity-100" : "opacity-0",
-                        className,
-                    )}
+                    className={cx("size-full object-cover", isLoaded ? "opacity-100" : "opacity-0", className)}
                     onLoad={handleLoad}
                     onError={handleError}
+                    {...imgProps}
                 />
             )}
-        </div>
+        </>
+    )
+
+    if (ratio === undefined) {
+        return (
+            <div data-slot="lazy-image" className={cx("relative overflow-hidden", className)}>
+                {content}
+            </div>
+        )
+    }
+
+    return (
+        <AspectRatio ratio={ratio} className="w-full overflow-hidden">
+            {content}
+        </AspectRatio>
     )
 }

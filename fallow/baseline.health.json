@@ -1,0 +1,127 @@
+{
+    "kind": "health",
+    "finding_counts": {
+        "convex/groups.ts": {
+            "crap_moderate": {
+                "count": 1
+            }
+        },
+        "convex/invitations.ts": {
+            "crap_moderate": {
+                "count": 2
+            }
+        },
+        "convex/restaurants.ts": {
+            "crap_high": {
+                "count": 1
+            },
+            "crap_moderate": {
+                "count": 5
+            }
+        },
+        "convex/users.ts": {
+            "crap_high": {
+                "count": 1
+            }
+        },
+        "src/routes/-layouts/top-bar.tsx": {
+            "crap_moderate": {
+                "count": 1
+            }
+        },
+        "src/routes/groups.$groupId.tsx": {
+            "crap_moderate": {
+                "count": 1
+            }
+        },
+        "src/routes/login.tsx": {
+            "crap_moderate": {
+                "count": 1
+            }
+        }
+    },
+    "identity_finding_counts": {
+        "convex/groups.ts\u0000resolveGroupImage": {
+            "crap_moderate": {
+                "count": 1
+            }
+        },
+        "convex/invitations.ts\u0000handler": {
+            "crap_moderate": {
+                "count": 2
+            }
+        },
+        "convex/restaurants.ts\u0000assertRestaurantText": {
+            "crap_high": {
+                "count": 1
+            }
+        },
+        "convex/restaurants.ts\u0000buildRestaurantPatch": {
+            "crap_moderate": {
+                "count": 1
+            }
+        },
+        "convex/restaurants.ts\u0000handler": {
+            "crap_moderate": {
+                "count": 2
+            }
+        },
+        "convex/restaurants.ts\u0000lookupPlaceIdFromGoogle": {
+            "crap_moderate": {
+                "count": 1
+            }
+        },
+        "convex/restaurants.ts\u0000toOpeningHoursData": {
+            "crap_moderate": {
+                "count": 1
+            }
+        },
+        "convex/users.ts\u0000handler": {
+            "crap_high": {
+                "count": 1
+            }
+        },
+        "src/routes/-layouts/top-bar.tsx\u0000AuthButton": {
+            "crap_moderate": {
+                "count": 1
+            }
+        },
+        "src/routes/groups.$groupId.tsx\u0000GroupDetail": {
+            "crap_moderate": {
+                "count": 1
+            }
+        },
+        "src/routes/login.tsx\u0000LoginPage": {
+            "crap_moderate": {
+                "count": 1
+            }
+        }
+    },
+    "runtime_coverage_findings": [],
+    "target_keys": [
+        "src/core/hooks.ts:high impact",
+        "convex/social.ts:hidden coupling",
+        "convex/restaurants.ts:hidden coupling",
+        "src/core/social.ts:hidden coupling",
+        "src/ui/opening-hours-utils.ts:high impact",
+        "src/ui/field.tsx:hidden coupling",
+        "convex/env.ts:high impact",
+        "src/ui/card.tsx:hidden coupling",
+        "src/pattern/gallery/navigation-arrow.tsx:hidden coupling",
+        "src/ui/button.tsx:hidden coupling",
+        "src/routes/login.tsx:hidden coupling",
+        "src/features/restaurants/add-restaurant-dialog.tsx:hidden coupling",
+        "src/ui/search-input.tsx:hidden coupling",
+        "src/ui/opening-hours.tsx:hidden coupling",
+        "src/routes/signup.tsx:hidden coupling",
+        "src/pattern/emoji-rating.tsx:hidden coupling",
+        "src/ui/dialog.tsx:hidden coupling",
+        "src/ui/opening-hours-dialog.tsx:hidden coupling",
+        "src/features/restaurants/edit-restaurant-dialog.tsx:hidden coupling",
+        "src/ui/badge.tsx:hidden coupling",
+        "src/routes/__root.tsx:hidden coupling",
+        "src/ui/popover.tsx:hidden coupling",
+        "src/ui/tabs.tsx:hidden coupling",
+        "src/ui/error-banner.tsx:hidden coupling"
+    ]
+}

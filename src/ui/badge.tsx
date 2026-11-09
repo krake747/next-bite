@@ -1,29 +1,19 @@
-import { cva, cx, type VariantProps } from "@ui/variants"
+import { useRender } from "@base-ui/react/use-render"
 
-const badge = cva({
-    base: "inline-flex items-center rounded-full text-xs font-medium",
-    variants: {
-        variant: {
-            primary: "bg-flame-pea-50 px-2 py-1 text-flame-pea-700 inset-ring inset-ring-flame-pea-700/10",
-            gray: "bg-neutral-50 px-2 py-1 text-neutral-600 inset-ring inset-ring-neutral-500/10",
-            pink: "bg-pink-50 px-2 py-1 text-pink-700 inset-ring inset-ring-pink-700/10",
-            editorial: "bg-flame-pea-600 px-3 py-1.5 font-semibold tracking-wide text-white",
+import { cx, type VariantProps } from "@ui/cva.config"
+
+import { badge } from "./badge.variants"
+
+type BadgeProps = VariantProps<typeof badge> & useRender.ComponentProps<"span">
+
+export function Badge({ tone, className, children, ...props }: Readonly<BadgeProps>) {
+    return useRender({
+        defaultTagName: "span",
+        state: { slot: "badge", variant: tone ?? "neutral" },
+        props: {
+            ...props,
+            className: cx(badge({ tone }), className),
+            children,
         },
-    },
-    defaultVariants: {
-        variant: "primary",
-    },
-})
-
-type BadgeProps = VariantProps<typeof badge> & {
-    className?: string
-    children?: React.ReactNode
-}
-
-export function Badge({ variant, className, children }: BadgeProps) {
-    return (
-        <span data-slot="badge" className={cx(badge({ variant }), className)}>
-            {children}
-        </span>
-    )
+    })
 }

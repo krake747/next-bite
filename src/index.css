@@ -1,26 +1,101 @@
 @import "tailwindcss";
 
-@custom-variant dark (&:is(.dark *));
-
 @theme inline {
-    --color-flame-pea-50: #fef4f2;
-    --color-flame-pea-100: #fde7e3;
-    --color-flame-pea-200: #fdd3cb;
-    --color-flame-pea-300: #fab5a7;
-    --color-flame-pea-400: #f58974;
-    --color-flame-pea-500: #eb6348;
-    --color-flame-pea-600: #db573d;
-    --color-flame-pea-700: #b53920;
-    --color-flame-pea-800: #96321e;
-    --color-flame-pea-900: #7d2e1f;
-    --color-flame-pea-950: #44140b;
+    /* Tomato */
+    --color-tomato-50: oklch(0.968 0.016 36.53);
+    --color-tomato-100: oklch(0.93 0.037 36.77);
+    --color-tomato-200: oklch(0.865 0.074 36.13);
+    --color-tomato-300: oklch(0.78 0.118 35.1);
+    --color-tomato-400: oklch(0.692 0.158 33.75);
+    --color-tomato-500: oklch(0.626 0.189 31.74);
+    --color-tomato-600: oklch(0.568 0.183 30.85);
+    --color-tomato-700: oklch(0.488 0.159 29.95);
+    --color-tomato-800: oklch(0.42 0.128 29.61);
+    --color-tomato-900: oklch(0.37 0.103 28.63);
 
-    /* Tailwind's ease-initial → CSS default ease */
-    /* Subtle visual transitions (hover, opacity, color) */
+    /* Mango */
+    --color-mango-50: oklch(0.987 0.015 88);
+    --color-mango-100: oklch(0.966 0.04 88);
+    --color-mango-200: oklch(0.933 0.079 88);
+    --color-mango-300: oklch(0.886 0.114 88);
+    --color-mango-400: oklch(0.832 0.131 88);
+    --color-mango-500: oklch(0.758 0.134 88);
+    --color-mango-600: oklch(0.56 0.114 88);
+
+    /* Basil */
+    --color-basil-50: oklch(0.965 0.013 126.37);
+    --color-basil-100: oklch(0.931 0.02 128.7);
+    --color-basil-200: oklch(0.867 0.041 129);
+    --color-basil-300: oklch(0.791 0.059 129.33);
+    --color-basil-400: oklch(0.707 0.07 131.21);
+    --color-basil-500: oklch(0.664 0.072 131.5);
+    --color-basil-600: oklch(0.51 0.059 134.2);
+
+    /* Plum */
+    --color-plum: oklch(0.58 0.219 292.72);
+
+    /* Stone neutrals */
+    --color-stone-50: oklch(0.994 0.007 88.64);
+    --color-stone-100: oklch(0.982 0.015 77.07);
+    --color-stone-200: oklch(0.945 0.021 85.94);
+    --color-stone-300: oklch(0.901 0.022 80.68);
+    --color-stone-400: oklch(0.803 0.025 77.42);
+    --color-stone-500: oklch(0.685 0.026 77.37);
+    --color-stone-600: oklch(0.55 0.025 73.9);
+    --color-stone-700: oklch(0.469 0.021 72.82);
+    --color-stone-800: oklch(0.349 0.018 74.08);
+    --color-stone-900: oklch(0.267 0.012 78.07);
+
+    /* Semantic colors */
+    --color-background: var(--color-stone-100);
+    --color-surface: oklch(1 0 0);
+    --color-surface-muted: var(--color-stone-200);
+    --color-surface-accent: var(--color-mango-100);
+    --color-foreground: var(--color-stone-900);
+    --color-muted-foreground: var(--color-stone-600);
+    --color-primary: var(--color-tomato-600);
+    --color-primary-hover: color-mix(in oklch, var(--color-tomato-600) 85%, black);
+    --color-border: color-mix(in oklch, var(--color-stone-900) 10%, transparent);
+    --color-border-strong: color-mix(in oklch, var(--color-stone-900) 20%, transparent);
+    --color-success: var(--color-basil-600);
+    --color-warning: var(--color-mango-600);
+    --color-destructive: oklch(0.522 0.172 27.78);
+    --color-info: oklch(0.567 0.066 244.09);
+    --color-ring: var(--color-tomato-600);
+    --color-inverse: oklch(1 0 0);
+    --color-scrim: oklch(0 0 0 / 0.6);
+
+    /* Sidebar */
+    --color-sidebar: var(--color-surface);
+    --color-sidebar-foreground: var(--color-foreground);
+    --color-sidebar-border: var(--color-border);
+    --color-sidebar-accent: var(--color-tomato-100);
+    --color-sidebar-accent-foreground: var(--color-tomato-700);
+    --color-sidebar-ring: var(--color-ring);
+
+    /* Typography */
+    --font-sans: "DM Sans Variable", system-ui, sans-serif;
+    --font-display: "Bricolage Grotesque Variable", system-ui, sans-serif;
+
+    /* Radius */
+    --radius-control: 0.625rem;
+    --radius-panel: 0.875rem;
+    --radius-card: 1rem;
+    --radius-dialog: 1.25rem;
+
+    /* Shadows */
+    --shadow-card:
+        0 1px 2px oklch(0.267 0.012 78.07 / 0.05), 0 2px 8px oklch(0.267 0.012 78.07 / 0.05),
+        0 4px 16px oklch(0.267 0.012 78.07 / 0.04);
+    --shadow-popover:
+        0 2px 4px oklch(0.267 0.012 78.07 / 0.06), 0 8px 24px oklch(0.267 0.012 78.07 / 0.08),
+        0 16px 40px oklch(0.267 0.012 78.07 / 0.06);
+    --shadow-dialog:
+        0 4px 8px oklch(0.267 0.012 78.07 / 0.08), 0 12px 32px oklch(0.267 0.012 78.07 / 0.1),
+        0 24px 64px oklch(0.267 0.012 78.07 / 0.08);
+
     --ease: cubic-bezier(0.25, 0.1, 0.25, 1);
 
-    /* Tailwind's ease-in → cubic-bezier(0.4, 0, 1, 1) */
-    /* Avoid ease-in for user-triggered entry animations (feels less responsive) */
     --ease-in-quad: cubic-bezier(0.55, 0.085, 0.68, 0.53);
     --ease-in-cubic: cubic-bezier(0.55, 0.055, 0.675, 0.19);
     --ease-in-quart: cubic-bezier(0.895, 0.03, 0.685, 0.22);
@@ -28,8 +103,6 @@
     --ease-in-expo: cubic-bezier(0.95, 0.05, 0.795, 0.035);
     --ease-in-circ: cubic-bezier(0.6, 0.04, 0.98, 0.335);
 
-    /* Tailwind's ease-out → cubic-bezier(0, 0, 0.2, 1) */
-    /* Default easing. Use for most enter/exit UI animations */
     --ease-out-quad: cubic-bezier(0.25, 0.46, 0.45, 0.94);
     --ease-out-cubic: cubic-bezier(0.215, 0.61, 0.355, 1);
     --ease-out-quart: cubic-bezier(0.165, 0.84, 0.44, 1);
@@ -37,8 +110,6 @@
     --ease-out-expo: cubic-bezier(0.19, 1, 0.22, 1);
     --ease-out-circ: cubic-bezier(0.075, 0.82, 0.165, 1);
 
-    /* Tailwind's ease-in-out → cubic-bezier(0.4, 0, 0.2, 1) */
-    /* Ease-in-out: accelerates then decelerates, ideal for visible elements that move or morph naturally on screen */
     --ease-in-out-quad: cubic-bezier(0.455, 0.03, 0.515, 0.955);
     --ease-in-out-cubic: cubic-bezier(0.645, 0.045, 0.355, 1);
     --ease-in-out-quart: cubic-bezier(0.77, 0, 0.175, 1);
@@ -49,11 +120,8 @@
 
 @layer base {
     :root {
-        --font-display: "Fraunces Variable", georgia, serif;
-        --font-body: "Manrope Variable", system-ui, sans-serif;
-
-        font-family: "Manrope Variable", system-ui, sans-serif;
-        color-scheme: light dark;
+        font-family: "DM Sans Variable", system-ui, sans-serif;
+        color-scheme: light;
         font-synthesis: none;
         text-rendering: optimizelegibility;
         -webkit-font-smoothing: antialiased;
@@ -61,271 +129,166 @@
     }
 
     body {
-        @apply text-neutral-900;
-        background-color: #faf9f7;
+        @apply bg-background text-foreground;
     }
+}
 
-    .dark body {
-        @apply text-neutral-100;
-        background-color: #1a1918;
+/* Custom data variants (ported from captain/endeavour shadcn-base.css) */
+@custom-variant data-open {
+    &:where([data-state="open"]),
+    &:where([data-open]:not([data-open="false"])) {
+        @slot;
     }
+}
 
-    /* Hide scrollbar */
-    ::-webkit-scrollbar {
+@custom-variant data-closed {
+    &:where([data-state="closed"]),
+    &:where([data-closed]:not([data-closed="false"])) {
+        @slot;
+    }
+}
+
+@custom-variant data-checked {
+    &:where([data-state="checked"]),
+    &:where([data-checked]:not([data-checked="false"])) {
+        @slot;
+    }
+}
+
+@custom-variant data-unchecked {
+    &:where([data-state="unchecked"]),
+    &:where([data-unchecked]:not([data-unchecked="false"])) {
+        @slot;
+    }
+}
+
+@custom-variant data-selected {
+    &:where([data-selected="true"]) {
+        @slot;
+    }
+}
+
+@custom-variant data-disabled {
+    &:where([data-disabled="true"]),
+    &:where([data-disabled]:not([data-disabled="false"])) {
+        @slot;
+    }
+}
+
+@custom-variant data-active {
+    &:where([data-state="active"]),
+    &:where([data-active]:not([data-active="false"])) {
+        @slot;
+    }
+}
+
+@custom-variant data-horizontal {
+    &:where([data-orientation="horizontal"]) {
+        @slot;
+    }
+}
+
+@custom-variant data-vertical {
+    &:where([data-orientation="vertical"]) {
+        @slot;
+    }
+}
+
+@utility no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+
+    &::-webkit-scrollbar {
         display: none;
     }
+}
 
-    html {
-        -ms-overflow-style: none;
-        scrollbar-width: none;
+/* Search inputs render their own clear control; the native cancel button would double it. */
+input[type="search"]::-webkit-search-cancel-button {
+    display: none;
+}
+
+/* Touch-target hit-area utilities.
+   Expand the interactive area via ::before without changing layout.
+   hit-area-2 on a size-8 button yields a 48px target. Shared base holds the
+   positioning and ::before body once; axis variants only set their vars. */
+@utility tap-target-base {
+    position: relative;
+    &::before {
+        content: "";
+        position: absolute;
+        top: var(--hit-area-t, 0px);
+        right: var(--hit-area-r, 0px);
+        bottom: var(--hit-area-b, 0px);
+        left: var(--hit-area-l, 0px);
+        pointer-events: inherit;
     }
 }
 
-@layer utilities {
-    .animate-fade-in {
-        animation: fade-in 200ms ease-out;
+@utility hit-area-debug {
+    @apply tap-target-base;
+    &::before {
+        @apply border border-dashed border-blue-500 bg-blue-500/10;
     }
-
-    .animate-float {
-        animation: float 6s ease-in-out infinite;
-    }
-
-    .animate-celebrate-particle {
-        animation: celebrate-particle 2s ease-out forwards;
-    }
-
-    .animate-winner-reveal {
-        animation: winner-reveal 600ms cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
-    }
-
-    .animate-winner-modal {
-        animation: winner-modal 500ms cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
-    }
-
-    .animate-winner-glow {
-        animation: winner-glow 2s ease-in-out infinite;
-    }
-
-    .animate-title-reveal {
-        animation: title-reveal 500ms 150ms cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
-        opacity: 0;
-    }
-
-    .animate-fade-in-up {
-        animation: fade-in-up 400ms 300ms ease-out forwards;
-        opacity: 0;
-    }
-
-    .animate-ping-slow {
-        animation: ping 2s cubic-bezier(0, 0, 0.2, 1) infinite;
-    }
-
-    .animate-pulse-slow {
-        animation: pulse-slow 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-    }
-
-    .animate-card-reveal {
-        animation: card-reveal 500ms 250ms cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
-        opacity: 0;
-    }
-
-    .animate-card-enter {
-        animation: card-enter 600ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
-        opacity: 0;
-        transform: translateY(24px) scale(0.98);
-    }
-
-    .animate-line-reveal {
-        animation: line-reveal 800ms 300ms cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
-        transform: scaleX(0);
-    }
-
-    .animate-float-dot-1 {
-        animation: float-dot-1 5s ease-in-out infinite;
-    }
-
-    .animate-float-dot-2 {
-        animation: float-dot-2 6s ease-in-out infinite;
-        animation-delay: 1s;
+    &:hover::before {
+        @apply border border-dashed border-green-500 bg-green-500/10;
     }
 }
 
-@keyframes fade-in {
-    from {
-        opacity: 0;
-        transform: scale(0.95);
-    }
-    to {
-        opacity: 1;
-        transform: scale(1);
-    }
+@utility hit-area {
+    @apply tap-target-base;
 }
 
-@keyframes float {
-    0%,
-    100% {
-        transform: translateY(0);
-    }
-    50% {
-        transform: translateY(-20px);
-    }
+@utility hit-area-* {
+    @apply tap-target-base;
+    --hit-area-t: --spacing(--value(number) * -1);
+    --hit-area-t: calc(--value([*]) * -1);
+    --hit-area-b: --spacing(--value(number) * -1);
+    --hit-area-b: calc(--value([*]) * -1);
+    --hit-area-l: --spacing(--value(number) * -1);
+    --hit-area-l: calc(--value([*]) * -1);
+    --hit-area-r: --spacing(--value(number) * -1);
+    --hit-area-r: calc(--value([*]) * -1);
 }
 
-@keyframes celebrate-particle {
-    0% {
-        opacity: 1;
-        transform: translate(0, 0) scale(1);
-    }
-    100% {
-        opacity: 0;
-        transform: translate(
-                calc((var(--size, 50px) - 50%) * var(--rand-sign, 1) * 3),
-                calc(-100px - var(--rand-y, 25px))
-            )
-            scale(0);
-    }
+@utility hit-area-l-* {
+    @apply tap-target-base;
+    --hit-area-l: --spacing(--value(number) * -1);
+    --hit-area-l: calc(--value([*]) * -1);
 }
 
-@keyframes winner-reveal {
-    0% {
-        opacity: 0;
-        transform: scale(0.8) translateY(20px);
-    }
-    100% {
-        opacity: 1;
-        transform: scale(1) translateY(0);
-    }
+@utility hit-area-r-* {
+    @apply tap-target-base;
+    --hit-area-r: --spacing(--value(number) * -1);
+    --hit-area-r: calc(--value([*]) * -1);
 }
 
-@keyframes winner-modal {
-    0% {
-        opacity: 0;
-        transform: scale(0.9) translateY(16px);
-    }
-    100% {
-        opacity: 1;
-        transform: scale(1) translateY(0);
-    }
+@utility hit-area-t-* {
+    @apply tap-target-base;
+    --hit-area-t: --spacing(--value(number) * -1);
+    --hit-area-t: calc(--value([*]) * -1);
 }
 
-@keyframes winner-glow {
-    0%,
-    100% {
-        opacity: 0.5;
-        transform: scale(1);
-    }
-    50% {
-        opacity: 0.8;
-        transform: scale(1.1);
-    }
+@utility hit-area-b-* {
+    @apply tap-target-base;
+    --hit-area-b: --spacing(--value(number) * -1);
+    --hit-area-b: calc(--value([*]) * -1);
 }
 
-@keyframes title-reveal {
-    0% {
-        opacity: 0;
-        transform: translateY(10px) scale(0.95);
-    }
-    100% {
-        opacity: 1;
-        transform: translateY(0) scale(1);
-    }
+@utility hit-area-x-* {
+    @apply tap-target-base;
+    --hit-area-l: --spacing(--value(number) * -1);
+    --hit-area-l: calc(--value([*]) * -1);
+    --hit-area-r: --spacing(--value(number) * -1);
+    --hit-area-r: calc(--value([*]) * -1);
 }
 
-@keyframes fade-in-up {
-    0% {
-        opacity: 0;
-        transform: translateY(10px);
-    }
-    100% {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-@keyframes ping {
-    0% {
-        transform: scale(0.5);
-        opacity: 1;
-    }
-    100% {
-        transform: scale(2);
-        opacity: 0;
-    }
-}
-
-@keyframes pulse-slow {
-    0%,
-    100% {
-        opacity: 0.3;
-    }
-    50% {
-        opacity: 0.6;
-    }
-}
-
-@keyframes card-reveal {
-    0% {
-        opacity: 0;
-        transform: translateY(20px) scale(0.98);
-    }
-    100% {
-        opacity: 1;
-        transform: translateY(0) scale(1);
-    }
-}
-
-@keyframes card-enter {
-    0% {
-        opacity: 0;
-        transform: translateY(24px) scale(0.98);
-    }
-    60% {
-        opacity: 1;
-        transform: translateY(-2px) scale(1.002);
-    }
-    100% {
-        opacity: 1;
-        transform: translateY(0) scale(1);
-    }
-}
-
-@keyframes line-reveal {
-    0% {
-        transform: scaleX(0);
-    }
-    100% {
-        transform: scaleX(1);
-    }
-}
-
-@keyframes float-dot-1 {
-    0%,
-    100% {
-        transform: translateY(0) translateX(0);
-    }
-    50% {
-        transform: translateY(-4px) translateX(2px);
-    }
-}
-
-@keyframes float-dot-2 {
-    0%,
-    100% {
-        transform: translateY(0) translateX(0);
-    }
-    50% {
-        transform: translateY(3px) translateX(-2px);
-    }
-}
-
-@media (prefers-reduced-motion: no-preference) {
-    @view-transition {
-        navigation: auto;
-    }
-
-    ::view-transition-image-pair(root) {
-        overflow: hidden;
-    }
+@utility hit-area-y-* {
+    @apply tap-target-base;
+    --hit-area-t: --spacing(--value(number) * -1);
+    --hit-area-t: calc(--value([*]) * -1);
+    --hit-area-b: --spacing(--value(number) * -1);
+    --hit-area-b: calc(--value([*]) * -1);
 }
 
 @media (prefers-reduced-motion: reduce) {

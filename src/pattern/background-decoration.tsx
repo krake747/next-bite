@@ -1,0 +1,17 @@
+export function BackgroundLayers() {
+    return (
+        <>
+            <div
+                aria-hidden="true"
+                className="pointer-events-none absolute inset-0 opacity-[0.02]"
+                style={{
+                    backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")`,
+                }}
+            />
+
+            <div aria-hidden="true" className="pointer-events-none absolute inset-0">
+                <div className="absolute top-0 left-0 h-full w-1/2 bg-linear-to-br from-tomato-100/40 via-transparent to-transparent" />
+            </div>
+        </>
+    )
+}

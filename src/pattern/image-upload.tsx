@@ -1,224 +1,532 @@
-import ImagePlus from "lucide-react/icons/image-plus"
-import Upload from "lucide-react/icons/upload"
-import X from "lucide-react/icons/x"
-import { useState, useRef, type DragEvent } from "react"
+import { CircleNotchIcon, ImageIcon, UploadIcon, XIcon } from "@phosphor-icons/react"
+import { useEffect, useRef, useState } from "react"
 
-import type { Id } from "@convex/_generated/dataModel"
-import { useUploadImage, useDeleteImage, type ImageRecord } from "@core/hooks"
-import { processImage, formatFileSize, MAX_IMAGES, MAX_FILE_SIZE } from "@core/image-utils"
-import { cx } from "@ui/variants"
+import { type Id } from "@api/data.model"
+import { MAX_IMAGES } from "@core/constants"
+import {
+    extensionForMime,
+    formatFileSize,
+    isAcceptedImageType,
+    processImage,
+    MAX_FILE_SIZE,
+    IMAGE_ACCEPT,
+    IMAGE_TYPE_LABEL,
+} from "@core/image.utils"
+import { clearError, errorFrom, type FormError } from "@core/outcome"
+import { useCleanupStorage, useDeleteImage, useUploadImage, type ImageRecord } from "@core/restaurants"
+import { cx } from "@ui/cva.config"
+
+type FileListLike = Readonly<{
+    readonly length: number
+    readonly [index: number]: Readonly<File>
+}>
+
+type DragStateEvent = Readonly<{
+    readonly preventDefault: () => void
+    readonly stopPropagation: () => void
+}>
+
+type DropEvent = Readonly<{
+    readonly preventDefault: () => void
+    readonly stopPropagation: () => void
+    readonly dataTransfer: Readonly<{ readonly files: FileListLike | null }> | null
+}>
+
+type FileInputEvent = Readonly<{
+    readonly target: Readonly<{ readonly files: FileListLike | null }>
+}>
 
 type ImageUploadProps = {
-    images: ImageRecord[]
-    onImagesChange: (images: ImageRecord[]) => void
-    maxImages?: number
-    disabled?: boolean
-    restaurantId?: Id<"restaurants">
-    onRemove?: (storageId: string) => void
+    readonly images: ReadonlyArray<Readonly<ImageRecord>>
+    readonly onImagesChange: (images: ReadonlyArray<Readonly<ImageRecord>>) => void
+    readonly disabled?: boolean | undefined
+    readonly maxFiles?: number | undefined
+    readonly restaurantId?: Id<"restaurants"> | undefined
+    readonly onRemove?: ((storageId: Id<"_storage">) => void) | undefined
+    readonly variant?: "gallery" | "avatar" | undefined
+    readonly ctaLabel?: string | undefined
+    readonly trigger?: ((controls: AvatarTriggerControls) => React.ReactNode) | undefined
 }
 
-export function ImageUpload(props: ImageUploadProps) {
-    const maxImages = props.maxImages ?? MAX_IMAGES
-    const uploadImage = useUploadImage()
-    const deleteImage = useDeleteImage()
-    const [isUploading, setIsUploading] = useState(false)
-    const [uploadError, setUploadError] = useState<string | null>(null)
-    const [isDragging, setIsDragging] = useState(false)
-    const fileInputRef = useRef<HTMLInputElement>(null)
+type AvatarTriggerControls = {
+    readonly openPicker: () => void
+    readonly isUploading: boolean
+}
 
-    const handleFiles = async (files: FileList | File[]) => {
-        const fileArray = Array.from(files).filter((f) => f.type.startsWith("image/"))
-        const remainingSlots = maxImages - props.images.length
-        const filesToProcess = fileArray.slice(0, remainingSlots)
-        if (filesToProcess.length === 0) return
-
-        setIsUploading(true)
-        setUploadError(null)
-
-        const newImages: ImageRecord[] = []
-
-        try {
-            for (const file of filesToProcess) {
-                if (file.size > MAX_FILE_SIZE) {
-                    throw new Error(`${file.name} is too large. Maximum size is ${formatFileSize(MAX_FILE_SIZE)}`)
-                }
-
-                const processed = await processImage(file, { maxWidth: 1920, quality: 0.9 })
-                const extension =
-                    processed.blob.type === "image/webp"
-                        ? ".webp"
-                        : processed.blob.type === "image/png"
-                          ? ".png"
-                          : processed.blob.type === "image/gif"
-                            ? ".gif"
-                            : ".jpg"
-                const baseName = file.name.replace(/\.[^.]+$/, "")
-                const processedFileName = baseName + extension
-                const processedFile = new File([processed.blob], processedFileName, { type: processed.blob.type })
-                const result = await uploadImage(processedFile)
-                newImages.push({ url: result.url, storageId: result.storageId })
-            }
-
-            props.onImagesChange([...props.images, ...newImages])
-        } catch (error) {
-            setUploadError(error instanceof Error ? error.message : "Upload failed")
-        } finally {
-            setIsUploading(false)
+function mergeImages(
+    current: ReadonlyArray<Readonly<ImageRecord>>,
+    additions: ReadonlyArray<Readonly<ImageRecord>>,
+): Readonly<ImageRecord>[] {
+    const known = new Set(current.map((image) => image.storageId))
+    const merged: Readonly<ImageRecord>[] = [...current]
+    for (const image of additions) {
+        if (!known.has(image.storageId)) {
+            known.add(image.storageId)
+            merged.push(image)
         }
     }
+    return merged
+}
 
-    const handleDragEnter = (e: DragEvent) => {
-        e.preventDefault()
-        e.stopPropagation()
+function prepareFilesList(files: FileListLike, existingCount: number, maxFiles: number): File[] {
+    const accepted = Array.from(files).filter((file) => isAcceptedImageType(file.type))
+    return accepted.slice(0, Math.max(0, maxFiles - existingCount))
+}
+
+function toUploadError(error: unknown): FormError {
+    return errorFrom(error, "UploadIcon failed")
+}
+
+async function processAndUpload(file: File, uploadImage: (file: File) => Promise<ImageRecord>): Promise<ImageRecord> {
+    const processed = await processImage(file)
+    const extension = extensionForMime(processed.blob.type)
+    const baseName = file.name.replace(/\.[^.]+$/, "")
+    const processedFile = new File([processed.blob], baseName + extension, { type: processed.blob.type })
+    return uploadImage(processedFile)
+}
+
+type UploadBatchDeps = {
+    readonly files: FileListLike
+    readonly existingCount: number
+    readonly maxFiles: number
+    readonly uploadImage: (file: Readonly<File>) => Promise<ImageRecord>
+    readonly claimBatch: () => () => boolean
+    readonly isMounted: () => boolean
+    readonly getLatestImages: () => ReadonlyArray<Readonly<ImageRecord>>
+    readonly cleanup: (args: { storageId: Id<"_storage"> }) => Promise<unknown>
+    readonly onImagesChange: (images: ReadonlyArray<Readonly<ImageRecord>>) => void
+    readonly setUploading: (uploading: boolean) => void
+    readonly setUploadError: (error: FormError) => void
+}
+
+async function discardStaleUpload(deps: UploadBatchDeps, result: ImageRecord): Promise<void> {
+    if (deps.isMounted()) {
+        deps.onImagesChange(mergeImages(deps.getLatestImages(), [result]))
+        return
+    }
+    await deps.cleanup({ storageId: result.storageId }).catch((error: unknown) => {
+        console.warn("Failed to cleanup cancelled upload:", result.storageId, error)
+    })
+}
+
+async function publishUpload(
+    deps: UploadBatchDeps,
+    uploaded: ImageRecord,
+    isCurrent: () => boolean,
+    published: ImageRecord[],
+): Promise<boolean> {
+    if (!isCurrent()) {
+        await discardStaleUpload(deps, uploaded)
+        return false
+    }
+    published.push(uploaded)
+    deps.onImagesChange(mergeImages(deps.getLatestImages(), published))
+    return true
+}
+
+async function runUploadBatch(deps: UploadBatchDeps): Promise<void> {
+    const filesToProcess = prepareFilesList(deps.files, deps.existingCount, deps.maxFiles)
+    if (filesToProcess.length === 0) {
+        return
+    }
+    const isCurrent = deps.claimBatch()
+    deps.setUploading(true)
+    deps.setUploadError(clearError)
+    const published: ImageRecord[] = []
+    try {
+        for (const file of filesToProcess) {
+            if (!isCurrent()) {
+                break
+            }
+            const uploaded = await processAndUpload(file, deps.uploadImage)
+            if (!(await publishUpload(deps, uploaded, isCurrent, published))) {
+                break
+            }
+        }
+    } catch (error) {
+        if (isCurrent()) {
+            deps.setUploadError(toUploadError(error))
+        }
+    } finally {
+        if (isCurrent()) {
+            deps.setUploading(false)
+        }
+    }
+}
+
+export function ImageUpload(props: Readonly<ImageUploadProps>) {
+    const uploadImage = useUploadImage()
+    const cleanupStorage = useCleanupStorage()
+    const [isUploading, setIsUploading] = useState(false)
+    const [uploadError, setUploadError] = useState<FormError>(clearError)
+    const batchRef = useRef(0)
+    const mountedRef = useRef(true)
+    const latestImagesRef = useRef(props.images)
+    useEffect(() => {
+        latestImagesRef.current = props.images
+    }, [props.images])
+
+    // A batch is owned by the mount that started it. Closing or unmounting the
+    // dialog invalidates in-flight batches. While mounted, a late completion
+    // still belongs to the draft and merges into the latest gallery; after
+    // unmount it is cleaned up so nothing is stranded.
+    useEffect(() => {
+        return () => {
+            mountedRef.current = false
+            batchRef.current += 1
+        }
+    }, [])
+
+    const claimBatch = () => {
+        const batch = batchRef.current + 1
+        batchRef.current = batch
+        return () => batchRef.current === batch
+    }
+
+    const handleFiles = async (files: FileListLike) => {
+        await runUploadBatch({
+            files,
+            existingCount: props.images.length,
+            maxFiles: props.maxFiles ?? MAX_IMAGES,
+            uploadImage,
+            claimBatch,
+            isMounted: () => mountedRef.current,
+            getLatestImages: () => latestImagesRef.current,
+            cleanup: async (args) => {
+                await cleanupStorage.mutateAsync(args)
+            },
+            onImagesChange: props.onImagesChange,
+            setUploading: setIsUploading,
+            setUploadError,
+        })
+    }
+
+    return (
+        <div className="space-y-4">
+            <UploadHeader variant={props.variant} count={props.images.length} maxFiles={props.maxFiles ?? MAX_IMAGES} />
+
+            <ImageGrid
+                images={props.images}
+                onImagesChange={props.onImagesChange}
+                restaurantId={props.restaurantId}
+                onRemove={props.onRemove}
+                disabled={props.disabled ?? false}
+            />
+            <UploadDropzone
+                disabled={props.disabled ?? false}
+                isUploading={isUploading}
+                canAddMore={props.images.length < (props.maxFiles ?? MAX_IMAGES)}
+                variant={props.variant}
+                ctaLabel={props.ctaLabel}
+                trigger={props.trigger}
+                onFiles={(files) => {
+                    void handleFiles(files)
+                }}
+            />
+
+            <UploadStatus variant={props.variant} isUploading={isUploading} uploadError={uploadError} />
+        </div>
+    )
+}
+
+function UploadHeader({
+    variant,
+    count,
+    maxFiles,
+}: Readonly<{
+    variant: "gallery" | "avatar" | undefined
+    count: number
+    maxFiles: number
+}>) {
+    if (variant === "avatar") {
+        return null
+    }
+    return (
+        <div className="flex items-center justify-between">
+            <span className="text-sm font-medium text-foreground">Images</span>
+            <span className="text-xs text-muted-foreground">
+                {count}/{maxFiles}
+            </span>
+        </div>
+    )
+}
+
+function UploadStatus({
+    variant,
+    isUploading,
+    uploadError,
+}: Readonly<{ variant: "gallery" | "avatar" | undefined; isUploading: boolean; uploadError: FormError }>) {
+    return (
+        <>
+            {variant !== "avatar" && isUploading && (
+                <p className="text-center text-sm text-muted-foreground">Uploading…</p>
+            )}
+            {uploadError.kind === "error" && <p className="text-sm text-destructive">{uploadError.message}</p>}
+        </>
+    )
+}
+
+function ImageGrid({
+    images,
+    onImagesChange,
+    restaurantId,
+    onRemove,
+    disabled,
+}: Readonly<{
+    images: ReadonlyArray<Readonly<ImageRecord>>
+    onImagesChange: (images: ReadonlyArray<Readonly<ImageRecord>>) => void
+    restaurantId: Id<"restaurants"> | undefined
+    onRemove: ((storageId: Id<"_storage">) => void) | undefined
+    disabled: boolean
+}>) {
+    const deleteImage = useDeleteImage()
+
+    const handleRemove = async (index: number, image: Readonly<ImageRecord>) => {
+        const originalImages = [...images]
+        onImagesChange(images.filter((_, i) => i !== index))
+
+        if (restaurantId !== undefined) {
+            try {
+                await deleteImage.mutateAsync({
+                    restaurantId,
+                    imageUrl: image.url,
+                    storageId: image.storageId,
+                })
+            } catch (error) {
+                onImagesChange(originalImages)
+                console.error("Failed to delete image:", error)
+            }
+            return
+        }
+        onRemove?.(image.storageId)
+    }
+
+    if (images.length === 0) {
+        return null
+    }
+    return (
+        <div data-slot="image-preview-list" className="grid grid-cols-3 gap-2 sm:grid-cols-4">
+            {images.map((image, index) => (
+                <ImagePreview
+                    key={image.storageId}
+                    imageUrl={image.url}
+                    onRemove={() => {
+                        void handleRemove(index, image)
+                    }}
+                    disabled={disabled}
+                />
+            ))}
+        </div>
+    )
+}
+
+function AvatarUploadButton({
+    isUploading,
+    ctaLabel,
+    onClick,
+    onDragEnter,
+    onDragLeave,
+    onDragOver,
+    onDrop,
+}: Readonly<{
+    isUploading: boolean
+    ctaLabel: string | undefined
+    onClick: () => void
+    onDragEnter: (event: DragStateEvent) => void
+    onDragLeave: (event: DragStateEvent) => void
+    onDragOver: (event: DragStateEvent) => void
+    onDrop: (event: DropEvent) => void
+}>) {
+    return (
+        <button
+            type="button"
+            onClick={onClick}
+            onDragEnter={onDragEnter}
+            onDragLeave={onDragLeave}
+            onDragOver={onDragOver}
+            onDrop={onDrop}
+            disabled={isUploading}
+            className={cx(
+                "flex cursor-pointer items-center justify-center gap-2 rounded-control border border-dashed border-border px-4 py-2 text-sm text-muted-foreground hover:border-border-strong hover:text-foreground",
+                isUploading && "pointer-events-none opacity-70",
+            )}
+        >
+            {isUploading ? (
+                <CircleNotchIcon className="size-4 animate-spin" aria-hidden="true" />
+            ) : (
+                <UploadIcon className="size-4" aria-hidden="true" />
+            )}
+            <span>{isUploading ? "Uploading…" : (ctaLabel ?? "Change photo")}</span>
+        </button>
+    )
+}
+
+function UploadDropzone({
+    disabled,
+    isUploading,
+    canAddMore,
+    variant,
+    ctaLabel,
+    trigger,
+    onFiles,
+}: Readonly<{
+    disabled: boolean
+    isUploading: boolean
+    canAddMore: boolean
+    variant: "gallery" | "avatar" | undefined
+    ctaLabel: string | undefined
+    trigger: ((controls: AvatarTriggerControls) => React.ReactNode) | undefined
+    onFiles: (files: FileListLike) => void
+}>) {
+    const [isDragging, setIsDragging] = useState(false)
+    const fileInputRef = useRef<HTMLInputElement | null>(null)
+
+    if (!canAddMore || disabled) {
+        return null
+    }
+
+    const handleDragEnter = (event: DragStateEvent) => {
+        event.preventDefault()
+        event.stopPropagation()
         setIsDragging(true)
     }
 
-    const handleDragLeave = (e: DragEvent) => {
-        e.preventDefault()
-        e.stopPropagation()
+    const handleDragLeave = (event: DragStateEvent) => {
+        event.preventDefault()
+        event.stopPropagation()
         setIsDragging(false)
     }
 
-    const handleDragOver = (e: DragEvent) => {
-        e.preventDefault()
-        e.stopPropagation()
+    const handleDragOver = (event: DragStateEvent) => {
+        event.preventDefault()
+        event.stopPropagation()
     }
 
-    const handleDrop = (e: DragEvent) => {
-        e.preventDefault()
-        e.stopPropagation()
+    const handleDrop = (event: DropEvent) => {
+        event.preventDefault()
+        event.stopPropagation()
         setIsDragging(false)
-        if (e.dataTransfer.files) {
-            void handleFiles(e.dataTransfer.files)
+        const droppedFiles = event.dataTransfer?.files
+        if (droppedFiles !== undefined && droppedFiles !== null && droppedFiles.length > 0) {
+            onFiles(droppedFiles)
         }
     }
 
     const handleClick = () => {
-        if (props.disabled) return
+        if (isUploading) {
+            return
+        }
         fileInputRef.current?.click()
     }
 
-    const handleFileInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        if (e.target.files) {
-            void handleFiles(e.target.files)
-            e.target.value = ""
-        }
-    }
-
-    const handleRemove = async (index: number, image: ImageRecord) => {
-        const originalImages = [...props.images]
-        props.onImagesChange(props.images.filter((_, i) => i !== index))
-
-        if (props.restaurantId) {
-            try {
-                await deleteImage.mutateAsync({
-                    restaurantId: props.restaurantId,
-                    imageUrl: image.url,
-                    storageId: image.storageId,
-                })
-            } catch (err) {
-                props.onImagesChange(originalImages)
-                console.error("Failed to delete image:", err)
+    const handleFileInputChange = (event: FileInputEvent) => {
+        if (event.target.files !== null) {
+            onFiles(event.target.files)
+            if (fileInputRef.current !== null) {
+                fileInputRef.current.value = ""
             }
-        } else {
-            props.onRemove?.(image.storageId)
         }
     }
 
-    const canAddMore = props.images.length < maxImages
-
-    return (
-        <div className="space-y-4">
-            <div className="flex items-center justify-between">
-                <label className="text-sm font-medium text-neutral-700 dark:text-neutral-300">Images</label>
-                <span className="text-xs text-neutral-500">
-                    {props.images.length}/{maxImages}
-                </span>
-            </div>
-
-            {props.images.length > 0 && (
-                <div className="grid grid-cols-3 gap-2 sm:grid-cols-4">
-                    {props.images.map((image, index) => (
-                        <ImagePreview
-                            key={image.storageId}
-                            imageUrl={image.url}
-                            index={index}
-                            onRemove={() => handleRemove(index, image)}
-                            disabled={props.disabled ?? false}
-                        />
-                    ))}
-                </div>
-            )}
-
-            {canAddMore && !props.disabled && (
-                <>
-                    <input
-                        ref={fileInputRef}
-                        type="file"
-                        multiple
-                        accept="image/jpeg,image/png,image/webp,image/gif"
-                        className="hidden"
-                        onChange={handleFileInputChange}
-                    />
-                    <div
+    if (variant === "avatar") {
+        const openPicker = () => {
+            handleClick()
+        }
+        return (
+            <>
+                <input
+                    ref={fileInputRef}
+                    type="file"
+                    multiple
+                    accept={IMAGE_ACCEPT}
+                    data-slot="image-upload-input"
+                    className="hidden"
+                    onChange={handleFileInputChange}
+                />
+                {trigger !== undefined ? (
+                    trigger({ openPicker, isUploading })
+                ) : (
+                    <AvatarUploadButton
+                        isUploading={isUploading}
+                        ctaLabel={ctaLabel}
                         onClick={handleClick}
                         onDragEnter={handleDragEnter}
                         onDragLeave={handleDragLeave}
                         onDragOver={handleDragOver}
                         onDrop={handleDrop}
-                        className={cx(
-                            "flex cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed p-6 transition-all",
-                            isDragging
-                                ? "border-flame-pea-500 bg-flame-pea-50 dark:bg-flame-pea-950/20"
-                                : "border-neutral-300 hover:border-neutral-400 hover:bg-neutral-50 dark:border-neutral-600 dark:hover:border-neutral-500 dark:hover:bg-neutral-800",
-                            isUploading && "pointer-events-none opacity-50",
-                        )}
-                    >
-                        {isDragging ? (
-                            <Upload className="mb-2 size-8 text-flame-pea-500" />
-                        ) : (
-                            <ImagePlus className="mb-2 size-8 text-neutral-400" />
-                        )}
-                        <span className="text-sm text-neutral-600 dark:text-neutral-400">
-                            {isDragging ? "Drop images here" : "Click or drag & drop to upload images"}
-                        </span>
-                        <span className="mt-1 text-xs text-neutral-500">
-                            JPEG, PNG, WebP, GIF up to {formatFileSize(MAX_FILE_SIZE)}
-                        </span>
-                    </div>
-                </>
-            )}
+                    />
+                )}
+            </>
+        )
+    }
 
-            {isUploading && <p className="text-center text-sm text-neutral-600 dark:text-neutral-400">Uploading...</p>}
-
-            {uploadError && <p className="text-sm text-red-600 dark:text-red-400">{uploadError}</p>}
-        </div>
+    return (
+        <>
+            <input
+                ref={fileInputRef}
+                type="file"
+                multiple
+                accept={IMAGE_ACCEPT}
+                data-slot="image-upload-input"
+                className="hidden"
+                onChange={handleFileInputChange}
+            />
+            <button
+                type="button"
+                onClick={handleClick}
+                onDragEnter={handleDragEnter}
+                onDragLeave={handleDragLeave}
+                onDragOver={handleDragOver}
+                onDrop={handleDrop}
+                className={cx(
+                    "flex w-full cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed p-6",
+                    isDragging ? "border-primary bg-primary/10" : "border-border hover:border-border-strong",
+                    isUploading && "pointer-events-none opacity-50",
+                )}
+            >
+                {isDragging ? (
+                    <UploadIcon className="mb-2 size-8 text-primary" />
+                ) : (
+                    <ImageIcon className="mb-2 size-8 text-muted-foreground" />
+                )}
+                <span className="text-sm text-muted-foreground">
+                    {isDragging ? "Drop images here" : "Click or drag & drop to upload images"}
+                </span>
+                <span className="mt-1 text-xs text-muted-foreground">
+                    {IMAGE_TYPE_LABEL} up to {formatFileSize(MAX_FILE_SIZE)}
+                </span>
+            </button>
+        </>
     )
 }
 
 function ImagePreview({
     imageUrl,
-    index,
     onRemove,
     disabled,
-}: {
+}: Readonly<{
     imageUrl: string
-    index: number
     onRemove: () => void
     disabled: boolean
-}) {
+}>) {
     return (
-        <div className="group relative aspect-square overflow-hidden rounded-lg bg-neutral-100 dark:bg-neutral-800">
-            <img src={imageUrl} alt={`Image ${index + 1}`} className="h-full w-full object-cover" loading="lazy" />
+        <div className="group relative aspect-square overflow-hidden rounded-lg bg-surface-muted">
+            <img
+                src={imageUrl}
+                alt={`Uploaded image preview`}
+                className="size-full object-cover"
+                loading="lazy"
+                decoding="async"
+            />
 
             {!disabled && (
                 <button
                     type="button"
                     onClick={onRemove}
-                    className="absolute top-1 right-1 rounded-full bg-red-600 p-1 text-white opacity-0 shadow-md transition-opacity duration-150 ease group-hover:opacity-100 hover:bg-red-700 focus:opacity-100 focus-visible:opacity-100 active:opacity-100 pointer-coarse:opacity-100"
+                    className="hit-area-2 absolute top-1 right-1 rounded-full bg-destructive p-2 text-inverse shadow-md hover:bg-destructive/90"
                     aria-label="Remove image"
                 >
-                    <X className="size-3" />
+                    <XIcon className="size-3" aria-hidden="true" />
                 </button>
             )}
         </div>

@@ -1,46 +1,33 @@
 import { internalMutation } from "./_generated/server"
 
-export const convertImagesToObjects = internalMutation(async (ctx) => {
-    const restaurants = await ctx.db.query("restaurants").collect()
+export const cleanupOrphanedStorage = internalMutation({
+    args: {},
+    handler: async (ctx) => {
+        const now = Date.now()
+        const expired = await ctx.db
+            .query("uploads")
+            .withIndex("by_expires", (q) => q.lte("expiresAt", now))
+            .take(100)
 
-    let convertedCount = 0
-    let skipCount = 0
-
-    for (const restaurant of restaurants) {
-        const images = restaurant.images as string[] | undefined
-        if (!images) continue
-
-        const hasOldFormat = typeof images[0] === "string"
-        if (!hasOldFormat) {
-            skipCount++
-            continue
-        }
-
-        const newImages = images.map((url) => {
-            const matches = url.match(/\/storage\/([a-f0-9-]+)$/)
-            const storageId = matches?.[1] ?? url
-            return { url, storageId }
-        })
-
-        await ctx.db.patch(restaurant._id, { images: newImages })
-        convertedCount++
-    }
-
-    return { converted: convertedCount, skipped: skipCount }
-})
-
-export const cleanupOrphanedStorage = internalMutation(async (ctx) => {
-    const restaurants = await ctx.db.query("restaurants").collect()
-
-    const referencedStorageIds = new Set<string>()
-    for (const restaurant of restaurants) {
-        const images = restaurant.images as { url: string; storageId: string }[] | undefined
-        if (images) {
-            for (const img of images) {
-                referencedStorageIds.add(img.storageId)
+        let deleted = 0
+        const referenced: string[] = []
+        for (const row of expired) {
+            if (row.purpose !== undefined && row.purpose !== "transient") {
+                continue
             }
+            if (row.restaurantId !== undefined) {
+                referenced.push(row.storageId)
+                continue
+            }
+            try {
+                await ctx.storage.delete(row.storageId)
+            } catch {
+                // Blob already gone; still drop the record below.
+            }
+            await ctx.db.delete(row._id)
+            deleted += 1
         }
-    }
 
-    return { referenced: Array.from(referencedStorageIds) }
+        return { deleted, checked: expired.length }
+    },
 })
