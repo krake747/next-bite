@@ -39,8 +39,6 @@ function useConvexQueryResult<Query extends FunctionReference<"query">>(
     const result = useQuery({
         ...convexQueryOptions(query, args, options),
         enabled: !skip,
-        // A skipped query still has to satisfy Query's queryFn requirement;
-        // without a default on the client (SSR, landing tests) this warns.
         ...(skip ? { queryFn: noop } : {}),
     })
     if (skip) {

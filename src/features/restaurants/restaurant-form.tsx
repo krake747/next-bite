@@ -234,8 +234,6 @@ function useSubmitDraft(args: {
             args.onSuccess(createdId)
         } catch (error) {
             setSubmitPhase(toFailedPhase(error))
-            // A sync timeout is an expected uncertain state the form already
-            // surfaces. Log only unexpected failures.
             if (!SyncTimeoutError.is(error)) {
                 console.error(`Error ${args.target.mode === "add" ? "adding" : "updating"} restaurant:`, error)
             }

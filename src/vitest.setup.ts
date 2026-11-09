@@ -4,9 +4,13 @@ import { afterEach, vi } from "vitest"
 
 import { unmountDocument } from "./vitest.render"
 
-// Integration and unit tests render the real root route, which mounts
-// APIProvider. happy-dom cannot load the Maps script, and the resulting
-// errors drown a green run. The stub keeps the tree, not the network.
+vi.mock("./fonts.css?url", () => ({
+    default: "/fonts.css",
+}))
+vi.mock("./index.css?url", () => ({
+    default: "/index.css",
+}))
+
 vi.mock("@vis.gl/react-google-maps", () => ({
     APIProvider: ({ children }: Readonly<{ children: React.ReactElement }>): React.ReactElement => children,
     useMapsLibrary: () => null,
