@@ -1,11 +1,4 @@
-import {
-    ArrowCounterClockwiseIcon,
-    CaretDownIcon,
-    MagnifyingGlassIcon,
-    NavigationArrowIcon,
-    PencilLineIcon,
-    TrashIcon,
-} from "@phosphor-icons/react"
+import { ArrowCounterClockwiseIcon, MagnifyingGlassIcon, PencilLineIcon, TrashIcon } from "@phosphor-icons/react"
 import { useNavigate } from "@tanstack/react-router"
 import { lazy, Suspense, useState } from "react"
 
@@ -19,18 +12,17 @@ import {
 import { useAuth } from "@core/session"
 import { emptySocialSummary, type RestaurantSocial, type RestaurantSocialSummary } from "@core/social"
 import { EmojiRating } from "@pattern/emoji-rating"
-import { Button } from "@ui/button"
 import { Card } from "@ui/card"
-import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogTitle } from "@ui/dialog"
 import { IconButton } from "@ui/icon-button"
 
+import { DeleteConfirmDialog } from "./delete-confirm-dialog"
 import { OpeningHoursDialog } from "./opening-hours-dialog"
 import { RestaurantGallery } from "./restaurant-gallery"
 import { RestaurantHeader } from "./restaurant-header"
 import { RestaurantInterestButton } from "./restaurant-interest-button"
 
-const RestaurantCardMapView = lazy(async () =>
-    import("./restaurant-card-map").then((module) => ({ default: module.RestaurantCardMapView })),
+const RestaurantCardMap = lazy(async () =>
+    import("./restaurant-card-map").then((module) => ({ default: module.RestaurantCardMap })),
 )
 
 export function RestaurantCard({
@@ -179,7 +171,15 @@ export function RestaurantCard({
                         onToggleWant={handleToggleWant}
                     />
                 </div>
-                {hasLocation && coords !== undefined && <RestaurantCardMap location={coords} name={restaurant.name} />}
+                {hasLocation && coords !== undefined && (
+                    <Suspense
+                        fallback={
+                            <div className="mx-5 aspect-video rounded-xl bg-surface-muted md:mx-4" aria-hidden="true" />
+                        }
+                    >
+                        <RestaurantCardMap location={coords} name={restaurant.name} />
+                    </Suspense>
+                )}
                 <div className="px-5 py-2 md:px-4 md:py-2">
                     <EmojiRating
                         rating={restaurant.rating !== undefined ? restaurant.rating - 1 : undefined}
@@ -222,90 +222,5 @@ function RestaurantCardNotes({ notes }: Readonly<{ notes: string | undefined }>)
                 </div>
             </div>
         </div>
-    )
-}
-
-function RestaurantCardMap({
-    location,
-    name,
-}: Readonly<{
-    location: Readonly<{ readonly lat: number; readonly lng: number }>
-    name: string | undefined
-}>) {
-    const [showMap, setShowMap] = useState(false)
-    return (
-        <div className="px-5 md:px-4">
-            <button
-                type="button"
-                onClick={() => {
-                    setShowMap(!showMap)
-                }}
-                aria-expanded={showMap}
-                className="flex w-full items-center justify-between rounded-xl border border-transparent px-3 py-2.5 text-sm text-muted-foreground hover:border-border hover:bg-surface-muted"
-            >
-                <div className="flex items-center gap-3">
-                    <div className="flex size-7 items-center justify-center rounded-full bg-surface-muted">
-                        <NavigationArrowIcon className="size-3.5 text-muted-foreground" aria-hidden="true" />
-                    </div>
-                    <span className="font-medium">View on Map</span>
-                </div>
-                <CaretDownIcon
-                    aria-hidden="true"
-                    className={`size-4 text-muted-foreground ${showMap ? "rotate-180" : ""}`}
-                />
-            </button>
-            {showMap && (
-                <Suspense
-                    fallback={
-                        <div className="mt-2 aspect-video w-full rounded-xl bg-surface-muted" aria-hidden="true" />
-                    }
-                >
-                    <RestaurantCardMapView location={location} name={name} />
-                </Suspense>
-            )}
-        </div>
-    )
-}
-
-function DeleteConfirmDialog({
-    show,
-    onOpenChange,
-    onConfirm,
-    restaurantName,
-}: Readonly<{
-    show: boolean
-    onOpenChange: (open: boolean) => void
-    onConfirm: () => void
-    restaurantName: string
-}>) {
-    return (
-        <Dialog open={show} onOpenChange={onOpenChange}>
-            <DialogContent size="sm" showCloseButton={false}>
-                <DialogTitle>Delete restaurant</DialogTitle>
-                <DialogDescription>
-                    Are you sure you want to delete <strong className="text-foreground">{restaurantName}</strong>? This
-                    action cannot be undone.
-                </DialogDescription>
-                <DialogFooter className="mt-6">
-                    <DialogClose
-                        render={
-                            <Button tone="secondary" size="md">
-                                Cancel
-                            </Button>
-                        }
-                    />
-                    <Button
-                        tone="destructive"
-                        size="md"
-                        onClick={() => {
-                            onConfirm()
-                            onOpenChange(false)
-                        }}
-                    >
-                        Delete
-                    </Button>
-                </DialogFooter>
-            </DialogContent>
-        </Dialog>
     )
 }
