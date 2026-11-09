@@ -23,8 +23,12 @@ export function convexQueryOptions<Query extends FunctionReference<"query">>(
 }
 
 // Best-effort warm-up only: the Suspense views below refetch on their own when this has not
-// landed, so a failed warm-up stays silent by design.
+// landed, so a failed warm-up stays silent by design. Server renderers carry no default
+// query function, so warming there is skipped up front instead of failing noisily.
 export function warmQueries(queryClient: QueryClient, options: ReadonlyArray<object>): void {
+    if (queryClient.getDefaultOptions().queries?.queryFn === undefined) {
+        return
+    }
     for (const option of options) {
         // Heterogeneous queryOptions outputs share no single static annotation (their tuple keys
         // are invariant), so the one shaping cast lives here; each option type-checked where built.
