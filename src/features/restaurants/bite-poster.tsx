@@ -1,6 +1,5 @@
 import { Dialog } from "@base-ui/react/dialog"
 import { useEffect, useRef, useState } from "react"
-import type { Ref } from "react"
 
 import type { Restaurant } from "@core/hooks"
 import { formatFileSize } from "@core/image-utils"
@@ -159,7 +158,7 @@ function PosterArtwork({
 }: {
     restaurant: BitePosterRestaurant
     onImageLoad: () => void
-    ref: Ref<HTMLDivElement>
+    ref: React.Ref<HTMLDivElement>
 }) {
     const emoji = ratingEmoji(restaurant.rating ?? null)
     const ratingText = restaurant.rating === undefined ? null : `Rated ${restaurant.rating + 1} out of 7`
