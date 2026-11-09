@@ -7,11 +7,139 @@ on:
 permissions:
   contents: read
 
-jobs:
-  gate:
-    name: Full local gate
-    runs-on: ubuntu-latest
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
+jobs:
+  filter:
+    name: Detect code changes
+    runs-on: ubuntu-latest
+    outputs:
+      code: ${{ steps.filter.outputs.code }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Detect code changes
+        id: filter
+        run: |
+          if git diff --name-only "${{ github.event.pull_request.base.sha }}"...HEAD -- . ':!**.md' ':!docs/**' | grep -q .; then
+            echo "code=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "code=false" >> "$GITHUB_OUTPUT"
+          fi
+
+  static:
+    name: Static checks
+    needs: filter
+    if: needs.filter.outputs.code == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7
+
+      - uses: voidzero-dev/setup-vp@v1.22.0
+        with:
+          node-version-file: ".node-version"
+          cache: true
+
+      - name: Install dependencies
+        run: vp install
+
+      - name: Check formatting
+        run: pnpm fmt:check
+
+      - name: Lint
+        run: pnpm lint
+
+      - name: Check names
+        run: pnpm lint:names
+
+      - name: Check types
+        run: pnpm lint:ts
+
+  unit:
+    name: Unit tests
+    needs: filter
+    if: needs.filter.outputs.code == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7
+
+      - uses: voidzero-dev/setup-vp@v1.22.0
+        with:
+          node-version-file: ".node-version"
+          cache: true
+
+      - name: Install dependencies
+        run: vp install
+
+      - name: Pure tests
+        run: pnpm test:pure
+
+      - name: Unit tests
+        run: pnpm test:unit
+
+  integration:
+    name: Integration tests
+    needs: filter
+    if: needs.filter.outputs.code == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7
+
+      - uses: voidzero-dev/setup-vp@v1.22.0
+        with:
+          node-version-file: ".node-version"
+          cache: true
+
+      - name: Install dependencies
+        run: vp install
+
+      - name: Integration tests
+        run: pnpm test:integration
+
+  browser:
+    name: Browser tests
+    needs: filter
+    if: needs.filter.outputs.code == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7
+
+      - uses: voidzero-dev/setup-vp@v1.22.0
+        with:
+          node-version-file: ".node-version"
+          cache: true
+
+      - name: Install dependencies
+        run: vp install
+
+      - name: Restore Playwright browsers
+        uses: actions/cache@v6
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
+          restore-keys: |
+            playwright-${{ runner.os }}-
+
+      - name: Install Playwright chromium
+        run: npx playwright install chromium --only-shell
+
+      - name: Browser tests
+        run: pnpm test:browser
+
+  arch:
+    name: Architecture audit
+    needs: filter
+    if: needs.filter.outputs.code == 'true'
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v7
@@ -26,10 +154,39 @@ jobs:
       - name: Install dependencies
         run: vp install
 
-      - name: Install Playwright chromium
-        run: npx playwright install chromium --only-shell
-
-      - name: Full local gate
+      - name: Audit architecture
         env:
           FALLOW_AUDIT_BASE: origin/main
-        run: vp run check:full
+        run: pnpm check:arch
+
+  build:
+    name: Build
+    needs: filter
+    if: needs.filter.outputs.code == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7
+
+      - uses: voidzero-dev/setup-vp@v1.22.0
+        with:
+          node-version-file: ".node-version"
+          cache: true
+
+      - name: Install dependencies
+        run: vp install
+
+      - name: Build
+        run: pnpm build
+
+  gate:
+    name: Full local gate
+    needs: [filter, static, unit, integration, browser, arch, build]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Roll up job results
+        env:
+          NEEDS: ${{ toJSON(needs) }}
+        run: |
+          python3 -c "import json,os,sys; needs=json.loads(os.environ['NEEDS']); print({k: v['result'] for k,v in needs.items()}); sys.exit(0 if needs['filter']['result'] == 'success' and all(v['result'] in ('success','skipped') for k,v in needs.items() if k != 'filter') else 1)"
