@@ -1,57 +1,24 @@
-import { type ConvexReactClient } from "convex/react"
 import { useEffect, useState, useSyncExternalStore } from "react"
 
 import { useAuthContext } from "@api/auth.provider"
-import { getConvexSessionToken } from "@api/auth.sdk"
-import { useConvexClient, useConvexMutation, useConvexQuery, useSuspenseConvexQuery } from "@api/convex.context"
+import {
+    useConvexAuthPhase,
+    useConvexClient,
+    useConvexMutation,
+    useConvexQuery,
+    useSuspenseConvexQuery,
+} from "@api/convex.context"
 import { api } from "@api/endpoints"
 
-import { sleep } from "./async"
-
-async function probeConvexAuth(client: ConvexReactClient): Promise<boolean> {
-    const token = await getConvexSessionToken()
-    if (token === null) {
-        return false
-    }
-    try {
-        await client.query(api.friendships.listFriends, {})
-        return true
-    } catch {
-        return false
-    }
-}
+import { expireGate, gatePhase, openGate, settleGate, type ConvexGate, type GatePhase } from "./session.gate"
 
 const CONVEX_AUTH_TIMEOUT_MS = 10000
-const CONVEX_AUTH_POLL_MS = 500
-
-async function settleConvexAuth(
-    client: ConvexReactClient,
-    isCancelled: () => boolean,
-    timeoutMs: number = CONVEX_AUTH_TIMEOUT_MS,
-): Promise<boolean> {
-    const deadline = Date.now() + timeoutMs
-    while (!isCancelled()) {
-        if (await probeConvexAuth(client)) {
-            return true
-        }
-        if (Date.now() >= deadline) {
-            return false
-        }
-        await sleep(CONVEX_AUTH_POLL_MS)
-    }
-    return false
-}
 
 export type SessionStatus =
     | { readonly kind: "loading" }
     | { readonly kind: "signed-out" }
     | { readonly kind: "ready"; readonly userId: string }
     | { readonly kind: "timed-out"; readonly userId: string; readonly retry: () => void }
-
-type ConvexGate = {
-    readonly userId: string | null
-    readonly outcome: "probing" | "ready" | "timed-out"
-}
 
 let gateAttempt = 0
 const gateAttemptListeners = new Set<() => void>()
@@ -74,47 +41,65 @@ export function retrySessionGate(): void {
     }
 }
 
-export function useSessionStatus(options?: Readonly<{ timeoutMs?: number }>): SessionStatus {
-    const { isAuthenticated, isLoading, user } = useAuthContext()
-    const client = useConvexClient()
-    const gateGeneration = useSyncExternalStore(subscribeGateAttempt, getGateAttempt, getGateAttempt)
-    const [gate, setGate] = useState<ConvexGate>({ userId: null, outcome: "probing" })
-    const sessionKey = !isAuthenticated || isLoading || user === null ? null : user.id
-    const timeoutMs = options?.timeoutMs ?? CONVEX_AUTH_TIMEOUT_MS
-    useEffect(() => {
-        let cancelled = false
-        if (sessionKey === null || client === null) {
-            setGate({ userId: null, outcome: "probing" })
-        } else {
-            const owner = sessionKey
-            setGate({ userId: owner, outcome: "probing" })
-            void settleConvexAuth(client, () => cancelled, timeoutMs).then((verified) => {
-                if (!cancelled) {
-                    setGate({ userId: owner, outcome: verified ? "ready" : "timed-out" })
-                }
-            })
-        }
-        return () => {
-            cancelled = true
-        }
-    }, [sessionKey, client, gateGeneration, timeoutMs])
+function sessionKeyOf(
+    isAuthenticated: boolean,
+    isLoading: boolean,
+    user: Readonly<{ id: string }> | null,
+): string | null {
+    return !isAuthenticated || isLoading || user === null ? null : user.id
+}
+
+function toSessionStatus(sessionKey: string | null, isLoading: boolean, phase: GatePhase): SessionStatus {
     if (sessionKey === null) {
         return isLoading ? { kind: "loading" } : { kind: "signed-out" }
     }
-    if (gate.userId !== sessionKey) {
-        return { kind: "loading" }
-    }
-    if (gate.outcome === "ready") {
+    if (phase === "ready") {
         return { kind: "ready", userId: sessionKey }
     }
-    if (gate.outcome === "timed-out") {
-        return {
-            kind: "timed-out",
-            userId: sessionKey,
-            retry: retrySessionGate,
-        }
+    if (phase === "timed-out") {
+        return { kind: "timed-out", userId: sessionKey, retry: retrySessionGate }
     }
     return { kind: "loading" }
+}
+
+function useGateTimeout(
+    owner: string | null,
+    attempt: number,
+    timeoutMs: number,
+    setGate: (update: (gate: ConvexGate) => ConvexGate) => void,
+): void {
+    useEffect(() => {
+        const timer =
+            owner === null
+                ? undefined
+                : setTimeout(() => {
+                      setGate((current) => expireGate(current, owner, attempt))
+                  }, timeoutMs)
+        return () => {
+            clearTimeout(timer)
+        }
+    }, [owner, attempt, timeoutMs, setGate])
+}
+
+export function useSessionStatus(options?: Readonly<{ timeoutMs?: number }>): SessionStatus {
+    const { isAuthenticated, isLoading, user } = useAuthContext()
+    const client = useConvexClient()
+    const convexAuthenticated = useConvexAuthPhase() === "authenticated" && client !== null
+    const attempt = useSyncExternalStore(subscribeGateAttempt, getGateAttempt, getGateAttempt)
+    const sessionKey = sessionKeyOf(isAuthenticated, isLoading, user)
+    const [gate, setGate] = useState<ConvexGate>(() => openGate(attempt))
+    const settled = settleGate(gate, sessionKey, attempt, convexAuthenticated)
+    if (settled !== gate) {
+        setGate(settled)
+    }
+    const phase = gatePhase(settled, convexAuthenticated)
+    useGateTimeout(
+        phase === "waiting" ? sessionKey : null,
+        attempt,
+        options?.timeoutMs ?? CONVEX_AUTH_TIMEOUT_MS,
+        setGate,
+    )
+    return toSessionStatus(sessionKey, isLoading, phase)
 }
 
 export function useSessionKey(): string | null {

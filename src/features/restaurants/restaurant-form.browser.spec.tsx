@@ -125,7 +125,7 @@ async function renderForm(onSuccess: (id: Id<"restaurants">) => void, onCancel: 
     const backend = createSeededClient({ calls: mutationCalls })
     return render(
         <QueryClientProvider client={backend.queryClient}>
-            <ConvexProvider client={backend.client}>
+            <ConvexProvider client={backend.client} auth="authenticated">
                 <AddHarness onSuccess={onSuccess} onCancel={onCancel} />
             </ConvexProvider>
         </QueryClientProvider>,

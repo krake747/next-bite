@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
-import { renderHook } from "@testing-library/react"
+import { act, renderHook } from "@testing-library/react"
 import { type ConvexReactClient } from "convex/react"
 import { describe, expect, test, vi } from "vitest"
 
@@ -34,6 +34,10 @@ vi.mock("@api/convex.context", async (importOriginal) => {
     return { ...original, useConvexClient: () => injectedClient }
 })
 
+const { providerClients } = vi.hoisted(() => ({
+    providerClients: [] as { reportAuth: ((isAuthenticated: boolean) => void) | null }[],
+}))
+
 // Hooks under test read the injected seeded client, so the provider-owned client never
 // serves data. Stub it to a non-connecting shape: the real client dials the test URL and
 // its async connection fatals escape as unhandled errors that fail the suite.
@@ -45,9 +49,20 @@ vi.mock("convex/react", async (importOriginal) => {
             setAuthCalls: unknown[] = []
             clearedAuthCalls = 0
             watchCalls: unknown[][] = []
-            setAuth(fetchToken: unknown): void {
-                this.setAuthCalls.push(fetchToken)
+            constructor() {
+                providerClients.push(this)
             }
+            setAuth(
+                fetchToken: (options: { forceRefreshToken: boolean }) => Promise<string | null>,
+                onChange: (isAuthenticated: boolean) => void,
+            ): void {
+                this.setAuthCalls.push(fetchToken)
+                this.reportAuth = onChange
+                void fetchToken({ forceRefreshToken: false }).then((token) => {
+                    onChange(token !== null)
+                })
+            }
+            reportAuth: ((isAuthenticated: boolean) => void) | null = null
             clearAuth(): void {
                 this.clearedAuthCalls += 1
             }
@@ -82,7 +97,7 @@ const { tokenMock } = vi.hoisted(() => ({
 vi.mock("../auth.sdk", () => ({
     authClient: {
         useSession: () => ({
-            data: null,
+            data: { session: { id: "session-1", token: "token-1" } },
             isPending: false,
         }),
         getSession: vi.fn<
@@ -118,20 +133,6 @@ function restaurantFixture(overrides?: Partial<RestaurantDoc>): RestaurantDoc {
     } as unknown as RestaurantDoc
 }
 
-function flakyAuthQuery(failures: number): { attempts: () => number; query: () => Promise<unknown> } {
-    let attempts = 0
-    return {
-        attempts: () => attempts,
-        query: async () => {
-            attempts += 1
-            if (attempts <= failures) {
-                throw new Error("Unauthorized")
-            }
-            await Promise.resolve()
-            return []
-        },
-    }
-}
 function mockPersist() {
     return {
         updateRestaurant: vi.fn<(args: { id: Id<"restaurants">; name?: string | undefined }) => Promise<unknown>>(
@@ -531,8 +532,15 @@ describe("restaurant collections", () => {
             data: { user: { id: "user-1", email: "alex@example.com", name: "Alex" } },
             error: null,
         })
-        const flaky = flakyAuthQuery(2)
-        const backend = createSeededClient({ queryHook: flaky.query })
+        let releaseToken!: () => void
+        const tokenReleased = new Promise<void>((resolve) => {
+            releaseToken = resolve
+        })
+        tokenMock.mockImplementationOnce(async () => {
+            await tokenReleased
+            return { data: { token: "test-token" } }
+        })
+        const backend = createSeededClient({ liveRows: [restaurantFixture()] })
         injectSyncClient(backend.client)
         const queryClient = new QueryClient()
 
@@ -544,16 +552,16 @@ describe("restaurant collections", () => {
             ),
         })
 
+        await expect.poll(() => vi.mocked(authClient.getSession)).toHaveBeenCalled()
+        await new Promise<void>((resolve) => {
+            setTimeout(resolve, 100)
+        })
+        expect(result.current).toBeUndefined()
         expect(backend.subscriberCount()).toBe(0)
-        await expect
-            .poll(
-                () => result.current,
-                // Below the project timeout so a slow backend fails gracefully here instead of
-                // tripping the project timeout with no assertion to show for it.
-                { timeout: 2500 },
-            )
-            .toEqual([])
-        expect(flaky.attempts()).toBeGreaterThanOrEqual(3)
+
+        releaseToken()
+
+        await expect.poll(() => result.current?.map((r) => r.name)).toEqual(["Trattoria Verde"])
         expect(backend.subscriberCount()).toBeGreaterThan(0)
     })
 
@@ -628,8 +636,10 @@ describe("restaurant collections", () => {
             const { result, unmount } = renderOwnedRestaurants()
             await expect.poll(() => result.current?.map((item) => item.name)).toEqual(["Trattoria Verde"])
 
-            tokenMock.mockResolvedValue({ data: null })
-            backend.failSync()
+            act(() => {
+                providerClients.at(-1)?.reportAuth?.(false)
+                backend.failSync()
+            })
 
             await expect.poll(() => result.current).toBeUndefined()
             const settledCount = backend.subscriberCount()
@@ -639,7 +649,6 @@ describe("restaurant collections", () => {
             expect(backend.subscriberCount()).toBe(settledCount)
             expect(result.current).toBeUndefined()
             unmount()
-            tokenMock.mockResolvedValue({ data: { token: "test-token" } })
         })
 
         test("dropSessionCollections only evicts the matching session", () => {

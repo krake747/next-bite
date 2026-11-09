@@ -87,7 +87,7 @@ async function renderHarness() {
     const backend = createSeededClient({ calls: mutationCalls })
     return render(
         <QueryClientProvider client={backend.queryClient}>
-            <ConvexProvider client={backend.client}>
+            <ConvexProvider client={backend.client} auth="authenticated">
                 <Harness />
             </ConvexProvider>
         </QueryClientProvider>,
