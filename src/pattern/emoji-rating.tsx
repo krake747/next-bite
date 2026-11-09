@@ -35,6 +35,13 @@ const RATING_COLORS = [
     "oklch(0.9446 0.0248 29.93)",
 ] as const
 
+export function ratingEmoji(rating: number | undefined): string | null {
+    if (rating === undefined) {
+        return null
+    }
+    return RATING_EMOJIS[rating - 1] ?? null
+}
+
 export function EmojiRating({
     rating,
     defaultRating,

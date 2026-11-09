@@ -1,4 +1,10 @@
-import { ArrowCounterClockwiseIcon, MagnifyingGlassIcon, PencilLineIcon, TrashIcon } from "@phosphor-icons/react"
+import {
+    ArrowCounterClockwiseIcon,
+    MagnifyingGlassIcon,
+    PencilLineIcon,
+    ShareNetworkIcon,
+    TrashIcon,
+} from "@phosphor-icons/react"
 import { useNavigate } from "@tanstack/react-router"
 import { useState } from "react"
 
@@ -11,11 +17,13 @@ export function RestaurantCardActions({
     detailsHref,
     hasPlaceId,
     onDeleteRequest,
+    onShareRequest,
 }: Readonly<{
     restaurantId: Restaurant["_id"]
     detailsHref?: string | undefined
     hasPlaceId: boolean
     onDeleteRequest: () => void
+    onShareRequest: () => void
 }>) {
     const auth = useAuth()
     const navigate = useNavigate()
@@ -72,6 +80,9 @@ export function RestaurantCardActions({
                 }}
             >
                 <PencilLineIcon className="size-3.5" />
+            </IconButton>
+            <IconButton label="Share poster" size="sm" onClick={onShareRequest}>
+                <ShareNetworkIcon className="size-3.5" />
             </IconButton>
             <IconButton label="Delete restaurant" size="sm" tone="destructive" onClick={onDeleteRequest}>
                 <TrashIcon className="size-3.5" />

@@ -5,6 +5,7 @@ import { emptySocialSummary, type RestaurantSocial, type RestaurantSocialSummary
 import { EmojiRating } from "@pattern/emoji-rating"
 import { Card } from "@ui/card"
 
+import { BitePosterDialog } from "./bite-poster"
 import { DeleteConfirmDialog } from "./delete-confirm-dialog"
 import { OpeningHoursDialog } from "./opening-hours-dialog"
 import { RestaurantCardActions } from "./restaurant-card-actions"
@@ -30,7 +31,7 @@ export function RestaurantCard({
         detailsHref?: string | undefined
     } & React.ComponentProps<typeof Card>
 >) {
-    const [dialog, setDialog] = useState<"closed" | "hours" | "delete">("closed")
+    const [dialog, setDialog] = useState<"closed" | "hours" | "delete" | "poster">("closed")
     const updateRestaurant = useUpdateRestaurant()
     const deleteRestaurant = useDeleteRestaurant()
 
@@ -73,6 +74,9 @@ export function RestaurantCard({
                             hasPlaceId={hasPlaceId}
                             onDeleteRequest={() => {
                                 setDialog("delete")
+                            }}
+                            onShareRequest={() => {
+                                setDialog("poster")
                             }}
                         />
                     }
@@ -127,6 +131,11 @@ export function RestaurantCard({
                 onOpenChange={handleDialogOpenChange}
                 onConfirm={handleDelete}
                 restaurantName={restaurant.name}
+            />
+            <BitePosterDialog
+                restaurant={restaurant}
+                show={dialog === "poster"}
+                onOpenChange={handleDialogOpenChange}
             />
         </>
     )
