@@ -60,6 +60,7 @@ function Probe() {
         <div>
             <p>auth:{String(store.isAuthenticated)}</p>
             <p>loading:{String(store.isLoading)}</p>
+            <p>initializing:{String(store.isInitializing)}</p>
             <p>user:{store.user?.email ?? "none"}</p>
             <p>error:{store.error ?? "none"}</p>
         </div>
@@ -305,6 +306,42 @@ describe("auth lifecycle ownership", () => {
         })
         expect(screen.getByText("auth:true")).toBeInTheDocument()
         expect(screen.getByText("user:b@example.com")).toBeInTheDocument()
+    })
+
+    test("initializing tracks bootstrap only, not later operations", async () => {
+        resetAuth()
+        const sessionGate = createDeferred<SessionResponse>()
+        impls["getSession"] = async () => sessionGate.promise
+        const signInGate = createDeferred<unknown>()
+        impls["signInEmail"] = async () => signInGate.promise
+        render(<Probe />)
+
+        await startInitialize()
+        expect(screen.getByText("initializing:true")).toBeInTheDocument()
+
+        await act(async () => {
+            sessionGate.resolve({ data: null, error: null })
+            await Promise.resolve()
+        })
+        await waitFor(() => {
+            expect(screen.getByText("initializing:false")).toBeInTheDocument()
+        })
+        expect(screen.getByText("loading:false")).toBeInTheDocument()
+
+        await act(async () => {
+            void currentStore().signInWithPassword("a@example.com", "password123").catch(ignoreRejection)
+            await Promise.resolve()
+        })
+        expect(screen.getByText("loading:true")).toBeInTheDocument()
+        expect(screen.getByText("initializing:false")).toBeInTheDocument()
+
+        await act(async () => {
+            signInGate.resolve({ data: { user: userA }, error: null })
+            await Promise.resolve()
+        })
+        expect(screen.getByText("loading:false")).toBeInTheDocument()
+        expect(screen.getByText("initializing:false")).toBeInTheDocument()
+        expect(screen.getByText("auth:true")).toBeInTheDocument()
     })
 })
 

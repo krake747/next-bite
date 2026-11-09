@@ -29,6 +29,7 @@ const serverAuthStore: AuthStore = {
     // arrives as a normal post-hydration update.
     isAuthenticated: false,
     isLoading: true,
+    isInitializing: true,
     user: null,
     error: null,
     initializeAuth: noopServerAuthStep,

@@ -10,10 +10,11 @@ import { routeTree } from "../routeTree.gen"
 
 type AuthSnapshot = {
     readonly isLoading: boolean
+    readonly isInitializing: boolean
     readonly error: string | null
 }
 
-let authSnapshot: AuthSnapshot = { isLoading: false, error: null }
+let authSnapshot: AuthSnapshot = { isLoading: false, isInitializing: false, error: null }
 const authListeners = new Set<() => void>()
 
 function subscribeAuth(listener: () => void): () => void {
@@ -53,15 +54,19 @@ function createDeferred(): Deferred {
 }
 
 async function fakeAuthStep(fallbackMessage: string): Promise<boolean> {
-    publishAuth({ isLoading: true, error: null })
+    publishAuth({ isLoading: true, isInitializing: false, error: null })
     pendingAuth = createDeferred()
     try {
         await pendingAuth.promise
     } catch (error) {
-        publishAuth({ isLoading: false, error: error instanceof Error ? error.message : fallbackMessage })
+        publishAuth({
+            isLoading: false,
+            isInitializing: false,
+            error: error instanceof Error ? error.message : fallbackMessage,
+        })
         return false
     }
-    publishAuth({ isLoading: false, error: null })
+    publishAuth({ isLoading: false, isInitializing: false, error: null })
     return true
 }
 
@@ -90,6 +95,7 @@ vi.mock("@api/auth.provider", async (importOriginal) => {
             return {
                 isAuthenticated: false,
                 isLoading: snapshot.isLoading,
+                isInitializing: snapshot.isInitializing,
                 user: null,
                 error: snapshot.error,
                 initializeAuth: noop,
@@ -178,12 +184,14 @@ describe("login OTP step", () => {
     test("stays on code entry for the same email after a deferred send resolves", async () => {
         querySeeds.clear()
         seedAuthMethods()
-        publishAuth({ isLoading: false, error: null })
+        publishAuth({ isLoading: false, isInitializing: false, error: null })
         pendingAuth = null
         await renderAt("/login")
 
         await sendCode("alex@example.com")
-        expect(screen.queryByRole("button", { name: "Email me a code" })).toBeNull()
+        await waitFor(() => {
+            expect(screen.getByRole("button", { name: "Email me a code" })).toBeDisabled()
+        })
 
         await settlePendingAuth((deferred) => {
             deferred.resolve()
@@ -199,7 +207,7 @@ describe("login OTP step", () => {
     test("stays on email entry with an error when send fails", async () => {
         querySeeds.clear()
         seedAuthMethods()
-        publishAuth({ isLoading: false, error: null })
+        publishAuth({ isLoading: false, isInitializing: false, error: null })
         pendingAuth = null
         await renderAt("/login")
 
@@ -226,7 +234,7 @@ describe("login OTP step", () => {
     test("stays on code entry with an error when verify fails", async () => {
         querySeeds.clear()
         seedAuthMethods()
-        publishAuth({ isLoading: false, error: null })
+        publishAuth({ isLoading: false, isInitializing: false, error: null })
         pendingAuth = null
         const router = await renderAt("/login")
 
@@ -264,7 +272,7 @@ describe("login OTP step", () => {
     test("resets to email entry when choosing a different email", async () => {
         querySeeds.clear()
         seedAuthMethods()
-        publishAuth({ isLoading: false, error: null })
+        publishAuth({ isLoading: false, isInitializing: false, error: null })
         pendingAuth = null
         await renderAt("/login")
 
@@ -286,7 +294,7 @@ describe("login OTP step", () => {
     test("navigates home once after a successful verify", async () => {
         querySeeds.clear()
         seedAuthMethods()
-        publishAuth({ isLoading: false, error: null })
+        publishAuth({ isLoading: false, isInitializing: false, error: null })
         pendingAuth = null
         const router = await renderAt("/login")
 
@@ -312,7 +320,7 @@ describe("login OTP step", () => {
     test("shows the loading placeholder during initial bootstrap", async () => {
         querySeeds.clear()
         seedAuthMethods()
-        publishAuth({ isLoading: true, error: null })
+        publishAuth({ isLoading: true, isInitializing: true, error: null })
         pendingAuth = null
         await mountAt("/login")
 
@@ -320,7 +328,7 @@ describe("login OTP step", () => {
         expect(screen.queryByRole("button", { name: "Sign In" })).toBeNull()
 
         await act(async () => {
-            publishAuth({ isLoading: false, error: null })
+            publishAuth({ isLoading: false, isInitializing: false, error: null })
             await Promise.resolve()
         })
 
@@ -329,10 +337,33 @@ describe("login OTP step", () => {
         })
     })
 
+    test("keeps the form mounted with an inline spinner while a submit is pending", async () => {
+        querySeeds.clear()
+        seedAuthMethods()
+        publishAuth({ isLoading: false, isInitializing: false, error: null })
+        pendingAuth = null
+        await renderAt("/login")
+
+        await sendCode("alex@example.com")
+
+        await waitFor(() => {
+            expect(screen.getByRole("button", { name: "Email me a code" })).toBeDisabled()
+        })
+        expect(screen.queryByRole("button", { name: "Sign In" })).toBeInTheDocument()
+
+        await settlePendingAuth((deferred) => {
+            deferred.resolve()
+        })
+
+        await waitFor(() => {
+            expect(screen.getByText("Code sent to alex@example.com.")).toBeInTheDocument()
+        })
+    })
+
     test("keeps the password form intact", async () => {
         querySeeds.clear()
         seedAuthMethods()
-        publishAuth({ isLoading: false, error: null })
+        publishAuth({ isLoading: false, isInitializing: false, error: null })
         pendingAuth = null
         await renderAt("/login")
 

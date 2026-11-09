@@ -83,12 +83,14 @@ export function hasCachedSession(): boolean {
 type AuthState = {
     readonly isAuthenticated: boolean
     readonly isLoading: boolean
+    readonly isInitializing: boolean
     readonly user: User | null
     readonly error: string | null
 }
 
 type AuthAction =
     | { readonly type: "SET_LOADING"; readonly isLoading: boolean }
+    | { readonly type: "SET_INITIALIZING"; readonly isInitializing: boolean }
     | { readonly type: "SET_USER"; readonly user: User }
     | { readonly type: "SET_CACHED_USER"; readonly user: User }
     | { readonly type: "CLEAR_USER" }
@@ -98,6 +100,8 @@ function authReducer(state: Readonly<AuthState>, action: Readonly<AuthAction>): 
     switch (action.type) {
         case "SET_LOADING":
             return { ...state, isLoading: action.isLoading }
+        case "SET_INITIALIZING":
+            return { ...state, isInitializing: action.isInitializing }
         case "SET_USER":
             return { ...state, user: action.user, isAuthenticated: true, error: null }
         case "SET_CACHED_USER":
@@ -155,6 +159,7 @@ export function useAuthStore() {
     const [state, dispatch] = useReducer(authReducer, {
         isAuthenticated: false,
         isLoading: true,
+        isInitializing: true,
         user: null,
         error: null,
     })
@@ -216,6 +221,7 @@ export function useAuthStore() {
 
     const initializeAuth = async () => {
         const generation = claimGeneration()
+        dispatch({ type: "SET_INITIALIZING", isInitializing: true })
         dispatch({ type: "SET_LOADING", isLoading: true })
         dispatch({ type: "SET_ERROR", error: null })
 
@@ -233,6 +239,7 @@ export function useAuthStore() {
         }
         if (generation === currentGeneration()) {
             dispatch({ type: "SET_LOADING", isLoading: false })
+            dispatch({ type: "SET_INITIALIZING", isInitializing: false })
         }
     }
 
@@ -305,6 +312,7 @@ export function useAuthStore() {
             if (generation === currentGeneration()) {
                 clearUser()
                 dispatch({ type: "SET_LOADING", isLoading: false })
+                dispatch({ type: "SET_INITIALIZING", isInitializing: false })
             }
         }
     }

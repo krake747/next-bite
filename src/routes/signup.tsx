@@ -6,13 +6,13 @@ import * as v from "valibot"
 
 import { isSafeRedirectPath } from "@core/groups"
 import { useAuth, useAuthMethods } from "@core/session"
+import { ErrorBanner } from "@pattern/error-banner"
+import { Input } from "@pattern/field"
+import { LoadingPlaceholder } from "@pattern/loading"
 import { AuthDivider } from "@routes/-components/auth-divider"
 import { OtpForm } from "@routes/-components/otp-form"
 import { PendingButton } from "@routes/-components/pending-button"
 import { AuthLayout } from "@routes/-layouts/auth-layout"
-import { ErrorBanner } from "@ui/error-banner"
-import { Input } from "@ui/field"
-import { LoadingPlaceholder } from "@ui/loading"
 import { TextLink } from "@ui/text-link"
 
 const SignupSearchSchema = v.object({
@@ -124,7 +124,7 @@ function SignupPage() {
         void navigate({ to: safeRedirect, replace: true, from: Route.fullPath })
     }
 
-    if (auth.isLoading) {
+    if (auth.isInitializing) {
         return <LoadingPlaceholder />
     }
 
