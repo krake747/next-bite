@@ -63,4 +63,5 @@ when one repeats, move it up to a type, lint, or test in the same change.
 | Agents run `pnpm check:arch` before pushing structural changes                           | Judgment only; structural means moving files, new modules, shapes, or imports across zones |
 | `export` on declarations, no trailing lists; `use()` for context                         | `nextbite/no-export-list`, `nextbite/no-use-context` lint                                  |
 | Types over interfaces; never cast types, fix at source                                   | `pnpm lint:ts` plus review                                                                 |
+| Coupled lifecycles have explicit states, transitions, and async ownership                | Review plus behavior tests; see `CODING_STANDARDS.md`                                      |
 | No em dashes in prose                                                                    | Judgment only; see `non-negotiables.md`                                                    |
