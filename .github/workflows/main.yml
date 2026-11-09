@@ -144,9 +144,35 @@ jobs:
       - name: Build
         run: pnpm build
 
+  coverage:
+    name: Code coverage
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7
+
+      - uses: voidzero-dev/setup-vp@v1.22.0
+        with:
+          node-version-file: ".node-version"
+          cache: true
+
+      - name: Install dependencies
+        run: vp install
+
+      - name: Collect coverage
+        run: pnpm test:coverage
+
+      - name: Upload coverage report
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: coverage-report
+          path: coverage/
+          retention-days: 7
+
   gate:
     name: Full local gate
-    needs: [static, unit, integration, browser, arch, build]
+    needs: [static, unit, integration, browser, arch, build, coverage]
     if: always()
     runs-on: ubuntu-latest
     steps:

@@ -461,6 +461,13 @@ export default defineConfig({
     ]),
     test: {
         globals: false,
+        coverage: {
+            provider: "v8",
+            reportsDirectory: "./coverage",
+            reporter: ["text", "json-summary", "html"],
+            include: ["src/**/*.{ts,tsx}"],
+            exclude: ["src/routeTree.gen.ts", "src/vitest.setup.ts", "src/vitest.msw.setup.ts"],
+        },
         // Record wait steps (expect.poll, vi.waitFor, vi.waitUntil) so the next
         // flaky timeout explains itself instead of just timing out.
         experimental: {

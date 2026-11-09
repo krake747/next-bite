@@ -48,5 +48,8 @@ playwright-report/
 test-results/
 .vitest/
 
+# Vitest coverage reports
+coverage/
+
 # Local git worktrees
 .worktrees/
