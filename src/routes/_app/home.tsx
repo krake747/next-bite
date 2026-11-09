@@ -3,7 +3,7 @@ import { createFileRoute } from "@tanstack/react-router"
 
 import { useFeedRestaurants, useRestaurants, type Restaurant } from "@core/restaurants"
 import { useAuth, useSessionStatus } from "@core/session"
-import { feedTextFor, orderFeedByRecency } from "@core/social"
+import { orderFeedByRecency } from "@core/social"
 import { RestaurantCard } from "@features/restaurants/restaurant-card"
 import { RestaurantCardSkeleton } from "@features/restaurants/restaurant-card-skeleton"
 import { RestaurantList } from "@features/restaurants/restaurant-list"
@@ -22,42 +22,12 @@ export const Route = createFileRoute("/_app/home")({
 
 function RiverOwnItem({ restaurant }: Readonly<{ restaurant: Restaurant }>) {
     const actions = useSocialActions()
-    return (
-        <RestaurantCard
-            restaurant={restaurant}
-            social={actions.socialFor(restaurant)}
-            onToggleWant={() => {
-                actions.toggleWantFor(restaurant)()
-            }}
-            detailsHref={`/restaurants/${restaurant._id}`}
-        />
-    )
+    return <RestaurantCard restaurant={restaurant} {...actions.cardFor(restaurant)} />
 }
 
 function RiverFriendItem({ restaurant }: Readonly<{ restaurant: Restaurant }>) {
     const actions = useSocialActions()
-    const social = actions.socialFor(restaurant)
-    return (
-        <ActivityPost
-            author={{ name: restaurant.ownerName }}
-            time={new Date(restaurant._creationTime).toLocaleDateString()}
-            text={feedTextFor(restaurant.name, restaurant.details?.notes)}
-            restaurant={restaurant}
-            social={{ ...social, ownerName: restaurant.ownerName }}
-            reactions={{
-                liked: social.liked,
-                likeCount: social.likeCount,
-                onToggleLike: actions.toggleLikeFor(restaurant),
-                commentCount: social.commentCount,
-                onComment: () => {
-                    actions.goToDetail(restaurant)
-                },
-                wanted: social.wanted,
-                wantCount: social.wantCount,
-                onToggleWant: actions.toggleWantFor(restaurant),
-            }}
-        />
-    )
+    return <ActivityPost restaurant={restaurant} {...actions.activityFor(restaurant)} />
 }
 
 function HomeRiver({ mine, feed }: Readonly<{ mine: ReadonlyArray<Restaurant>; feed: ReadonlyArray<Restaurant> }>) {
@@ -146,18 +116,6 @@ function HomeContent() {
                 <RestaurantCardSkeleton />
                 <RestaurantCardSkeleton />
                 <RestaurantCardSkeleton />
-            </div>
-        )
-    }
-    if (feed.length === 0 && restaurantListState.length === 0) {
-        return (
-            <div className="mx-auto w-full max-w-3xl">
-                <HomeHeader name={auth.user?.name?.split(" ")[0] ?? "food lover"} count={restaurantListState.length} />
-                <SocialActionsProvider restaurants={[]}>
-                    <div className="pt-8">
-                        <HomeRiver mine={restaurantListState} feed={feed} />
-                    </div>
-                </SocialActionsProvider>
             </div>
         )
     }
