@@ -25,6 +25,20 @@ describe("BitePosterDialog", () => {
         await expect.element(screen.getByText("Rated 6 out of 7")).toBeInTheDocument()
     })
 
+    test("pins the panel to the viewport on a long page", async () => {
+        const onOpenChange = vi.fn<(open: boolean) => void>()
+        const screen = await render(
+            <>
+                <div style={{ height: "5000px" }} />
+                <BitePosterDialog restaurant={restaurant} show onOpenChange={onOpenChange} />
+            </>,
+        )
+
+        const dialog = screen.getByRole("dialog")
+        await expect.element(dialog).toBeVisible()
+        await expect.element(dialog).toHaveClass(/fixed/)
+    })
+
     test("closes through its callback", async () => {
         const onOpenChange = vi.fn<(open: boolean) => void>()
         const screen = await render(<BitePosterDialog restaurant={restaurant} show onOpenChange={onOpenChange} />)

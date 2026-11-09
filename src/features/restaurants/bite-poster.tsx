@@ -65,17 +65,24 @@ export function BitePosterDialog({
 
     useEffect(() => {
         let frame = 0
+        let observer: ResizeObserver | null = null
         if (show && supported) {
             const canvas = canvasRef.current
             const poster = posterRef.current
             if (canvas !== null && poster !== null) {
                 canvas.setAttribute("content", "drawable")
                 poster.setAttribute("drawable", "")
-                frame = requestAnimationFrame(paint)
+                const repaint = () => {
+                    paintPosterElement(canvas.getContext("2d"), poster)
+                }
+                frame = requestAnimationFrame(repaint)
+                observer = new ResizeObserver(repaint)
+                observer.observe(poster)
             }
         }
         return () => {
             cancelAnimationFrame(frame)
+            observer?.disconnect()
         }
     }, [show, supported, restaurant])
 
@@ -123,7 +130,7 @@ export function BitePosterDialog({
             <DialogContent
                 size="md"
                 showCloseButton={false}
-                className="max-w-2xl"
+                className="max-h-[90vh] max-w-[min(42rem,calc(100%-2rem))]"
                 aria-label={`Poster for ${restaurant.name}`}
             >
                 <DialogTitle>Share this bite</DialogTitle>
