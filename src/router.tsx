@@ -3,9 +3,6 @@ import { createRouter } from "@tanstack/react-router"
 
 import { routeTree } from "./routeTree.gen"
 
-import "./fonts.css"
-import "./index.css"
-
 export function getRouter() {
     const queryClient = new QueryClient()
 
