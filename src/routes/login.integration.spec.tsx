@@ -1,5 +1,5 @@
 import { RouterProvider, createMemoryHistory, createRouter, type AnyRouter } from "@tanstack/react-router"
-import { act, fireEvent, render, screen, waitFor } from "@testing-library/react"
+import { act, fireEvent, screen, waitFor } from "@testing-library/react"
 import { useSyncExternalStore } from "react"
 import { describe, expect, test, vi } from "vitest"
 
@@ -7,6 +7,7 @@ import { ConvexProvider } from "@api/convex.context"
 import { createSeededClient, seedKey } from "@api/db/seeded.client"
 
 import { routeTree } from "../routeTree.gen"
+import { renderDocument } from "../vitest.render"
 
 type AuthSnapshot = {
     readonly isLoading: boolean
@@ -141,7 +142,7 @@ async function mountAt(path: string): Promise<AnyRouter> {
         context: { queryClient: backend.queryClient },
     })
     await router.load()
-    render(
+    renderDocument(
         <ConvexProvider client={backend.client}>
             <RouterProvider router={router} />
         </ConvexProvider>,

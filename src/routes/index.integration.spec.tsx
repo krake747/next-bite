@@ -1,11 +1,12 @@
 import { QueryClient } from "@tanstack/react-query"
 import { RouterProvider, createMemoryHistory, createRouter } from "@tanstack/react-router"
-import { render, screen, waitFor } from "@testing-library/react"
+import { screen, waitFor } from "@testing-library/react"
 import { afterEach, describe, expect, test, vi } from "vitest"
 
 import { ConvexProvider } from "@api/convex.context"
 
 import { routeTree } from "../routeTree.gen"
+import { renderDocument } from "../vitest.render"
 
 type AuthSnapshot = {
     readonly isAuthenticated: boolean
@@ -50,7 +51,7 @@ async function renderLanding(): Promise<void> {
         context: { queryClient: new QueryClient() },
     })
     await router.load()
-    render(
+    renderDocument(
         <ConvexProvider client={null}>
             <RouterProvider router={router} />
         </ConvexProvider>,

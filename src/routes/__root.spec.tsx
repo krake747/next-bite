@@ -46,9 +46,9 @@ describe("root head", () => {
         expect(hrefs).toMatch(/\.woff2/)
     })
 
-    test("links the global stylesheets", () => {
+    test("links the global stylesheets only when their urls are non-empty", () => {
         const links = rootHead().links.filter((link) => link.rel === "stylesheet")
-        expect(links.map((link) => link.href)).toEqual([fontsCss, appCss])
+        expect(links.map((link) => link.href)).toEqual([fontsCss, appCss].filter((href) => href !== ""))
     })
 
     test("sets one device-width viewport and leaves user zoom alone", () => {

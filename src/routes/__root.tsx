@@ -36,8 +36,9 @@ export const Route = createRootRouteWithContext<RouterContext>()({
                 type: "font/woff2",
                 crossOrigin: "anonymous",
             },
-            { rel: "stylesheet", href: fontsCss },
-            { rel: "stylesheet", href: appCss },
+            ...[fontsCss, appCss]
+                .filter((href): href is string => typeof href === "string" && href !== "")
+                .map((href) => ({ rel: "stylesheet" as const, href })),
         ],
     }),
     component: RootComponent,
