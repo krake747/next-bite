@@ -2,6 +2,9 @@ import { describe, expect, test } from "vitest"
 
 import { Route } from "@routes/__root"
 
+import fontsCss from "../fonts.css?url"
+import appCss from "../index.css?url"
+
 type FontPreload = {
     readonly rel: string
     readonly href: string
@@ -10,9 +13,14 @@ type FontPreload = {
     readonly crossOrigin: string
 }
 
+type StylesheetLink = {
+    readonly rel: string
+    readonly href: string
+}
+
 type RootHead = {
     readonly meta: ReadonlyArray<{ readonly name?: string; readonly content?: string }>
-    readonly links: ReadonlyArray<FontPreload>
+    readonly links: ReadonlyArray<FontPreload | StylesheetLink>
 }
 
 function rootHead(): RootHead {
@@ -26,7 +34,7 @@ describe("root head", () => {
     // Config-level contract, not rendered output: the framework consumes head() directly, so
     // there is no DOM to query. Raw HTML coverage lives in the Playwright public SSR gate.
     test("preloads the above-the-fold display and body fonts", () => {
-        const links = rootHead().links
+        const links = rootHead().links.filter((link): link is FontPreload => link.rel === "preload")
         expect(links).toHaveLength(2)
         expect(links.map((link) => `${link.rel} ${link.as} ${link.type} ${link.crossOrigin}`)).toEqual([
             "preload font font/woff2 anonymous",
@@ -36,6 +44,11 @@ describe("root head", () => {
         expect(hrefs).toContain("bricolage")
         expect(hrefs).toContain("dm-sans")
         expect(hrefs).toMatch(/\.woff2/)
+    })
+
+    test("links the global stylesheets", () => {
+        const links = rootHead().links.filter((link) => link.rel === "stylesheet")
+        expect(links.map((link) => link.href)).toEqual([fontsCss, appCss])
     })
 
     test("sets one device-width viewport and leaves user zoom alone", () => {

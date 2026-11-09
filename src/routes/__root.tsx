@@ -11,6 +11,9 @@ import { useEnsureProfile } from "@core/session"
 import { LoadingPlaceholder } from "@pattern/loading"
 import { SessionTimeoutNotice } from "@routes/-components/session-timeout-notice"
 
+import fontsCss from "../fonts.css?url"
+import appCss from "../index.css?url"
+
 type RouterContext = {
     queryClient: QueryClient
 }
@@ -33,6 +36,8 @@ export const Route = createRootRouteWithContext<RouterContext>()({
                 type: "font/woff2",
                 crossOrigin: "anonymous",
             },
+            { rel: "stylesheet", href: fontsCss },
+            { rel: "stylesheet", href: appCss },
         ],
     }),
     component: RootComponent,
