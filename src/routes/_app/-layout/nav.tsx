@@ -13,7 +13,7 @@ import { Link, useMatchRoute } from "@tanstack/react-router"
 
 import { useConvexQuery } from "@api/convex.context"
 import { api } from "@api/endpoints"
-import { useAuth } from "@core/session"
+import { useAuth, useSessionStatus } from "@core/session"
 import { LazyImage } from "@pattern/lazy-image"
 import { cva, cx } from "@ui/cva.config"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@ui/dropdown-menu"
@@ -92,9 +92,13 @@ function profileIdentity(
 
 function useUserCardIdentity(): CardIdentity {
     const auth = useAuth()
+    const status = useSessionStatus()
     // The Convex profile is the source of truth for display identity; the
     // auth session only refreshes at login, so it goes stale after a rename.
-    const profile = useConvexQuery(api.users.getMe)
+    // Gated on the ready session like every other Convex read: firing during
+    // the auth-probing window would hit the backend without Convex auth and
+    // throw, on every app page load.
+    const profile = useConvexQuery(api.users.getMe, undefined, { skip: status.kind !== "ready" })
     if (profile?.status === "ready") {
         return profileIdentity(profile.profile, auth.user)
     }
