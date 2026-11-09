@@ -60,16 +60,12 @@ export function RestaurantCard({
     const hasPlaceId = enrichment?.placeId !== undefined && enrichment?.placeId !== ""
 
     const runHoursLookup = (lookup: {
-        mutate: (
-            args: { restaurantId: Restaurant["_id"] },
-            opts: { onError: () => void; onSettled: () => void },
-        ) => void
+        mutate: (args: { restaurantId: Restaurant["_id"] }, opts: { onSettled: () => void }) => void
     }) => {
         setIsRefreshing(true)
         lookup.mutate(
             { restaurantId: restaurant._id },
             {
-                onError: () => {},
                 onSettled: () => {
                     setIsRefreshing(false)
                 },
@@ -86,12 +82,7 @@ export function RestaurantCard({
     }
 
     const handleDelete = () => {
-        deleteRestaurant.mutate(
-            { id: restaurant._id },
-            {
-                onError: () => {},
-            },
-        )
+        deleteRestaurant.mutate({ id: restaurant._id })
     }
 
     const coords = restaurant.address.enrichment?.coords
@@ -102,8 +93,8 @@ export function RestaurantCard({
     const active = social ?? emptySocialSummary
     const handleToggleWant = onToggleWant ?? (() => {})
 
-    const handleRate = async (rating: number) => {
-        await updateRestaurant.mutateAsync({ id: restaurant._id, rating })
+    const handleRate = async (index: number) => {
+        await updateRestaurant.mutateAsync({ id: restaurant._id, rating: index + 1 })
     }
 
     const handleDialogOpenChange = (open: boolean) => {
@@ -190,7 +181,10 @@ export function RestaurantCard({
                 </div>
                 {hasLocation && coords !== undefined && <RestaurantCardMap location={coords} name={restaurant.name} />}
                 <div className="px-5 py-2 md:px-4 md:py-2">
-                    <EmojiRating rating={restaurant.rating} onRate={handleRate} />
+                    <EmojiRating
+                        rating={restaurant.rating !== undefined ? restaurant.rating - 1 : undefined}
+                        onRate={handleRate}
+                    />
                 </div>
             </Card>
 

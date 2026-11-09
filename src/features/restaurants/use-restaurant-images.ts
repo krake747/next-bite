@@ -39,10 +39,9 @@ export function useRestaurantImages(
 ): GalleryDraft {
     const { cleanup } = options
     const [images, setImagesState] = useState<ImageRecord[]>([...initialImages])
+    const [initialIds] = useState(() => new Set(initialImages.map((image) => image.storageId)))
     const removedRef = useRef(new Set<Id<"_storage">>())
     const cleanedRef = useRef(new Set<Id<"_storage">>())
-    const initialIdsRef = useRef<Set<Id<"_storage">> | null>(null)
-    initialIdsRef.current ??= new Set(initialImages.map((image) => image.storageId))
 
     const cleanupStorageIds = async (storageIds: ReadonlyArray<Id<"_storage">>): Promise<Id<"_storage">[]> => {
         return cleanupUnownedIds(storageIds, cleanup, cleanedRef.current)
@@ -59,7 +58,6 @@ export function useRestaurantImages(
         } else {
             // Edit mode never deletes attached files. Session-added uploads that
             // were never saved are still owned by this draft, so clean those.
-            const initialIds = initialIdsRef.current ?? new Set<Id<"_storage">>()
             const sessionAdded = images.map((image) => image.storageId).filter((id) => !initialIds.has(id))
             const failed = await cleanupStorageIds(sessionAdded)
             const failedIds = new Set(failed)

@@ -1,5 +1,5 @@
 import { TrashIcon } from "@phosphor-icons/react"
-import { useState } from "react"
+import { useId, useState } from "react"
 
 import { AvatarGroup } from "@pattern/avatar-group"
 import { Button } from "@ui/button"
@@ -31,6 +31,7 @@ export function CommentList({
     onDelete?: ((id: string) => void) | undefined
 }>) {
     const [draft, setDraft] = useState("")
+    const draftId = useId()
 
     return (
         <div className="space-y-3">
@@ -81,11 +82,11 @@ export function CommentList({
                         }
                     }}
                 >
-                    <label htmlFor="comment-draft" className="sr-only">
+                    <label htmlFor={draftId} className="sr-only">
                         Write a comment
                     </label>
                     <input
-                        id="comment-draft"
+                        id={draftId}
                         type="text"
                         value={draft}
                         onChange={(event) => {

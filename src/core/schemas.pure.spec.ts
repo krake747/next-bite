@@ -41,14 +41,14 @@ describe("RestaurantSchema", () => {
         )
     })
 
-    test("holds the rating inside 1 to 6", () => {
+    test("holds the rating inside 1 to 7", () => {
         expect(v.safeParse(RestaurantSchema, { ...validRestaurant, rating: 1 }).success).toBe(true)
-        expect(v.safeParse(RestaurantSchema, { ...validRestaurant, rating: 6 }).success).toBe(true)
+        expect(v.safeParse(RestaurantSchema, { ...validRestaurant, rating: 7 }).success).toBe(true)
         expect(failureMessages(RestaurantSchema, { ...validRestaurant, rating: 0 })).toContain(
             "Rating must be at least 1",
         )
-        expect(failureMessages(RestaurantSchema, { ...validRestaurant, rating: 7 })).toContain(
-            "Rating must be at most 6",
+        expect(failureMessages(RestaurantSchema, { ...validRestaurant, rating: 8 })).toContain(
+            "Rating must be at most 7",
         )
     })
 

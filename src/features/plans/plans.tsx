@@ -7,14 +7,7 @@ import { useAuth } from "@core/session"
 import { LoadingPlaceholder } from "@pattern/loading"
 import { Button } from "@ui/button"
 
-type PlanRow = {
-    readonly _id: Id<"plans">
-    readonly title: string
-    readonly date: number
-    readonly status: "planned" | "done" | "cancelled"
-    readonly createdBy: string
-    readonly participants: ReadonlyArray<{ readonly userId: string; readonly name: string }>
-}
+type PlanRow = NonNullable<ReturnType<typeof usePlansForGroup>>[number]
 
 function formatPlanDate(value: number): string {
     const date = new Date(value)
@@ -110,7 +103,7 @@ export function PlanSection({
     const [dateInput, setDateInput] = useState("")
     const [error, setError] = useState<FormError>(clearError)
 
-    const plans = (groupId === undefined ? restaurantPlans : groupPlans) as ReadonlyArray<PlanRow> | undefined
+    const plans = groupId === undefined ? restaurantPlans : groupPlans
     const userId = auth.user?.id
     const viewer: { readonly kind: "signed-in"; readonly id: string } | { readonly kind: "signed-out" } =
         userId !== undefined && userId !== "" ? { kind: "signed-in", id: userId } : { kind: "signed-out" }

@@ -16,7 +16,7 @@ export function OpeningHours({
     onClick,
 }: Readonly<{
     openingHours: OpeningHoursData | undefined
-    onClick?: () => void
+    onClick: () => void
 }>) {
     const openNow = isOpenNow(openingHours)
 

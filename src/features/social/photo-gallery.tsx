@@ -12,12 +12,19 @@ export function PhotoGallery({
         return null
     }
 
+    const seen = new Map<string, number>()
+    const keyFor = (url: string): string => {
+        const occurrence = seen.get(url) ?? 0
+        seen.set(url, occurrence + 1)
+        return occurrence === 0 ? url : `${url}__${occurrence}`
+    }
+
     return (
         <div>
             <div className="grid grid-cols-3 gap-2">
                 {photos.slice(0, 3).map((photo, index) => (
                     <button
-                        key={photo.url}
+                        key={keyFor(photo.url)}
                         type="button"
                         onClick={() => {
                             lightbox.openAt(index)
