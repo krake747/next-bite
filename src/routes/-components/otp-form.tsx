@@ -2,7 +2,7 @@ import { Field, Form, useField, useForm } from "@formisch/react"
 import * as v from "valibot"
 
 import { useAuth } from "@core/session"
-import { Input } from "@ui/field"
+import { Input } from "@pattern/field"
 
 import { PendingButton } from "./pending-button"
 

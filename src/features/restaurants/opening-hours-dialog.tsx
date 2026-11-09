@@ -1,11 +1,11 @@
 import { ClockIcon } from "@phosphor-icons/react"
 
+import { Badge } from "@ui/badge"
 import { cx } from "@ui/cva.config"
-import { type OpeningHours } from "@ui/opening-hours-utils"
-import { isOpenNow, openStatusLabel, orderedWeek, parseDayText, todayIndex } from "@ui/opening-hours-utils"
+import { Dialog, DialogContent, DialogTitle } from "@ui/dialog"
 
-import { Badge } from "./badge"
-import { Dialog, DialogContent, DialogTitle } from "./dialog"
+import { type OpeningHours } from "./opening-hours-utils"
+import { isOpenNow, openStatusLabel, orderedWeek, parseDayText, todayIndex } from "./opening-hours-utils"
 
 export function OpeningHoursDialog({
     show,
@@ -27,9 +27,11 @@ export function OpeningHoursDialog({
     return (
         <Dialog open={show} onOpenChange={onOpenChange}>
             <DialogContent size="sm" padding="sm">
-                <DialogTitle className="mb-4 flex items-center gap-2">
-                    <ClockIcon className="size-5 text-tomato-500" />
-                    Hours
+                <DialogTitle className="mb-4">
+                    <span className="flex items-center gap-2">
+                        <ClockIcon className="size-5 text-tomato-500" />
+                        Hours
+                    </span>
                 </DialogTitle>
 
                 <p className="mb-4 text-sm text-stone-600">{restaurantName}</p>

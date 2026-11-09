@@ -4,8 +4,8 @@ import { type Id } from "@api/data.model"
 import { clearError, errorFrom, type FormError } from "@core/outcome"
 import { useCreatePlan, usePlansForGroup, usePlansForRestaurant, useUpdatePlanStatus } from "@core/plans"
 import { useAuth } from "@core/session"
+import { LoadingPlaceholder } from "@pattern/loading"
 import { Button } from "@ui/button"
-import { LoadingPlaceholder } from "@ui/loading"
 
 type PlanRow = {
     readonly _id: Id<"plans">

@@ -8,8 +8,8 @@ import { StrictMode, Suspense } from "react"
 import { AuthProvider } from "@api/auth.provider"
 import { env } from "@core/env"
 import { useEnsureProfile } from "@core/session"
+import { LoadingPlaceholder } from "@pattern/loading"
 import { SessionTimeoutNotice } from "@routes/-components/session-timeout-notice"
-import { LoadingPlaceholder } from "@ui/loading"
 
 type RouterContext = {
     queryClient: QueryClient

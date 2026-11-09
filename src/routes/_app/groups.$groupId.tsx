@@ -14,12 +14,12 @@ import { orderFeedByRecency, useSocialSummaries } from "@core/social"
 import { GroupMembers } from "@features/groups/group-members"
 import { PlanSection } from "@features/plans/plans"
 import { EmptyState } from "@pattern/empty-state"
+import { Header, HeaderSubtitle, HeaderTitle } from "@pattern/header"
+import { LoadingPlaceholder } from "@pattern/loading"
 import { QueryErrorState } from "@pattern/query-error"
 import { BackNav } from "@routes/-layouts/back-nav"
 import { PageContainer } from "@routes/-layouts/page-container"
 import { Button } from "@ui/button"
-import { Header, HeaderSubtitle, HeaderTitle } from "@ui/header"
-import { LoadingPlaceholder } from "@ui/loading"
 
 export const Route = createFileRoute("/_app/groups/$groupId")({
     head: () => ({ meta: [{ title: "Group details" }] }),

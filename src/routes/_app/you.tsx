@@ -8,11 +8,11 @@ import { api } from "@api/endpoints"
 import { useRestaurants } from "@core/restaurants"
 import { useSessionStatus } from "@core/session"
 import { orderFeedByRecency } from "@core/social"
+import { Header, HeaderSubtitle, HeaderTitle } from "@pattern/header"
+import { LoadingPlaceholder } from "@pattern/loading"
 import { QueryErrorState } from "@pattern/query-error"
 import { SessionGate } from "@routes/-components/session-gate"
 import { PageContainer } from "@routes/-layouts/page-container"
-import { Header, HeaderSubtitle, HeaderTitle } from "@ui/header"
-import { LoadingPlaceholder } from "@ui/loading"
 
 export const Route = createFileRoute("/_app/you")({
     head: () => ({ meta: [{ title: "You - Next Bite" }] }),

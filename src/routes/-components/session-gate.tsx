@@ -1,7 +1,7 @@
 import { Suspense } from "react"
 
 import { type SessionStatus } from "@core/session"
-import { LoadingPlaceholder } from "@ui/loading"
+import { LoadingPlaceholder } from "@pattern/loading"
 
 import { SignedOutGate } from "./signed-out-gate"
 

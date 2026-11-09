@@ -6,12 +6,12 @@ import { api } from "@api/endpoints"
 import { isSafeRedirectPath, useAcceptInvite } from "@core/groups"
 import { clearError, errorFrom, type FormError } from "@core/outcome"
 import { useAuth } from "@core/session"
+import { Header, HeaderSubtitle, HeaderTitle } from "@pattern/header"
+import { LoadingPlaceholder } from "@pattern/loading"
 import { QueryErrorState } from "@pattern/query-error"
 import { BackNav } from "@routes/-layouts/back-nav"
 import { PageContainer } from "@routes/-layouts/page-container"
 import { Button } from "@ui/button"
-import { Header, HeaderSubtitle, HeaderTitle } from "@ui/header"
-import { LoadingPlaceholder } from "@ui/loading"
 
 export const Route = createFileRoute("/_app/invite/$token")({
     head: () => ({ meta: [{ title: "Group invitation" }] }),

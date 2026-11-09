@@ -1,9 +1,9 @@
 import { createFileRoute, Link } from "@tanstack/react-router"
 
 import { useSessionStatus } from "@core/session"
+import { Header, HeaderSubtitle, HeaderTitle } from "@pattern/header"
 import { SessionGate } from "@routes/-components/session-gate"
 import { cx } from "@ui/cva.config"
-import { Header, HeaderSubtitle, HeaderTitle } from "@ui/header"
 
 import { designSystemSections, sectionGroups } from "./-sections/registry"
 

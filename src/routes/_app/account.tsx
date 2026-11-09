@@ -5,10 +5,10 @@ import { convexQueryOptions, warmQueries } from "@api/convex.options"
 import { api } from "@api/endpoints"
 import { useSessionStatus } from "@core/session"
 import { UserDetailsSection } from "@features/account/profile-card"
+import { Header, HeaderSubtitle, HeaderTitle } from "@pattern/header"
 import { QueryErrorState } from "@pattern/query-error"
 import { SessionGate } from "@routes/-components/session-gate"
 import { PageContainer } from "@routes/-layouts/page-container"
-import { Header, HeaderSubtitle, HeaderTitle } from "@ui/header"
 
 export const Route = createFileRoute("/_app/account")({
     head: () => ({ meta: [{ title: "Account - Next Bite" }] }),

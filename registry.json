@@ -7,164 +7,318 @@
             "name": "button",
             "type": "registry:ui",
             "description": "Tomato primary, secondary, outline, ghost, destructive. Small, medium, large.",
-            "files": [{ "path": "src/ui/button.tsx", "type": "registry:ui" }]
+            "files": [
+                {
+                    "path": "src/ui/button.tsx",
+                    "type": "registry:ui"
+                },
+                {
+                    "path": "src/ui/button.variants.ts",
+                    "type": "registry:ui"
+                }
+            ]
         },
         {
             "name": "badge",
             "type": "registry:ui",
             "description": "Restrained labels. Neutral, brand, success, accent, outline.",
-            "files": [{ "path": "src/ui/badge.tsx", "type": "registry:ui" }]
+            "files": [
+                {
+                    "path": "src/ui/badge.tsx",
+                    "type": "registry:ui"
+                },
+                {
+                    "path": "src/ui/badge.variants.ts",
+                    "type": "registry:ui"
+                }
+            ]
         },
         {
             "name": "avatar",
             "type": "registry:ui",
             "description": "Friend avatar with initials fallback, five sizes, optional presence dot.",
-            "files": [{ "path": "src/ui/avatar.tsx", "type": "registry:ui" }]
+            "files": [
+                {
+                    "path": "src/ui/avatar.tsx",
+                    "type": "registry:ui"
+                },
+                {
+                    "path": "src/ui/avatar.variants.ts",
+                    "type": "registry:ui"
+                }
+            ]
         },
         {
             "name": "card",
             "type": "registry:ui",
             "description": "White surface, Stone border, card shadow. Single default variant.",
-            "files": [{ "path": "src/ui/card.tsx", "type": "registry:ui" }]
+            "files": [
+                {
+                    "path": "src/ui/card.tsx",
+                    "type": "registry:ui"
+                }
+            ]
         },
         {
             "name": "dialog",
             "type": "registry:ui",
             "description": "Light overlay wrapper: backdrop, panel, title, description, close button, action.",
-            "files": [{ "path": "src/ui/dialog.tsx", "type": "registry:ui" }]
+            "files": [
+                {
+                    "path": "src/ui/dialog.tsx",
+                    "type": "registry:ui"
+                }
+            ]
         },
         {
             "name": "popover",
             "type": "registry:ui",
             "description": "Plain and tinted triggers with a shadow-popover panel.",
-            "files": [{ "path": "src/ui/popover.tsx", "type": "registry:ui" }]
+            "files": [
+                {
+                    "path": "src/ui/popover.tsx",
+                    "type": "registry:ui"
+                },
+                {
+                    "path": "src/ui/popover.variants.ts",
+                    "type": "registry:ui"
+                }
+            ]
         },
         {
             "name": "tabs",
             "type": "registry:ui",
             "description": "Standard tab list, tab, and panel.",
-            "files": [{ "path": "src/ui/tabs.tsx", "type": "registry:ui" }]
+            "files": [
+                {
+                    "path": "src/ui/tabs.tsx",
+                    "type": "registry:ui"
+                }
+            ]
         },
         {
             "name": "field",
-            "type": "registry:ui",
+            "type": "registry:component",
             "description": "Formisch-coupled Input, Textarea, and Base UI Select with error and disabled states.",
-            "files": [{ "path": "src/ui/field.tsx", "type": "registry:ui" }]
+            "files": [
+                {
+                    "path": "src/pattern/field.tsx",
+                    "type": "registry:component"
+                }
+            ]
         },
         {
             "name": "skeleton",
             "type": "registry:ui",
             "description": "Pulse placeholder for loading content.",
-            "files": [{ "path": "src/ui/skeleton.tsx", "type": "registry:ui" }]
+            "files": [
+                {
+                    "path": "src/ui/skeleton.tsx",
+                    "type": "registry:ui"
+                }
+            ]
         },
         {
             "name": "icon-button",
             "type": "registry:ui",
             "description": "Icon-only button with required accessible label. Neutral, destructive, plain, inverse tones; extra-small to large.",
-            "files": [{ "path": "src/ui/icon-button.tsx", "type": "registry:ui" }]
+            "files": [
+                {
+                    "path": "src/ui/icon-button.tsx",
+                    "type": "registry:ui"
+                },
+                {
+                    "path": "src/ui/icon-button.variants.ts",
+                    "type": "registry:ui"
+                }
+            ]
         },
         {
             "name": "text-link",
             "type": "registry:ui",
             "description": "Inline link composing Base UI useRender with a framework-provided render element.",
-            "files": [{ "path": "src/ui/text-link.tsx", "type": "registry:ui" }]
+            "files": [
+                {
+                    "path": "src/ui/text-link.tsx",
+                    "type": "registry:ui"
+                }
+            ]
         },
         {
             "name": "brand-icon",
-            "type": "registry:ui",
+            "type": "registry:component",
             "description": "Solid tomato brand tile in small, medium, and large sizes.",
-            "files": [{ "path": "src/ui/brand-icon.tsx", "type": "registry:ui" }]
+            "files": [
+                {
+                    "path": "src/pattern/brand-icon.tsx",
+                    "type": "registry:component"
+                },
+                {
+                    "path": "src/pattern/brand-icon.variants.ts",
+                    "type": "registry:component"
+                }
+            ]
         },
         {
             "name": "header",
-            "type": "registry:ui",
+            "type": "registry:component",
             "description": "Page header shell with display title, subtitle, count badge, and squiggle underline.",
-            "files": [{ "path": "src/ui/header.tsx", "type": "registry:ui" }]
-        },
-        {
-            "name": "search-input",
-            "type": "registry:ui",
-            "description": "Search field with icon and clear button, controlled or uncontrolled.",
-            "files": [{ "path": "src/ui/search-input.tsx", "type": "registry:ui" }]
+            "files": [
+                {
+                    "path": "src/pattern/header.tsx",
+                    "type": "registry:component"
+                }
+            ]
         },
         {
             "name": "error-banner",
-            "type": "registry:ui",
+            "type": "registry:component",
             "description": "Alert banner for form and page errors with icon.",
-            "files": [{ "path": "src/ui/error-banner.tsx", "type": "registry:ui" }]
+            "files": [
+                {
+                    "path": "src/pattern/error-banner.tsx",
+                    "type": "registry:component"
+                }
+            ]
         },
         {
             "name": "opening-hours",
-            "type": "registry:ui",
+            "type": "registry:component",
             "description": "Today's hours with open-now status; opens the full week on click.",
-            "files": [{ "path": "src/ui/opening-hours.tsx", "type": "registry:ui" }]
+            "files": [
+                {
+                    "path": "src/features/restaurants/opening-hours.tsx",
+                    "type": "registry:component"
+                },
+                {
+                    "path": "src/features/restaurants/opening-hours-dialog.tsx",
+                    "type": "registry:component"
+                },
+                {
+                    "path": "src/features/restaurants/opening-hours-utils.ts",
+                    "type": "registry:component"
+                }
+            ]
         },
         {
             "name": "background-decoration",
-            "type": "registry:ui",
+            "type": "registry:component",
             "description": "Ambient page background: grain texture with a warm tomato wash.",
-            "files": [{ "path": "src/ui/background-decoration.tsx", "type": "registry:ui" }]
+            "files": [
+                {
+                    "path": "src/pattern/background-decoration.tsx",
+                    "type": "registry:component"
+                }
+            ]
         },
         {
             "name": "avatar-group",
             "type": "registry:component",
             "description": "Overlapping friend avatars with overflow count and accessible label.",
-            "files": [{ "path": "src/pattern/avatar-group.tsx", "type": "registry:component" }]
+            "files": [
+                {
+                    "path": "src/pattern/avatar-group.tsx",
+                    "type": "registry:component"
+                }
+            ]
         },
         {
             "name": "friend-presence",
             "type": "registry:component",
             "description": "Display-only active/away dot with screen-reader label.",
-            "files": [{ "path": "src/features/social/friend-presence.tsx", "type": "registry:component" }]
+            "files": [
+                {
+                    "path": "src/features/social/friend-presence.tsx",
+                    "type": "registry:component"
+                }
+            ]
         },
         {
             "name": "social-metadata",
             "type": "registry:component",
             "description": "Human-language attribution lines: added-by, want counts, visit counts.",
-            "files": [{ "path": "src/features/social/social-metadata.tsx", "type": "registry:component" }]
+            "files": [
+                {
+                    "path": "src/features/social/social-metadata.tsx",
+                    "type": "registry:component"
+                }
+            ]
         },
         {
             "name": "reaction-bar",
             "type": "registry:component",
             "description": "Like, comment, and want-to-try toggles with counts.",
-            "files": [{ "path": "src/features/social/reaction-bar.tsx", "type": "registry:component" }]
+            "files": [
+                {
+                    "path": "src/features/social/reaction-bar.tsx",
+                    "type": "registry:component"
+                }
+            ]
         },
         {
             "name": "comment-list",
             "type": "registry:component",
             "description": "Plain-text comments, author-only delete, draft form.",
-            "files": [{ "path": "src/features/social/comment-list.tsx", "type": "registry:component" }]
+            "files": [
+                {
+                    "path": "src/features/social/comment-list.tsx",
+                    "type": "registry:component"
+                }
+            ]
         },
         {
             "name": "activity-post",
             "type": "registry:component",
             "description": "Feed post composing author, text, restaurant, social context, and reactions.",
-            "files": [{ "path": "src/features/social/activity-post.tsx", "type": "registry:component" }]
+            "files": [
+                {
+                    "path": "src/features/social/activity-post.tsx",
+                    "type": "registry:component"
+                }
+            ]
         },
         {
             "name": "photo-gallery",
             "type": "registry:component",
             "description": "Attributed photo grid with shared viewer and add-photo entry.",
-            "files": [{ "path": "src/features/social/photo-gallery.tsx", "type": "registry:component" }]
+            "files": [
+                {
+                    "path": "src/features/social/photo-gallery.tsx",
+                    "type": "registry:component"
+                }
+            ]
         },
         {
             "name": "restaurant-header",
             "type": "registry:component",
             "description": "Restaurant title block with menu pill, attribution, location, and hours.",
-            "files": [{ "path": "src/features/restaurants/restaurant-header.tsx", "type": "registry:component" }]
+            "files": [
+                {
+                    "path": "src/features/restaurants/restaurant-header.tsx",
+                    "type": "registry:component"
+                }
+            ]
         },
         {
             "name": "restaurant-gallery",
             "type": "registry:component",
             "description": "Restaurant hero image with badge, actions, count button, and viewer wiring.",
-            "files": [{ "path": "src/features/restaurants/restaurant-gallery.tsx", "type": "registry:component" }]
+            "files": [
+                {
+                    "path": "src/features/restaurants/restaurant-gallery.tsx",
+                    "type": "registry:component"
+                }
+            ]
         },
         {
             "name": "restaurant-interest-button",
             "type": "registry:component",
             "description": "Labeled Want-to-try toggle with count and pressed state.",
             "files": [
-                { "path": "src/features/restaurants/restaurant-interest-button.tsx", "type": "registry:component" }
+                {
+                    "path": "src/features/restaurants/restaurant-interest-button.tsx",
+                    "type": "registry:component"
+                }
             ]
         },
         {
@@ -172,10 +326,22 @@
             "type": "registry:block",
             "description": "Shared food-club card: header, members, and restaurant collection.",
             "files": [
-                { "path": "src/features/groups/group-card.tsx", "type": "registry:block" },
-                { "path": "src/features/groups/group-header.tsx", "type": "registry:block" },
-                { "path": "src/features/groups/group-members.tsx", "type": "registry:block" },
-                { "path": "src/features/groups/shared-restaurant-list.tsx", "type": "registry:block" }
+                {
+                    "path": "src/features/groups/group-card.tsx",
+                    "type": "registry:block"
+                },
+                {
+                    "path": "src/features/groups/group-header.tsx",
+                    "type": "registry:block"
+                },
+                {
+                    "path": "src/features/groups/group-members.tsx",
+                    "type": "registry:block"
+                },
+                {
+                    "path": "src/features/groups/shared-restaurant-list.tsx",
+                    "type": "registry:block"
+                }
             ]
         }
     ]

@@ -4,10 +4,10 @@ import { useConvexQuery } from "@api/convex.context"
 import { convexQueryOptions, warmQueries } from "@api/convex.options"
 import { api } from "@api/endpoints"
 import { useAuth } from "@core/session"
+import { BackgroundLayers } from "@pattern/background-decoration"
 import { LandingActions, LandingCloser, TasteCards, TasteCardsSkeleton } from "@routes/-components/home-sections"
 import { PageContainer } from "@routes/-layouts/page-container"
 import { PageLayout } from "@routes/-layouts/page-layout"
-import { BackgroundLayers } from "@ui/background-decoration"
 
 export const Route = createFileRoute("/")({
     head: () => ({ meta: [{ title: "Our next bite" }] }),

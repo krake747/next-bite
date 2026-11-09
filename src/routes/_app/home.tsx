@@ -10,11 +10,11 @@ import { RestaurantCardSkeleton } from "@features/restaurants/restaurant-card-sk
 import { RestaurantList } from "@features/restaurants/restaurant-list"
 import { ActivityPost } from "@features/social/activity-post"
 import { EmptyState } from "@pattern/empty-state"
+import { HeaderBadge } from "@pattern/header"
 import { SessionGate } from "@routes/-components/session-gate"
 import { SocialActionsProvider, useSocialActions } from "@routes/-components/social-actions-provider"
 import { PageContainer } from "@routes/-layouts/page-container"
 import { Button } from "@ui/button"
-import { HeaderBadge } from "@ui/header"
 
 export const Route = createFileRoute("/_app/home")({
     head: () => ({ meta: [{ title: "Our next bite" }] }),

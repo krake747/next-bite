@@ -1,8 +1,8 @@
 import { ForkKnifeIcon } from "@phosphor-icons/react"
 import { Link } from "@tanstack/react-router"
 
-import { BackgroundLayers } from "@ui/background-decoration"
-import { BrandIcon } from "@ui/brand-icon"
+import { BackgroundLayers } from "@pattern/background-decoration"
+import { BrandIcon } from "@pattern/brand-icon"
 
 export function AuthLayout({
     icon,

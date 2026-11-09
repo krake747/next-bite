@@ -3,9 +3,10 @@ import { Link } from "@tanstack/react-router"
 
 import { SocialMetadata } from "@pattern/social-metadata"
 import { cx } from "@ui/cva.config"
-import { OpeningHours as OpeningHoursSummary } from "@ui/opening-hours"
-import { type OpeningHours } from "@ui/opening-hours-utils"
 import { focusRing } from "@ui/variants"
+
+import { OpeningHours as OpeningHoursSummary } from "./opening-hours"
+import { type OpeningHours } from "./opening-hours-utils"
 
 export function RestaurantHeader({
     name,

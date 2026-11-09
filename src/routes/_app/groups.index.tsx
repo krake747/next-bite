@@ -9,12 +9,12 @@ import { useCreateGroup } from "@core/groups"
 import { clearError, errorFrom, type FormError } from "@core/outcome"
 import { useSessionStatus } from "@core/session"
 import { EmptyState } from "@pattern/empty-state"
+import { Header, HeaderSubtitle, HeaderTitle } from "@pattern/header"
 import { QueryErrorState } from "@pattern/query-error"
 import { SessionGate } from "@routes/-components/session-gate"
 import { PageContainer } from "@routes/-layouts/page-container"
 import { Button } from "@ui/button"
 import { cx } from "@ui/cva.config"
-import { Header, HeaderSubtitle, HeaderTitle } from "@ui/header"
 import { control, fieldLabel } from "@ui/variants"
 
 export const Route = createFileRoute("/_app/groups/")({

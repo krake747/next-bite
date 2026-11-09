@@ -20,6 +20,7 @@ import {
 import { type Viewer } from "@core/social.counts"
 import { ShareToGroupDialog } from "@features/groups/share-to-group-dialog"
 import { PlanSection } from "@features/plans/plans"
+import { OpeningHoursDialog } from "@features/restaurants/opening-hours-dialog"
 import { RestaurantGallery } from "@features/restaurants/restaurant-gallery"
 import { RestaurantHeader } from "@features/restaurants/restaurant-header"
 import { RestaurantInterestButton } from "@features/restaurants/restaurant-interest-button"
@@ -34,7 +35,6 @@ import { SocialMetadata } from "@pattern/social-metadata"
 import { BackNav } from "@routes/-layouts/back-nav"
 import { PageContainer } from "@routes/-layouts/page-container"
 import { Button } from "@ui/button"
-import { OpeningHoursDialog } from "@ui/opening-hours-dialog"
 
 export const Route = createFileRoute("/_app/restaurants/$restaurantId")({
     head: () => ({ meta: [{ title: "Restaurant details" }] }),
