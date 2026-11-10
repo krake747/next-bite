@@ -1,0 +1,58 @@
+name: Preview environment
+
+# Per-PR preview: one Convex preview deployment plus one Worker preview alias
+# per PR, linked from a single sticky comment. Runs on pull_request (never
+# pull_request_target) and skips forks, so the write token below only ever
+# sees first-party code. Step logic lives in .github/scripts/preview-*.sh as
+# small composed functions; this file stays declarative.
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    branches: [main]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+concurrency:
+  group: ${{ github.workflow }}-pr-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  preview:
+    name: Deploy preview
+    if: github.event.pull_request.head.repo.fork == false
+    runs-on: ubuntu-latest
+    environment: preview
+    env:
+      PR_NUMBER: ${{ github.event.pull_request.number }}
+      # The CLI reads the deploy key from CONVEX_DEPLOY_KEY; the secret keeps
+      # the name shared with the cleanup workflow and the environments doc.
+      CONVEX_DEPLOY_KEY: ${{ secrets.CONVEX_DEPLOY_TOKEN }}
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+      VITE_GOOGLE_MAPS_API_KEY: ${{ secrets.VITE_GOOGLE_MAPS_API_KEY }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7
+
+      - name: Setup vp and install dependencies
+        uses: ./.github/actions/setup-vp
+
+      - name: Deploy Convex preview backend
+        run: .github/scripts/preview-deploy-backend.sh
+
+      - name: Build
+        run: vp run build
+
+      - name: Upload Worker version
+        run: .github/scripts/preview-upload-alias.sh
+
+      - name: Point preview SITE_URL at the alias and seed
+        run: .github/scripts/preview-configure-backend.sh
+
+      - name: Update sticky preview comment
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: .github/scripts/preview-comment.sh

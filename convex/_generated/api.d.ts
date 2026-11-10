@@ -21,6 +21,7 @@ import type * as landing from "../landing.js";
 import type * as migrate from "../migrate.js";
 import type * as plans from "../plans.js";
 import type * as restaurants from "../restaurants.js";
+import type * as seed from "../seed.js";
 import type * as shares from "../shares.js";
 import type * as social from "../social.js";
 import type * as uploads from "../uploads.js";
@@ -48,6 +49,7 @@ declare const fullApi: ApiFromModules<{
   migrate: typeof migrate;
   plans: typeof plans;
   restaurants: typeof restaurants;
+  seed: typeof seed;
   shares: typeof shares;
   social: typeof social;
   uploads: typeof uploads;

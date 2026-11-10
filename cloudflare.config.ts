@@ -10,5 +10,6 @@ export default defineConfig({
         assets: {
             notFoundHandling: "single-page-application",
         },
+        previewUrls: true,
     },
 })

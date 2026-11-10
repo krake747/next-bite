@@ -1,3 +1,5 @@
+import path from "node:path"
+
 import { cloudflare } from "@cloudflare/vite-plugin"
 import tailwindcss from "@tailwindcss/vite"
 import { tanstackStart } from "@tanstack/react-start/plugin/vite"
@@ -405,6 +407,16 @@ export default defineConfig({
     },
     resolve: {
         tsconfigPaths: true,
+        alias: [
+            // dataModel is types-only upstream (dataModel.d.ts, no runtime file), so the
+            // dep scanner cannot resolve the tsconfig path and aborts the whole scan.
+            // Pointing it at the .d.ts lets the initial scan succeed; every import of
+            // this module is type-only and erased before runtime.
+            {
+                find: "@convex/_generated/dataModel",
+                replacement: path.resolve(import.meta.dirname, "convex/_generated/dataModel.d.ts"),
+            },
+        ],
     },
     optimizeDeps: {
         // Pre-bundle route-split deep imports so navigating to a lazy route
@@ -490,7 +502,11 @@ export default defineConfig({
                 test: {
                     name: "pure",
                     environment: "node",
-                    include: ["src/**/*.pure.spec.{js,ts,jsx,tsx}", "lint/**/*.pure.spec.ts"],
+                    include: [
+                        "src/**/*.pure.spec.{js,ts,jsx,tsx}",
+                        "lint/**/*.pure.spec.ts",
+                        "convex/**/*.pure.spec.{js,ts,jsx,tsx}",
+                    ],
                     testTimeout: 2000,
                     slowTestThreshold: 1500,
                 },
@@ -536,6 +552,20 @@ export default defineConfig({
                     include: ["src/**/*.integration.spec.{js,ts,jsx,tsx}"],
                     testTimeout: 3000,
                     slowTestThreshold: 2500,
+                },
+            },
+            {
+                // Backend contract tests with convex-test (plus the Better Auth
+                // component, inlined so its TS source transforms). Keep the
+                // timeout rule: slowTestThreshold is testTimeout minus 500ms.
+                test: {
+                    name: "convex",
+                    environment: "edge-runtime",
+                    include: ["convex/**/*.spec.{js,ts,jsx,tsx}"],
+                    exclude: ["**/*.pure.spec.*"],
+                    testTimeout: 20000,
+                    slowTestThreshold: 19500,
+                    server: { deps: { inline: [/@convex-dev\/better-auth/] } },
                 },
             },
         ],
