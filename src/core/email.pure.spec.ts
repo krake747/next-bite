@@ -56,9 +56,11 @@ describe("sendTransactionalEmail", () => {
     test("fails closed when mail is not configured", async () => {
         stubMailEnv({ key: "", domain: "", fallback: "" })
         const calls = serveMail(200)
+        const warn = vi.spyOn(console, "warn").mockImplementation(() => {})
 
         await expect(sendTransactionalEmail(input)).rejects.toThrow("not configured")
         expect(calls).toHaveLength(0)
+        expect(warn).toHaveBeenCalledWith("sendTransactionalEmail refused: mail not configured")
     })
 
     test("uses the explicit local fallback without logging OTP content", async () => {
@@ -97,10 +99,12 @@ describe("sendTransactionalEmail", () => {
     test("fails on provider rejection without leaking the key or body", async () => {
         stubMailEnv({ key: "test-key", domain: "mg.example.com", fallback: "" })
         serveMail(401, "S3CR3T-provider-body")
+        const warn = vi.spyOn(console, "warn").mockImplementation(() => {})
 
         const error = await sendTransactionalEmail(input).catch((e: unknown) => e)
         expect(errorMessageOf(error)).toContain("delivery failed")
         expect(errorMessageOf(error)).not.toContain("test-key")
         expect(errorMessageOf(error)).not.toContain("S3CR3T-provider-body")
+        expect(warn).toHaveBeenCalledWith("Mailgun delivery failed with status 401")
     })
 })

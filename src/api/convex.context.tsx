@@ -1,4 +1,4 @@
-import { useMutation, useQuery, useSuspenseQuery, mutationOptions } from "@tanstack/react-query"
+import { noop, useMutation, useQuery, useSuspenseQuery, mutationOptions } from "@tanstack/react-query"
 import { type ConvexReactClient } from "convex/react"
 import { type FunctionArgs, type FunctionReference, type FunctionReturnType } from "convex/server"
 import { createContext, use } from "react"
@@ -39,6 +39,7 @@ function useConvexQueryResult<Query extends FunctionReference<"query">>(
     const result = useQuery({
         ...convexQueryOptions(query, args, options),
         enabled: !skip,
+        ...(skip ? { queryFn: noop } : {}),
     })
     if (skip) {
         return { data: undefined, isPending: false, isError: false }

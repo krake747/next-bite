@@ -1,5 +1,5 @@
 import { RouterProvider, createMemoryHistory, createRouter } from "@tanstack/react-router"
-import { fireEvent, render, screen, waitFor, within } from "@testing-library/react"
+import { fireEvent, screen, waitFor, within } from "@testing-library/react"
 import { describe, expect, test, vi } from "vitest"
 
 import { ConvexProvider } from "@api/convex.context"
@@ -7,6 +7,7 @@ import { type RestaurantDoc } from "@api/db/restaurants"
 import { createSeededClient, seedKey, type MutationCall } from "@api/db/seeded.client"
 
 import { routeTree } from "../../routeTree.gen"
+import { renderDocument } from "../../vitest.render"
 
 type TestUser = { id: string; email: string; name: string }
 
@@ -67,7 +68,7 @@ async function renderAt(path: string): Promise<void> {
         context: { queryClient: backend.queryClient },
     })
     await router.load()
-    render(
+    renderDocument(
         <ConvexProvider client={backend.client}>
             <RouterProvider router={router} />
         </ConvexProvider>,
@@ -129,7 +130,7 @@ describe("groups list", () => {
             context: { queryClient: backend.queryClient },
         })
         await router.load()
-        render(
+        renderDocument(
             <ConvexProvider client={backend.client}>
                 <RouterProvider router={router} />
             </ConvexProvider>,

@@ -1,5 +1,5 @@
 import { RouterProvider, createMemoryHistory, createRouter } from "@tanstack/react-router"
-import { render, screen, within, waitFor } from "@testing-library/react"
+import { screen, within, waitFor } from "@testing-library/react"
 import { describe, expect, test, vi } from "vitest"
 
 import { ConvexProvider } from "@api/convex.context"
@@ -7,6 +7,7 @@ import { type RestaurantDoc } from "@api/db/restaurants"
 import { createSeededClient, seedKey } from "@api/db/seeded.client"
 
 import { routeTree } from "../routeTree.gen"
+import { renderDocument } from "../vitest.render"
 
 vi.mock("@api/auth.sdk", async (importOriginal) => {
     const original = await importOriginal<typeof import("@api/auth.sdk")>()
@@ -73,7 +74,7 @@ async function renderHome(
         context: { queryClient: backend.queryClient },
     })
     await router.load()
-    render(
+    renderDocument(
         <ConvexProvider client={backend.client}>
             <RouterProvider router={router} />
         </ConvexProvider>,

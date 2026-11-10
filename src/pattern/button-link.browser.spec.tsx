@@ -23,12 +23,17 @@ function Shell() {
 }
 
 const rootRoute = createRootRoute({ component: Shell })
+const indexRoute = createRoute({
+    getParentRoute: () => rootRoute,
+    path: "/",
+    component: () => null,
+})
 const groupsRoute = createRoute({
     getParentRoute: () => rootRoute,
     path: "/groups",
     component: () => <h1>Groups</h1>,
 })
-const routeTree = rootRoute.addChildren([groupsRoute])
+const routeTree = rootRoute.addChildren([indexRoute, groupsRoute])
 
 async function renderAt(path: string) {
     const router = createRouter({

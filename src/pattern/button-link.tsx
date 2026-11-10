@@ -8,9 +8,15 @@ type ButtonLinkBaseProps = React.AnchorHTMLAttributes<HTMLAnchorElement> &
         readonly ref?: React.Ref<HTMLAnchorElement> | undefined
     }
 
-function ButtonLinkBase({ tone, size, className, children, ref, ...props }: Readonly<ButtonLinkBaseProps>) {
+function ButtonLinkBase({ tone, size, className, children, ref, href, ...props }: Readonly<ButtonLinkBaseProps>) {
     return (
-        <a ref={ref} data-slot="button-link" className={button({ tone, size, class: className })} {...props}>
+        <a
+            ref={ref}
+            href={href === "" ? undefined : href}
+            data-slot="button-link"
+            className={button({ tone, size, class: className })}
+            {...props}
+        >
             {children}
         </a>
     )
