@@ -9,7 +9,7 @@ import { AppInitializing } from "@pattern/loading"
 import { redirectSignedIn } from "@routes/-components/auth-redirects"
 import { LandingActions, LandingCloser, TasteCards, TasteCardsSkeleton } from "@routes/-components/home-sections"
 import { PageContainer } from "@routes/-layouts/page-container"
-import { PageLayout } from "@routes/-layouts/page-layout"
+import { PublicLayout } from "@routes/-layouts/public-layout"
 
 export const Route = createFileRoute("/")({
     head: () => ({ meta: [{ title: "Our next bite" }] }),
@@ -58,13 +58,13 @@ function LandingStatsSection() {
 
 function SignedOutHome() {
     return (
-        <PageLayout>
+        <PublicLayout>
             <LandingHero />
             <PageContainer>
                 <LandingStatsSection />
                 <LandingCloser />
             </PageContainer>
-        </PageLayout>
+        </PublicLayout>
     )
 }
 

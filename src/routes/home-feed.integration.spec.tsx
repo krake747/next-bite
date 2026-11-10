@@ -116,4 +116,30 @@ describe("home friends feed", () => {
         })
         expect(within(saved).getByText("Trattoria Verde")).toBeInTheDocument()
     })
+
+    test("a sync that keeps failing shows a recovery path, not the empty state", async () => {
+        const backend = createSeededClient({ liveRows: [] })
+        backend.breakSync()
+        const router = createRouter({
+            routeTree,
+            history: createMemoryHistory({ initialEntries: ["/home"] }),
+            context: {
+                queryClient: backend.queryClient,
+                authSnapshot: authSnapshotFor({ id: "user-1", email: "alex@example.com", name: "Alex" }),
+            },
+        })
+        await router.load()
+        renderDocument(
+            <ConvexProvider client={backend.client} auth="authenticated">
+                <RouterProvider router={router} />
+            </ConvexProvider>,
+        )
+
+        await waitFor(() => {
+            expect(screen.getByText("Could not load this page")).toBeInTheDocument()
+        })
+        expect(screen.getByRole("button", { name: "Try again" })).toBeInTheDocument()
+        expect(screen.queryByText("The table is set, but empty")).not.toBeInTheDocument()
+        expect(document.querySelector('[data-slot="app-shell"]')).toBeInTheDocument()
+    })
 })

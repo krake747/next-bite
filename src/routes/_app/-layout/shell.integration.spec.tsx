@@ -105,6 +105,38 @@ describe("app shell", () => {
         })
     })
 
+    test("keeps the signed-in shell mounted across navigation", async () => {
+        signIn()
+        await renderAt("/home")
+        const homeLink = screen.getByRole("link", { name: "Home" })
+        const shell = document.querySelector('[data-slot="app-shell"]')
+        expect(shell).toBeInTheDocument()
+
+        for (const destination of ["Friends", "Groups", "You", "Home"]) {
+            fireEvent.click(screen.getByRole("link", { name: destination }))
+            await waitFor(() => {
+                expect(screen.getByRole("link", { name: destination })).toHaveAttribute("aria-current", "page")
+            })
+            expect(screen.getByRole("link", { name: "Home" })).toBe(homeLink)
+            expect(document.querySelector('[data-slot="app-shell"]')).toBe(shell)
+        }
+    })
+
+    test("an invite preview shows public chrome to signed-out visitors", async () => {
+        await renderAt("/invite/token-1")
+
+        expect(document.querySelector('[data-slot="top-bar"]')).toBeInTheDocument()
+        expect(document.querySelector('[data-slot="app-shell"]')).not.toBeInTheDocument()
+    })
+
+    test("an invite shows the signed-in shell to members", async () => {
+        signIn()
+        await renderAt("/invite/token-1")
+
+        expect(document.querySelector('[data-slot="app-shell"]')).toBeInTheDocument()
+        expect(document.querySelector('[data-slot="top-bar"]')).not.toBeInTheDocument()
+    })
+
     test("marks the current destination", async () => {
         signIn()
         await renderAt("/friends")

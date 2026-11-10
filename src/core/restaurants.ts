@@ -1,7 +1,7 @@
 import { useLiveQuery } from "@tanstack/react-db"
 import { mutationOptions, useMutation, useQueryClient, type QueryClient } from "@tanstack/react-query"
 import { type ConvexReactClient } from "convex/react"
-import { useEffect, useRef } from "react"
+import { useEffect, useRef, useState } from "react"
 
 import { getConvexSessionToken } from "@api/auth.sdk"
 import { useConvexClient, useConvexQuery, useConvexMutation, useConvexAction } from "@api/convex.context"
@@ -27,44 +27,63 @@ import { env } from "./env"
 import { parseImageRecord, type ImageRecord } from "./schemas"
 import { gateId, retrySessionGate, useAuth, useSessionKey, useSessionStatus } from "./session"
 
+export class CollectionSyncError extends Error {
+    constructor() {
+        super("Your restaurants could not sync")
+        this.name = "CollectionSyncError"
+    }
+}
+
 function useSessionSyncRecovery(
     input: Readonly<{
-        gated: boolean
+        syncFailed: boolean
+        source: object | null
         sessionKey: string | null
         client: ConvexReactClient | null
-        isLoadingError: boolean
-        isSyncError: boolean
-        status: string
-        hasData: boolean
+        recovered: boolean
     }>,
-): void {
-    const { gated, sessionKey, client, isLoadingError, isSyncError, status, hasData } = input
-    const syncFailed = !gated && (isLoadingError || isSyncError || status === "error" || status === "crashed")
+): boolean {
+    const { syncFailed, source, sessionKey, client, recovered } = input
     const failedRef = useRef(false)
+    const [exhausted, setExhausted] = useState(false)
     useEffect(() => {
-        // A failed sync poisons the cached collections (typically an expired
-        // Convex token mid-session). Evict the session cache so the next read
-        // subscribes fresh, and re-verify auth: success restores the same
-        // user's live data, failure surfaces the timeout notice with a retry.
-        // Edge-triggered per failure episode; the latch only clears once the
-        // collection serves data again, so a still-broken backend cannot loop.
         if (syncFailed && !failedRef.current && sessionKey !== null && client !== null) {
             failedRef.current = true
             dropSessionCollections(client, sessionKey)
             retrySessionGate()
-        } else if (!syncFailed && hasData) {
+        } else if (syncFailed && failedRef.current) {
+            setExhausted(true)
+        } else if (recovered) {
             failedRef.current = false
+            setExhausted(false)
         }
-    }, [syncFailed, sessionKey, client, hasData, gated])
+    }, [syncFailed, source, sessionKey, client, recovered])
+    return exhausted
 }
 
-function useOwnerOrFeed(kind: "owner" | "feed"): ReadonlyArray<Doc<"restaurants">> | undefined {
-    const sessionKey = useSessionKey()
-    const client = useConvexClient()
+type Rows = ReadonlyArray<Doc<"restaurants">>
+type SettledRows = { readonly sessionKey: string; readonly rows: Rows }
+type LiveRead = Readonly<{ status: string; isLoadingError: boolean; isSyncError: boolean }>
+
+function didSyncFail(read: LiveRead): boolean {
+    return read.isLoadingError || read.isSyncError || read.status === "error" || read.status === "crashed"
+}
+
+function keptRowsFor(kept: SettledRows | null, sessionKey: string): Rows | undefined {
+    return kept !== null && kept.sessionKey === sessionKey && kept.rows.length > 0 ? kept.rows : undefined
+}
+
+function keptOrThrow(kept: Rows | undefined, failed: boolean): Rows | undefined {
+    if (kept === undefined && failed) {
+        throw new CollectionSyncError()
+    }
+    return kept
+}
+
+function useSessionCollection(kind: "owner" | "feed", sessionKey: string | null, client: ConvexReactClient | null) {
+    "use no memo"
     const queryClient = useQueryClient()
     useEffect(() => {
-        // Evict only when a ready session takes over a cache owned by another session. Skips
-        // probing mounts and owner matches, so components that mount on loaded data keep it.
         claimSessionCache(
             (filters) => {
                 queryClient.removeQueries(filters)
@@ -73,29 +92,37 @@ function useOwnerOrFeed(kind: "owner" | "feed"): ReadonlyArray<Doc<"restaurants"
             sessionKey,
         )
     }, [queryClient, sessionKey])
-    const gated = sessionKey === null || client === null
-    const collections =
-        gated || client === null ? null : getSessionCollections(client, persistCallerFor(client), sessionKey)
-    const collection = collections === null ? null : collections[kind]
-    const result = useLiveQuery(() => collection)
+    const collection =
+        sessionKey === null || client === null
+            ? null
+            : getSessionCollections(client, persistCallerFor(client), sessionKey)[kind]
     useEffect(() => {
         if (collection !== null) {
             void collection.preload()
         }
     }, [collection])
-    useSessionSyncRecovery({
-        gated,
-        sessionKey,
-        client,
-        isLoadingError: result.isLoadingError,
-        isSyncError: result.isSyncError,
-        status: result.status,
-        hasData: result.data !== undefined,
-    })
-    if (gated || result.isLoading) {
+    return collection
+}
+
+function useOwnerOrFeed(kind: "owner" | "feed"): Rows | undefined {
+    "use no memo"
+    const sessionKey = useSessionKey()
+    const client = useConvexClient()
+    const collection = useSessionCollection(kind, sessionKey, client)
+    const result = useLiveQuery(() => collection)
+    const syncFailed = collection !== null && didSyncFail(result)
+    const rows: Rows | undefined = result.data
+    const ready = collection !== null && !syncFailed && result.status === "ready"
+    const exhausted = useSessionSyncRecovery({ syncFailed, source: collection, sessionKey, client, recovered: ready })
+    const settledRef = useRef<SettledRows | null>(null)
+    if (sessionKey === null || collection === null) {
         return undefined
     }
-    return result.data
+    if (ready && rows !== undefined) {
+        settledRef.current = { sessionKey, rows }
+        return rows
+    }
+    return keptOrThrow(keptRowsFor(settledRef.current, sessionKey), syncFailed && exhausted)
 }
 
 export function usePublishReadySession(): void {

@@ -2,7 +2,6 @@ import { ArrowRightIcon } from "@phosphor-icons/react"
 import { Link, createFileRoute } from "@tanstack/react-router"
 
 import { PageContainer } from "@routes/-layouts/page-container"
-import { PageLayout } from "@routes/-layouts/page-layout"
 
 export const Route = createFileRoute("/$")({
     head: () => ({ meta: [{ title: "Page Not Found - Next Bite" }] }),
@@ -11,7 +10,7 @@ export const Route = createFileRoute("/$")({
 
 function NotFoundPage() {
     return (
-        <PageLayout>
+        <main data-slot="page-layout" className="flex min-h-screen flex-col">
             <PageContainer className="flex flex-1 flex-col items-center justify-center">
                 <div className="text-center">
                     <p className="text-base font-semibold text-tomato-600">404</p>
@@ -38,6 +37,6 @@ function NotFoundPage() {
                     </div>
                 </div>
             </PageContainer>
-        </PageLayout>
+        </main>
     )
 }

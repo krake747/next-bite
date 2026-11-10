@@ -15,9 +15,6 @@ export const Route = createFileRoute("/ds")({
 })
 
 function DesignSystemShellRoute() {
-    // No PageLayout here on purpose: the design system is an authed-only
-    // dev tool, so it never shows the signed-out TopBar and Footer. Each
-    // page gates its own demos behind the session instead.
     return (
         <DesignSystemShell>
             <Outlet />

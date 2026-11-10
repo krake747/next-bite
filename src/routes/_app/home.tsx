@@ -10,6 +10,7 @@ import { ActivityPost } from "@features/social/activity-post"
 import { ButtonLink } from "@pattern/button-link"
 import { EmptyState } from "@pattern/empty-state"
 import { HeaderBadge } from "@pattern/header"
+import { QueryErrorState } from "@pattern/query-error"
 import { HomeSkeleton } from "@routes/-components/page-skeletons"
 import { SessionGate } from "@routes/-components/session-gate"
 import { SocialActionsProvider, useSocialActions } from "@routes/-components/social-actions-provider"
@@ -21,7 +22,16 @@ export const Route = createFileRoute("/_app/home")({
         preloadHomeCollections(context.queryClient)
     },
     component: HomePage,
+    errorComponent: HomeError,
 })
+
+function HomeError({ reset }: Readonly<{ reset: () => void }>) {
+    return (
+        <PageContainer>
+            <QueryErrorState reset={reset} />
+        </PageContainer>
+    )
+}
 
 function RiverOwnItem({ restaurant }: Readonly<{ restaurant: Restaurant }>) {
     const actions = useSocialActions()
