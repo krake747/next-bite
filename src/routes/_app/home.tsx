@@ -1,7 +1,7 @@
 import { PlusIcon } from "@phosphor-icons/react"
 import { createFileRoute } from "@tanstack/react-router"
 
-import { useFeedRestaurants, useRestaurants, type Restaurant } from "@core/restaurants"
+import { preloadHomeCollections, useFeedRestaurants, useRestaurants, type Restaurant } from "@core/restaurants"
 import { useAuth, useSessionStatus } from "@core/session"
 import { orderFeedByRecency } from "@core/social"
 import { RestaurantCard } from "@features/restaurants/restaurant-card"
@@ -17,6 +17,9 @@ import { PageContainer } from "@routes/-layouts/page-container"
 
 export const Route = createFileRoute("/_app/home")({
     head: () => ({ meta: [{ title: "Our next bite" }] }),
+    loader: ({ context }) => {
+        preloadHomeCollections(context.queryClient)
+    },
     component: HomePage,
 })
 

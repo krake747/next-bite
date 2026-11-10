@@ -1,5 +1,5 @@
 import { useLiveQuery } from "@tanstack/react-db"
-import { mutationOptions, useMutation, useQueryClient } from "@tanstack/react-query"
+import { mutationOptions, useMutation, useQueryClient, type QueryClient } from "@tanstack/react-query"
 import { type ConvexReactClient } from "convex/react"
 import { useEffect, useRef } from "react"
 
@@ -14,6 +14,8 @@ import {
     dropSessionCollections,
     getSessionCollections,
     persistCallerFor,
+    preloadReadySessionCollections,
+    publishReadySession,
     resolveRestaurantIdByKey,
     type RestaurantAddArgs,
     type RestaurantUpdateArgs,
@@ -94,6 +96,22 @@ function useOwnerOrFeed(kind: "owner" | "feed"): ReadonlyArray<Doc<"restaurants"
         return undefined
     }
     return result.data
+}
+
+export function usePublishReadySession(): void {
+    const sessionKey = useSessionKey()
+    const client = useConvexClient()
+    const queryClient = useQueryClient()
+    useEffect(() => {
+        publishReadySession(queryClient, sessionKey === null || client === null ? null : { client, sessionKey })
+        return () => {
+            publishReadySession(queryClient, null)
+        }
+    }, [queryClient, client, sessionKey])
+}
+
+export function preloadHomeCollections(queryClient: QueryClient): void {
+    preloadReadySessionCollections(queryClient)
 }
 
 export const useRestaurants = () => useOwnerOrFeed("owner")

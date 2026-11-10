@@ -3,10 +3,17 @@ import { describe, expect, test, vi } from "vitest"
 import { render } from "vitest-browser-react"
 
 import { AuthProvider } from "./auth.provider"
+import { useConvexAuthPhase } from "./convex.context"
+
+function PhaseProbe() {
+    return <p>convex: {useConvexAuthPhase()}</p>
+}
 
 type FetchToken = (options: { forceRefreshToken: boolean }) => Promise<string | null>
 
-const { constructed } = vi.hoisted(() => ({ constructed: [] as { fetchTokens: FetchToken[] }[] }))
+const { constructed } = vi.hoisted(() => ({
+    constructed: [] as { fetchTokens: FetchToken[]; authChanges: ((isAuthenticated: boolean) => void)[] }[],
+}))
 
 // The provider owns a ConvexReactClient, but the suite never dials a backend: stub the client to a
 // non-connecting shape that records its auth wiring. Hooks under test read the injected seeded
@@ -17,12 +24,14 @@ vi.mock("convex/react", async (importOriginal) => {
         ...original,
         ConvexReactClient: class {
             fetchTokens: FetchToken[] = []
+            authChanges: ((isAuthenticated: boolean) => void)[] = []
             clearedAuthCalls = 0
             constructor() {
                 constructed.push(this)
             }
-            setAuth(fetchToken: FetchToken): void {
+            setAuth(fetchToken: FetchToken, onChange: (isAuthenticated: boolean) => void): void {
                 this.fetchTokens.push(fetchToken)
+                this.authChanges.push(onChange)
             }
             clearAuth(): void {
                 this.clearedAuthCalls += 1
@@ -70,5 +79,23 @@ describe("AuthProvider", () => {
         const fetchToken = constructed[0]?.fetchTokens[0]
         expect(fetchToken).toBeTypeOf("function")
         await expect(fetchToken?.({ forceRefreshToken: false })).resolves.toBe("convex-jwt-1")
+    })
+
+    test("exposes the official Convex auth signal as the readiness phase", async () => {
+        const screen = await render(
+            <QueryClientProvider client={new QueryClient()}>
+                <AuthProvider>
+                    <PhaseProbe />
+                </AuthProvider>
+            </QueryClientProvider>,
+        )
+        await expect.element(screen.getByText("convex: connecting")).toBeInTheDocument()
+        await expect.poll(() => constructed.at(-1)?.authChanges.length).toBeGreaterThan(0)
+
+        constructed.at(-1)?.authChanges.at(-1)?.(true)
+        await expect.element(screen.getByText("convex: authenticated")).toBeInTheDocument()
+
+        constructed.at(-1)?.authChanges.at(-1)?.(false)
+        await expect.element(screen.getByText("convex: unauthenticated")).toBeInTheDocument()
     })
 })

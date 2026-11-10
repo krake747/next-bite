@@ -10,6 +10,7 @@ const domSetupFiles = ["./src/vitest.setup.ts"]
 const happyDomEnvironmentOptions = {
     happyDOM: {
         settings: {
+            handleDisabledFileLoadingAsSuccess: true,
             fetch: {
                 disableSameOriginPolicy: true,
             },

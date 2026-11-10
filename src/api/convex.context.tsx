@@ -1,17 +1,29 @@
-import { useMutation, useQuery, useSuspenseQuery, mutationOptions } from "@tanstack/react-query"
+import { noop, useMutation, useQuery, useSuspenseQuery, mutationOptions } from "@tanstack/react-query"
 import { type ConvexReactClient } from "convex/react"
 import { type FunctionArgs, type FunctionReference, type FunctionReturnType } from "convex/server"
 import { createContext, use } from "react"
 
 import { convexQueryOptions } from "./convex.options"
 
+export type ConvexAuthPhase = "connecting" | "authenticated" | "unauthenticated"
+
 const ConvexContext = createContext<ConvexReactClient | null>(null)
+const ConvexAuthPhaseContext = createContext<ConvexAuthPhase>("connecting")
 
 export function ConvexProvider({
     client,
+    auth = "connecting",
     children,
-}: Readonly<{ client: ConvexReactClient | null; children: React.ReactNode }>) {
-    return <ConvexContext.Provider value={client}>{children}</ConvexContext.Provider>
+}: Readonly<{ client: ConvexReactClient | null; auth?: ConvexAuthPhase; children: React.ReactNode }>) {
+    return (
+        <ConvexContext.Provider value={client}>
+            <ConvexAuthPhaseContext.Provider value={auth}>{children}</ConvexAuthPhaseContext.Provider>
+        </ConvexContext.Provider>
+    )
+}
+
+export function useConvexAuthPhase(): ConvexAuthPhase {
+    return use(ConvexAuthPhaseContext)
 }
 
 export function convexArgsKey(args: unknown): string {
@@ -39,6 +51,7 @@ function useConvexQueryResult<Query extends FunctionReference<"query">>(
     const result = useQuery({
         ...convexQueryOptions(query, args, options),
         enabled: !skip,
+        ...(skip ? { queryFn: noop } : {}),
     })
     if (skip) {
         return { data: undefined, isPending: false, isError: false }

@@ -8,17 +8,6 @@ import { type Id } from "@convex/_generated/dataModel"
 
 import { ShareToGroupDialog } from "./share-to-group-dialog"
 
-vi.mock("@api/auth.sdk", async (importOriginal) => {
-    const original = await importOriginal<typeof import("@api/auth.sdk")>()
-    return {
-        ...original,
-        getConvexSessionToken: vi.fn<() => Promise<string | null>>(async () => {
-            await Promise.resolve()
-            return "test-token"
-        }),
-    }
-})
-
 let testUser: { id: string; email: string; name: string } | null = {
     id: "user-1",
     email: "alex@example.com",
@@ -57,7 +46,7 @@ async function renderDialog() {
     const backend = createSeededClient({ seeds: querySeeds, calls: mutationCalls, mutateResult: "s1" })
     return render(
         <QueryClientProvider client={backend.queryClient}>
-            <ConvexProvider client={backend.client}>
+            <ConvexProvider client={backend.client} auth="authenticated">
                 <ShareToGroupDialog
                     restaurantId={restaurantId}
                     restaurantName="Trattoria Verde"

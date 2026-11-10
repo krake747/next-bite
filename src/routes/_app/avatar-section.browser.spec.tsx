@@ -62,7 +62,7 @@ async function renderAvatar(avatarUrl: string | undefined, name?: string) {
     const backend = createSeededClient({})
     return render(
         <QueryClientProvider client={backend.queryClient}>
-            <ConvexProvider client={backend.client}>
+            <ConvexProvider client={backend.client} auth="authenticated">
                 <AvatarSection avatarUrl={avatarUrl} name={name} />
             </ConvexProvider>
         </QueryClientProvider>,

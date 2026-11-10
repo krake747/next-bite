@@ -234,7 +234,9 @@ function useSubmitDraft(args: {
             args.onSuccess(createdId)
         } catch (error) {
             setSubmitPhase(toFailedPhase(error))
-            console.error(`Error ${args.target.mode === "add" ? "adding" : "updating"} restaurant:`, error)
+            if (!SyncTimeoutError.is(error)) {
+                console.error(`Error ${args.target.mode === "add" ? "adding" : "updating"} restaurant:`, error)
+            }
         }
     }
 

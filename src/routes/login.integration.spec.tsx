@@ -1,5 +1,5 @@
 import { RouterProvider, createMemoryHistory, createRouter, type AnyRouter } from "@tanstack/react-router"
-import { act, fireEvent, render, screen, waitFor } from "@testing-library/react"
+import { act, fireEvent, screen, waitFor } from "@testing-library/react"
 import { useSyncExternalStore } from "react"
 import { describe, expect, test, vi } from "vitest"
 
@@ -7,6 +7,7 @@ import { ConvexProvider } from "@api/convex.context"
 import { createSeededClient, seedKey } from "@api/db/seeded.client"
 
 import { routeTree } from "../routeTree.gen"
+import { renderDocument } from "../vitest.render"
 
 type AuthSnapshot = {
     readonly isLoading: boolean
@@ -74,17 +75,6 @@ async function noop(): Promise<void> {
     await Promise.resolve()
 }
 
-vi.mock("@api/auth.sdk", async (importOriginal) => {
-    const original = await importOriginal<typeof import("@api/auth.sdk")>()
-    return {
-        ...original,
-        getConvexSessionToken: vi.fn<() => Promise<string | null>>(async () => {
-            await Promise.resolve()
-            return "test-token"
-        }),
-    }
-})
-
 vi.mock("@api/auth.provider", async (importOriginal) => {
     const original = await importOriginal<typeof import("@api/auth.provider")>()
     return {
@@ -141,8 +131,8 @@ async function mountAt(path: string): Promise<AnyRouter> {
         context: { queryClient: backend.queryClient },
     })
     await router.load()
-    render(
-        <ConvexProvider client={backend.client}>
+    renderDocument(
+        <ConvexProvider client={backend.client} auth="authenticated">
             <RouterProvider router={router} />
         </ConvexProvider>,
     )

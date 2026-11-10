@@ -1,22 +1,12 @@
 import { RouterProvider, createMemoryHistory, createRouter } from "@tanstack/react-router"
-import { fireEvent, render, screen, waitFor } from "@testing-library/react"
+import { fireEvent, screen, waitFor } from "@testing-library/react"
 import { afterEach, describe, expect, test, vi } from "vitest"
 
 import { ConvexProvider } from "@api/convex.context"
 import { createSeededClient, seedKey } from "@api/db/seeded.client"
 
 import { routeTree } from "../../../routeTree.gen"
-
-vi.mock("@api/auth.sdk", async (importOriginal) => {
-    const original = await importOriginal<typeof import("@api/auth.sdk")>()
-    return {
-        ...original,
-        getConvexSessionToken: vi.fn<() => Promise<string | null>>(async () => {
-            await Promise.resolve()
-            return "test-token"
-        }),
-    }
-})
+import { renderDocument } from "../../../vitest.render"
 
 type TestUser = { id: string; email: string; name: string }
 
@@ -69,8 +59,8 @@ async function renderAt(path: string, extraSeeds?: ReadonlyMap<string, unknown>)
         context: { queryClient: backend.queryClient },
     })
     await router.load()
-    render(
-        <ConvexProvider client={backend.client}>
+    renderDocument(
+        <ConvexProvider client={backend.client} auth="authenticated">
             <RouterProvider router={router} />
         </ConvexProvider>,
     )

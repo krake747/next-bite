@@ -91,7 +91,7 @@ async function renderMemories() {
     const restaurantId = "r1" as unknown as Id<"restaurants">
     return render(
         <QueryClientProvider client={backend.queryClient}>
-            <ConvexProvider client={backend.client}>
+            <ConvexProvider client={backend.client} auth="authenticated">
                 <VisitMemories restaurantId={restaurantId} />
             </ConvexProvider>
         </QueryClientProvider>,

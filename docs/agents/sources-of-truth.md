@@ -15,6 +15,7 @@ the value. When you add a new owned value, add a row here and point at it.
 | Release process                   | `.github/workflows/release.yml`; `docs/agents/toolchain.md` overview                                                            |
 | Env names and validation          | `src/core/env.ts`; policy in ADR-0010                                                                                           |
 | Convex schema and functions       | `convex/schema.ts`, `convex/`; guidelines in `convex/_generated/ai/guidelines.md`                                               |
+| Convex auth readiness             | `useConvexAuth()` bridged in `src/api/auth.provider.tsx`; gate and timeout in `src/core/session.gate.ts`, `src/core/session.ts` |
 | Convex migrations                 | `docs/migrations.md`, `convex/migrate.ts`                                                                                       |
 | Hosting and deploy target         | `cloudflare.config.ts`; `docs/agents/toolchain.md` overview                                                                     |
 | Test tiers and runners            | `vite.config.ts` projects for Vitest; `playwright.config.ts` plus `e2e/` for the smoke suite; `docs/agents/testing.md` overview |
