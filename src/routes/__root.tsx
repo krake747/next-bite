@@ -1,11 +1,13 @@
 import bricolageLatinUrl from "@fontsource-variable/bricolage-grotesque/files/bricolage-grotesque-latin-wght-normal.woff2?url"
 import dmSansLatinUrl from "@fontsource-variable/dm-sans/files/dm-sans-latin-wght-normal.woff2?url"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
-import { HeadContent, Outlet, Scripts, createRootRouteWithContext } from "@tanstack/react-router"
+import { HeadContent, Outlet, Scripts, createRootRouteWithContext, useRouter } from "@tanstack/react-router"
 import { APIProvider } from "@vis.gl/react-google-maps"
-import { StrictMode, Suspense } from "react"
+import { StrictMode, Suspense, useEffect } from "react"
 
+import { type RouterAuth } from "@api/auth.identity"
 import { AuthProvider } from "@api/auth.provider"
+import { type AuthSnapshot, loadRouterAuth } from "@api/auth.session"
 import { env } from "@core/env"
 import { usePublishReadySession } from "@core/restaurants"
 import { useEnsureProfile } from "@core/session"
@@ -18,9 +20,11 @@ import appCss from "../index.css?url"
 
 type RouterContext = {
     queryClient: QueryClient
+    authSnapshot: AuthSnapshot
 }
 
 export const Route = createRootRouteWithContext<RouterContext>()({
+    beforeLoad: async ({ context }) => ({ auth: await loadRouterAuth(context.authSnapshot) }),
     head: () => ({
         meta: [{ name: "viewport", content: "width=device-width, initial-scale=1" }],
         links: [
@@ -46,7 +50,18 @@ export const Route = createRootRouteWithContext<RouterContext>()({
 })
 
 function RootComponent() {
-    const { queryClient } = Route.useRouteContext()
+    const { queryClient, authSnapshot, auth } = Route.useRouteContext()
+    const router = useRouter()
+    const publishAuth = (next: RouterAuth) => {
+        if (authSnapshot.publish(next)) {
+            void router.invalidate()
+        }
+    }
+    useEffect(() => {
+        if (auth !== null) {
+            authSnapshot.publish(auth)
+        }
+    }, [auth, authSnapshot])
 
     return (
         <html lang="en" suppressHydrationWarning>
@@ -58,7 +73,7 @@ function RootComponent() {
                     <QueryClientProvider client={queryClient}>
                         <APIProvider apiKey={env.VITE_GOOGLE_MAPS_API_KEY} libraries={["places", "marker"]}>
                             <Suspense fallback={<AppInitializing />}>
-                                <AuthProvider>
+                                <AuthProvider initialAuth={auth} onAuthChange={publishAuth}>
                                     <SessionEffects>
                                         <RouteProgress />
                                         <SessionTimeoutNotice />

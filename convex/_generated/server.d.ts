@@ -36,6 +36,7 @@ type Env = {
   readonly MAILGUN_API_KEY: string | undefined;
   readonly MAILGUN_DEV_FALLBACK: string | undefined;
   readonly MAILGUN_DOMAIN: string | undefined;
+  readonly SITE_URL: string | undefined;
 };
 
 /**

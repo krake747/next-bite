@@ -3,7 +3,8 @@ import { act } from "@testing-library/react"
 import { useEffect } from "react"
 import { describe, expect, test, vi } from "vitest"
 
-import { hasCachedSession, useAuthStore } from "./auth.store"
+import { type RouterAuth } from "./auth.identity"
+import { hasCachedSession, useAuthStore, type AuthStoreOptions } from "./auth.store"
 
 type Store = ReturnType<typeof useAuthStore>
 
@@ -51,8 +52,8 @@ vi.mock("./auth.sdk", () => {
     }
 })
 
-function Probe() {
-    const store = useAuthStore()
+function Probe({ options }: Readonly<{ options?: AuthStoreOptions }>) {
+    const store = useAuthStore(options)
     useEffect(() => {
         storeRef = store
     }, [store])
@@ -355,5 +356,107 @@ describe("hasCachedSession", () => {
         expect(hasCachedSession()).toBe(false)
         localStorage.setItem("nb:session", JSON.stringify({ id: 1 }))
         expect(hasCachedSession()).toBe(false)
+    })
+})
+
+describe("server-seeded session", () => {
+    const seeded: RouterAuth = { isAuthenticated: true, user: userA }
+
+    test("first render uses the server session with no loading state", () => {
+        resetAuth()
+        render(<Probe options={{ initial: seeded }} />)
+
+        expect(screen.getByText("auth:true")).toBeInTheDocument()
+        expect(screen.getByText("loading:false")).toBeInTheDocument()
+        expect(screen.getByText("initializing:false")).toBeInTheDocument()
+        expect(screen.getByText("user:a@example.com")).toBeInTheDocument()
+    })
+
+    test("revalidation after hydration never shows a loading state", async () => {
+        resetAuth()
+        const sessionGate = createDeferred<SessionResponse>()
+        impls["getSession"] = async () => sessionGate.promise
+        render(<Probe options={{ initial: seeded }} />)
+
+        await startInitialize()
+        expect(screen.getByText("loading:false")).toBeInTheDocument()
+        expect(screen.getByText("auth:true")).toBeInTheDocument()
+
+        await act(async () => {
+            sessionGate.resolve(verifiedSession("a@example.com", "u-a"))
+            await Promise.resolve()
+        })
+        expect(screen.getByText("auth:true")).toBeInTheDocument()
+    })
+
+    test("a failed revalidation keeps the server-verified session", async () => {
+        resetAuth()
+        impls["getSession"] = async () => {
+            await Promise.resolve()
+            throw new Error("offline")
+        }
+        render(<Probe options={{ initial: seeded }} />)
+
+        await startInitialize()
+
+        expect(screen.getByText("auth:true")).toBeInTheDocument()
+        expect(screen.getByText("error:none")).toBeInTheDocument()
+    })
+
+    test("revalidation signs out a session that ended elsewhere", async () => {
+        resetAuth()
+        impls["getSession"] = async () => {
+            await Promise.resolve()
+            return { data: null, error: null }
+        }
+        const changes: RouterAuth[] = []
+        render(
+            <Probe
+                options={{
+                    initial: seeded,
+                    onChange: (auth) => {
+                        changes.push(auth)
+                    },
+                }}
+            />,
+        )
+
+        await startInitialize()
+
+        expect(screen.getByText("auth:false")).toBeInTheDocument()
+        expect(changes.at(-1)).toEqual({ isAuthenticated: false, user: null })
+    })
+
+    test("sign-in and sign-out report the new session for the router", async () => {
+        resetAuth()
+        impls["signInEmail"] = async () => {
+            await Promise.resolve()
+            return { data: { user: userB }, error: null }
+        }
+        impls["signOut"] = async () => {
+            await Promise.resolve()
+            return { data: null, error: null }
+        }
+        const changes: RouterAuth[] = []
+        render(
+            <Probe
+                options={{
+                    initial: { isAuthenticated: false, user: null },
+                    onChange: (auth) => {
+                        changes.push(auth)
+                    },
+                }}
+            />,
+        )
+
+        await act(async () => {
+            await currentStore().signInWithPassword("b@example.com", "password123")
+        })
+        expect(changes.at(-1)).toEqual({ isAuthenticated: true, user: userB })
+
+        await act(async () => {
+            await currentStore().signOut()
+        })
+        expect(changes.at(-1)).toEqual({ isAuthenticated: false, user: null })
     })
 })

@@ -10,10 +10,10 @@ function isPresent(value: string | undefined): value is string {
     return value !== undefined && value.trim() !== ""
 }
 
-export function getValidatedConvexSiteUrl(): string {
-    const url = env.CONVEX_SITE_URL
+export function getValidatedSiteUrl(): string {
+    const url = env.SITE_URL
     if (!isPresent(url)) {
-        throw new Error("CONVEX_SITE_URL environment variable is not set")
+        throw new Error("SITE_URL environment variable is not set")
     }
     return url
 }

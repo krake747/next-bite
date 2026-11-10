@@ -2,6 +2,7 @@ import { RouterProvider, createMemoryHistory, createRouter } from "@tanstack/rea
 import { act, render, screen, waitFor } from "@testing-library/react"
 import { beforeEach, describe, expect, test, vi } from "vitest"
 
+import { createAuthSnapshot } from "@api/auth.session"
 import { ConvexProvider, type ConvexAuthPhase } from "@api/convex.context"
 import { toId } from "@api/data.model"
 import { type RestaurantDoc } from "@api/db/restaurants"
@@ -71,7 +72,7 @@ async function renderAt(path: string, rows: ReadonlyArray<RestaurantDoc>) {
     const router = createRouter({
         routeTree,
         history: createMemoryHistory({ initialEntries: [path] }),
-        context: { queryClient: backend.queryClient },
+        context: { queryClient: backend.queryClient, authSnapshot: createAuthSnapshot() },
     })
     await router.load()
     const tree = (phase: ConvexAuthPhase) => (

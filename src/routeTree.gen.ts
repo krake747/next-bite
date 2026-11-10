@@ -27,6 +27,7 @@ import { Route as AppGroupsIndexRouteImport } from './routes/_app/groups.index'
 import { Route as AppGroupsGroupIdRouteImport } from './routes/_app/groups.$groupId'
 import { Route as AppInviteTokenRouteImport } from './routes/_app/invite.$token'
 import { Route as AppRestaurantsRestaurantIdRouteImport } from './routes/_app/restaurants.$restaurantId'
+import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -118,6 +119,11 @@ const AppRestaurantsRestaurantIdRoute =
     path: '/restaurants/$restaurantId',
     getParentRoute: () => AppRouteRoute,
   } as any)
+const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
+  id: '/api/auth/$',
+  path: '/api/auth/$',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -136,6 +142,7 @@ export interface FileRoutesByFullPath {
   '/groups/$groupId': typeof AppGroupsGroupIdRoute
   '/invite/$token': typeof AppInviteTokenRoute
   '/restaurants/$restaurantId': typeof AppRestaurantsRestaurantIdRoute
+  '/api/auth/$': typeof ApiAuthSplatRoute
   '/groups/': typeof AppGroupsIndexRoute
 }
 export interface FileRoutesByTo {
@@ -153,6 +160,7 @@ export interface FileRoutesByTo {
   '/groups/$groupId': typeof AppGroupsGroupIdRoute
   '/invite/$token': typeof AppInviteTokenRoute
   '/restaurants/$restaurantId': typeof AppRestaurantsRestaurantIdRoute
+  '/api/auth/$': typeof ApiAuthSplatRoute
   '/groups': typeof AppGroupsIndexRoute
 }
 export interface FileRoutesById {
@@ -174,6 +182,7 @@ export interface FileRoutesById {
   '/_app/groups/$groupId': typeof AppGroupsGroupIdRoute
   '/_app/invite/$token': typeof AppInviteTokenRoute
   '/_app/restaurants/$restaurantId': typeof AppRestaurantsRestaurantIdRoute
+  '/api/auth/$': typeof ApiAuthSplatRoute
   '/_app/groups/': typeof AppGroupsIndexRoute
 }
 export interface FileRouteTypes {
@@ -195,6 +204,7 @@ export interface FileRouteTypes {
     | '/groups/$groupId'
     | '/invite/$token'
     | '/restaurants/$restaurantId'
+    | '/api/auth/$'
     | '/groups/'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -212,6 +222,7 @@ export interface FileRouteTypes {
     | '/groups/$groupId'
     | '/invite/$token'
     | '/restaurants/$restaurantId'
+    | '/api/auth/$'
     | '/groups'
   id:
     | '__root__'
@@ -232,6 +243,7 @@ export interface FileRouteTypes {
     | '/_app/groups/$groupId'
     | '/_app/invite/$token'
     | '/_app/restaurants/$restaurantId'
+    | '/api/auth/$'
     | '/_app/groups/'
   fileRoutesById: FileRoutesById
 }
@@ -242,6 +254,7 @@ export interface RootRouteChildren {
   SplatRoute: typeof SplatRoute
   LoginRoute: typeof LoginRoute
   SignupRoute: typeof SignupRoute
+  ApiAuthSplatRoute: typeof ApiAuthSplatRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -372,6 +385,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppRestaurantsRestaurantIdRouteImport
       parentRoute: typeof AppRouteRoute
     }
+    '/api/auth/$': {
+      id: '/api/auth/$'
+      path: '/api/auth/$'
+      fullPath: '/api/auth/$'
+      preLoaderRoute: typeof ApiAuthSplatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -435,6 +455,7 @@ const rootRouteChildren: RootRouteChildren = {
   SplatRoute: SplatRoute,
   LoginRoute: LoginRoute,
   SignupRoute: SignupRoute,
+  ApiAuthSplatRoute: ApiAuthSplatRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

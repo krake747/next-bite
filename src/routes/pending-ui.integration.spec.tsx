@@ -2,6 +2,7 @@ import { RouterProvider, createMemoryHistory, createRouter } from "@tanstack/rea
 import { act, render, screen, waitFor } from "@testing-library/react"
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest"
 
+import { createAuthSnapshot } from "@api/auth.session"
 import { ConvexProvider } from "@api/convex.context"
 import { toId } from "@api/data.model"
 import { type RestaurantDoc } from "@api/db/restaurants"
@@ -86,7 +87,7 @@ async function renderAt(path: string) {
     const router = createRouter({
         routeTree,
         history: createMemoryHistory({ initialEntries: [path] }),
-        context: { queryClient: backend.queryClient },
+        context: { queryClient: backend.queryClient, authSnapshot: createAuthSnapshot() },
         ...pendingOptions,
     })
     await router.load()

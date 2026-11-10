@@ -34,7 +34,11 @@ set -a; . ./.env.production.local; set +a; pnpm deploy
 
 ```bash
 npx convex env set BETTER_AUTH_SECRET "$(openssl rand -base64 32)"
+npx convex env set SITE_URL http://localhost:5173
 ```
+
+- `SITE_URL` is the app origin that owns auth cookies. The app proxies `/api/auth/*` to Convex, so
+  production sets it to the public app URL.
 
 - Add a Google Maps API key to `.env.local` (get one from
   [Google Cloud Console](https://console.cloud.google.com/), with Maps JavaScript API and Places API
