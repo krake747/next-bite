@@ -3,21 +3,8 @@ name: Preview environment
 # Per-PR preview: one Convex preview deployment plus one Worker preview alias
 # per PR, linked from a single sticky comment. Runs on pull_request (never
 # pull_request_target) and skips forks, so the write token below only ever
-# sees first-party code.
-#
-# Order matters. The Convex deploy runs first and creates the preview
-# deployment on the first push, then reuses it with its data intact after that
-# (never --preview-create here: it deletes and recreates every time, wiping
-# preview data on each push). The seed runs after SITE_URL is set because it
-# fails closed without it, and it runs on every push: it is idempotent, so
-# reuse is a no-op and a post-expiry recreation reseeds. Internal-only
-# functions are callable here (deploy-key auth bypasses the public/internal
-# boundary), the same path the backend workflow uses for its internal
-# migration, so no separate seeding path is needed. Preview deployments are
-# addressed by reference preview/<identifier>, the same form the cleanup
-# workflow uses, so env and run target the preview without parsing deployment
-# names out of URLs. Secrets come from the `preview` GitHub environment.
-# Nothing here hardcodes values from any developer machine.
+# sees first-party code. Step logic lives in .github/scripts/preview-*.sh as
+# small composed functions; this file stays declarative.
 
 on:
   pull_request:
@@ -54,52 +41,18 @@ jobs:
         uses: ./.github/actions/setup-vp
 
       - name: Deploy Convex preview backend
-        run: |
-          set -euo pipefail
-          PREVIEW_NAME="pr-${PR_NUMBER}"
-          npx convex deploy --preview-name="$PREVIEW_NAME" 2>&1 | tee convex-deploy.log
-          CONVEX_URL="$(grep -oE 'https://[a-zA-Z0-9.-]+\.convex\.cloud' convex-deploy.log | head -1)"
-          test -n "$CONVEX_URL"
-          echo "VITE_CONVEX_URL=$CONVEX_URL" >> "$GITHUB_ENV"
-          echo "VITE_CONVEX_SITE_URL=${CONVEX_URL/.convex.cloud/.convex.site}" >> "$GITHUB_ENV"
+        run: .github/scripts/preview-deploy-backend.sh
 
       - name: Build
         run: vp run build
 
       - name: Upload Worker version
-        run: |
-          set -euo pipefail
-          PREVIEW_NAME="pr-${PR_NUMBER}"
-          vp exec cf workers versions create --preview-alias "$PREVIEW_NAME" --tag "$PREVIEW_NAME" 2>&1 | tee cf-upload.log
-          ALIAS_URL="$(grep "Version Preview Alias URL" cf-upload.log | grep -oE 'https://[^[:space:]]+')"
-          test -n "$ALIAS_URL"
-          echo "PREVIEW_URL=$ALIAS_URL" >> "$GITHUB_ENV"
+        run: .github/scripts/preview-upload-alias.sh
 
-      - name: Point preview SITE_URL at the alias
-        run: |
-          set -euo pipefail
-          npx convex env set SITE_URL "$PREVIEW_URL" --deployment "preview/pr-${PR_NUMBER}"
-
-      - name: Seed preview baseline
-        run: |
-          set -euo pipefail
-          # Idempotent (keyed by email, slug marker, and group name): a no-op
-          # when the deployment is reused, a repopulate when it was recreated
-          # after expiry. Runs here, after SITE_URL is set, on every push.
-          npx convex run seed:previewBaseline --deployment "preview/pr-${PR_NUMBER}"
+      - name: Point preview SITE_URL at the alias and seed
+        run: .github/scripts/preview-configure-backend.sh
 
       - name: Update sticky preview comment
         env:
           GH_TOKEN: ${{ github.token }}
-        run: |
-          set -euo pipefail
-          PREVIEW_NAME="pr-${PR_NUMBER}"
-          BODY="<!-- preview-environment -->
-          Preview: $PREVIEW_URL
-          Backend: per-PR Convex preview deployment \`$PREVIEW_NAME\` with the seeded baseline."
-          COMMENT_ID="$(gh api "repos/${{ github.repository }}/issues/$PR_NUMBER/comments" --paginate --jq '[.[] | select(.body | contains("<!-- preview-environment -->")) | .id] | first // empty')"
-          if [ -z "$COMMENT_ID" ]; then
-            gh api -X POST "repos/${{ github.repository }}/issues/$PR_NUMBER/comments" -f body="$BODY"
-          else
-            gh api -X PATCH "repos/${{ github.repository }}/issues/comments/$COMMENT_ID" -f body="$BODY"
-          fi
+        run: .github/scripts/preview-comment.sh

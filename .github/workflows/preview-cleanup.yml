@@ -1,9 +1,8 @@
 name: Clean up PR preview
 
-# No `convex deployment delete` exists (see `npx convex deployment --help`:
-# select, create, token, usage, usage-limits), so deployment deletion stays on
-# the REST API below. Cloudflare version cleanup paginates both list calls
-# instead of trusting the first page.
+# Step logic lives in .github/scripts/preview-cleanup-*.sh as small composed
+# functions; this file stays declarative. No `convex deployment delete` exists,
+# so deployment deletion stays on the management REST API.
 
 on:
   pull_request:
@@ -26,8 +25,6 @@ jobs:
     environment: preview
     env:
       PR_NUMBER: ${{ github.event.pull_request.number }}
-      # Must match worker.name in cloudflare.config.ts.
-      WORKER_ID: next-bite
       CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
       CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
       CONVEX_DEPLOY_TOKEN: ${{ secrets.CONVEX_DEPLOY_TOKEN }}
@@ -39,146 +36,12 @@ jobs:
         uses: ./.github/actions/setup-vp
 
       - name: Delete preview Worker versions
-        run: |
-          set -euo pipefail
-          TAG="pr-${PR_NUMBER}"
-          BASE="https://api.cloudflare.com/client/v4/accounts/${CLOUDFLARE_ACCOUNT_ID}/workers"
-          AUTH="Authorization: Bearer ${CLOUDFLARE_API_TOKEN}"
-          WORK="$(mktemp -d)"
-          trap 'rm -rf "${WORK}"' EXIT
-
-          # Page through both lists: a PR's versions are recent by
-          # construction, but the account holds every worker's versions, so
-          # the tag match must see past the first page.
-          PAGE=1
-          while true; do
-            curl -sS --fail-with-body -H "${AUTH}" \
-              "${BASE}/scripts/${WORKER_ID}/deployments?per_page=100&page=${PAGE}" \
-              -o "${WORK}/deployments_page_${PAGE}.json"
-            COUNT="$(python3 -c "import json; print(len(json.load(open('${WORK}/deployments_page_${PAGE}.json')).get('result') or []))")"
-            if [ "$COUNT" -lt 100 ]; then
-              break
-            fi
-            PAGE=$((PAGE + 1))
-          done
-          PAGE=1
-          while true; do
-            curl -sS --fail-with-body -H "${AUTH}" \
-              "${BASE}/workers/${WORKER_ID}/versions?per_page=100&page=${PAGE}" \
-              -o "${WORK}/versions_page_${PAGE}.json"
-            COUNT="$(python3 -c "import json; print(len(json.load(open('${WORK}/versions_page_${PAGE}.json')).get('result') or []))")"
-            if [ "$COUNT" -lt 100 ]; then
-              break
-            fi
-            PAGE=$((PAGE + 1))
-          done
-
-          python3 - "${WORK}" "${TAG}" > "${WORK}/ids.txt" <<'EOF'
-          import glob, json, sys
-          work, tag = sys.argv[1], sys.argv[2]
-          deployed = set()
-          for path in glob.glob(f"{work}/deployments_page_*.json"):
-              with open(path) as f:
-                  payload = json.load(f)
-              for deployment in payload.get("result") or []:
-                  for version in deployment.get("versions") or []:
-                      vid = version.get("version_id") or version.get("id")
-                      if vid:
-                          deployed.add(vid)
-          for path in glob.glob(f"{work}/versions_page_*.json"):
-              with open(path) as f:
-                  payload = json.load(f)
-              for version in payload.get("result") or []:
-                  annotations = version.get("annotations") or {}
-                  if annotations.get("workers/tag") == tag and version.get("id") not in deployed:
-                      print(version["id"])
-          EOF
-
-          if [ ! -s "${WORK}/ids.txt" ]; then
-            echo "No undeployed versions tagged ${TAG} to delete."
-            exit 0
-          fi
-          while IFS= read -r VERSION_ID; do
-            [ -n "${VERSION_ID}" ] || continue
-            vp exec cf workers versions delete "${VERSION_ID}" --worker-id "${WORKER_ID}" --force
-          done < "${WORK}/ids.txt"
+        run: .github/scripts/preview-cleanup-versions.sh
 
       - name: Delete preview Convex deployment
-        run: |
-          set -euo pipefail
-          IDENTIFIER="pr-${PR_NUMBER}"
-          # The deploy key leads with a strict `preview:<team>:<project>`
-          # prefix before the first `|`. Anything else fails closed instead
-          # of querying a misparsed address.
-          PREFIX="${CONVEX_DEPLOY_TOKEN%%|*}"
-          case "$PREFIX" in
-            preview:*:*) SLUGS="${PREFIX#preview:}" ;;
-            *)
-              echo "CONVEX_DEPLOY_TOKEN does not look like a preview deploy key."
-              exit 1
-              ;;
-          esac
-          TEAM="${SLUGS%%:*}"
-          PROJECT="${SLUGS##*:}"
-          # Exactly one colon, no empty side, no slashes or spaces.
-          if [ -z "${TEAM}" ] || [ -z "${PROJECT}" ] || [ "${SLUGS#*:}" != "${SLUGS##*:}" ]; then
-            echo "CONVEX_DEPLOY_TOKEN does not look like a preview deploy key."
-            exit 1
-          fi
-          case "${TEAM}${PROJECT}" in
-            *"/"*|*" "*)
-              echo "CONVEX_DEPLOY_TOKEN does not look like a preview deploy key."
-              exit 1
-              ;;
-          esac
-
-          WORK="$(mktemp -d)"
-          trap 'rm -rf "${WORK}"' EXIT
-          FOUND=""
-          # Preview deployments are addressed by reference preview/<identifier>.
-          for REF in "preview/${IDENTIFIER}" "${IDENTIFIER}"; do
-            CODE="$(curl -sS -o "${WORK}/deployment.json" -w "%{http_code}" \
-              -H "Authorization: Bearer ${CONVEX_DEPLOY_TOKEN}" \
-              "https://api.convex.dev/v1/teams/${TEAM}/projects/${PROJECT}/deployment?reference=${REF}")"
-            if [ "${CODE}" = "200" ]; then
-              FOUND="${REF}"
-              break
-            fi
-            echo "No deployment at reference ${REF} (HTTP ${CODE})."
-          done
-          if [ -z "${FOUND}" ]; then
-            echo "No ${IDENTIFIER} preview deployment to delete; it may have expired already."
-            exit 0
-          fi
-
-          NAME="$(python3 -c "import json; print(json.load(open('${WORK}/deployment.json')).get('name', ''))")"
-          if [ -z "${NAME}" ]; then
-            echo "Deployment lookup returned no name; nothing to delete."
-            exit 0
-          fi
-          CODE="$(curl -sS -o "${WORK}/delete.json" -w "%{http_code}" -X POST \
-            -H "Authorization: Bearer ${CONVEX_DEPLOY_TOKEN}" \
-            "https://api.convex.dev/v1/deployments/${NAME}/delete")"
-          if [ "${CODE}" = "404" ]; then
-            echo "Preview deployment ${NAME} is already gone."
-            exit 0
-          fi
-          if [ "${CODE}" != "200" ]; then
-            cat "${WORK}/delete.json"
-            echo "Deleting preview deployment ${NAME} failed (HTTP ${CODE})."
-            exit 1
-          fi
-          echo "Deleted ${IDENTIFIER} preview deployment ${NAME}."
+        run: .github/scripts/preview-cleanup-deployment.sh
 
       - name: Comment that the preview is gone
         env:
           GH_TOKEN: ${{ github.token }}
-        run: |
-          set -euo pipefail
-          TAG="pr-${PR_NUMBER}"
-          BODY_FILE="$(mktemp)"
-          trap 'rm -f "${BODY_FILE}"' EXIT
-          cat > "${BODY_FILE}" <<EOF
-          The preview for this pull request is gone. Worker versions tagged \`${TAG}\` that were not deployed were deleted, and the \`${TAG}\` Convex preview deployment was removed if it still existed.
-          EOF
-          gh pr comment "${PR_NUMBER}" --repo "${{ github.repository }}" --body-file "${BODY_FILE}"
+        run: .github/scripts/preview-cleanup-comment.sh

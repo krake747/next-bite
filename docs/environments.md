@@ -14,6 +14,11 @@ ships the backend.
 
 `convex.yml` stays for deploying the dev backend by hand.
 
+Current topology: localhost and `nextbite.kevinkraemer.com` both read the shared dev backend. The
+production cutover (its own Convex deployment, the `production` environment, release wiring) is
+parked; when it lands, localhost and previews stay on dev and only the production domain moves to
+prod. Nothing here hardcodes dev values, so the cutover is a config change, not a rewrite.
+
 ## Release order
 
 ```text
