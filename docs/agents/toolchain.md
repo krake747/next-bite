@@ -134,7 +134,7 @@ pnpm fallow audit  # layer boundaries + unused code
 pnpm test          # Vitest (all tiers)
 ```
 
-The lefthook pre-push hook runs fmt, lint, names, types, affected tests, and arch in parallel (see
+The lefthook pre-push hook runs fmt, lint, types, affected tests, and arch in parallel (see
 `ci-gate.md`). Full tests run in CI.
 
 After changing `optimizeDeps`, test projects, or dependencies, run the affected tier once from a

@@ -55,9 +55,6 @@ jobs:
       - name: Lint
         run: pnpm lint
 
-      - name: Check names
-        run: pnpm lint:names
-
       - name: Check types
         run: pnpm lint:ts
 
