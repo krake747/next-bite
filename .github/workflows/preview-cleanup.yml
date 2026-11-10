@@ -8,23 +8,28 @@ on:
   pull_request:
     types: [closed]
     branches: [main]
+  workflow_dispatch:
+    inputs:
+      pr_number:
+        description: PR number whose preview versions and deployment should be deleted
+        required: true
 
 permissions:
   contents: read
   pull-requests: write
 
 concurrency:
-  group: ${{ github.workflow }}-pr-${{ github.event.pull_request.number }}
+  group: ${{ github.workflow }}-pr-${{ github.event.pull_request.number || inputs.pr_number }}
   cancel-in-progress: false
 
 jobs:
   cleanup:
     name: Delete preview versions and deployment
-    if: github.event.pull_request.head.repo.fork == false
+    if: github.event_name == 'workflow_dispatch' || github.event.pull_request.head.repo.fork == false
     runs-on: ubuntu-latest
     environment: preview
     env:
-      PR_NUMBER: ${{ github.event.pull_request.number }}
+      PR_NUMBER: ${{ github.event.pull_request.number || inputs.pr_number }}
       CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
       CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
       CONVEX_DEPLOY_TOKEN: ${{ secrets.CONVEX_DEPLOY_TOKEN }}
