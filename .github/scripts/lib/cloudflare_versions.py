@@ -17,12 +17,20 @@ def load_pages(pattern):
     return payloads
 
 
+def version_id(version):
+    """Version entries are usually objects, but the deployments list returns
+    plain id strings. Accept both."""
+    if isinstance(version, str):
+        return version
+    return version.get("version_id") or version.get("id")
+
+
 def deployed_version_ids(deployment_pages):
     ids = set()
     for payload in deployment_pages:
         for deployment in payload.get("result") or []:
             for version in deployment.get("versions") or []:
-                vid = version.get("version_id") or version.get("id")
+                vid = version_id(version)
                 if vid:
                     ids.add(vid)
     return ids
@@ -33,9 +41,9 @@ def stale_tagged_ids(deployment_pages, version_pages, tag):
     stale = []
     for payload in version_pages:
         for version in payload.get("result") or []:
-            annotations = version.get("annotations") or {}
-            if annotations.get("workers/tag") == tag and version.get("id") not in deployed:
-                stale.append(version["id"])
+            annotations = version.get("annotations") or {} if isinstance(version, dict) else {}
+            if annotations.get("workers/tag") == tag and version_id(version) not in deployed:
+                stale.append(version_id(version))
     return stale
 
 
