@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router"
 
 import { hasCachedSession } from "@api/auth.store"
 import { useSuspenseConvexQuery } from "@api/convex.context"
-import { convexQueryOptions, warmQueries } from "@api/convex.options"
+import { convexQueryOptions, warmQueriesWithin } from "@api/convex.options"
 import { type Doc } from "@api/data.model"
 import { api } from "@api/endpoints"
 import { useRestaurants } from "@core/restaurants"
@@ -11,6 +11,7 @@ import { orderFeedByRecency } from "@core/social"
 import { Header, HeaderSubtitle, HeaderTitle } from "@pattern/header"
 import { QueryErrorState } from "@pattern/query-error"
 import { RestaurantListsSkeleton } from "@routes/-components/page-skeletons"
+import { LOADER_WARM_BUDGET_MS } from "@routes/-components/route-pending"
 import { SessionGate } from "@routes/-components/session-gate"
 import { PageContainer } from "@routes/-layouts/page-container"
 
@@ -18,13 +19,17 @@ export const Route = createFileRoute("/_app/you")({
     head: () => ({ meta: [{ title: "You - Next Bite" }] }),
     component: YouPage,
     errorComponent: YouError,
-    loader: ({ context }) => {
+    loader: async ({ context }) => {
         if (!hasCachedSession()) {
             return null
         }
         // Owner restaurants ride a live collection, not this cache, so only the
         // status query warms here.
-        warmQueries(context.queryClient, [convexQueryOptions(api.social.listMyStatuses)])
+        await warmQueriesWithin(
+            context.queryClient,
+            [convexQueryOptions(api.social.listMyStatuses)],
+            LOADER_WARM_BUDGET_MS,
+        )
         return null
     },
 })

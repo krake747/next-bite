@@ -9,7 +9,8 @@ import { AuthProvider } from "@api/auth.provider"
 import { env } from "@core/env"
 import { usePublishReadySession } from "@core/restaurants"
 import { useEnsureProfile } from "@core/session"
-import { LoadingPlaceholder } from "@pattern/loading"
+import { AppInitializing } from "@pattern/loading"
+import { RouteProgress } from "@routes/-components/route-pending"
 import { SessionTimeoutNotice } from "@routes/-components/session-timeout-notice"
 
 import fontsCss from "../fonts.css?url"
@@ -56,14 +57,15 @@ function RootComponent() {
                 <StrictMode>
                     <QueryClientProvider client={queryClient}>
                         <APIProvider apiKey={env.VITE_GOOGLE_MAPS_API_KEY} libraries={["places", "marker"]}>
-                            <AuthProvider>
-                                <SessionEffects>
-                                    <SessionTimeoutNotice />
-                                    <Suspense fallback={<LoadingPlaceholder />}>
+                            <Suspense fallback={<AppInitializing />}>
+                                <AuthProvider>
+                                    <SessionEffects>
+                                        <RouteProgress />
+                                        <SessionTimeoutNotice />
                                         <Outlet />
-                                    </Suspense>
-                                </SessionEffects>
-                            </AuthProvider>
+                                    </SessionEffects>
+                                </AuthProvider>
+                            </Suspense>
                         </APIProvider>
                     </QueryClientProvider>
                 </StrictMode>

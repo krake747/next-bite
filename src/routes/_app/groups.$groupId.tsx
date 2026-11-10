@@ -1,9 +1,9 @@
 import { createFileRoute, Link } from "@tanstack/react-router"
-import { Suspense, useState } from "react"
+import { useState } from "react"
 
 import { hasCachedSession } from "@api/auth.store"
 import { useSuspenseConvexQuery } from "@api/convex.context"
-import { convexQueryOptions, warmQueries } from "@api/convex.options"
+import { convexQueryOptions, warmQueriesWithin } from "@api/convex.options"
 import { type Doc, type Id, toId } from "@api/data.model"
 import { api } from "@api/endpoints"
 import { useCreateInvite, useRevokeInvite, useShareWithGroup, useUnshare } from "@core/groups"
@@ -17,6 +17,7 @@ import { EmptyState } from "@pattern/empty-state"
 import { Header, HeaderSubtitle, HeaderTitle } from "@pattern/header"
 import { LoadingPlaceholder } from "@pattern/loading"
 import { QueryErrorState } from "@pattern/query-error"
+import { LOADER_WARM_BUDGET_MS } from "@routes/-components/route-pending"
 import { BackNav } from "@routes/-layouts/back-nav"
 import { PageContainer } from "@routes/-layouts/page-container"
 import { Button } from "@ui/button"
@@ -24,16 +25,21 @@ import { Button } from "@ui/button"
 export const Route = createFileRoute("/_app/groups/$groupId")({
     head: () => ({ meta: [{ title: "Group details" }] }),
     component: GroupDetail,
+    pendingComponent: GroupDetailLoading,
     errorComponent: GroupDetailError,
-    loader: ({ context, params }) => {
+    loader: async ({ context, params }) => {
         if (!hasCachedSession()) {
             return null
         }
         const groupId = toId<"groups">(params.groupId)
-        warmQueries(context.queryClient, [
-            convexQueryOptions(api.groups.getGroup, { groupId }),
-            convexQueryOptions(api.shares.listForGroup, { groupId }),
-        ])
+        await warmQueriesWithin(
+            context.queryClient,
+            [
+                convexQueryOptions(api.groups.getGroup, { groupId }),
+                convexQueryOptions(api.shares.listForGroup, { groupId }),
+            ],
+            LOADER_WARM_BUDGET_MS,
+        )
         return null
     },
 })
@@ -307,20 +313,9 @@ function GroupDetail() {
     const status = useSessionStatus()
 
     if (status.kind !== "ready") {
-        return (
-            <PageContainer>
-                <BackNav backTo="/groups" label="Back to groups" />
-                <div className="pt-4">
-                    <LoadingPlaceholder />
-                </div>
-            </PageContainer>
-        )
+        return <GroupDetailLoading />
     }
-    return (
-        <Suspense fallback={<GroupDetailLoading />}>
-            <GroupDetailView />
-        </Suspense>
-    )
+    return <GroupDetailView />
 }
 
 function GroupDetailLoading() {

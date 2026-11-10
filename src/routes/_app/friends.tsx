@@ -3,7 +3,7 @@ import { Suspense, useState } from "react"
 
 import { hasCachedSession } from "@api/auth.store"
 import { useSuspenseConvexQuery } from "@api/convex.context"
-import { convexQueryOptions, warmQueries } from "@api/convex.options"
+import { convexQueryOptions, warmQueriesWithin } from "@api/convex.options"
 import { api } from "@api/endpoints"
 import { clearError, errorFrom, type FormError } from "@core/outcome"
 import { useRestaurants } from "@core/restaurants"
@@ -14,6 +14,7 @@ import { EmptyState } from "@pattern/empty-state"
 import { Header, HeaderSubtitle, HeaderTitle } from "@pattern/header"
 import { QueryErrorState } from "@pattern/query-error"
 import { FriendsSkeleton } from "@routes/-components/page-skeletons"
+import { LOADER_WARM_BUDGET_MS } from "@routes/-components/route-pending"
 import { SessionGate } from "@routes/-components/session-gate"
 import { PageContainer } from "@routes/-layouts/page-container"
 import { Button } from "@ui/button"
@@ -25,14 +26,15 @@ export const Route = createFileRoute("/_app/friends")({
     head: () => ({ meta: [{ title: "Friends - Next Bite" }] }),
     component: FriendsPage,
     errorComponent: FriendsError,
-    loader: ({ context }) => {
+    loader: async ({ context }) => {
         if (!hasCachedSession()) {
             return null
         }
-        warmQueries(context.queryClient, [
-            convexQueryOptions(api.friendships.listFriends),
-            convexQueryOptions(api.friendships.listFriendRequests),
-        ])
+        await warmQueriesWithin(
+            context.queryClient,
+            [convexQueryOptions(api.friendships.listFriends), convexQueryOptions(api.friendships.listFriendRequests)],
+            LOADER_WARM_BUDGET_MS,
+        )
         return null
     },
 })

@@ -3,7 +3,7 @@ import { useState } from "react"
 
 import { hasCachedSession } from "@api/auth.store"
 import { useSuspenseConvexQuery } from "@api/convex.context"
-import { convexQueryOptions, warmQueries } from "@api/convex.options"
+import { convexQueryOptions, warmQueriesWithin } from "@api/convex.options"
 import { api } from "@api/endpoints"
 import { useCreateGroup } from "@core/groups"
 import { clearError, errorFrom, type FormError } from "@core/outcome"
@@ -12,6 +12,7 @@ import { EmptyState } from "@pattern/empty-state"
 import { Header, HeaderSubtitle, HeaderTitle } from "@pattern/header"
 import { QueryErrorState } from "@pattern/query-error"
 import { GroupsSkeleton } from "@routes/-components/page-skeletons"
+import { LOADER_WARM_BUDGET_MS } from "@routes/-components/route-pending"
 import { SessionGate } from "@routes/-components/session-gate"
 import { PageContainer } from "@routes/-layouts/page-container"
 import { Button } from "@ui/button"
@@ -21,11 +22,15 @@ import { control, fieldLabel } from "@ui/variants"
 export const Route = createFileRoute("/_app/groups/")({
     component: GroupsPage,
     errorComponent: GroupsError,
-    loader: ({ context }) => {
+    loader: async ({ context }) => {
         if (!hasCachedSession()) {
             return null
         }
-        warmQueries(context.queryClient, [convexQueryOptions(api.groups.listMyGroups)])
+        await warmQueriesWithin(
+            context.queryClient,
+            [convexQueryOptions(api.groups.listMyGroups)],
+            LOADER_WARM_BUDGET_MS,
+        )
         return null
     },
 })

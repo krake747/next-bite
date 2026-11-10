@@ -25,14 +25,33 @@ export function convexQueryOptions<Query extends FunctionReference<"query">>(
 // Best-effort warm-up only: the Suspense views below refetch on their own when this has not
 // landed, so a failed warm-up stays silent by design. Server renderers carry no default
 // query function, so warming there is skipped up front instead of failing noisily.
-export function warmQueries(queryClient: QueryClient, options: ReadonlyArray<object>): void {
+function startWarming(queryClient: QueryClient, options: ReadonlyArray<object>): Promise<void>[] {
     if (queryClient.getDefaultOptions().queries?.queryFn === undefined) {
+        return []
+    }
+    return options.map(async (option) => {
+        // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- heterogeneous queryOptions share no static annotation, each is type-checked where built
+        await queryClient.query(option as QueryExecuteOptions).catch(noop)
+    })
+}
+
+export function warmQueries(queryClient: QueryClient, options: ReadonlyArray<object>): void {
+    void Promise.all(startWarming(queryClient, options))
+}
+
+export async function warmQueriesWithin(
+    queryClient: QueryClient,
+    options: ReadonlyArray<object>,
+    budgetMs: number,
+): Promise<void> {
+    const warming = startWarming(queryClient, options)
+    if (warming.length === 0) {
         return
     }
-    for (const option of options) {
-        // Heterogeneous queryOptions outputs share no single static annotation (their tuple keys
-        // are invariant), so the one shaping cast lives here; each option type-checked where built.
-        // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- sanctioned shaping cast, see above
-        void queryClient.query(option as QueryExecuteOptions).catch(noop)
-    }
+    let timer: ReturnType<typeof setTimeout> | undefined
+    const budget = new Promise<void>((resolve) => {
+        timer = setTimeout(resolve, budgetMs)
+    })
+    await Promise.race([Promise.all(warming), budget])
+    clearTimeout(timer)
 }

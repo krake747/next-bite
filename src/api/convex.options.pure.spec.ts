@@ -4,7 +4,7 @@ import { describe, expect, test, vi } from "vitest"
 import { toId } from "@api/data.model"
 import { api } from "@api/endpoints"
 
-import { convexQueryOptions, warmQueries } from "./convex.options"
+import { convexQueryOptions, warmQueries, warmQueriesWithin } from "./convex.options"
 
 describe("convexQueryOptions", () => {
     test("marks skipped queries so the connector never subscribes them", () => {
@@ -41,5 +41,29 @@ describe("warmQueries", () => {
         warmQueries(client, [convexQueryOptions(api.landing.getStats)])
 
         expect(query).toHaveBeenCalledTimes(1)
+    })
+})
+
+describe("warmQueriesWithin", () => {
+    test("resolves with the data cached when the query settles inside the budget", async () => {
+        // oxlint-disable-next-line typescript/require-await -- test resolver intentionally performs no async work
+        const client = new QueryClient({ defaultOptions: { queries: { queryFn: async () => "warm" } } })
+        const stats = convexQueryOptions(api.landing.getStats)
+
+        await warmQueriesWithin(client, [stats], 1000)
+
+        expect(client.getQueryData(stats.queryKey)).toBe("warm")
+    })
+
+    test("stops waiting at the budget when the query is slow", async () => {
+        const never = new Promise<string>(() => {})
+        const client = new QueryClient({ defaultOptions: { queries: { queryFn: async () => never } } })
+        const stats = convexQueryOptions(api.landing.getStats)
+        const started = Date.now()
+
+        await warmQueriesWithin(client, [stats], 50)
+
+        expect(Date.now() - started).toBeLessThan(1000)
+        expect(client.getQueryData(stats.queryKey)).toBeUndefined()
     })
 })
