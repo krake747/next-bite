@@ -1,3 +1,9 @@
+---
+name: Bug
+about: Broken behavior with a reproduction
+labels: needs-triage, bug
+---
+
 ## Problem
 
 <!-- One sentence of user visible pain: who experiences it and why it matters. -->

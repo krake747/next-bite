@@ -20,5 +20,4 @@ describes source that is stable and proven here, not a release).
 
 Interactive elements in the gallery stay live. The route stays dev-only and redirects in production.
 No automated test asserts on the docs page itself; verification is a manual visual read plus the
-full gate. Remaining after this record: production deploy and the manual verification pass over
-write paths, detail, maps, and the visual read.
+full gate.
