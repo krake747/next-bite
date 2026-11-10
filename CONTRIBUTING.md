@@ -70,7 +70,8 @@ pnpm dev
 
 ## Before pushing
 
-- Run `pnpm check:full` (stop at first failure). The pre-push hook runs `pnpm check`.
+- Run `pnpm check:full` (stop at first failure). The pre-push hook runs fmt, lint, names, types,
+  affected tests, and arch in parallel.
 - Never push with `--no-verify`. See `docs/agents/ci-gate.md`.
 - PR CI runs the same full gate (`.github/workflows/pr.yml`).
 
