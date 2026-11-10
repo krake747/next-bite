@@ -2,14 +2,12 @@ pre-commit:
   commands:
     staged:
       run: pnpm exec vp staged --fail-on-changes --no-concurrent
-    types:
-      glob: "*.{ts,tsx}"
-      run: pnpm exec tsc -b --noEmit
 commit-msg:
   commands:
     commitlint:
       run: pnpm exec commitlint --edit {1}
 pre-push:
+  parallel: true
   commands:
     fmt-check:
       run: pnpm fmt:check
@@ -20,6 +18,6 @@ pre-push:
     types:
       run: pnpm lint:ts
     test:
-      run: pnpm test
+      run: pnpm test:affected
     arch:
       run: pnpm check:arch
