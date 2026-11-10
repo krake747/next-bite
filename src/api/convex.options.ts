@@ -8,10 +8,7 @@ export function convexQueryOptions<Query extends FunctionReference<"query">>(
     args?: FunctionArgs<Query>,
     options?: Readonly<{ skip?: boolean | undefined }>,
 ) {
-    // Skipped queries must carry the library's "skip" marker, not an empty
-    // args object: the connector subscribes cache entries by key shape alone,
-    // so a `{}` key would hit the backend (and fail validation) even while
-    // TanStack stays `enabled: false`.
+    // See ADR-0025: unready work stays disabled, never placeholder args.
     const shaped =
         options?.skip === true
             ? convexQuery(query, "skip" as const)

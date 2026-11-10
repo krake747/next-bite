@@ -127,10 +127,7 @@ export function useEnsureProfile(): void {
     const client = useConvexClient()
     const sessionKey = useSessionKey()
     useEffect(() => {
-        // Profiles back display names and email lookup. Signups create the auth session but no
-        // profile row, so every ready session ensures one exactly once. The readiness gate
-        // matters: firing pre-install runs the mutation unauthenticated. Failures stay silent:
-        // callers already fall back to placeholder names.
+        // See ADR-0025: ready session only, silent fallback.
         if (sessionKey === null || client === null) {
             return
         }
