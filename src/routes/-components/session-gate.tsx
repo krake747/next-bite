@@ -5,29 +5,25 @@ import { LoadingPlaceholder } from "@pattern/loading"
 
 import { SignedOutGate } from "./signed-out-gate"
 
+const defaultFallback = (
+    <div className="pt-6">
+        <LoadingPlaceholder />
+    </div>
+)
+
 export function SessionGate({
     status,
     context,
+    fallback = defaultFallback,
     children,
-}: Readonly<{ status: SessionStatus; context: string; children: React.ReactNode }>): React.ReactNode {
+}: Readonly<{
+    status: SessionStatus
+    context: string
+    fallback?: React.ReactNode
+    children: React.ReactNode
+}>): React.ReactNode {
     if (status.kind !== "ready") {
-        return (
-            <SignedOutGate context={context}>
-                <div className="pt-6">
-                    <LoadingPlaceholder />
-                </div>
-            </SignedOutGate>
-        )
+        return <SignedOutGate context={context}>{fallback}</SignedOutGate>
     }
-    return (
-        <Suspense
-            fallback={
-                <div className="pt-6">
-                    <LoadingPlaceholder />
-                </div>
-            }
-        >
-            {children}
-        </Suspense>
-    )
+    return <Suspense fallback={fallback}>{children}</Suspense>
 }

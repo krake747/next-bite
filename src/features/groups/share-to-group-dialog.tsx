@@ -1,6 +1,7 @@
 import { type Id } from "@api/data.model"
 import { useMyGroups, useRestaurantShares, useShareWithGroup, useShareWithUser, useUnshare } from "@core/groups"
 import { useFriends } from "@core/social"
+import { InlineLoading } from "@pattern/loading"
 import { Button } from "@ui/button"
 import { Dialog, DialogContent, DialogTitle } from "@ui/dialog"
 
@@ -39,7 +40,7 @@ export function ShareToGroupDialog({
                 <h3 className="pt-4 font-display text-base font-semibold text-foreground">Friends</h3>
                 <div className="pt-2">
                     {friends === undefined ? (
-                        <p className="text-sm text-muted-foreground">Loading friends…</p>
+                        <InlineLoading>Loading friends…</InlineLoading>
                     ) : friends.length === 0 ? (
                         <p className="text-sm text-muted-foreground">
                             No friends yet. Add some from the Friends tab first.
@@ -93,7 +94,7 @@ export function ShareToGroupDialog({
                 <h3 className="pt-4 font-display text-base font-semibold text-foreground">Groups</h3>
                 <div className="pt-2">
                     {groups === undefined ? (
-                        <p className="text-sm text-muted-foreground">Loading groups…</p>
+                        <InlineLoading>Loading groups…</InlineLoading>
                     ) : groups.length === 0 ? (
                         <p className="text-sm text-muted-foreground">
                             You are not in any group yet. Create one from the Groups tab first.

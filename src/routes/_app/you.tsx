@@ -9,8 +9,8 @@ import { useRestaurants } from "@core/restaurants"
 import { useSessionStatus } from "@core/session"
 import { orderFeedByRecency } from "@core/social"
 import { Header, HeaderSubtitle, HeaderTitle } from "@pattern/header"
-import { LoadingPlaceholder } from "@pattern/loading"
 import { QueryErrorState } from "@pattern/query-error"
+import { RestaurantListsSkeleton } from "@routes/-components/page-skeletons"
 import { SessionGate } from "@routes/-components/session-gate"
 import { PageContainer } from "@routes/-layouts/page-container"
 
@@ -85,11 +85,7 @@ function YouContent() {
     const statuses = useSuspenseConvexQuery(api.social.listMyStatuses)
 
     if (restaurants === undefined) {
-        return (
-            <div className="pt-4">
-                <LoadingPlaceholder />
-            </div>
-        )
+        return <RestaurantListsSkeleton />
     }
     const saved = orderFeedByRecency(restaurants)
     const byStatus = new Map(statuses.map((s) => [s.restaurantId, s.status]))
@@ -128,7 +124,7 @@ function YouPage() {
                         You
                     </h1>
                 </section>
-                <SessionGate status={status} context="your lists">
+                <SessionGate status={status} context="your lists" fallback={<RestaurantListsSkeleton />}>
                     <YouContent />
                 </SessionGate>
             </div>

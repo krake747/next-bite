@@ -5,6 +5,7 @@ import { clearError, errorFrom, type FormError } from "@core/outcome"
 import { useAddVisitMemory, useCleanupStorage, useVisitMemories, type ImageRecord } from "@core/restaurants"
 import { useAuth } from "@core/session"
 import { ImageUpload } from "@pattern/image-upload"
+import { InlineLoading } from "@pattern/loading"
 import { Button } from "@ui/button"
 
 import { PhotoGallery } from "./photo-gallery"
@@ -62,7 +63,7 @@ export function VisitMemories({ restaurantId }: Readonly<{ restaurantId: Id<"res
             <h2 className="font-display text-lg font-semibold text-balance text-foreground">Visit memories</h2>
             <div className="pt-3">
                 {memories === undefined ? (
-                    <p className="text-sm text-muted-foreground">Loading memories…</p>
+                    <InlineLoading>Loading memories…</InlineLoading>
                 ) : (
                     <PhotoGallery photos={photos} />
                 )}

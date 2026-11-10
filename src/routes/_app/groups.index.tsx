@@ -11,6 +11,7 @@ import { useSessionStatus } from "@core/session"
 import { EmptyState } from "@pattern/empty-state"
 import { Header, HeaderSubtitle, HeaderTitle } from "@pattern/header"
 import { QueryErrorState } from "@pattern/query-error"
+import { GroupsSkeleton } from "@routes/-components/page-skeletons"
 import { SessionGate } from "@routes/-components/session-gate"
 import { PageContainer } from "@routes/-layouts/page-container"
 import { Button } from "@ui/button"
@@ -140,7 +141,7 @@ function GroupsPage() {
                 <HeaderTitle>Groups</HeaderTitle>
                 <HeaderSubtitle>Plan the next table together. Each group is a shared list.</HeaderSubtitle>
             </Header>
-            <SessionGate status={status} context="your groups">
+            <SessionGate status={status} context="your groups" fallback={<GroupsSkeleton />}>
                 <GroupsView />
             </SessionGate>
         </PageContainer>

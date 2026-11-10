@@ -5,12 +5,12 @@ import { useFeedRestaurants, useRestaurants, type Restaurant } from "@core/resta
 import { useAuth, useSessionStatus } from "@core/session"
 import { orderFeedByRecency } from "@core/social"
 import { RestaurantCard } from "@features/restaurants/restaurant-card"
-import { RestaurantCardSkeleton } from "@features/restaurants/restaurant-card-skeleton"
 import { RestaurantList } from "@features/restaurants/restaurant-list"
 import { ActivityPost } from "@features/social/activity-post"
 import { ButtonLink } from "@pattern/button-link"
 import { EmptyState } from "@pattern/empty-state"
 import { HeaderBadge } from "@pattern/header"
+import { HomeSkeleton } from "@routes/-components/page-skeletons"
 import { SessionGate } from "@routes/-components/session-gate"
 import { SocialActionsProvider, useSocialActions } from "@routes/-components/social-actions-provider"
 import { PageContainer } from "@routes/-layouts/page-container"
@@ -110,14 +110,7 @@ function HomeContent() {
     const feed = orderFeedByRecency(feedRestaurants ?? [])
 
     if (restaurants === undefined || feedRestaurants === undefined) {
-        return (
-            <div className="grid gap-8 pt-8 md:grid-cols-2 md:gap-10">
-                <RestaurantCardSkeleton />
-                <RestaurantCardSkeleton />
-                <RestaurantCardSkeleton />
-                <RestaurantCardSkeleton />
-            </div>
-        )
+        return <HomeSkeleton />
     }
     return (
         <div className="mx-auto w-full max-w-3xl">
@@ -135,7 +128,7 @@ function HomePage() {
     const status = useSessionStatus()
     return (
         <PageContainer>
-            <SessionGate status={status} context="your next bite">
+            <SessionGate status={status} context="your next bite" fallback={<HomeSkeleton />}>
                 <HomeContent />
             </SessionGate>
         </PageContainer>

@@ -3,7 +3,7 @@ import { Skeleton } from "@ui/skeleton"
 
 export function RestaurantCardSkeleton() {
     return (
-        <div className="overflow-hidden rounded-card bg-surface shadow-card">
+        <div data-slot="restaurant-card-skeleton" className="overflow-hidden rounded-card bg-surface shadow-card">
             <AspectRatio ratio={2 / 1} className="w-full">
                 <Skeleton className="absolute top-3 left-3 h-6 w-20 rounded-full bg-surface-muted" />
                 <Skeleton className="absolute top-3 right-3 size-7 rounded-full bg-surface-muted" />

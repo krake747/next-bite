@@ -1,8 +1,9 @@
+import { LoadingDemo, loadingMeta } from "./loading"
 import { PaletteDemo, paletteMeta } from "./palette"
 import { ShapeDemo, shapeMeta } from "./shape"
 import { TypographyDemo, typographyMeta } from "./typography"
 
-export type SectionGroup = "Tokens"
+export type SectionGroup = "Tokens" | "Patterns"
 
 export type SectionMeta = {
     readonly id: string
@@ -19,10 +20,11 @@ export type SectionEntry = {
     readonly Demo: () => React.JSX.Element
 }
 
-export const sectionGroups: ReadonlyArray<SectionGroup> = ["Tokens"]
+export const sectionGroups: ReadonlyArray<SectionGroup> = ["Tokens", "Patterns"]
 
 export const designSystemSections: Readonly<Record<string, SectionEntry>> = {
     [paletteMeta.id]: { meta: paletteMeta, Demo: PaletteDemo },
     [typographyMeta.id]: { meta: typographyMeta, Demo: TypographyDemo },
     [shapeMeta.id]: { meta: shapeMeta, Demo: ShapeDemo },
+    [loadingMeta.id]: { meta: loadingMeta, Demo: LoadingDemo },
 }
