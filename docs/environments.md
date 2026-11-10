@@ -1,14 +1,13 @@
 # Environments and release
 
-Mechanics for ADR-0024. This is the target state: the release and preview workflows described here
-land in follow-up pull requests. Until then `release.yml` ships only the Worker and `convex.yml`
-ships the backend.
+Mechanics for ADR-0024. Previews ship from the preview workflow; production ships from the deploy
+workflow on green `main`. `convex.yml` ships the backend by hand.
 
 ## Environments
 
 | Environment | Backend                                                                                  | Worker                                             | Ships from                      |
 | ----------- | ---------------------------------------------------------------------------------------- | -------------------------------------------------- | ------------------------------- |
-| Production  | Convex prod deployment                                                                   | `next-bite` on `https://nextbite.kevinkraemer.com` | `release.yml`, manual           |
+| Production  | Convex prod deployment (reads dev until the cutover)                                     | `next-bite` on `https://nextbite.kevinkraemer.com` | `deploy.yml`, on green `main`   |
 | Local       | Your Convex dev deployment                                                               | `vp dev` on `http://localhost:5173`                | `pnpm convex:dev`               |
 | Preview     | One Convex preview deployment per PR (`pr-<n>`), with its own schema, data, and identity | `pr-<n>-next-bite.<subdomain>.workers.dev`         | preview workflow, every PR push |
 
@@ -19,45 +18,30 @@ production cutover (its own Convex deployment, the `production` environment, rel
 parked; when it lands, localhost and previews stay on dev and only the production domain moves to
 prod. Nothing here hardcodes dev values, so the cutover is a config change, not a rewrite.
 
-## Release order
+## Deploy order (production)
 
 ```text
-release (workflow_dispatch: bump_type, dry_run)
-  compute version
-  gate       wait for main.yml on github.sha; no run or not green -> fail
-  backend    npx convex deploy (production environment), then migrations in order
+push to main -> Main gate green -> deploy.yml
   worker     vp run build, then cf deploy
   smoke      GET https://nextbite.kevinkraemer.com until it serves the build
-  publish    tag vX.Y.Z, GitHub release
 ```
 
-Any failed step stops the rest. A dry run typechecks the backend and dry-runs the Worker deploy.
-
-### What the current `release.yml` does instead
-
-- The gate polls `pr.yml` runs with `head_sha` set to the dispatched SHA. `pr.yml` runs on PR head
-  commits, and a squash merge creates a new commit on `main`, so the query returns nothing. After
-  ten polls 30 seconds apart (about five minutes) it prints `no CI run for <sha>; proceeding` and
-  exits 0. At the time of writing, `main` head has one `main.yml` push run and zero `pr.yml` runs.
-- The smoke test greps the first `*.workers.dev` URL out of the `cf deploy` log and curls that. It
-  never touches the custom domain, which `cloudflare.config.ts` does not declare, so a broken route
-  or domain binding still passes.
-- No backend deploy happens in the release.
+Any failed step stops the rest. Backend deploys stay manual through `convex.yml`; a manual
+`deploy.yml` dispatch redeploys the current `main` without a push.
 
 ## GitHub environments and secrets
 
-| Name                       | Scope        | Holds                                                  |
-| -------------------------- | ------------ | ------------------------------------------------------ |
-| `CLOUDFLARE_API_TOKEN`     | repository   | Workers deploy and version upload                      |
-| `CLOUDFLARE_ACCOUNT_ID`    | repository   | Cloudflare account                                     |
-| `CONVEX_DEPLOY_TOKEN`      | `production` | prod deployment deploy key                             |
-| `VITE_CONVEX_URL`          | `production` | prod `.convex.cloud` URL, baked into the build         |
-| `VITE_CONVEX_SITE_URL`     | `production` | prod `.convex.site` URL, baked into the build          |
-| `VITE_GOOGLE_MAPS_API_KEY` | `production` | Maps key restricted to the production domain           |
-| `CONVEX_DEPLOY_TOKEN`      | `preview`    | preview deploy key from the dashboard project settings |
-| `CLOUDFLARE_API_TOKEN`     | `preview`    | token used only by preview deploys                     |
-| `CLOUDFLARE_ACCOUNT_ID`    | `preview`    | account id used only by preview deploys                |
-| `VITE_GOOGLE_MAPS_API_KEY` | `preview`    | Maps key restricted to `*.workers.dev` preview hosts   |
+| Name                       | Scope      | Holds                                                                      |
+| -------------------------- | ---------- | -------------------------------------------------------------------------- |
+| `CLOUDFLARE_API_TOKEN`     | repository | Workers deploy and version upload                                          |
+| `CLOUDFLARE_ACCOUNT_ID`    | repository | Cloudflare account                                                         |
+| `VITE_CONVEX_URL`          | repository | dev `.convex.cloud` URL until the cutover, baked into the production build |
+| `VITE_CONVEX_SITE_URL`     | repository | dev `.convex.site` URL until the cutover, baked into the production build  |
+| `VITE_GOOGLE_MAPS_API_KEY` | repository | Maps key restricted to the production domain plus `*.workers.dev`          |
+| `CONVEX_DEPLOY_TOKEN`      | `preview`  | preview deploy key from the dashboard project settings                     |
+| `CLOUDFLARE_API_TOKEN`     | `preview`  | token used only by preview deploys                                         |
+| `CLOUDFLARE_ACCOUNT_ID`    | `preview`  | account id used only by preview deploys                                    |
+| `VITE_GOOGLE_MAPS_API_KEY` | `preview`  | same shared Maps key (already covers `*.workers.dev` preview hosts)        |
 
 `VITE_CONVEX_URL` and `VITE_CONVEX_SITE_URL` are never stored for previews. The preview workflow
 reads them from the `convex deploy` output at runtime and bakes them into that PR's Worker build.
@@ -66,9 +50,9 @@ variable name the Convex CLI reads; the cleanup workflow uses the same secret va
 Bearer token for its REST calls. The repo's `convex` package (1.49.0) satisfies the CLI requirements
 for preview deploy commands.
 
-`production` carries a required reviewer (Kevin). `preview` has none, so it runs on every push. The
-repository has no GitHub environments yet, and `convex.yml` and `docs/migrations.md` still name them
-`dev` and `prod`.
+`preview` has no required reviewer, so it runs on every push. There is no `production` environment
+yet (its reviewer rule arrives with the cutover); the production Worker deploys from repository
+secrets. `convex.yml` and `docs/migrations.md` still name environments `dev` and `prod`.
 
 ### Owner values checklist
 

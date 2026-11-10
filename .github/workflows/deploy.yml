@@ -1,0 +1,64 @@
+name: Deploy production
+
+# The production Worker. Runs when CI is green on main, plus manual dispatch.
+# Backend deploys stay manual through the Convex workflow; this job only ships
+# the Worker. A failed smoke test fails the run.
+
+on:
+  workflow_run:
+    workflows: ["Main gate"]
+    types: [completed]
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: Build and deploy
+    if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+      VITE_CONVEX_URL: ${{ secrets.VITE_CONVEX_URL }}
+      VITE_CONVEX_SITE_URL: ${{ secrets.VITE_CONVEX_SITE_URL }}
+      VITE_GOOGLE_MAPS_API_KEY: ${{ secrets.VITE_GOOGLE_MAPS_API_KEY }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7
+        with:
+          # Pin the gated SHA on automatic runs; fall back to the branch tip on dispatch.
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
+
+      - uses: voidzero-dev/setup-vp@v1.22.0
+        with:
+          node-version-file: ".node-version"
+          cache: true
+
+      - name: Install dependencies
+        run: vp install
+
+      - name: Build and deploy
+        run: |
+          set -euo pipefail
+          vp run build
+          vp exec cf deploy
+
+      - name: Smoke test the custom domain
+        run: |
+          set -euo pipefail
+          for attempt in $(seq 1 30); do
+            if curl -s --max-time 15 "https://nextbite.kevinkraemer.com" | grep -q "root"; then
+              echo "production serves the build at https://nextbite.kevinkraemer.com"
+              exit 0
+            fi
+            sleep 10
+          done
+          echo "timed out waiting for the custom domain to serve the build"
+          exit 1
