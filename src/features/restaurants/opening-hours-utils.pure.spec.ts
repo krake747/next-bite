@@ -16,7 +16,6 @@ const mondayFirst: OpeningHours = {
     ],
 }
 
-// November 9 2026 is a Monday; the 15th is the following Sunday.
 const monday = new Date(2026, 10, 9)
 const sunday = new Date(2026, 10, 15)
 

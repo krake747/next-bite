@@ -58,8 +58,6 @@ function recentAddsFrom(restaurants: Doc<"restaurants">[]): Stats["recentAdds"] 
     })
 }
 
-// Fallback for deployments seeded before the counters table existed. Exact but unbounded;
-// runs at most until the first write populates the counters, then never again.
 async function computeStatsLive(db: GenericDatabaseReader<DataModel>): Promise<Stats> {
     const [restaurants, interests] = await Promise.all([
         db.query("restaurants").collect(),
@@ -82,7 +80,7 @@ async function computeStatsLive(db: GenericDatabaseReader<DataModel>): Promise<S
     }
 }
 
-// Public on purpose: aggregate counts only, no per-user or contact data leaves here.
+// See ADR-0004: aggregates only, no per-user data.
 export const getStats = query({
     args: {},
     returns: statsValidator,

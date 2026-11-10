@@ -46,9 +46,6 @@ export const record = internalMutation({
         if (existing) {
             return existing._id
         }
-        // Server-observed blob metadata: content type and size come from the
-        // platform's storage record, never from client claims. New uploads start
-        // as transient with a 24h expiry so failed flows leave collectable rows.
         const stored = await ctx.db.system.get("_storage", args.storageId)
         const mimeType = typeof stored?.contentType === "string" ? stored.contentType : undefined
         const byteSize = typeof stored?.size === "number" ? stored.size : undefined
@@ -119,9 +116,6 @@ export const detach = internalMutation({
         ownerId: v.string(),
     },
     handler: async (ctx, args) => {
-        // Best-effort dissociation: only clears the association when the record exists and the
-        // owner matches. Missing or foreign records are left alone so dropping a legacy image
-        // from a restaurant never fails and never touches another owner's data.
         const existing = await findUploadByStorage(ctx.db, args.storageId)
         if (!existing || existing.ownerId !== args.ownerId) {
             return

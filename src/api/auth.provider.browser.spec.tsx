@@ -15,9 +15,6 @@ const { constructed } = vi.hoisted(() => ({
     constructed: [] as { fetchTokens: FetchToken[]; authChanges: ((isAuthenticated: boolean) => void)[] }[],
 }))
 
-// The provider owns a ConvexReactClient, but the suite never dials a backend: stub the client to a
-// non-connecting shape that records its auth wiring. Hooks under test read the injected seeded
-// client, so this stub only silences the provider-owned connection.
 vi.mock("convex/react", async (importOriginal) => {
     const original = await importOriginal<typeof import("convex/react")>()
     return {

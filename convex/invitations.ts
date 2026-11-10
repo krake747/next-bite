@@ -38,10 +38,7 @@ export const createInvite = mutation({
 })
 
 export const getInvite = query({
-    // Public on purpose: the token is the bearer credential. Reading reveals nothing beyond
-    // what the token holder already has; acceptance validates server side per ADR-0005.
-    // Reusable group links stay usable until expiry or revocation: the effective
-    // status is computed here so previews stay honest without a write.
+    // See ADR-0005: bearer token, server-side accept.
     args: {
         token: v.string(),
         now: v.number(),
@@ -114,8 +111,6 @@ async function acceptGroupInvite(
     if (!group) {
         throw new Error("Group no longer exists")
     }
-    // Reusable group links: the inviter's current authority matters.
-    // If the inviter left or was removed, the link stops working.
     const inviterMembership = await ctx.db
         .query("groupMembers")
         .withIndex("by_group_user", (q) => q.eq("groupId", groupId).eq("userId", invite.invitedBy))
@@ -131,8 +126,6 @@ async function acceptGroupInvite(
         return { result: "alreadyMember", groupId }
     }
     await ctx.db.insert("groupMembers", { groupId, userId, role: "member", joinedAt: Date.now() })
-    // Intentionally leave reusable group invites pending so the same
-    // link admits every holder until expiry or revocation.
     return { result: "accepted", groupId }
 }
 

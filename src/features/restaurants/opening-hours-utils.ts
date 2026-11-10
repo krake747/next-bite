@@ -64,9 +64,5 @@ export function orderedWeek(openingHours: Readonly<OpeningHours> | undefined): R
     if (weekdayText === undefined || weekdayText.length === 0) {
         return []
     }
-    // Same Monday-first assumption as todayIndex/todayText: the dialog
-    // highlights fullWeek[todayIndex()], so any rotation here must stay in
-    // sync with that index. Google orders this array Monday-first for this
-    // app's locales; if that ever changes, update both together.
     return [...weekdayText]
 }

@@ -13,10 +13,6 @@ type GroupImageInput = {
     readonly height?: number | undefined
 }
 
-// Group headers carry the same server-derived attribution as restaurant photos and avatars:
-// ownership is verified against the upload record and the URL, MIME type, and byte size
-// come from the platform, never from client claims. Client-reported dimensions pass through
-// as untrusted display hints. Group images mark the upload record so orphan sweeps skip them.
 async function resolveGroupImage(
     ctx: MutationCtx,
     ownerId: string,
@@ -184,7 +180,7 @@ export const getGroup = query({
     },
     handler: async (ctx, args) => {
         const userId = await requireUserId(ctx)
-        // Null for missing groups and strangers alike: no existence oracle for nonmembers.
+        // See ADR-0004: null for missing or invisible.
         const group = await ctx.db.get(args.groupId)
         if (!group) {
             return null

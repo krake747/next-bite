@@ -8,10 +8,7 @@ export function convexQueryOptions<Query extends FunctionReference<"query">>(
     args?: FunctionArgs<Query>,
     options?: Readonly<{ skip?: boolean | undefined }>,
 ) {
-    // Skipped queries must carry the library's "skip" marker, not an empty
-    // args object: the connector subscribes cache entries by key shape alone,
-    // so a `{}` key would hit the backend (and fail validation) even while
-    // TanStack stays `enabled: false`.
+    // See ADR-0025: unready work stays disabled, never placeholder args.
     const shaped =
         options?.skip === true
             ? convexQuery(query, "skip" as const)
@@ -22,9 +19,7 @@ export function convexQueryOptions<Query extends FunctionReference<"query">>(
     })
 }
 
-// Best-effort warm-up only: the Suspense views below refetch on their own when this has not
-// landed, so a failed warm-up stays silent by design. Server renderers carry no default
-// query function, so warming there is skipped up front instead of failing noisily.
+// Warm-up is best-effort; views refetch, server skips without queryFn.
 function startWarming(queryClient: QueryClient, options: ReadonlyArray<object>): Promise<void>[] {
     if (queryClient.getDefaultOptions().queries?.queryFn === undefined) {
         return []

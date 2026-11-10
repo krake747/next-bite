@@ -82,8 +82,7 @@ function authReducer(state: Readonly<AuthState>, action: Readonly<AuthAction>): 
         case "SET_USER":
             return { ...state, user: action.user, isAuthenticated: true, error: null }
         case "SET_CACHED_USER":
-            // Degraded display identity: the user sees their remembered email, but nothing
-            // treats this as a verified session. Backend authorization stays authoritative.
+            // See ADR-0025: degraded identity grants nothing.
             return { ...state, user: action.user, isAuthenticated: false, error: null }
         case "CLEAR_USER":
             return { ...state, user: null, isAuthenticated: false }
@@ -157,11 +156,7 @@ export function useAuthStore(options: AuthStoreOptions = {}) {
     const notify = (auth: RouterAuth) => {
         options.onChange?.(auth)
     }
-    // Operation generation: every auth operation claims the current generation when it
-    // starts. A completion, error, or reset only lands when its generation is still
-    // current. Conflicting actions are superseded: the last starter owns pending state,
-    // errors, and loading. Sign-out bumps the generation so late bootstrap or sign-in
-    // results can never resurrect a signed-out or replaced account.
+    // See ADR-0025: last starter owns pending state.
     const generationRef = useRef(0)
 
     const currentGeneration = (): number => generationRef.current

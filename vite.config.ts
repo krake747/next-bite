@@ -7,7 +7,6 @@ import { default as react } from "@vitejs/plugin-react"
 import { defineConfig, lazyPlugins } from "vite-plus"
 import { playwright } from "vite-plus/test/browser-playwright"
 
-// https://viteplus.dev/config/
 const domSetupFiles = ["./src/vitest.setup.ts"]
 const happyDomEnvironmentOptions = {
     happyDOM: {
@@ -321,8 +320,6 @@ export default defineConfig({
                 files: ["**/*.browser.spec.{ts,tsx}"],
                 plugins: ["typescript"],
                 rules: {
-                    // Browser assertions poll at runtime (`await expect.element(...)`);
-                    // the static types do not model the Thenable.
                     "typescript/await-thenable": "allow",
                 },
             },
@@ -408,10 +405,6 @@ export default defineConfig({
     resolve: {
         tsconfigPaths: true,
         alias: [
-            // dataModel is types-only upstream (dataModel.d.ts, no runtime file), so the
-            // dep scanner cannot resolve the tsconfig path and aborts the whole scan.
-            // Pointing it at the .d.ts lets the initial scan succeed; every import of
-            // this module is type-only and erased before runtime.
             {
                 find: "@convex/_generated/dataModel",
                 replacement: path.resolve(import.meta.dirname, "convex/_generated/dataModel.d.ts"),
@@ -419,12 +412,7 @@ export default defineConfig({
         ],
     },
     optimizeDeps: {
-        // Pre-bundle route-split deep imports so navigating to a lazy route
-        // does not trigger "optimized dependencies changed" reloads.
-        // The browser test tier imports below must stay pre-bundled too, or
-        // the first cold run reloads mid-suite and flakes.
-        // dataModel has types only (no runtime file); the scanner cannot
-        // resolve it, so exclude it instead of letting it fail the scan.
+        // See ADR-0008: pre-bundle route-split imports; dataModel excluded, no runtime file.
         exclude: ["@convex/_generated/dataModel"],
         include: [
             "@base-ui/react/avatar",
@@ -484,8 +472,6 @@ export default defineConfig({
             include: ["src/**/*.{ts,tsx}"],
             exclude: ["src/routeTree.gen.ts", "src/vitest.setup.ts", "src/vitest.msw.setup.ts"],
         },
-        // Record wait steps (expect.poll, vi.waitFor, vi.waitUntil) so the next
-        // flaky timeout explains itself instead of just timing out.
         experimental: {
             traceTimeline: true,
         },
@@ -495,8 +481,6 @@ export default defineConfig({
             VITE_GOOGLE_MAPS_API_KEY: "test-key",
             SITE_URL: "http://localhost:5173",
         },
-        // Timeout rule: slowTestThreshold is testTimeout minus 500ms in every project, so
-        // slow warnings fire on the same margin before the timeout kills the test.
         projects: [
             {
                 test: {
@@ -524,16 +508,12 @@ export default defineConfig({
                 },
             },
             {
-                // Real-browser runner (ADR-0011 seam filled): only this project uses
-                // browser mode. Keep include plus timeouts tier scoped.
                 test: {
                     name: "browser",
                     include: ["src/**/*.browser.spec.{js,ts,jsx,tsx}"],
                     setupFiles: domSetupFiles,
                     testTimeout: 10000,
                     slowTestThreshold: 9500,
-                    // Chromium contends with the edge-runtime integration workers and trips
-                    // their 3s timeouts, so the browser tier runs after every other tier.
                     sequence: { groupOrder: 1 },
                     browser: {
                         enabled: true,
@@ -555,9 +535,7 @@ export default defineConfig({
                 },
             },
             {
-                // Backend contract tests with convex-test (plus the Better Auth
-                // component, inlined so its TS source transforms). Keep the
-                // timeout rule: slowTestThreshold is testTimeout minus 500ms.
+                // See ADR-0011: convex-test contracts; slow threshold is timeout minus 500ms.
                 test: {
                     name: "convex",
                     environment: "edge-runtime",

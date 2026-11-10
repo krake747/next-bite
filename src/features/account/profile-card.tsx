@@ -160,10 +160,6 @@ export function AvatarSection({
                     void handleAvatar(updated)
                 }}
                 maxFiles={1}
-                // The trigger owns its disabled state so the button stays
-                // mounted through the whole upload-then-save flow. Passing the
-                // mutation pending state here would unmount the dropzone
-                // mid-flow and flash the avatar out and back in.
                 disabled={false}
                 variant="avatar"
                 trigger={({ openPicker, isUploading }) => {

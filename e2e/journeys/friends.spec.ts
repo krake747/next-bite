@@ -29,8 +29,6 @@ async function newUserPage(
     return page
 }
 
-// Two-account friendship journey against a dev server (password auth needs the trusted
-// localhost:5173 origin). Throwaway users and data land in the local dev deployment only.
 test("friend request, accept, share, and shared discovery", async ({ browser, viewport }) => {
     const stamp = Date.now()
     const annaName = `Anna ${stamp}`

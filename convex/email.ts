@@ -20,8 +20,6 @@ export async function sendTransactionalEmail(
     const config = mailgunConfig()
     if (config === null) {
         if (isMailDevFallback()) {
-            // Local development only. Log metadata, never recipient address, subject, or body:
-            // the body carries the OTP code.
             console.log("sendTransactionalEmail skipped: explicit local dev fallback, email not sent")
             return
         }
@@ -43,7 +41,6 @@ export async function sendTransactionalEmail(
         body,
     })
     if (!response.ok) {
-        // Status only: provider bodies are echoed back untrusted and stay out of logs and errors.
         console.warn(`Mailgun delivery failed with status ${response.status}`)
         throw new Error(`Email delivery failed with status ${response.status}`)
     }

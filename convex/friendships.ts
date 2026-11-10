@@ -44,8 +44,6 @@ export const requestFriend = mutation({
         if (args.friendAuthUserId === userId) {
             throw new Error("You cannot befriend yourself")
         }
-        // Befriending resolves against a real profile, like group adds do. Unknown ids fail
-        // here instead of leaving phantom pending rows nothing can ever accept.
         const profile = await ctx.db
             .query("profiles")
             .withIndex("by_auth_user", (q) => q.eq("authUserId", args.friendAuthUserId))
@@ -53,7 +51,6 @@ export const requestFriend = mutation({
         if (!profile) {
             throw new Error("User not found")
         }
-        // Mutual interest completes the friendship instead of leaving crossed pendings.
         const incoming = await findRow(ctx.db, args.friendAuthUserId, userId)
         if (incoming && incoming.status === "pending") {
             await acceptPair(ctx.db, args.friendAuthUserId, userId)
@@ -114,8 +111,6 @@ export const requestFriendByEmail = mutation({
         if (address === "") {
             throw new Error("Email is required")
         }
-        // Profiles store the email as registered; try the exact address before the lowercase
-        // form so mixed-case registrations still resolve.
         const exact = await ctx.db
             .query("profiles")
             .withIndex("by_email", (q) => q.eq("email", address))
@@ -134,7 +129,6 @@ export const requestFriendByEmail = mutation({
         if (profile.authUserId === userId) {
             throw new Error("You cannot befriend yourself")
         }
-        // Mutual interest completes the friendship instead of leaving crossed pendings.
         const incoming = await findRow(ctx.db, profile.authUserId, userId)
         if (incoming && incoming.status === "pending") {
             await acceptPair(ctx.db, profile.authUserId, userId)

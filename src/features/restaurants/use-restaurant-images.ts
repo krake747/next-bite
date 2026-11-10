@@ -49,15 +49,11 @@ export function useRestaurantImages(
 
     const discardChanges = async () => {
         if (options.mode === "add") {
-            // Only cleaned ids leave the draft: failed cleanups stay tracked so
-            // the next discard retries them instead of abandoning them silently.
             const failed = await cleanupStorageIds([...images.map((img) => img.storageId), ...removedRef.current])
             const failedIds = new Set(failed)
             setImagesState(images.filter((image) => failedIds.has(image.storageId)))
             removedRef.current = new Set(failed)
         } else {
-            // Edit mode never deletes attached files. Session-added uploads that
-            // were never saved are still owned by this draft, so clean those.
             const sessionAdded = images.map((image) => image.storageId).filter((id) => !initialIds.has(id))
             const failed = await cleanupStorageIds(sessionAdded)
             const failedIds = new Set(failed)
@@ -66,8 +62,6 @@ export function useRestaurantImages(
     }
 
     const commitSubmit = async () => {
-        // Ownership transfers to the saved restaurant: staged removals are
-        // orphaned uploads. Failures stay tracked for a later discard to retry.
         const failed = await cleanupStorageIds([...removedRef.current])
         removedRef.current = new Set(failed)
         setImagesState([])
@@ -75,10 +69,6 @@ export function useRestaurantImages(
 
     const replaceImages = (next: ImageRecord[]): void => {
         if (options.mode === "add") {
-            // Removal bookkeeping lives here so callers only learn setImages:
-            // ids that leave the draft stay tracked for discard/commit cleanup.
-            // Edit mode deletes attached files immediately through its own
-            // mutation, so the draft tracks nothing there.
             const nextIds = new Set(next.map((image) => image.storageId))
             for (const image of images) {
                 if (!nextIds.has(image.storageId)) {

@@ -1,7 +1,5 @@
 import { expect, test } from "@playwright/test"
 
-// Personal profile journey against a dev server (password auth needs the trusted
-// localhost:5173 origin). Throwaway users and data land in the local dev deployment only.
 test("profile edit, save, and want-state updates", async ({ page }) => {
     const stamp = Date.now()
     const email = `e2e-you-${stamp}@example.com`

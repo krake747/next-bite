@@ -1,14 +1,5 @@
 import { isLoopbackOrigin } from "./env"
 
-// Pure CORS policy for the browser-facing upload endpoint. Only trusted app
-// origins (plus loopback for local development) get a reflected
-// Access-Control-Allow-Origin; everything else gets no CORS headers so the
-// browser blocks the response. Non-browser callers send no Origin and need no
-// CORS headers. The allowlist holds exact origins plus preview patterns such as
-// https://pr-*-next-bite.<subdomain>.workers.dev from APP_ORIGINS, matched
-// label by label on the parsed host so look-alikes stay blocked. Pure so the
-// policy is unit-testable: t.fetch cannot observe Origin-based behavior because
-// the test Request drops forbidden headers.
 export function isAllowedOrigin(origin: string, allowlist: ReadonlyArray<string>): boolean {
     let parsed: URL
     try {

@@ -119,8 +119,6 @@ export default defineSchema({
         target: inviteTargetValidator,
         invitedEmail: v.optional(v.string()),
         invitedBy: v.string(),
-        // Reusable group links stay pending across accepts; friend invites flip
-        // to accepted on first use. Revoked and expired both refuse new accepts.
         status: v.union(v.literal("pending"), v.literal("accepted"), v.literal("expired"), v.literal("revoked")),
         expiresAt: v.number(),
         createdAt: v.number(),
@@ -159,9 +157,7 @@ export default defineSchema({
     })
         .index("by_storage", ["storageId"])
         .index("by_expires", ["expiresAt"]),
-    // Denormalized landing aggregates, maintained on every restaurant and
-    // interest write so the public getStats query stays O(1). Deployments that
-    // predate this table fall back to a live computation in landing.getStats.
+    // Aggregates stay O(1); pre-counters deployments compute live.
     statsCounters: defineTable({
         key: v.string(),
         restaurantCount: v.number(),

@@ -21,9 +21,7 @@ export const cleanupOrphanedStorage = internalMutation({
             }
             try {
                 await ctx.storage.delete(row.storageId)
-            } catch {
-                // Blob already gone; still drop the record below.
-            }
+            } catch {}
             await ctx.db.delete(row._id)
             deleted += 1
         }

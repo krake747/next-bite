@@ -1,10 +1,7 @@
 import { expect, test, type Page } from "@playwright/test"
 
-// Well-formed-shaped but unresolvable: no credentials travel with these requests, so the
-// server is identity-blind and must never render restaurant content.
 const unknownRestaurantId = "j97abcdefghijklmnopqrstuvwxyz0"
 
-// Substrings of restaurant-only content. The nav shell never carries them.
 const restaurantMarkers = ["Why it", "Join the conversation"]
 
 function collectPageErrors(page: Page): unknown[] {

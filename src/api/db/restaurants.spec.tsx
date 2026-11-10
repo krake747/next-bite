@@ -39,9 +39,6 @@ const { providerClients } = vi.hoisted(() => ({
     providerClients: [] as { reportAuth: ((isAuthenticated: boolean) => void) | null }[],
 }))
 
-// Hooks under test read the injected seeded client, so the provider-owned client never
-// serves data. Stub it to a non-connecting shape: the real client dials the test URL and
-// its async connection fatals escape as unhandled errors that fail the suite.
 vi.mock("convex/react", async (importOriginal) => {
     const original = await importOriginal<typeof import("convex/react")>()
     return {
@@ -72,8 +69,6 @@ vi.mock("convex/react", async (importOriginal) => {
                 onUpdate: (receive: (value: never) => void) => () => void
             } {
                 this.watchCalls.push(args)
-                // The provider-owned client never serves data; the adapter only needs the
-                // subscription shape to exist when specs seed convex namespaced cache entries.
                 return {
                     localQueryResult: (): null => null,
                     onUpdate: () => (): void => {},
@@ -513,7 +508,6 @@ describe("restaurant collections", () => {
 
         const { result, unmount } = renderHook(() => useRestaurants(), { wrapper })
         await expect.poll(() => vi.mocked(authClient.getSession)).toHaveBeenCalled()
-        // Session resolved but no convex token: no subscription, no rows.
         await expect.poll(() => result.current).toBeUndefined()
         expect(result.current).toBeUndefined()
         expect(gated.subscriberCount()).toBe(0)
@@ -754,8 +748,6 @@ describe("restaurant collections", () => {
             const { result } = renderOwnedRestaurants()
             await expect.poll(() => result.current?.map((item) => item.name)).toEqual(["Trattoria Verde"])
 
-            // Insert a temp row into the hook's live collection, then fail the
-            // sync underneath it while the mutation is still in flight.
             const draft = getSessionCollections(backend.client, mockPersist(), SESSION)
             const pending = draft.owner.insert(
                 buildTempRestaurant({

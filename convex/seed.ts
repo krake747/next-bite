@@ -10,9 +10,7 @@ export const SEED_OWNER_EMAIL = "preview-owner@example.com"
 export const SEED_FRIEND_EMAIL = "preview-friend@example.com"
 export const SEED_GROUP_NAME = "Preview dinner club"
 
-// Dev-only credential for the shared baseline accounts. It unlocks nothing
-// beyond the seed dataset on the dev backend. These accounts must never be
-// created on production.
+// Dev-only baseline credential; never create on production.
 const SEED_PASSWORD = "preview-baseline-dev-only"
 
 type SeedUser = {
@@ -57,9 +55,7 @@ async function insertSeedProfile(ctx: MutationCtx, authUserId: string, user: See
     })
 }
 
-// Users are created through the Better Auth email sign-up API, keyed by
-// email. Auth tables are never written directly; the app profile row is the
-// idempotency marker for reruns.
+// See ADR-0005: users via auth API, profile row marks reruns.
 async function ensureSeedUser(ctx: MutationCtx, user: SeedUser): Promise<string> {
     const existing = await findProfileByEmail(ctx, user.email)
     if (existing) {

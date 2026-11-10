@@ -2,13 +2,8 @@ import { expect, test, type TestInfo } from "@playwright/test"
 
 const heading = "Your friends have good taste"
 
-// First verb of the loading placeholder. If the server falls back to the
-// placeholder shell, its initial render carries a loading status instead of
-// the landing heading.
 const loadingFallback = 'role="status"'
 
-// The e2e project typechecks without the DOM lib. These names exist in the
-// browser where Playwright evaluates readLandingLayout.
 type LayoutElement = {
     readonly ownerDocument: unknown
 }

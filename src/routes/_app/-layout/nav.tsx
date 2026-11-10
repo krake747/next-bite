@@ -93,11 +93,6 @@ function profileIdentity(
 function useUserCardIdentity(): CardIdentity {
     const auth = useAuth()
     const status = useSessionStatus()
-    // The Convex profile is the source of truth for display identity; the
-    // auth session only refreshes at login, so it goes stale after a rename.
-    // Gated on the ready session like every other Convex read: firing during
-    // the auth-probing window would hit the backend without Convex auth and
-    // throw, on every app page load.
     const profile = useConvexQuery(api.users.getMe, undefined, { skip: status.kind !== "ready" })
     if (profile?.status === "ready") {
         return profileIdentity(profile.profile, auth.user)

@@ -100,8 +100,6 @@ const mutationCalls: MutationCall[] = []
 const addMutate = vi.fn<(args: RestaurantAddArgs) => Promise<Id<"restaurants">>>()
 let submitGate: Deferred<unknown> | null = null
 
-// Same close ownership the add page and inline edit use: every exit runs
-// the form's discard first so staged uploads never strand.
 function AddHarness({
     onSuccess,
     onCancel,
@@ -134,8 +132,6 @@ async function renderForm(onSuccess: (id: Id<"restaurants">) => void, onCancel: 
 
 type FormScreen = Awaited<ReturnType<typeof renderForm>>
 
-// Direct dispatch: the unstyled test env leaves Base UI's inert backdrop above
-// the panel, so Playwright hit-testing cannot reach dialog buttons.
 function clickButton(button: { element: () => HTMLElement | SVGElement }): void {
     const node = button.element()
     if (!(node instanceof HTMLElement)) {
@@ -210,8 +206,6 @@ describe("RestaurantForm close ownership", () => {
         const screen = await renderForm(() => {}, onCancel)
         await stageOneImage()
 
-        // Direct dispatch: the unstyled test env leaves Base UI's inert backdrop
-        // above the panel, so Playwright hit-testing cannot reach dialog buttons.
         clickButton(screen.getByRole("button", { name: "Cancel" }))
 
         await expect

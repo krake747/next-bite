@@ -95,8 +95,6 @@ describe("account screen", () => {
         await waitFor(() => {
             expect(mutationCalls).toContainEqual({ fn: "users:updateMe", args: { name: "Alexander" } })
         })
-        // Success is silent like the reference settings form: the persisted
-        // value and the absence of an alert are the confirmation.
         expect(screen.getByDisplayValue("Alexander")).toBeInTheDocument()
         expect(screen.queryByRole("alert")).not.toBeInTheDocument()
     })
@@ -111,8 +109,6 @@ describe("account screen", () => {
         await waitFor(() => {
             expect(screen.getByDisplayValue("Alex")).toBeInTheDocument()
         })
-        // The blur handler returns before any async work, so this is deterministic.
-        // EnsureProfile records its own call on mount; only updateMe counts here.
         fireEvent.blur(screen.getByLabelText("Display name"))
 
         expect(mutationCalls.filter((call) => call.fn === "users:updateMe")).toHaveLength(0)

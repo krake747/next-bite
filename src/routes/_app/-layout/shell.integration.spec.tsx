@@ -37,8 +37,6 @@ vi.mock("@api/auth.provider", async (importOriginal) => {
 })
 
 async function renderAt(path: string, extraSeeds?: ReadonlyMap<string, unknown>): Promise<void> {
-    // The signed-out home reads the landing aggregate; unseeded queries fall back to an empty
-    // list, which is not the aggregate shape, so seed it explicitly.
     const seeds = new Map<string, unknown>([
         [
             seedKey("landing:getStats", undefined),
@@ -98,8 +96,6 @@ describe("app shell", () => {
         signIn()
         await renderAt("/")
 
-        // The root stays the public landing page; authenticated visitors land
-        // on the app home instead of seeing landing content with a sidebar.
         await waitFor(() => {
             expect(screen.getByRole("link", { name: "Home" })).toHaveAttribute("href", "/home")
         })
@@ -149,8 +145,6 @@ describe("app shell", () => {
         signIn()
         await renderAt("/home")
 
-        // Same happy-dom reason as elsewhere: userEvent stalls on this
-        // navigation, fireEvent drives the same Link deterministically.
         fireEvent.click(screen.getByRole("link", { name: "Groups" }))
 
         await waitFor(() => {
@@ -179,7 +173,6 @@ describe("app shell", () => {
             ]),
         )
 
-        // The session still says Alex; the card must prefer the Convex profile.
         await waitFor(() => {
             expect(screen.getByText("Alexander")).toBeInTheDocument()
         })
@@ -189,8 +182,6 @@ describe("app shell", () => {
         signIn()
         await renderAt("/home")
 
-        // Same happy-dom reason as elsewhere: userEvent stalls on this
-        // navigation, fireEvent drives the same Link deterministically.
         fireEvent.click(screen.getByRole("link", { name: "Add" }))
 
         await waitFor(

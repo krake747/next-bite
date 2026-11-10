@@ -48,9 +48,6 @@ const CUISINE_BY_PRIMARY_TYPE: Readonly<Record<string, string>> = {
     diner: "Diner",
 }
 
-// Starting text for the cuisine field after a Places pick. Explicit map only:
-// a wrong prefill costs more than an empty field, and non-food types
-// (grocery_store, market) must never masquerade as a cuisine.
 export function suggestCuisine(primaryType: string | undefined): string | undefined {
     if (primaryType === undefined || primaryType === "") {
         return undefined

@@ -106,8 +106,6 @@ export function useSocialSummaries(
     restaurantIds: ReadonlyArray<Id<"restaurants">>,
 ): ReadonlyMap<string, RestaurantSocialSummary> | undefined {
     const status = useSessionStatus()
-    // Optimistic temp ids are not real Convex ids and the backend validator rejects them, so
-    // they never travel. The subscription re-fires with the synced ids once resolved.
     const stableIds = withoutTempIds(restaurantIds)
     const summaries = useConvexQuery(
         api.social.getSummaries,

@@ -45,8 +45,6 @@ function useConvexQueryResult<Query extends FunctionReference<"query">>(
     options?: Readonly<{ skip?: boolean | undefined }>,
 ): Readonly<{ data: FunctionReturnType<Query> | undefined; isPending: boolean; isError: boolean }> {
     const client = use(ConvexContext)
-    // Null client means server render (or a tree without a provider): stay
-    // disabled so no queryFn is needed, matching the old loading state.
     const skip = options?.skip ?? client === null
     const result = useQuery({
         ...convexQueryOptions(query, args, options),

@@ -72,9 +72,7 @@ export const getForRestaurant = query({
         restaurantId: v.id("restaurants"),
     },
     handler: async (ctx, args) => {
-        // Same anti-oracle rule as restaurants.getById: strangers learn nothing, not even
-        // whether the id exists. Callers only query visible restaurants, so null is unreachable
-        // in practice; it exists so enumeration proves nothing.
+        // See ADR-0004: null for missing or invisible.
         const identity = await ctx.auth.getUserIdentity()
         if (!identity) {
             return null
@@ -104,10 +102,7 @@ export const listMyStatuses = query({
 })
 
 export const getSummaries = query({
-    // Signed-out callers get aggregate counts with no personal flags; identity only adds the
-    // viewer's own wanted/liked state. Restaurants invisible to the caller resolve to null so
-    // private lists stay unenumerable, matching getForRestaurant and restaurants.getById.
-    // Bounded to 30 ids per call to keep fan-out predictable; request more in pages.
+    // See ADR-0004: private lists stay unenumerable; callers page in 30s.
     args: {
         restaurantIds: v.array(v.id("restaurants")),
     },
