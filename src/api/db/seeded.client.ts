@@ -40,6 +40,8 @@ export function createSeededClient(options: SeededClientOptions = {}) {
     const receivers = new Set<Receiver>()
     const watchReceivers = new Set<Receiver>()
     const failers = new Map<string, Set<(error: unknown) => void>>()
+    let broken: { readonly error: unknown } | null = null
+    const severers = new Map<(error: unknown) => void, () => void>()
 
     const valueFor = (key: string): unknown => {
         const seeded = seeds.get(key)
@@ -81,6 +83,13 @@ export function createSeededClient(options: SeededClientOptions = {}) {
             onError?: (error: unknown) => void,
         ) => {
             const key = seedKey(nameOf(ref), args)
+            if (broken !== null && typeof onError === "function") {
+                const { error } = broken
+                queueMicrotask(() => {
+                    onError(error)
+                })
+                return Object.assign(() => {}, { unsubscribe: () => {}, getCurrentValue: () => null })
+            }
             const entry: Receiver = { key, receive, current: valueFor(key) }
             receivers.add(entry)
             trackFailureHandler(key, onError)
@@ -88,6 +97,9 @@ export function createSeededClient(options: SeededClientOptions = {}) {
             const forget = () => {
                 receivers.delete(entry)
                 untrackFailureHandler(key, onError)
+            }
+            if (typeof onError === "function") {
+                severers.set(onError, forget)
             }
             return Object.assign(forget, {
                 unsubscribe: forget,
@@ -152,9 +164,16 @@ export function createSeededClient(options: SeededClientOptions = {}) {
     const failSync = (error: unknown = new Error("Convex subscription failed")): void => {
         for (const set of failers.values()) {
             for (const fail of set) {
+                severers.get(fail)?.()
+                severers.delete(fail)
                 fail(error)
             }
         }
+    }
+
+    const breakSync = (error: unknown = new Error("Convex subscription failed")): void => {
+        broken = { error }
+        failSync(error)
     }
 
     const convexQueryClient = new ConvexQueryClient(
@@ -179,5 +198,6 @@ export function createSeededClient(options: SeededClientOptions = {}) {
         subscriberCount: (): number => receivers.size + watchReceivers.size,
         subscribedQueries: (): string[] => [...receivers, ...watchReceivers].map((entry) => entry.key),
         failSync,
+        breakSync,
     }
 }

@@ -4,9 +4,10 @@ import { type ConvexReactClient } from "convex/react"
 import { describe, expect, test, vi } from "vitest"
 
 import { type Id } from "@convex/_generated/dataModel"
-import { useRestaurants } from "@core/restaurants"
+import { CollectionSyncError, useRestaurants } from "@core/restaurants"
 import { useAuth as useProbeAuth } from "@core/session"
 
+import { CatchError } from "../../vitest.catch"
 import { AuthProvider } from "../auth.provider"
 import { authClient } from "../auth.sdk"
 import {
@@ -649,6 +650,87 @@ describe("restaurant collections", () => {
             expect(backend.subscriberCount()).toBe(settledCount)
             expect(result.current).toBeUndefined()
             unmount()
+        })
+
+        test("a sync that keeps failing surfaces an error instead of an empty list", async () => {
+            vi.mocked(authClient.getSession).mockResolvedValue({
+                data: { user: { id: "user-1", email: "alex@example.com", name: "Alex" } },
+                error: null,
+            })
+            const backend = createSeededClient({ liveRows: [] })
+            backend.breakSync()
+            injectSyncClient(backend.client)
+            const seen: (ReadonlyArray<unknown> | undefined)[] = []
+            let caught: unknown = null
+            const queryClient = new QueryClient()
+            renderHook(
+                () => {
+                    const rows = useRestaurants()
+                    seen.push(rows)
+                    return rows
+                },
+                {
+                    wrapper: ({ children }: Readonly<{ children: React.ReactNode }>) => (
+                        <CatchError
+                            onError={(error) => {
+                                caught = error
+                            }}
+                        >
+                            <QueryClientProvider client={queryClient}>
+                                <AuthProvider>{children}</AuthProvider>
+                            </QueryClientProvider>
+                        </CatchError>
+                    ),
+                },
+            )
+
+            await expect.poll(() => caught).toBeInstanceOf(CollectionSyncError)
+            expect(seen.some((rows) => rows !== undefined)).toBe(false)
+        })
+
+        test("a failed refresh keeps rows that already loaded", async () => {
+            vi.mocked(authClient.getSession).mockResolvedValue({
+                data: { user: { id: "user-1", email: "alex@example.com", name: "Alex" } },
+                error: null,
+            })
+            const backend = createSeededClient({ liveRows: [restaurantFixture()] })
+            injectSyncClient(backend.client)
+            const seen: (ReadonlyArray<string> | undefined)[] = []
+            let caught: unknown = null
+            const queryClient = new QueryClient()
+            const { result } = renderHook(
+                () => {
+                    const rows = useRestaurants()
+                    seen.push(rows?.map((item) => item.name))
+                    return rows
+                },
+                {
+                    wrapper: ({ children }: Readonly<{ children: React.ReactNode }>) => (
+                        <CatchError
+                            onError={(error) => {
+                                caught = error
+                            }}
+                        >
+                            <QueryClientProvider client={queryClient}>
+                                <AuthProvider>{children}</AuthProvider>
+                            </QueryClientProvider>
+                        </CatchError>
+                    ),
+                },
+            )
+            await expect.poll(() => result.current?.map((item) => item.name)).toEqual(["Trattoria Verde"])
+            const loadedAt = seen.length
+
+            act(() => {
+                backend.breakSync()
+            })
+            await new Promise<void>((resolve) => {
+                setTimeout(resolve, 300)
+            })
+
+            expect(seen.length).toBeGreaterThan(loadedAt)
+            expect(seen.slice(loadedAt).every((names) => names?.join() === "Trattoria Verde")).toBe(true)
+            expect(caught).toBeNull()
         })
 
         test("dropSessionCollections only evicts the matching session", () => {

@@ -194,8 +194,6 @@ function SidebarUserMenu() {
 export function AppNav() {
     const matchRoute = useMatchRoute()
     const isMobile = useIsMobile()
-    // Authenticated only: PageLayout renders no nav for signed-out visitors, who navigate
-    // through the TopBar instead. Mobile gets bottom tabs, desktop gets the sidebar.
     if (isMobile) {
         return (
             <nav
