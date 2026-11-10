@@ -13,6 +13,7 @@ import { ButtonLink } from "@pattern/button-link"
 import { EmptyState } from "@pattern/empty-state"
 import { Header, HeaderSubtitle, HeaderTitle } from "@pattern/header"
 import { QueryErrorState } from "@pattern/query-error"
+import { FriendsSkeleton } from "@routes/-components/page-skeletons"
 import { SessionGate } from "@routes/-components/session-gate"
 import { PageContainer } from "@routes/-layouts/page-container"
 import { Button } from "@ui/button"
@@ -329,7 +330,7 @@ function FriendsPage() {
                 <HeaderTitle>Friends</HeaderTitle>
                 <HeaderSubtitle>See what your friends are craving. Friend connections live here.</HeaderSubtitle>
             </Header>
-            <SessionGate status={status} context="your friends">
+            <SessionGate status={status} context="your friends" fallback={<FriendsSkeleton />}>
                 <FriendsView />
             </SessionGate>
         </PageContainer>

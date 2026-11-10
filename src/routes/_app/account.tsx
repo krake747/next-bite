@@ -7,6 +7,7 @@ import { useSessionStatus } from "@core/session"
 import { UserDetailsSection } from "@features/account/profile-card"
 import { Header, HeaderSubtitle, HeaderTitle } from "@pattern/header"
 import { QueryErrorState } from "@pattern/query-error"
+import { ProfileSkeleton } from "@routes/-components/page-skeletons"
 import { SessionGate } from "@routes/-components/session-gate"
 import { PageContainer } from "@routes/-layouts/page-container"
 
@@ -46,7 +47,7 @@ function AccountPage() {
                         Account
                     </h1>
                 </section>
-                <SessionGate status={status} context="your details">
+                <SessionGate status={status} context="your details" fallback={<ProfileSkeleton />}>
                     <UserDetailsSection />
                 </SessionGate>
             </div>

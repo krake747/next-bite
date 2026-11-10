@@ -8,7 +8,7 @@ import { isSafeRedirectPath } from "@core/groups"
 import { useAuth, useAuthMethods } from "@core/session"
 import { ErrorBanner } from "@pattern/error-banner"
 import { Input } from "@pattern/field"
-import { LoadingPlaceholder } from "@pattern/loading"
+import { AppInitializing } from "@pattern/loading"
 import { AuthDivider } from "@routes/-components/auth-divider"
 import { OtpForm } from "@routes/-components/otp-form"
 import { PendingButton } from "@routes/-components/pending-button"
@@ -57,7 +57,7 @@ function LoginPage() {
     }
 
     if (auth.isInitializing) {
-        return <LoadingPlaceholder />
+        return <AppInitializing />
     }
 
     return (

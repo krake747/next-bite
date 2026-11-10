@@ -1,4 +1,4 @@
-import { ForkKnifeIcon, HouseIcon, PaletteIcon, ShapesIcon, TextAaIcon } from "@phosphor-icons/react"
+import { CircleNotchIcon, ForkKnifeIcon, HouseIcon, PaletteIcon, ShapesIcon, TextAaIcon } from "@phosphor-icons/react"
 import { Link, useMatchRoute } from "@tanstack/react-router"
 
 import { cva, cx } from "@ui/cva.config"
@@ -23,6 +23,7 @@ const sectionIcons: Record<string, typeof HouseIcon> = {
     palette: PaletteIcon,
     typography: TextAaIcon,
     shape: ShapesIcon,
+    loading: CircleNotchIcon,
 }
 
 type SectionEntry = {
@@ -52,7 +53,7 @@ export function DesignSystemNav() {
                 data-slot="ds-nav"
                 className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-surface/90 backdrop-blur-md"
             >
-                <div className="mx-auto grid w-full max-w-350 grid-cols-4 gap-1 px-2 pt-2 pb-[calc(0.5rem+env(safe-area-inset-bottom))]">
+                <div className="mx-auto grid w-full max-w-350 grid-cols-5 gap-1 px-2 pt-2 pb-[calc(0.5rem+env(safe-area-inset-bottom))]">
                     <Link to="/ds" className={cx(item())}>
                         <HouseIcon className="size-5 shrink-0" aria-hidden="true" />
                         <span>Overview</span>
