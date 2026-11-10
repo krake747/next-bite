@@ -16,13 +16,8 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v7
 
-      - uses: voidzero-dev/setup-vp@v1.22.0
-        with:
-          node-version-file: ".node-version"
-          cache: true
-
-      - name: Install dependencies
-        run: vp install
+      - name: Setup vp and install dependencies
+        uses: ./.github/actions/setup-vp
 
       - name: Check formatting
         run: pnpm fmt:check
@@ -40,13 +35,8 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v7
 
-      - uses: voidzero-dev/setup-vp@v1.22.0
-        with:
-          node-version-file: ".node-version"
-          cache: true
-
-      - name: Install dependencies
-        run: vp install
+      - name: Setup vp and install dependencies
+        uses: ./.github/actions/setup-vp
 
       - name: Pure tests
         run: pnpm test:pure
@@ -61,13 +51,8 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v7
 
-      - uses: voidzero-dev/setup-vp@v1.22.0
-        with:
-          node-version-file: ".node-version"
-          cache: true
-
-      - name: Install dependencies
-        run: vp install
+      - name: Setup vp and install dependencies
+        uses: ./.github/actions/setup-vp
 
       - name: Integration tests
         run: pnpm test:integration
@@ -79,13 +64,8 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v7
 
-      - uses: voidzero-dev/setup-vp@v1.22.0
-        with:
-          node-version-file: ".node-version"
-          cache: true
-
-      - name: Install dependencies
-        run: vp install
+      - name: Setup vp and install dependencies
+        uses: ./.github/actions/setup-vp
 
       - name: Restore Playwright browsers
         uses: actions/cache@v6
@@ -110,13 +90,8 @@ jobs:
         with:
           fetch-depth: 0
 
-      - uses: voidzero-dev/setup-vp@v1.22.0
-        with:
-          node-version-file: ".node-version"
-          cache: true
-
-      - name: Install dependencies
-        run: vp install
+      - name: Setup vp and install dependencies
+        uses: ./.github/actions/setup-vp
 
       - name: Audit architecture
         env:
@@ -130,13 +105,8 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v7
 
-      - uses: voidzero-dev/setup-vp@v1.22.0
-        with:
-          node-version-file: ".node-version"
-          cache: true
-
-      - name: Install dependencies
-        run: vp install
+      - name: Setup vp and install dependencies
+        uses: ./.github/actions/setup-vp
 
       - name: Build
         run: pnpm build
@@ -144,17 +114,16 @@ jobs:
   coverage:
     name: Code coverage
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
       - name: Checkout code
         uses: actions/checkout@v7
-
-      - uses: voidzero-dev/setup-vp@v1.22.0
         with:
-          node-version-file: ".node-version"
-          cache: true
+          ref: ${{ github.sha }}
 
-      - name: Install dependencies
-        run: vp install
+      - name: Setup vp and install dependencies
+        uses: ./.github/actions/setup-vp
 
       - name: Collect coverage
         run: pnpm test:coverage

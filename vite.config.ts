@@ -468,7 +468,8 @@ export default defineConfig({
         coverage: {
             provider: "v8",
             reportsDirectory: "./coverage",
-            reporter: ["text", "json-summary", "html"],
+            reporter: ["text", "json-summary", "json", "html", "cobertura"],
+            reportOnFailure: true,
             include: ["src/**/*.{ts,tsx}"],
             exclude: ["src/routeTree.gen.ts", "src/vitest.setup.ts", "src/vitest.msw.setup.ts"],
         },

@@ -133,3 +133,16 @@ the wrapper.
   project's `environment` line changes when the real-browser runner lands
 - `src/vitest.setup.ts` wires `@testing-library/jest-dom/vitest` matchers plus `cleanup`
 - `src/vitest.msw.setup.ts` owns the MSW lifecycle and is imported only by HTTP specs
+
+## Coverage
+
+- `pnpm test:coverage` runs `pure` plus `unit` plus `integration` with `--coverage` (v8, reporters
+  `text,json-summary,json,html,cobertura`). `json-summary` plus `json` feed the PR comment action;
+  `cobertura` is kept for future Code Quality use. `browser` stays out: chromium is slow and flaky
+  for a gate signal. `convex` stays out: edge-runtime contract tests do not merge into the v8
+  report.
+- Free plan: no GitHub Code Quality. `pr.yml` posts coverage via
+  `davelosert/vitest-coverage-report-action@v2` (step summary plus PR comment, needs
+  `pull-requests: write`). `main.yml` uploads `coverage/` as an artifact for history. `unit` and
+  `integration` jobs stay coverage-free for fast failure; only the `coverage` job pays the
+  instrumentation cost.
