@@ -1,9 +1,9 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router"
-import { Suspense, useState } from "react"
+import { useState } from "react"
 
 import { hasCachedSession } from "@api/auth.store"
 import { useSuspenseConvexQuery } from "@api/convex.context"
-import { convexQueryOptions, warmQueries } from "@api/convex.options"
+import { convexQueryOptions, warmQueriesWithin } from "@api/convex.options"
 import { toId } from "@api/data.model"
 import { api } from "@api/endpoints"
 import { type Restaurant } from "@core/restaurants"
@@ -31,23 +31,29 @@ import { ReactionBar } from "@features/social/reaction-bar"
 import { VisitMemories } from "@features/social/visit-memories"
 import { AvatarGroup } from "@pattern/avatar-group"
 import { type GalleryPhoto } from "@pattern/gallery"
+import { LoadingPlaceholder } from "@pattern/loading"
 import { QueryErrorState } from "@pattern/query-error"
 import { SocialMetadata } from "@pattern/social-metadata"
+import { LOADER_WARM_BUDGET_MS } from "@routes/-components/route-pending"
 import { BackNav } from "@routes/-layouts/back-nav"
 import { PageContainer } from "@routes/-layouts/page-container"
 import { Button } from "@ui/button"
 
 export const Route = createFileRoute("/_app/restaurants/$restaurantId")({
     head: () => ({ meta: [{ title: "Restaurant details" }] }),
-    component: RestaurantDetail,
+    component: RestaurantDetailView,
+    pendingComponent: DetailLoading,
     errorComponent: RestaurantDetailError,
-    loader: ({ context, params }) => {
+    loader: async ({ context, params }) => {
         const restaurantId = toId<"restaurants">(params.restaurantId)
         // Public detail warms for everyone; the social snapshot only when a session exists.
-        warmQueries(context.queryClient, [convexQueryOptions(api.restaurants.getById, { id: restaurantId })])
-        if (hasCachedSession()) {
-            warmQueries(context.queryClient, [convexQueryOptions(api.social.getForRestaurant, { restaurantId })])
-        }
+        const detail = convexQueryOptions(api.restaurants.getById, { id: restaurantId })
+        const social = convexQueryOptions(api.social.getForRestaurant, { restaurantId })
+        await warmQueriesWithin(
+            context.queryClient,
+            hasCachedSession() ? [detail, social] : [detail],
+            LOADER_WARM_BUDGET_MS,
+        )
         return null
     },
 })
@@ -277,7 +283,10 @@ function DetailComments({
 function DetailLoading() {
     return (
         <PageContainer>
-            <p className="py-16 text-center text-sm text-muted-foreground">Loading…</p>
+            <BackNav backTo="/" label="Back to restaurants" />
+            <div className="pt-4">
+                <LoadingPlaceholder />
+            </div>
         </PageContainer>
     )
 }
@@ -355,13 +364,5 @@ function RestaurantDetailView() {
                 <DetailComments restaurant={restaurant} social={social} />
             </div>
         </PageContainer>
-    )
-}
-
-function RestaurantDetail() {
-    return (
-        <Suspense fallback={<DetailLoading />}>
-            <RestaurantDetailView />
-        </Suspense>
     )
 }

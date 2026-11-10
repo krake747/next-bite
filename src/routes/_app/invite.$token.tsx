@@ -1,5 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router"
-import { Suspense, useEffect, useState } from "react"
+import { useEffect, useState } from "react"
 
 import { useSuspenseConvexQuery } from "@api/convex.context"
 import { api } from "@api/endpoints"
@@ -15,7 +15,8 @@ import { Button } from "@ui/button"
 
 export const Route = createFileRoute("/_app/invite/$token")({
     head: () => ({ meta: [{ title: "Group invitation" }] }),
-    component: InvitePage,
+    component: InviteView,
+    pendingComponent: InviteLoading,
     // No loader here: the preview args carry `now: Date.now()`, so a warmed key
     // would never match the view's key. The preview is a single cheap fetch.
     errorComponent: InviteLoadError,
@@ -158,19 +159,13 @@ function InviteView() {
     )
 }
 
-function InvitePage() {
+function InviteLoading() {
     return (
-        <Suspense
-            fallback={
-                <PageContainer>
-                    <BackNav backTo="/" label="Back home" />
-                    <div className="pt-4">
-                        <LoadingPlaceholder />
-                    </div>
-                </PageContainer>
-            }
-        >
-            <InviteView />
-        </Suspense>
+        <PageContainer>
+            <BackNav backTo="/" label="Back home" />
+            <div className="pt-4">
+                <LoadingPlaceholder />
+            </div>
+        </PageContainer>
     )
 }

@@ -1,13 +1,14 @@
 import { createFileRoute } from "@tanstack/react-router"
 
 import { hasCachedSession } from "@api/auth.store"
-import { convexQueryOptions, warmQueries } from "@api/convex.options"
+import { convexQueryOptions, warmQueriesWithin } from "@api/convex.options"
 import { api } from "@api/endpoints"
 import { useSessionStatus } from "@core/session"
 import { UserDetailsSection } from "@features/account/profile-card"
 import { Header, HeaderSubtitle, HeaderTitle } from "@pattern/header"
 import { QueryErrorState } from "@pattern/query-error"
 import { ProfileSkeleton } from "@routes/-components/page-skeletons"
+import { LOADER_WARM_BUDGET_MS } from "@routes/-components/route-pending"
 import { SessionGate } from "@routes/-components/session-gate"
 import { PageContainer } from "@routes/-layouts/page-container"
 
@@ -15,11 +16,11 @@ export const Route = createFileRoute("/_app/account")({
     head: () => ({ meta: [{ title: "Account - Next Bite" }] }),
     component: AccountPage,
     errorComponent: AccountError,
-    loader: ({ context }) => {
+    loader: async ({ context }) => {
         if (!hasCachedSession()) {
             return null
         }
-        warmQueries(context.queryClient, [convexQueryOptions(api.users.getMe)])
+        await warmQueriesWithin(context.queryClient, [convexQueryOptions(api.users.getMe)], LOADER_WARM_BUDGET_MS)
         return null
     },
 })

@@ -18,6 +18,7 @@ export type SeededClientOptions = {
     readonly mutateResult?: unknown
     readonly liveRows?: ReadonlyArray<unknown> | undefined
     readonly queryHook?: (() => Promise<unknown>) | undefined
+    readonly queryGate?: (() => Promise<void>) | undefined
 }
 
 type Receiver = {
@@ -116,6 +117,9 @@ export function createSeededClient(options: SeededClientOptions = {}) {
         query: (async (ref: unknown, args: unknown) => {
             if (options.queryHook !== undefined) {
                 return options.queryHook()
+            }
+            if (options.queryGate !== undefined) {
+                await options.queryGate()
             }
             return valueFor(seedKey(nameOf(ref), args ?? {}))
         }) as ConvexReactClient["query"],
