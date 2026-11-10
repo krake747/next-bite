@@ -18,6 +18,11 @@ export function getValidatedSiteUrl(): string {
     return url
 }
 
+export function optionalSiteUrl(): string | undefined {
+    const url = env.SITE_URL
+    return isPresent(url) ? url : undefined
+}
+
 export function appOrigins(): string[] {
     const raw = env.APP_ORIGINS
     if (!isPresent(raw)) {
