@@ -11,8 +11,6 @@ import authConfig from "./auth.config"
 import { sendOtpEmail } from "./email"
 import { appOrigins, getValidatedSiteUrl, hasMailgunConfig, isEmailOtpEnabled, isMailDevFallback } from "./env"
 
-const siteUrl = getValidatedSiteUrl()
-
 export const authComponent = createClient<DataModel>(components.betterAuth)
 
 // Public on purpose: capability flags only, no secrets or user data.
@@ -27,6 +25,10 @@ export const getAuthMethods = query({
 })
 
 export const createAuth = (ctx: GenericCtx<DataModel>) => {
+    // Resolved per call, not at module load: fresh deployments accept a push before
+    // any env vars exist, and the first push would otherwise fail module analysis.
+    // Missing SITE_URL still fails fast here, on first auth use.
+    const siteUrl = getValidatedSiteUrl()
     return betterAuth({
         baseURL: siteUrl,
         trustedOrigins: [...new Set([siteUrl, ...appOrigins()])],
