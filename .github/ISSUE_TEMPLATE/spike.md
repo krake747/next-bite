@@ -1,3 +1,9 @@
+---
+name: Spike
+about: Time-boxed question; the findings comment is the deliverable
+labels: needs-triage, spike
+---
+
 ## Goal
 
 <!-- One sentence. State the question plus how the answer gets verified. -->

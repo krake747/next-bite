@@ -1,3 +1,9 @@
+---
+name: Feature
+about: New or better product behavior, as a sub of a parent
+labels: needs-triage, feature
+---
+
 Part of #<!-- parent number -->
 
 ## Goal
