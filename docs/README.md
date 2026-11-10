@@ -14,6 +14,8 @@ Long-lived explanations of this project's architecture and technical decisions.
   it; when a change conflicts with a recorded decision, surface the conflict instead of silently
   overriding it. The directory listing is the index, ordered by architectural impact.
 - Data model: [migrations](../migrations.md).
+- Environments and release: [environments](environments.md). Production, local, and preview
+  backends, release order, and the secrets each environment holds.
 - Technical foundation: [tech](tech.md). Points at owners for stack, layers, rendering, data, auth,
   storage, email, AI, and testing.
 
