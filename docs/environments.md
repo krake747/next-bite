@@ -162,8 +162,10 @@ on pull_request (closed)
   delete the pr-<n> preview deployment
   comment    preview removed
 
-Live proof is pending the first real run: no secrets or live PR were available while writing this,
-so the alias URL behavior and the S2/S3 live checks below are documented but not yet observed.
+Live proof, 2026-11-10 (manual dispatches for pr-166 and pr-169): deleting the
+versions kills the alias URL immediately (both aliases went from 200 to 404),
+and deleting the deployment removes its data. The S2 creation path and the S3
+close path are both observed working end to end.
 ```
 
 ### Preview limits
@@ -183,8 +185,8 @@ Facts from `cf` 1.0.0-beta.27 and the Cloudflare docs:
 - `cf workers versions create --preview-alias` uploads a version without deploying it and prints
   `Version Preview Alias URL: https://<alias>-next-bite.<subdomain>.workers.dev`.
 - An alias can only be set at upload. There is no command to remove or move one; the alias is an
-  annotation on the version. Deleting the version is the only cleanup, and whether that frees the
-  alias URL immediately is untested.
+  annotation on the version. Deleting the version is the only cleanup, and it frees the alias URL
+  immediately: after the pr-166 and pr-169 cleanups both aliases went from serving 200 to 404.
 - Cloudflare keeps the 1000 most recently deployed aliases and drops the oldest past that.
 - Version URLs need `previewUrls` enabled (`previewUrls: true` in `cloudflare.config.ts`). When
   unset they follow the workers.dev setting. Version URLs are public unless Cloudflare Access
