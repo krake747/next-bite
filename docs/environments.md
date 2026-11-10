@@ -177,6 +177,8 @@ close path are both observed working end to end.
   gets a fresh empty backend that the seed repopulates.
 - Stale PRs must actually close to free their deployment. Closing a PR deletes its preview versions
   and its deployment; abandoned PRs rely on expiry instead.
+- Cloudflare refuses to delete the single latest Worker version. Cleanup keeps it and moves on; the
+  next upload makes it deletable, and the alias limit evicts it eventually.
 - Plan deployment limits bound how many concurrent previews can exist. Each open PR holds one
   preview deployment plus its Worker versions, so closing merged PRs keeps headroom.
 
