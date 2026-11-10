@@ -53,3 +53,6 @@ coverage/
 
 # Local git worktrees
 .worktrees/
+
+# Python bytecode caches (CI scripts)
+__pycache__/

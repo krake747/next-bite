@@ -30,7 +30,11 @@ fetch_pages() {
 }
 
 stale_version_ids() {
-    python3 "${SCRIPT_DIR}/lib/cloudflare_versions.py" "$1" "$2"
+    python3 "${SCRIPT_DIR}/lib/cloudflare_versions.py" own "$1" "$2"
+}
+
+foreign_tagged_ids() {
+    python3 "${SCRIPT_DIR}/lib/cloudflare_versions.py" foreign "$1" "$2"
 }
 
 delete_versions() {
@@ -52,8 +56,30 @@ delete_versions() {
     done < "$1"
 }
 
+pr_state() {
+    gh api "repos/$1/pulls/$2" --jq .state 2>/dev/null || echo unknown
+}
+
+reap_closed_prs() {
+    local work_dir="$1" repo="$2" own_tag="$3" tag ids_file pr state
+    foreign_tagged_ids "${work_dir}" "${own_tag}" > "${work_dir}/foreign.txt"
+    [ -s "${work_dir}/foreign.txt" ] || return 0
+    cut -f1 "${work_dir}/foreign.txt" | sort -u | while IFS= read -r tag; do
+        pr="${tag#pr-}"
+        state="$(pr_state "${repo}" "${pr}")"
+        if [ "${state}" != "closed" ]; then
+            echo "Keeping ${tag}: PR is ${state}."
+            continue
+        fi
+        ids_file="${work_dir}/closed-${tag}.txt"
+        awk -F '\t' -v t="${tag}" '$1 == t { print $2 }' "${work_dir}/foreign.txt" > "${ids_file}"
+        echo "Reaping closed ${tag}: $(wc -l < "${ids_file}") version(s)."
+        delete_versions "${ids_file}"
+    done
+}
+
 main() {
-    require_env PR_NUMBER CLOUDFLARE_API_TOKEN CLOUDFLARE_ACCOUNT_ID
+    require_env PR_NUMBER CLOUDFLARE_API_TOKEN CLOUDFLARE_ACCOUNT_ID GH_TOKEN GITHUB_REPOSITORY
     local tag work_dir ids_file
     tag="$(preview_name)"
     work_dir="$(new_workdir)"
@@ -62,11 +88,12 @@ main() {
     fetch_pages "workers/${WORKER_ID}/versions" "${work_dir}"
     ids_file="${work_dir}/ids.txt"
     stale_version_ids "${work_dir}" "${tag}" > "${ids_file}"
-    if [ ! -s "${ids_file}" ]; then
+    if [ -s "${ids_file}" ]; then
+        delete_versions "${ids_file}"
+    else
         echo "No undeployed versions tagged ${tag} to delete."
-        exit 0
     fi
-    delete_versions "${ids_file}"
+    reap_closed_prs "${work_dir}" "${GITHUB_REPOSITORY}" "${tag}"
 }
 
 main "$@"
