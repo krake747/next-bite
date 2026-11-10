@@ -3,13 +3,13 @@ import { httpRouter } from "convex/server"
 import { internal } from "./_generated/api"
 import { httpAction } from "./_generated/server"
 import { authComponent, createAuth } from "./auth"
-import { resolveCorsHeaders } from "./cors"
-import { appOrigins } from "./env"
+import { corsAllowlist, resolveCorsHeaders } from "./cors"
+import { appOrigins, optionalSiteUrl } from "./env"
 
 const http = httpRouter()
 
 function corsHeadersFor(request: Request): Record<string, string> {
-    return resolveCorsHeaders(request.headers.get("Origin"), appOrigins())
+    return resolveCorsHeaders(request.headers.get("Origin"), corsAllowlist(optionalSiteUrl(), appOrigins()))
 }
 
 const MAX_UPLOAD_BYTES = 20 * 1024 * 1024

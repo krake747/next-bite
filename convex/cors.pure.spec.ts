@@ -1,6 +1,6 @@
 import { describe, expect, test } from "vitest"
 
-import { resolveCorsHeaders } from "./cors"
+import { corsAllowlist, resolveCorsHeaders } from "./cors"
 
 describe("resolveCorsHeaders", () => {
     test("sends no CORS headers without an origin", () => {
@@ -58,6 +58,36 @@ describe("resolveCorsHeaders", () => {
             "Access-Control-Allow-Origin": "https://PR-123-NEXT-BITE.MY-SUB.WORKERS.DEV",
         })
         expect(resolveCorsHeaders("https://pr-1.2-next-bite.my-sub.workers.dev", allowlist)).toEqual({})
+    })
+
+    test("trusts the SITE_URL origin when APP_ORIGINS is empty", () => {
+        const allowlist = corsAllowlist("https://nextbite.kevinkraemer.com", [])
+        expect(resolveCorsHeaders("https://nextbite.kevinkraemer.com", allowlist)).toMatchObject({
+            "Access-Control-Allow-Origin": "https://nextbite.kevinkraemer.com",
+            Vary: "Origin",
+        })
+    })
+
+    test("normalizes SITE_URL to its origin", () => {
+        const allowlist = corsAllowlist("https://pr-12-next-bite.my-sub.workers.dev/path", [])
+        expect(resolveCorsHeaders("https://pr-12-next-bite.my-sub.workers.dev", allowlist)).toMatchObject({
+            "Access-Control-Allow-Origin": "https://pr-12-next-bite.my-sub.workers.dev",
+        })
+    })
+
+    test("refuses an origin that is neither SITE_URL nor allowlisted", () => {
+        expect(
+            resolveCorsHeaders("https://evil.example.com", corsAllowlist("https://nextbite.kevinkraemer.com", [])),
+        ).toEqual({})
+    })
+
+    test("ignores a missing or invalid SITE_URL and still uses APP_ORIGINS", () => {
+        const allowlist = corsAllowlist("not a url", ["https://app.example.com"])
+        expect(resolveCorsHeaders("https://app.example.com", allowlist)).toMatchObject({
+            "Access-Control-Allow-Origin": "https://app.example.com",
+        })
+        expect(corsAllowlist(undefined, ["https://app.example.com"])).toEqual(["https://app.example.com"])
+        expect(corsAllowlist("   ", ["https://app.example.com"])).toEqual(["https://app.example.com"])
     })
 
     test("refuses malformed origins", () => {

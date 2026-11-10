@@ -1,5 +1,16 @@
 import { isLoopbackOrigin } from "./env"
 
+export function corsAllowlist(siteUrl: string | undefined, appOrigins: ReadonlyArray<string>): ReadonlyArray<string> {
+    if (siteUrl === undefined || siteUrl.trim() === "") {
+        return appOrigins
+    }
+    try {
+        return [...new Set([new URL(siteUrl).origin, ...appOrigins])]
+    } catch {
+        return appOrigins
+    }
+}
+
 export function isAllowedOrigin(origin: string, allowlist: ReadonlyArray<string>): boolean {
     let parsed: URL
     try {
