@@ -1,3 +1,5 @@
+import path from "node:path"
+
 import { cloudflare } from "@cloudflare/vite-plugin"
 import tailwindcss from "@tailwindcss/vite"
 import { tanstackStart } from "@tanstack/react-start/plugin/vite"
@@ -405,6 +407,16 @@ export default defineConfig({
     },
     resolve: {
         tsconfigPaths: true,
+        alias: [
+            // dataModel is types-only upstream (dataModel.d.ts, no runtime file), so the
+            // dep scanner cannot resolve the tsconfig path and aborts the whole scan.
+            // Pointing it at the .d.ts lets the initial scan succeed; every import of
+            // this module is type-only and erased before runtime.
+            {
+                find: "@convex/_generated/dataModel",
+                replacement: path.resolve(import.meta.dirname, "convex/_generated/dataModel.d.ts"),
+            },
+        ],
     },
     optimizeDeps: {
         // Pre-bundle route-split deep imports so navigating to a lazy route
