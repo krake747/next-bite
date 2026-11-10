@@ -15,17 +15,6 @@ let testUser: TestUser | null = { id: "user-1", email: "alex@example.com", name:
 const mutationCalls: MutationCall[] = []
 const querySeeds = new Map<string, unknown>()
 
-vi.mock("@api/auth.sdk", async (importOriginal) => {
-    const original = await importOriginal<typeof import("@api/auth.sdk")>()
-    return {
-        ...original,
-        getConvexSessionToken: vi.fn<() => Promise<string | null>>(async () => {
-            await Promise.resolve()
-            return "test-token"
-        }),
-    }
-})
-
 vi.mock("@api/auth.provider", async (importOriginal) => {
     const original = await importOriginal<typeof import("@api/auth.provider")>()
     const noop = async () => {
@@ -97,7 +86,7 @@ async function renderAt(path: string): Promise<void> {
     })
     await router.load()
     renderDocument(
-        <ConvexProvider client={backend.client}>
+        <ConvexProvider client={backend.client} auth="authenticated">
             <RouterProvider router={router} />
         </ConvexProvider>,
     )

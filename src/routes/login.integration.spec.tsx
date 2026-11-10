@@ -75,17 +75,6 @@ async function noop(): Promise<void> {
     await Promise.resolve()
 }
 
-vi.mock("@api/auth.sdk", async (importOriginal) => {
-    const original = await importOriginal<typeof import("@api/auth.sdk")>()
-    return {
-        ...original,
-        getConvexSessionToken: vi.fn<() => Promise<string | null>>(async () => {
-            await Promise.resolve()
-            return "test-token"
-        }),
-    }
-})
-
 vi.mock("@api/auth.provider", async (importOriginal) => {
     const original = await importOriginal<typeof import("@api/auth.provider")>()
     return {
@@ -143,7 +132,7 @@ async function mountAt(path: string): Promise<AnyRouter> {
     })
     await router.load()
     renderDocument(
-        <ConvexProvider client={backend.client}>
+        <ConvexProvider client={backend.client} auth="authenticated">
             <RouterProvider router={router} />
         </ConvexProvider>,
     )

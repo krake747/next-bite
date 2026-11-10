@@ -9,17 +9,6 @@ import { createSeededClient, seedKey } from "@api/db/seeded.client"
 import { routeTree } from "../routeTree.gen"
 import { renderDocument } from "../vitest.render"
 
-vi.mock("@api/auth.sdk", async (importOriginal) => {
-    const original = await importOriginal<typeof import("@api/auth.sdk")>()
-    return {
-        ...original,
-        getConvexSessionToken: vi.fn<() => Promise<string | null>>(async () => {
-            await Promise.resolve()
-            return "test-token"
-        }),
-    }
-})
-
 vi.mock("@api/auth.provider", async (importOriginal) => {
     const original = await importOriginal<typeof import("@api/auth.provider")>()
     const noop = async () => {
@@ -75,7 +64,7 @@ async function renderHome(
     })
     await router.load()
     renderDocument(
-        <ConvexProvider client={backend.client}>
+        <ConvexProvider client={backend.client} auth="authenticated">
             <RouterProvider router={router} />
         </ConvexProvider>,
     )

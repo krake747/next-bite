@@ -1,30 +1,13 @@
-import { fireEvent, render, screen, waitFor } from "@testing-library/react"
+import { act, fireEvent, render, screen, waitFor } from "@testing-library/react"
 import { describe, expect, test, vi } from "vitest"
 
-import { ConvexProvider } from "@api/convex.context"
+import { ConvexProvider, type ConvexAuthPhase } from "@api/convex.context"
 import { createSeededClient } from "@api/db/seeded.client"
 import { useSessionStatus } from "@core/session"
 
 type TestUser = { id: string; email: string; name: string }
 
 let testUser: TestUser | null = { id: "user-1", email: "alex@example.com", name: "Alex" }
-let tokenValue: string | null = "test-token"
-let tokenGate: { promise: Promise<void>; resolve: () => void } | null = null
-
-const getTokenMock = vi.fn<() => Promise<string | null>>(async () => {
-    if (tokenGate !== null) {
-        await tokenGate.promise
-    }
-    return tokenValue
-})
-
-vi.mock("@api/auth.sdk", async (importOriginal) => {
-    const original = await importOriginal<typeof import("@api/auth.sdk")>()
-    return {
-        ...original,
-        getConvexSessionToken: async () => getTokenMock(),
-    }
-})
 
 vi.mock("@api/auth.provider", async (importOriginal) => {
     const original = await importOriginal<typeof import("@api/auth.provider")>()
@@ -67,9 +50,9 @@ function StatusProbe({ timeoutMs, retryLabel = "Retry" }: Readonly<{ timeoutMs: 
     return <p>state: {status.kind}</p>
 }
 
-function renderProbe(options?: { queryFails?: boolean; timeoutMs?: number }): void {
+function renderProbe(options: { auth: ConvexAuthPhase; queryFails?: boolean; timeoutMs?: number }) {
     const client = createSeededClient(
-        options?.queryFails === true
+        options.queryFails === true
             ? {
                   queryHook: () => {
                       throw new Error("denied")
@@ -77,34 +60,65 @@ function renderProbe(options?: { queryFails?: boolean; timeoutMs?: number }): vo
               }
             : {},
     ).client
-    render(
-        <ConvexProvider client={client}>
-            <StatusProbe timeoutMs={options?.timeoutMs ?? 60} />
-        </ConvexProvider>,
+    const timeoutMs = options.timeoutMs ?? 60
+    const view = (auth: ConvexAuthPhase) => (
+        <ConvexProvider client={client} auth={auth}>
+            <StatusProbe timeoutMs={timeoutMs} />
+        </ConvexProvider>
     )
+    const result = render(view(options.auth))
+    return {
+        setAuth: (auth: ConvexAuthPhase) => {
+            result.rerender(view(auth))
+        },
+    }
 }
 
-function resetAuth(): void {
-    testUser = { id: "user-1", email: "alex@example.com", name: "Alex" }
-    tokenValue = "test-token"
-    tokenGate = null
-    getTokenMock.mockClear()
+async function waitPast(ms: number): Promise<void> {
+    await act(async () => {
+        await new Promise<void>((resolve) => {
+            setTimeout(resolve, ms)
+        })
+    })
+}
+
+const ALEX: TestUser = { id: "user-1", email: "alex@example.com", name: "Alex" }
+
+function signIn(user: TestUser = ALEX): void {
+    testUser = user
 }
 
 describe("useSessionStatus", () => {
-    test("reports ready when the probe succeeds", async () => {
-        resetAuth()
-        renderProbe()
+    test("reports ready once Convex confirms auth", () => {
+        signIn()
+        renderProbe({ auth: "authenticated" })
 
-        await waitFor(() => {
-            expect(screen.getByText("state: ready:user-1")).toBeInTheDocument()
-        })
+        expect(screen.getByText("state: ready:user-1")).toBeInTheDocument()
     })
 
-    test("reports timed-out instead of ready when the token is missing", async () => {
-        resetAuth()
-        tokenValue = null
-        renderProbe()
+    test("stays loading while Convex auth is delayed, then turns ready", async () => {
+        signIn()
+        const probe = renderProbe({ auth: "connecting", timeoutMs: 200 })
+
+        expect(screen.getByText("state: loading")).toBeInTheDocument()
+        await waitPast(50)
+        expect(screen.getByText("state: loading")).toBeInTheDocument()
+
+        probe.setAuth("authenticated")
+
+        expect(screen.getByText("state: ready:user-1")).toBeInTheDocument()
+    })
+
+    test("does not depend on an application query succeeding", () => {
+        signIn()
+        renderProbe({ auth: "authenticated", queryFails: true })
+
+        expect(screen.getByText("state: ready:user-1")).toBeInTheDocument()
+    })
+
+    test("reports timed-out instead of ready when Convex never confirms", async () => {
+        signIn()
+        renderProbe({ auth: "connecting" })
 
         await waitFor(() => {
             expect(screen.getByText("state: timed-out")).toBeInTheDocument()
@@ -113,9 +127,9 @@ describe("useSessionStatus", () => {
         expect(screen.queryByText(/^state: ready/)).toBeNull()
     })
 
-    test("reports timed-out when the probe is rejected", async () => {
-        resetAuth()
-        renderProbe({ queryFails: true })
+    test("reports timed-out when Convex rejects the session", async () => {
+        signIn()
+        renderProbe({ auth: "unauthenticated" })
 
         await waitFor(() => {
             expect(screen.getByText("state: timed-out")).toBeInTheDocument()
@@ -123,104 +137,107 @@ describe("useSessionStatus", () => {
         expect(screen.queryByText(/^state: ready/)).toBeNull()
     })
 
-    test("recovers to ready after retry when the token starts working", async () => {
-        resetAuth()
-        tokenValue = null
-        renderProbe()
+    test("retry re-arms the timeout window instead of reporting ready", async () => {
+        signIn()
+        renderProbe({ auth: "connecting", timeoutMs: 100 })
+
+        await waitFor(() => {
+            expect(screen.getByText("state: timed-out")).toBeInTheDocument()
+        })
+        fireEvent.click(screen.getByRole("button", { name: "Retry" }))
+
+        expect(screen.getByText("state: loading")).toBeInTheDocument()
+        await waitFor(() => {
+            expect(screen.getByText("state: timed-out")).toBeInTheDocument()
+        })
+    })
+
+    test("turns ready from timed-out once Convex confirms late", async () => {
+        signIn()
+        const probe = renderProbe({ auth: "unauthenticated" })
 
         await waitFor(() => {
             expect(screen.getByText("state: timed-out")).toBeInTheDocument()
         })
 
-        tokenValue = "test-token"
-        fireEvent.click(screen.getByRole("button", { name: "Retry" }))
+        probe.setAuth("authenticated")
+
+        expect(screen.getByText("state: ready:user-1")).toBeInTheDocument()
+    })
+
+    test("recovers to ready after a successful retry", async () => {
+        signIn()
+        const probe = renderProbe({ auth: "connecting", timeoutMs: 100 })
 
         await waitFor(() => {
-            expect(screen.getByText("state: ready:user-1")).toBeInTheDocument()
+            expect(screen.getByText("state: timed-out")).toBeInTheDocument()
         })
+        fireEvent.click(screen.getByRole("button", { name: "Retry" }))
+        expect(screen.getByText("state: loading")).toBeInTheDocument()
+
+        probe.setAuth("authenticated")
+
+        expect(screen.getByText("state: ready:user-1")).toBeInTheDocument()
     })
 
     test("retry re-arms every mounted session gate", async () => {
-        resetAuth()
-        tokenValue = null
+        signIn()
         const client = createSeededClient({}).client
-        render(
-            <ConvexProvider client={client}>
+        const view = (auth: ConvexAuthPhase) => (
+            <ConvexProvider client={client} auth={auth}>
                 <StatusProbe timeoutMs={60} retryLabel="Retry first" />
-            </ConvexProvider>,
-        )
-        render(
-            <ConvexProvider client={client}>
                 <StatusProbe timeoutMs={60} retryLabel="Retry second" />
-            </ConvexProvider>,
+            </ConvexProvider>
         )
+        const { rerender } = render(view("connecting"))
 
         await waitFor(() => {
             expect(screen.getAllByText("state: timed-out")).toHaveLength(2)
         })
 
-        tokenValue = "test-token"
         fireEvent.click(screen.getByRole("button", { name: "Retry first" }))
 
-        await waitFor(() => {
-            expect(screen.getAllByText("state: ready:user-1")).toHaveLength(2)
-        })
+        expect(screen.getAllByText("state: loading")).toHaveLength(2)
+        rerender(view("authenticated"))
+        expect(screen.getAllByText("state: ready:user-1")).toHaveLength(2)
     })
 
-    test("stays loading through a user switch until the new probe resolves", async () => {
-        resetAuth()
-        let releaseGate!: () => void
-        tokenGate = {
-            promise: new Promise<void>((resolve) => {
-                releaseGate = resolve
-            }),
-            resolve: () => {
-                releaseGate()
-            },
-        }
-        const { rerender } = render(
-            <ConvexProvider client={createSeededClient({}).client}>
-                <StatusProbe timeoutMs={60} />
-            </ConvexProvider>,
-        )
+    test("reports signed-out after sign-out", () => {
+        signIn()
+        const probe = renderProbe({ auth: "authenticated" })
+        expect(screen.getByText("state: ready:user-1")).toBeInTheDocument()
 
-        testUser = { id: "user-2", email: "sam@example.com", name: "Sam" }
-        rerender(
-            <ConvexProvider client={createSeededClient({}).client}>
-                <StatusProbe timeoutMs={60} />
-            </ConvexProvider>,
-        )
+        testUser = null
+        probe.setAuth("unauthenticated")
+
+        expect(screen.getByText("state: signed-out")).toBeInTheDocument()
+    })
+
+    test("holds an account switch until Convex re-confirms for the new user", async () => {
+        signIn()
+        const probe = renderProbe({ auth: "authenticated", timeoutMs: 500 })
+        expect(screen.getByText("state: ready:user-1")).toBeInTheDocument()
+
+        signIn({ id: "user-2", email: "sam@example.com", name: "Sam" })
+        probe.setAuth("authenticated")
+        expect(screen.getByText("state: loading")).toBeInTheDocument()
+        await waitPast(50)
+        expect(screen.queryByText(/^state: ready/)).toBeNull()
+
+        probe.setAuth("connecting")
         expect(screen.getByText("state: loading")).toBeInTheDocument()
 
-        tokenGate.resolve()
-        tokenGate = null
-
-        await waitFor(() => {
-            expect(screen.getByText("state: ready:user-2")).toBeInTheDocument()
-        })
+        probe.setAuth("authenticated")
+        expect(screen.getByText("state: ready:user-2")).toBeInTheDocument()
         expect(screen.queryByText("state: ready:user-1")).toBeNull()
     })
 
-    test("reports signed-out without probing when there is no user", async () => {
-        resetAuth()
+    test("reports signed-out without arming a timeout when there is no user", async () => {
         testUser = null
-        let releaseGate!: () => void
-        tokenGate = {
-            promise: new Promise<void>((resolve) => {
-                releaseGate = resolve
-            }),
-            resolve: () => {
-                releaseGate()
-            },
-        }
-        renderProbe()
+        renderProbe({ auth: "unauthenticated" })
 
         expect(screen.getByText("state: signed-out")).toBeInTheDocument()
-        await new Promise<void>((resolve) => {
-            setTimeout(resolve, 50)
-        })
-        expect(getTokenMock).not.toHaveBeenCalled()
-        tokenGate.resolve()
-        tokenGate = null
+        await waitPast(100)
+        expect(screen.getByText("state: signed-out")).toBeInTheDocument()
     })
 })

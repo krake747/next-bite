@@ -1,8 +1,8 @@
 import { useQueryClient, type QueryClient } from "@tanstack/react-query"
-import { ConvexReactClient } from "convex/react"
+import { ConvexReactClient, useConvexAuth } from "convex/react"
 import { useState, useEffect, createContext, use } from "react"
 
-import { ConvexProvider } from "@api/convex.context"
+import { ConvexProvider, type ConvexAuthPhase } from "@api/convex.context"
 import { ConvexBetterAuthProvider } from "@convex-dev/better-auth/react"
 import { ConvexQueryClient } from "@convex-dev/react-query"
 import { env } from "@core/env"
@@ -53,6 +53,22 @@ type ConvexPair = {
     readonly convexQueryClient: ConvexQueryClient
 }
 
+function toConvexAuthPhase(state: Readonly<{ isLoading: boolean; isAuthenticated: boolean }>): ConvexAuthPhase {
+    if (state.isLoading) {
+        return "connecting"
+    }
+    return state.isAuthenticated ? "authenticated" : "unauthenticated"
+}
+
+function ConvexAuthBridge({ client, children }: Readonly<{ client: ConvexReactClient; children: React.ReactNode }>) {
+    const phase = toConvexAuthPhase(useConvexAuth())
+    return (
+        <ConvexProvider client={client} auth={phase}>
+            {children}
+        </ConvexProvider>
+    )
+}
+
 const connectedQueryClients = new WeakMap<QueryClient, ConvexPair>()
 const liveQueryClients = new WeakSet<QueryClient>()
 
@@ -94,9 +110,9 @@ export function AuthProvider({ children }: Readonly<{ children: React.ReactNode 
 
     return (
         <ConvexBetterAuthProvider client={pair.client} authClient={authClient}>
-            <ConvexProvider client={pair.client}>
+            <ConvexAuthBridge client={pair.client}>
                 <AuthContext.Provider value={store}>{children}</AuthContext.Provider>
-            </ConvexProvider>
+            </ConvexAuthBridge>
         </ConvexBetterAuthProvider>
     )
 }

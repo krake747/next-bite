@@ -5,13 +5,25 @@ import { createContext, use } from "react"
 
 import { convexQueryOptions } from "./convex.options"
 
+export type ConvexAuthPhase = "connecting" | "authenticated" | "unauthenticated"
+
 const ConvexContext = createContext<ConvexReactClient | null>(null)
+const ConvexAuthPhaseContext = createContext<ConvexAuthPhase>("connecting")
 
 export function ConvexProvider({
     client,
+    auth = "connecting",
     children,
-}: Readonly<{ client: ConvexReactClient | null; children: React.ReactNode }>) {
-    return <ConvexContext.Provider value={client}>{children}</ConvexContext.Provider>
+}: Readonly<{ client: ConvexReactClient | null; auth?: ConvexAuthPhase; children: React.ReactNode }>) {
+    return (
+        <ConvexContext.Provider value={client}>
+            <ConvexAuthPhaseContext.Provider value={auth}>{children}</ConvexAuthPhaseContext.Provider>
+        </ConvexContext.Provider>
+    )
+}
+
+export function useConvexAuthPhase(): ConvexAuthPhase {
+    return use(ConvexAuthPhaseContext)
 }
 
 export function convexArgsKey(args: unknown): string {
