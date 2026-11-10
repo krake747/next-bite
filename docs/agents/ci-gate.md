@@ -25,9 +25,9 @@ file holds the rest.
 - Cloud CI runs on pull requests against `main` (see `.github/workflows/pr.yml`) and on push to
   `main` (see `.github/workflows/main.yml`). Releases ship from `main` via the manual `release.yml`
   workflow.
-- Run `pnpm check` before every push. Lefthook `pre-push` runs fmt, lint, names, types, affected
-  tests, and arch in parallel. Full tests run in CI. `pnpm check:full` (gate plus `check:arch` plus
-  `build`) is the definition of done; agents run `pnpm check:arch` themselves before pushing
-  structural changes (moving files, new modules, shapes, or imports across zones). `pnpm test:e2e`
-  is the on-demand Worker-preview gate: run it before release and whenever the SSR boundary or auth
-  shell changes. It stays out of the push gate and CI by design.
+- Run `pnpm check` before every push. Lefthook `pre-push` runs fmt, lint, types, affected tests, and
+  arch in parallel. Full tests run in CI. `pnpm check:full` (gate plus `check:arch` plus `build`) is
+  the definition of done; agents run `pnpm check:arch` themselves before pushing structural changes
+  (moving files, new modules, shapes, or imports across zones). `pnpm test:e2e` is the on-demand
+  Worker-preview gate: run it before release and whenever the SSR boundary or auth shell changes. It
+  stays out of the push gate and CI by design.
