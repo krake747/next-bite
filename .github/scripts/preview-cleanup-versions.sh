@@ -34,10 +34,21 @@ stale_version_ids() {
 }
 
 delete_versions() {
-    local version_id
+    local version_id output
     while IFS= read -r version_id; do
         [ -n "${version_id}" ] || continue
-        vp exec cf workers versions delete "${version_id}" --worker-id "${WORKER_ID}" --force
+        # Cloudflare refuses to delete the single latest version (10339/409).
+        # That version stops being latest on the next upload; the alias limit
+        # evicts it eventually. Tolerate exactly that case, fail on anything else.
+        if output="$(vp exec cf workers versions delete "${version_id}" --worker-id "${WORKER_ID}" --force 2>&1)"; then
+            echo "Deleted version ${version_id}."
+        elif echo "${output}" | grep -q "latest version cannot be deleted"; then
+            echo "Kept latest version ${version_id}; a newer upload makes it deletable."
+        else
+            echo "${output}" >&2
+            echo "Deleting version ${version_id} failed." >&2
+            return 1
+        fi
     done < "$1"
 }
 
