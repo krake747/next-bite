@@ -550,6 +550,19 @@ export default defineConfig({
                     slowTestThreshold: 2500,
                 },
             },
+            {
+                // Backend contract tests with convex-test (plus the Better Auth
+                // component, inlined so its TS source transforms). Keep the
+                // timeout rule: slowTestThreshold is testTimeout minus 500ms.
+                test: {
+                    name: "convex",
+                    environment: "node",
+                    include: ["convex/**/*.test.ts"],
+                    testTimeout: 20000,
+                    slowTestThreshold: 19500,
+                    server: { deps: { inline: [/@convex-dev\/better-auth/] } },
+                },
+            },
         ],
     },
 })

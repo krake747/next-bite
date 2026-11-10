@@ -133,7 +133,23 @@ Facts from `cf` 1.0.0-beta.27 and the Cloudflare docs:
 
 ## Seed data
 
-There is no seed function yet. A seed must be an idempotent internal function that creates a few
-users, places, and a group. Users belong to the Better Auth component, so the seed creates accounts
-through the auth API rather than writing its tables. On the shared dev backend it runs once with
-`npx convex run`. With per-PR backends it runs on creation through `convex deploy --preview-run`.
+The baseline dataset is the idempotent internal function `seed:previewBaseline` in `convex/seed.ts`:
+two users created through the Better Auth email sign-up API (`preview-owner@example.com` and
+`preview-friend@example.com`), three restaurants keyed by slug, and a `Preview dinner club` group
+containing both users. Users are keyed by email, restaurants by a `seed:<slug>` marker in
+`clientMutationId`, and the group by owner plus name, so reruns return what already exists and
+change nothing. Auth tables are never written directly; the app `profiles` row is the idempotency
+marker for users, and landing aggregates stay exact through the same counter adjustment the app
+writes use.
+
+The owner runs it once against the shared dev backend, by hand, never from an agent session and
+never against production:
+
+```bash
+pnpm convex run seed:previewBaseline
+```
+
+The command targets whichever deployment the CLI is authenticated to, so run it from a checkout
+configured for the dev deployment. Sign in to the seed accounts with the dev-only password in
+`convex/seed.ts` (`SEED_PASSWORD`). With per-PR backends the same function runs on creation through
+`convex deploy --preview-run`; that wiring is not built here.
