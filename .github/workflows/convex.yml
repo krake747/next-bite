@@ -60,7 +60,7 @@ jobs:
     runs-on: ubuntu-latest
     environment: ${{ inputs.environment }}
     env:
-      CONVEX_DEPLOY_TOKEN: ${{ secrets.CONVEX_DEPLOY_TOKEN }}
+      CONVEX_DEPLOY_KEY: ${{ secrets.CONVEX_DEPLOY_TOKEN }}
 
     steps:
       - name: Checkout code
@@ -91,7 +91,7 @@ jobs:
     runs-on: ubuntu-latest
     environment: ${{ inputs.environment }}
     env:
-      CONVEX_DEPLOY_TOKEN: ${{ secrets.CONVEX_DEPLOY_TOKEN }}
+      CONVEX_DEPLOY_KEY: ${{ secrets.CONVEX_DEPLOY_TOKEN }}
 
     steps:
       - name: Checkout code
@@ -106,10 +106,4 @@ jobs:
         run: vp install
 
       - name: Run migrations in order
-        run: |
-          set -euo pipefail
-          # Extend this list as new migrations land in convex/migrate.ts.
-          for migration in migrate:cleanupOrphanedStorage; do
-            echo "Running $migration"
-            npx convex run "$migration"
-          done
+        run: .github/scripts/backend-migrate.sh

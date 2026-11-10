@@ -6,10 +6,12 @@ This project uses Convex for the backend. Schema changes require migrations.
 
 Backend deploys and migrations run through `.github/workflows/convex.yml` (manual dispatch). It
 gates on `check:full`, deploys functions and schema with the environment's `CONVEX_DEPLOY_TOKEN`
-deploy key, then runs the migration list in order. Environments map to GitHub Environments (`dev`,
-`prod`) holding per-deployment tokens from the Convex dashboard. Prod should carry a
-required-reviewer rule on its environment. Dry run defaults to true and only typechecks. Local
-development still uses `pnpm convex:dev`; `pnpm convex:deploy` stays for manual pushes.
+deploy key, then runs the migration list in `.github/scripts/backend-migrate.sh` in order. The
+production deploy workflow runs the same list after its backend deploy, before the Worker ships.
+Environments map to GitHub Environments (`dev`, `prod`) holding per-deployment tokens from the
+Convex dashboard. Prod should carry a required-reviewer rule on its environment. Dry run defaults to
+true and only typechecks. Local development still uses `pnpm convex:dev`; `pnpm convex:deploy` stays
+for manual pushes.
 
 ## Changing Schema with Data Migration
 

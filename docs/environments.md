@@ -1,7 +1,7 @@
 # Environments and release
 
 Mechanics for ADR-0024. Previews ship from the preview workflow; production ships from the deploy
-workflow on green `main`. `convex.yml` ships the backend by hand.
+workflow on green `main`, backend first. `convex.yml` ships a backend by hand.
 
 ## Environments
 
@@ -11,23 +11,30 @@ workflow on green `main`. `convex.yml` ships the backend by hand.
 | Local       | Your Convex dev deployment                                                               | `vp dev` on `http://localhost:5173`                | `pnpm convex:dev`               |
 | Preview     | One Convex preview deployment per PR (`pr-<n>`), with its own schema, data, and identity | `pr-<n>-next-bite.<subdomain>.workers.dev`         | preview workflow, every PR push |
 
-`convex.yml` stays for deploying the dev backend by hand.
+`convex.yml` stays for deploying a backend by hand, with or without migrations.
 
 Current topology: localhost and `nextbite.kevinkraemer.com` both read the shared dev backend. The
 production cutover (its own Convex deployment, the `production` environment, release wiring) is
 parked; when it lands, localhost and previews stay on dev and only the production domain moves to
-prod. Nothing here hardcodes dev values, so the cutover is a config change, not a rewrite.
+prod. The cutover is a config change: point the `backend` job in `deploy.yml` at the prod GitHub
+environment (environment name and concurrency group) and swap the `VITE_CONVEX_*` secrets.
 
 ## Deploy order (production)
 
 ```text
-push to main -> Main gate green -> deploy.yml
+push to main -> Main gate green -> deploy.yml (same SHA for every job)
+  backend    npx convex deploy with the dev environment's deploy key,
+             then .github/scripts/backend-migrate.sh in order
   worker     vp run build, then cf deploy
   smoke      GET https://nextbite.kevinkraemer.com until it serves the build
 ```
 
-Any failed step stops the rest. Backend deploys stay manual through `convex.yml`; a manual
-`deploy.yml` dispatch redeploys the current `main` without a push.
+Any failed step stops the rest, so a backend that fails to deploy never gets a Worker calling it.
+The backend job shares the `convex-dev` concurrency group with `convex.yml` runs against `dev`, so
+the two never push to the dev deployment at once. The migration list lives in
+`.github/scripts/backend-migrate.sh`, shared by both workflows. A manual `deploy.yml` dispatch
+redeploys the current `main` without a push. `pnpm convex:dev` still pushes local functions to the
+same dev deployment until the cutover; the next production deploy overwrites them.
 
 ## GitHub environments and secrets
 
@@ -38,6 +45,7 @@ Any failed step stops the rest. Backend deploys stay manual through `convex.yml`
 | `VITE_CONVEX_URL`          | repository | dev `.convex.cloud` URL until the cutover, baked into the production build |
 | `VITE_CONVEX_SITE_URL`     | repository | dev `.convex.site` URL until the cutover, baked into the production build  |
 | `VITE_GOOGLE_MAPS_API_KEY` | repository | Maps key restricted to the production domain plus `*.workers.dev`          |
+| `CONVEX_DEPLOY_TOKEN`      | `dev`      | dev deployment deploy key (deploy plus run functions) for production ships |
 | `CONVEX_DEPLOY_TOKEN`      | `preview`  | preview deploy key from the dashboard project settings                     |
 | `CLOUDFLARE_API_TOKEN`     | `preview`  | token used only by preview deploys                                         |
 | `CLOUDFLARE_ACCOUNT_ID`    | `preview`  | account id used only by preview deploys                                    |
@@ -45,26 +53,28 @@ Any failed step stops the rest. Backend deploys stay manual through `convex.yml`
 
 `VITE_CONVEX_URL` and `VITE_CONVEX_SITE_URL` are never stored for previews. The preview workflow
 reads them from the `convex deploy` output at runtime and bakes them into that PR's Worker build.
-The preview workflow exports the `CONVEX_DEPLOY_TOKEN` secret value as `CONVEX_DEPLOY_KEY`, the
-variable name the Convex CLI reads; the cleanup workflow uses the same secret value directly as a
-Bearer token for its REST calls. The repo's `convex` package (1.49.0) satisfies the CLI requirements
-for preview deploy commands.
+The preview, deploy, and Convex workflows export the `CONVEX_DEPLOY_TOKEN` secret value as
+`CONVEX_DEPLOY_KEY`, the variable name the Convex CLI reads; the cleanup workflow uses the same
+secret value directly as a Bearer token for its REST calls. The repo's `convex` package (1.49.0)
+satisfies the CLI requirements for preview deploy commands.
 
 `preview` has no required reviewer, so it runs on every push. There is no `production` environment
 yet (its reviewer rule arrives with the cutover); the production Worker deploys from repository
-secrets. `convex.yml` and `docs/migrations.md` still name environments `dev` and `prod`.
+secrets and the production backend ship uses the `dev` environment. `convex.yml` and
+`docs/migrations.md` still name environments `dev` and `prod`.
 
 ### Owner values checklist
 
 The owner provisions every secret value by hand. Agents wire references and docs, and never touch
 live backends unprompted.
 
-| #   | Value                                                        | Where it comes from                | Where it goes                                                  |
-| --- | ------------------------------------------------------------ | ---------------------------------- | -------------------------------------------------------------- |
-| 1   | Preview deploy key with rights to create preview deployments | Convex dashboard, project settings | GitHub `preview` environment secret `CONVEX_DEPLOY_TOKEN`      |
-| 2   | Cloudflare API token for preview deploys                     | Cloudflare dashboard               | GitHub `preview` environment secret `CLOUDFLARE_API_TOKEN`     |
-| 3   | Cloudflare account id                                        | Cloudflare dashboard               | GitHub `preview` environment secret `CLOUDFLARE_ACCOUNT_ID`    |
-| 4   | Maps browser key restricted to `*.workers.dev` preview hosts | Google Cloud console               | GitHub `preview` environment secret `VITE_GOOGLE_MAPS_API_KEY` |
+| #   | Value                                                        | Where it comes from                       | Where it goes                                                  |
+| --- | ------------------------------------------------------------ | ----------------------------------------- | -------------------------------------------------------------- |
+| 1   | Preview deploy key with rights to create preview deployments | Convex dashboard, project settings        | GitHub `preview` environment secret `CONVEX_DEPLOY_TOKEN`      |
+| 2   | Cloudflare API token for preview deploys                     | Cloudflare dashboard                      | GitHub `preview` environment secret `CLOUDFLARE_API_TOKEN`     |
+| 3   | Cloudflare account id                                        | Cloudflare dashboard                      | GitHub `preview` environment secret `CLOUDFLARE_ACCOUNT_ID`    |
+| 4   | Maps browser key restricted to `*.workers.dev` preview hosts | Google Cloud console                      | GitHub `preview` environment secret `VITE_GOOGLE_MAPS_API_KEY` |
+| 5   | Dev deployment deploy key (deploy and run functions)         | Convex dashboard, dev deployment settings | GitHub `dev` environment secret `CONVEX_DEPLOY_TOKEN`          |
 
 Dev-deployment settings that stay as-is: the dev deployment keeps its own `SITE_URL`
 (`http://localhost:5173`), its own `BETTER_AUTH_SECRET`, and its optional Mailgun sandbox pair for
