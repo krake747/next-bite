@@ -27,6 +27,39 @@ describe("resolveCorsHeaders", () => {
         })
     })
 
+    test("reflects a preview origin matching the APP_ORIGINS pattern", () => {
+        expect(
+            resolveCorsHeaders("https://pr-123-next-bite.my-sub.workers.dev", [
+                "https://pr-*-next-bite.my-sub.workers.dev",
+            ]),
+        ).toMatchObject({
+            "Access-Control-Allow-Origin": "https://pr-123-next-bite.my-sub.workers.dev",
+            Vary: "Origin",
+        })
+    })
+
+    test("blocks look-alike preview origins", () => {
+        const allowlist = ["https://pr-*-next-bite.my-sub.workers.dev"]
+        const rejected = [
+            "http://pr-123-next-bite.my-sub.workers.dev",
+            "https://pr-123-next-bite.other.workers.dev",
+            "https://pr-123-next-bite.my-sub.workers.dev.evil.com",
+            "https://evil.my-sub.workers.dev",
+            "https://pr-123-next-bitex.my-sub.workers.dev",
+        ]
+        for (const origin of rejected) {
+            expect(resolveCorsHeaders(origin, allowlist)).toEqual({})
+        }
+    })
+
+    test("matches preview hosts case-insensitively without crossing labels", () => {
+        const allowlist = ["https://pr-*-next-bite.my-sub.workers.dev"]
+        expect(resolveCorsHeaders("https://PR-123-NEXT-BITE.MY-SUB.WORKERS.DEV", allowlist)).toMatchObject({
+            "Access-Control-Allow-Origin": "https://PR-123-NEXT-BITE.MY-SUB.WORKERS.DEV",
+        })
+        expect(resolveCorsHeaders("https://pr-1.2-next-bite.my-sub.workers.dev", allowlist)).toEqual({})
+    })
+
     test("refuses malformed origins", () => {
         expect(resolveCorsHeaders("not a url", ["not a url"])).toEqual({})
         expect(resolveCorsHeaders("", ["https://app.example.com"])).toEqual({})
