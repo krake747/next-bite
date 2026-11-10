@@ -4,7 +4,7 @@ import { useEffect } from "react"
 import { describe, expect, test, vi } from "vitest"
 
 import { type RouterAuth } from "./auth.identity"
-import { hasCachedSession, useAuthStore, type AuthStoreOptions } from "./auth.store"
+import { useAuthStore, type AuthStoreOptions } from "./auth.store"
 
 type Store = ReturnType<typeof useAuthStore>
 
@@ -343,19 +343,6 @@ describe("auth lifecycle ownership", () => {
         expect(screen.getByText("loading:false")).toBeInTheDocument()
         expect(screen.getByText("initializing:false")).toBeInTheDocument()
         expect(screen.getByText("auth:true")).toBeInTheDocument()
-    })
-})
-
-describe("hasCachedSession", () => {
-    test("reports a cached session only for a valid stored user", () => {
-        resetAuth()
-        expect(hasCachedSession()).toBe(false)
-        seedCache("a@example.com")
-        expect(hasCachedSession()).toBe(true)
-        localStorage.setItem("nb:session", "not-json")
-        expect(hasCachedSession()).toBe(false)
-        localStorage.setItem("nb:session", JSON.stringify({ id: 1 }))
-        expect(hasCachedSession()).toBe(false)
     })
 })
 

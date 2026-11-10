@@ -1,7 +1,6 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router"
 import { useState } from "react"
 
-import { hasCachedSession } from "@api/auth.store"
 import { useSuspenseConvexQuery } from "@api/convex.context"
 import { convexQueryOptions, warmQueriesWithin } from "@api/convex.options"
 import { toId } from "@api/data.model"
@@ -46,12 +45,11 @@ export const Route = createFileRoute("/_app/restaurants/$restaurantId")({
     errorComponent: RestaurantDetailError,
     loader: async ({ context, params }) => {
         const restaurantId = toId<"restaurants">(params.restaurantId)
-        // Public detail warms for everyone; the social snapshot only when a session exists.
         const detail = convexQueryOptions(api.restaurants.getById, { id: restaurantId })
         const social = convexQueryOptions(api.social.getForRestaurant, { restaurantId })
         await warmQueriesWithin(
             context.queryClient,
-            hasCachedSession() ? [detail, social] : [detail],
+            context.auth?.isAuthenticated === true ? [detail, social] : [detail],
             LOADER_WARM_BUDGET_MS,
         )
         return null

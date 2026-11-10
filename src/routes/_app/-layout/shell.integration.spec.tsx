@@ -2,11 +2,11 @@ import { RouterProvider, createMemoryHistory, createRouter } from "@tanstack/rea
 import { fireEvent, screen, waitFor } from "@testing-library/react"
 import { afterEach, describe, expect, test, vi } from "vitest"
 
-import { createAuthSnapshot } from "@api/auth.session"
 import { ConvexProvider } from "@api/convex.context"
 import { createSeededClient, seedKey } from "@api/db/seeded.client"
 
 import { routeTree } from "../../../routeTree.gen"
+import { authSnapshotFor } from "../../../vitest.auth"
 import { renderDocument } from "../../../vitest.render"
 
 type TestUser = { id: string; email: string; name: string }
@@ -37,13 +37,6 @@ vi.mock("@api/auth.provider", async (importOriginal) => {
 })
 
 async function renderAt(path: string, extraSeeds?: ReadonlyMap<string, unknown>): Promise<void> {
-    // The _app beforeLoad redirects without a cached session, so mirror the
-    // mocked auth into the same localStorage slot hasCachedSession reads.
-    if (testUser === null) {
-        localStorage.removeItem("nb:session")
-    } else {
-        localStorage.setItem("nb:session", JSON.stringify(testUser))
-    }
     // The signed-out home reads the landing aggregate; unseeded queries fall back to an empty
     // list, which is not the aggregate shape, so seed it explicitly.
     const seeds = new Map<string, unknown>([
@@ -57,7 +50,7 @@ async function renderAt(path: string, extraSeeds?: ReadonlyMap<string, unknown>)
     const router = createRouter({
         routeTree,
         history: createMemoryHistory({ initialEntries: [path] }),
-        context: { queryClient: backend.queryClient, authSnapshot: createAuthSnapshot() },
+        context: { queryClient: backend.queryClient, authSnapshot: authSnapshotFor(testUser) },
     })
     await router.load()
     renderDocument(
@@ -76,7 +69,6 @@ function signIn(): void {
 
 afterEach(() => {
     testUser = null
-    localStorage.removeItem("nb:session")
 })
 
 describe("app shell", () => {

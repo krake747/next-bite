@@ -1,6 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router"
 
-import { hasCachedSession } from "@api/auth.store"
 import { convexQueryOptions, warmQueriesWithin } from "@api/convex.options"
 import { api } from "@api/endpoints"
 import { useSessionStatus } from "@core/session"
@@ -17,7 +16,7 @@ export const Route = createFileRoute("/_app/account")({
     component: AccountPage,
     errorComponent: AccountError,
     loader: async ({ context }) => {
-        if (!hasCachedSession()) {
+        if (context.auth?.isAuthenticated !== true) {
             return null
         }
         await warmQueriesWithin(context.queryClient, [convexQueryOptions(api.users.getMe)], LOADER_WARM_BUDGET_MS)

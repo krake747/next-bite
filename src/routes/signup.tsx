@@ -1,15 +1,15 @@
 import { useForm, Field, Form, useField } from "@formisch/react"
 import { UserIcon } from "@phosphor-icons/react"
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router"
+import { createFileRoute, Link } from "@tanstack/react-router"
 import { useState } from "react"
 import * as v from "valibot"
 
-import { isSafeRedirectPath } from "@core/groups"
 import { useAuth, useAuthMethods } from "@core/session"
 import { ErrorBanner } from "@pattern/error-banner"
 import { Input } from "@pattern/field"
 import { AppInitializing } from "@pattern/loading"
 import { AuthDivider } from "@routes/-components/auth-divider"
+import { redirectSignedIn, signedInDestination } from "@routes/-components/auth-redirects"
 import { OtpForm } from "@routes/-components/otp-form"
 import { PendingButton } from "@routes/-components/pending-button"
 import { AuthLayout } from "@routes/-layouts/auth-layout"
@@ -29,11 +29,14 @@ type SignupInput = v.InferInput<typeof SignupSchema>
 
 export const Route = createFileRoute("/signup")({
     validateSearch: SignupSearchSchema,
+    beforeLoad: ({ context, search }) => {
+        redirectSignedIn(context.auth, signedInDestination(search.redirect))
+    },
     head: () => ({ meta: [{ title: "Sign Up - Next Bite" }] }),
     component: SignupPage,
 })
 
-function SignupPasswordForm({ onSuccess }: Readonly<{ onSuccess: () => void }>) {
+function SignupPasswordForm() {
     const auth = useAuth()
 
     const form = useForm({ schema: SignupSchema, validate: "submit", revalidate: "input" })
@@ -42,11 +45,7 @@ function SignupPasswordForm({ onSuccess }: Readonly<{ onSuccess: () => void }>) 
     const passwordField = useField(form, { path: ["password"] })
 
     const handleSubmit = async (output: Readonly<SignupInput>) => {
-        const ok = await auth.signUpWithPassword(output.name, output.email, output.password)
-        if (!ok) {
-            return
-        }
-        onSuccess()
+        await auth.signUpWithPassword(output.name, output.email, output.password)
     }
 
     return (
@@ -97,17 +96,17 @@ function SignupPasswordForm({ onSuccess }: Readonly<{ onSuccess: () => void }>) 
     )
 }
 
-function SignupAlternatives({ onOtpSuccess }: Readonly<{ onOtpSuccess: () => void }>) {
+function SignupAlternatives() {
     const methods = useAuthMethods()
     const [otpEmail, setOtpEmail] = useState<string | undefined>(undefined)
 
     return (
         <>
-            <SignupPasswordForm onSuccess={onOtpSuccess} />
+            <SignupPasswordForm />
             {methods?.emailOtp === true && (
                 <>
                     <AuthDivider label="or use a code" />
-                    <OtpForm onSuccess={onOtpSuccess} email={otpEmail} onEmailChange={setOtpEmail} />
+                    <OtpForm email={otpEmail} onEmailChange={setOtpEmail} />
                 </>
             )}
         </>
@@ -115,14 +114,7 @@ function SignupAlternatives({ onOtpSuccess }: Readonly<{ onOtpSuccess: () => voi
 }
 
 function SignupPage() {
-    const navigate = useNavigate()
-    const { redirect: redirectTo } = Route.useSearch()
     const auth = useAuth()
-
-    const goHome = () => {
-        const safeRedirect = isSafeRedirectPath(redirectTo) ? redirectTo : "/home"
-        void navigate({ to: safeRedirect, replace: true, from: Route.fullPath })
-    }
 
     if (auth.isInitializing) {
         return <AppInitializing />
@@ -145,7 +137,7 @@ function SignupPage() {
         >
             {auth.error !== null && auth.error !== "" && <ErrorBanner>{auth.error}</ErrorBanner>}
 
-            <SignupAlternatives onOtpSuccess={goHome} />
+            <SignupAlternatives />
         </AuthLayout>
     )
 }

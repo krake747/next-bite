@@ -2,7 +2,6 @@ import { RouterProvider, createMemoryHistory, createRouter } from "@tanstack/rea
 import { act, render, screen, waitFor } from "@testing-library/react"
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest"
 
-import { createAuthSnapshot } from "@api/auth.session"
 import { ConvexProvider } from "@api/convex.context"
 import { toId } from "@api/data.model"
 import { type RestaurantDoc } from "@api/db/restaurants"
@@ -10,6 +9,7 @@ import { createSeededClient, seedKey } from "@api/db/seeded.client"
 import { pendingOptions } from "@routes/-components/route-pending"
 
 import { routeTree } from "../routeTree.gen"
+import { authSnapshotFor } from "../vitest.auth"
 
 const alex = { id: "user-1", email: "alex@example.com", name: "Alex" }
 
@@ -71,7 +71,6 @@ function closedGate(): Gate {
 let gate: Gate | undefined
 
 async function renderAt(path: string) {
-    localStorage.setItem("nb:session", JSON.stringify(alex))
     const seeds = new Map<string, unknown>([
         [seedKey("restaurants:getById", { id: restaurantId }), verde],
         [seedKey("social:getForRestaurant", { restaurantId }), null],
@@ -87,7 +86,7 @@ async function renderAt(path: string) {
     const router = createRouter({
         routeTree,
         history: createMemoryHistory({ initialEntries: [path] }),
-        context: { queryClient: backend.queryClient, authSnapshot: createAuthSnapshot() },
+        context: { queryClient: backend.queryClient, authSnapshot: authSnapshotFor(alex) },
         ...pendingOptions,
     })
     await router.load()

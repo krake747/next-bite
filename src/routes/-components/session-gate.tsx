@@ -1,9 +1,8 @@
+import { Link } from "@tanstack/react-router"
 import { Suspense } from "react"
 
 import { type SessionStatus } from "@core/session"
 import { LoadingPlaceholder } from "@pattern/loading"
-
-import { SignedOutGate } from "./signed-out-gate"
 
 const defaultFallback = (
     <div className="pt-6">
@@ -22,8 +21,18 @@ export function SessionGate({
     fallback?: React.ReactNode
     children: React.ReactNode
 }>): React.ReactNode {
+    if (status.kind === "signed-out") {
+        return (
+            <p className="pt-6 text-stone-600">
+                <Link to="/login" className="font-medium text-tomato-700 hover:underline">
+                    Sign in
+                </Link>{" "}
+                to see {context}.
+            </p>
+        )
+    }
     if (status.kind !== "ready") {
-        return <SignedOutGate context={context}>{fallback}</SignedOutGate>
+        return fallback
     }
     return <Suspense fallback={fallback}>{children}</Suspense>
 }

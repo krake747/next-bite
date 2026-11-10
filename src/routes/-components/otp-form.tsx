@@ -15,11 +15,9 @@ const OtpCodeSchema = v.object({
 })
 
 export function OtpForm({
-    onSuccess,
     email,
     onEmailChange,
 }: Readonly<{
-    onSuccess: () => void
     email: string | undefined
     onEmailChange: (email: string | undefined) => void
 }>) {
@@ -41,11 +39,7 @@ export function OtpForm({
         if (email === undefined) {
             return
         }
-        const ok = await auth.verifyOtp(email, output.code)
-        if (!ok) {
-            return
-        }
-        onSuccess()
+        await auth.verifyOtp(email, output.code)
     }
 
     if (email === undefined) {
