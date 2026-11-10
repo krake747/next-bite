@@ -173,6 +173,7 @@ export function createSeededClient(options: SeededClientOptions = {}) {
         queryClient,
         pushState,
         subscriberCount: (): number => receivers.size + watchReceivers.size,
+        subscribedQueries: (): string[] => [...receivers, ...watchReceivers].map((entry) => entry.key),
         failSync,
     }
 }
