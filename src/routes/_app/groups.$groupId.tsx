@@ -1,7 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router"
 import { useState } from "react"
 
-import { hasCachedSession } from "@api/auth.store"
 import { useSuspenseConvexQuery } from "@api/convex.context"
 import { convexQueryOptions, warmQueriesWithin } from "@api/convex.options"
 import { type Doc, type Id, toId } from "@api/data.model"
@@ -28,7 +27,7 @@ export const Route = createFileRoute("/_app/groups/$groupId")({
     pendingComponent: GroupDetailLoading,
     errorComponent: GroupDetailError,
     loader: async ({ context, params }) => {
-        if (!hasCachedSession()) {
+        if (context.auth?.isAuthenticated !== true) {
             return null
         }
         const groupId = toId<"groups">(params.groupId)

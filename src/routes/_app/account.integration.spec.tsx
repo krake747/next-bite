@@ -2,11 +2,11 @@ import { RouterProvider, createMemoryHistory, createRouter } from "@tanstack/rea
 import { fireEvent, screen, waitFor } from "@testing-library/react"
 import { describe, expect, test, vi } from "vitest"
 
-import { createAuthSnapshot } from "@api/auth.session"
 import { ConvexProvider } from "@api/convex.context"
 import { createSeededClient, seedKey, type MutationCall } from "@api/db/seeded.client"
 
 import { routeTree } from "../../routeTree.gen"
+import { authSnapshotFor } from "../../vitest.auth"
 import { renderDocument } from "../../vitest.render"
 
 type TestUser = { id: string; email: string; name: string }
@@ -50,18 +50,11 @@ function seedReadyProfile(): void {
 }
 
 async function renderAt(path: string): Promise<void> {
-    // Mirror the mocked auth into the localStorage slot hasCachedSession
-    // reads, or the _app beforeLoad redirects to login before render.
-    if (testUser === null) {
-        localStorage.removeItem("nb:session")
-    } else {
-        localStorage.setItem("nb:session", JSON.stringify(testUser))
-    }
     const backend = createSeededClient({ seeds: querySeeds, calls: mutationCalls, mutateResult: "p9" })
     const router = createRouter({
         routeTree,
         history: createMemoryHistory({ initialEntries: [path] }),
-        context: { queryClient: backend.queryClient, authSnapshot: createAuthSnapshot() },
+        context: { queryClient: backend.queryClient, authSnapshot: authSnapshotFor(testUser) },
     })
     await router.load()
     renderDocument(

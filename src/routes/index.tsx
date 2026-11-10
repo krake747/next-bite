@@ -1,4 +1,4 @@
-import { createFileRoute, Navigate, redirect } from "@tanstack/react-router"
+import { createFileRoute } from "@tanstack/react-router"
 
 import { useConvexQuery } from "@api/convex.context"
 import { convexQueryOptions, warmQueries } from "@api/convex.options"
@@ -6,6 +6,7 @@ import { api } from "@api/endpoints"
 import { useAuth } from "@core/session"
 import { BackgroundLayers } from "@pattern/background-decoration"
 import { AppInitializing } from "@pattern/loading"
+import { redirectSignedIn } from "@routes/-components/auth-redirects"
 import { LandingActions, LandingCloser, TasteCards, TasteCardsSkeleton } from "@routes/-components/home-sections"
 import { PageContainer } from "@routes/-layouts/page-container"
 import { PageLayout } from "@routes/-layouts/page-layout"
@@ -13,10 +14,7 @@ import { PageLayout } from "@routes/-layouts/page-layout"
 export const Route = createFileRoute("/")({
     head: () => ({ meta: [{ title: "Our next bite" }] }),
     beforeLoad: ({ context }) => {
-        if (context.auth?.isAuthenticated === true) {
-            // oxlint-disable-next-line typescript/only-throw-error -- TanStack Router redirects via thrown redirect objects by design
-            throw redirect({ to: "/home", replace: true })
-        }
+        redirectSignedIn(context.auth, "/home")
     },
     component: Home,
     loader: ({ context }) => {
@@ -72,11 +70,8 @@ function SignedOutHome() {
 
 function Home() {
     const auth = useAuth()
-    if (auth.isInitializing) {
+    if (auth.isInitializing || auth.isAuthenticated) {
         return <AppInitializing />
-    }
-    if (auth.isAuthenticated) {
-        return <Navigate to="/home" replace />
     }
     return <SignedOutHome />
 }

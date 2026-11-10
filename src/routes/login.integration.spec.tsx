@@ -3,11 +3,12 @@ import { act, fireEvent, screen, waitFor } from "@testing-library/react"
 import { useSyncExternalStore } from "react"
 import { describe, expect, test, vi } from "vitest"
 
-import { createAuthSnapshot } from "@api/auth.session"
+import { type RouterAuth } from "@api/auth.identity"
 import { ConvexProvider } from "@api/convex.context"
 import { createSeededClient, seedKey } from "@api/db/seeded.client"
 
 import { routeTree } from "../routeTree.gen"
+import { authSnapshotFor } from "../vitest.auth"
 import { renderDocument } from "../vitest.render"
 
 type AuthSnapshot = {
@@ -44,6 +45,7 @@ type Deferred = {
 }
 
 let pendingAuth: Deferred | null = null
+let reportAuth: ((auth: RouterAuth) => void) | undefined
 
 function createDeferred(): Deferred {
     let resolve!: () => void
@@ -80,7 +82,13 @@ vi.mock("@api/auth.provider", async (importOriginal) => {
     const original = await importOriginal<typeof import("@api/auth.provider")>()
     return {
         ...original,
-        AuthProvider: ({ children }: Readonly<{ children: React.ReactNode }>) => <div>{children}</div>,
+        AuthProvider: ({
+            onAuthChange,
+            children,
+        }: Readonly<{ onAuthChange?: (auth: RouterAuth) => void; children: React.ReactNode }>) => {
+            reportAuth = onAuthChange
+            return <div>{children}</div>
+        },
         useAuthContext: () => {
             const snapshot = useSyncExternalStore(subscribeAuth, getAuthSnapshot)
             return {
@@ -98,13 +106,10 @@ vi.mock("@api/auth.provider", async (importOriginal) => {
                 verifyOtp: async (_email: string, _code: string) => {
                     const ok = await fakeAuthStep("Invalid code")
                     if (ok) {
-                        // Mirror the real store, which persists the session
-                        // before the page navigates: the _app beforeLoad
-                        // redirects without this cached session.
-                        localStorage.setItem(
-                            "nb:session",
-                            JSON.stringify({ id: "user-1", email: "alex@example.com", name: "Alex" }),
-                        )
+                        reportAuth?.({
+                            isAuthenticated: true,
+                            user: { id: "user-1", email: "alex@example.com", name: "Alex" },
+                        })
                     }
                     return ok
                 },
@@ -124,12 +129,11 @@ function seedAuthMethods(): void {
 }
 
 async function mountAt(path: string): Promise<AnyRouter> {
-    localStorage.removeItem("nb:session")
     const backend = createSeededClient({ seeds: querySeeds })
     const router = createRouter({
         routeTree,
         history: createMemoryHistory({ initialEntries: [path] }),
-        context: { queryClient: backend.queryClient, authSnapshot: createAuthSnapshot() },
+        context: { queryClient: backend.queryClient, authSnapshot: authSnapshotFor(null) },
     })
     await router.load()
     renderDocument(

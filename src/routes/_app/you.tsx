@@ -1,6 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router"
 
-import { hasCachedSession } from "@api/auth.store"
 import { useSuspenseConvexQuery } from "@api/convex.context"
 import { convexQueryOptions, warmQueriesWithin } from "@api/convex.options"
 import { type Doc } from "@api/data.model"
@@ -20,7 +19,7 @@ export const Route = createFileRoute("/_app/you")({
     component: YouPage,
     errorComponent: YouError,
     loader: async ({ context }) => {
-        if (!hasCachedSession()) {
+        if (context.auth?.isAuthenticated !== true) {
             return null
         }
         // Owner restaurants ride a live collection, not this cache, so only the

@@ -2,12 +2,12 @@ import { RouterProvider, createMemoryHistory, createRouter } from "@tanstack/rea
 import { screen, within, waitFor } from "@testing-library/react"
 import { describe, expect, test, vi } from "vitest"
 
-import { createAuthSnapshot } from "@api/auth.session"
 import { ConvexProvider } from "@api/convex.context"
 import { type RestaurantDoc } from "@api/db/restaurants"
 import { createSeededClient, seedKey } from "@api/db/seeded.client"
 
 import { routeTree } from "../routeTree.gen"
+import { authSnapshotFor } from "../vitest.auth"
 import { renderDocument } from "../vitest.render"
 
 vi.mock("@api/auth.provider", async (importOriginal) => {
@@ -53,15 +53,15 @@ async function renderHome(
     feed: ReadonlyArray<RestaurantDoc>,
     friends: ReadonlyArray<{ authUserId: string; name: string }> = [],
 ): Promise<void> {
-    // The _app beforeLoad redirects without a cached session; auth here is
-    // always signed-in, so seed the slot hasCachedSession reads.
-    localStorage.setItem("nb:session", JSON.stringify({ id: "user-1", email: "alex@example.com", name: "Alex" }))
     const seeds = new Map<string, unknown>([[seedKey("friendships:listFriends", undefined), friends]])
     const backend = createSeededClient({ seeds, liveRows: feed })
     const router = createRouter({
         routeTree,
         history: createMemoryHistory({ initialEntries: ["/home"] }),
-        context: { queryClient: backend.queryClient, authSnapshot: createAuthSnapshot() },
+        context: {
+            queryClient: backend.queryClient,
+            authSnapshot: authSnapshotFor({ id: "user-1", email: "alex@example.com", name: "Alex" }),
+        },
     })
     await router.load()
     renderDocument(

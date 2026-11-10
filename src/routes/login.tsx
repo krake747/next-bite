@@ -1,15 +1,15 @@
 import { useForm, Field, Form, useField } from "@formisch/react"
 import { ForkKnifeIcon } from "@phosphor-icons/react"
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router"
+import { createFileRoute, Link } from "@tanstack/react-router"
 import { useState } from "react"
 import * as v from "valibot"
 
-import { isSafeRedirectPath } from "@core/groups"
 import { useAuth, useAuthMethods } from "@core/session"
 import { ErrorBanner } from "@pattern/error-banner"
 import { Input } from "@pattern/field"
 import { AppInitializing } from "@pattern/loading"
 import { AuthDivider } from "@routes/-components/auth-divider"
+import { redirectSignedIn, signedInDestination } from "@routes/-components/auth-redirects"
 import { OtpForm } from "@routes/-components/otp-form"
 import { PendingButton } from "@routes/-components/pending-button"
 import { AuthLayout } from "@routes/-layouts/auth-layout"
@@ -28,13 +28,14 @@ type LoginInput = v.InferInput<typeof LoginSchema>
 
 export const Route = createFileRoute("/login")({
     validateSearch: LoginSearchSchema,
+    beforeLoad: ({ context, search }) => {
+        redirectSignedIn(context.auth, signedInDestination(search.redirect))
+    },
     head: () => ({ meta: [{ title: "Sign In - Next Bite" }] }),
     component: LoginPage,
 })
 
 function LoginPage() {
-    const navigate = useNavigate()
-    const { redirect: redirectTo } = Route.useSearch()
     const auth = useAuth()
 
     const form = useForm({ schema: LoginSchema, validate: "submit", revalidate: "input" })
@@ -43,17 +44,8 @@ function LoginPage() {
     const methods = useAuthMethods()
     const [otpEmail, setOtpEmail] = useState<string | undefined>(undefined)
 
-    const goHome = () => {
-        const safeRedirect = isSafeRedirectPath(redirectTo) ? redirectTo : "/home"
-        void navigate({ to: safeRedirect, replace: true, from: Route.fullPath })
-    }
-
     const handleEmailSubmit = async (output: Readonly<LoginInput>) => {
-        const ok = await auth.signInWithPassword(output.email, output.password)
-        if (!ok) {
-            return
-        }
-        goHome()
+        await auth.signInWithPassword(output.email, output.password)
     }
 
     if (auth.isInitializing) {
@@ -109,7 +101,7 @@ function LoginPage() {
             {methods?.emailOtp === true && (
                 <>
                     <AuthDivider label="or use a code" />
-                    <OtpForm onSuccess={goHome} email={otpEmail} onEmailChange={setOtpEmail} />
+                    <OtpForm email={otpEmail} onEmailChange={setOtpEmail} />
                 </>
             )}
         </AuthLayout>

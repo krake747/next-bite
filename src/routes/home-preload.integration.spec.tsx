@@ -2,13 +2,13 @@ import { RouterProvider, createMemoryHistory, createRouter } from "@tanstack/rea
 import { act, render, screen, waitFor } from "@testing-library/react"
 import { beforeEach, describe, expect, test, vi } from "vitest"
 
-import { createAuthSnapshot } from "@api/auth.session"
 import { ConvexProvider, type ConvexAuthPhase } from "@api/convex.context"
 import { toId } from "@api/data.model"
 import { type RestaurantDoc } from "@api/db/restaurants"
 import { createSeededClient, seedKey } from "@api/db/seeded.client"
 
 import { routeTree } from "../routeTree.gen"
+import { authSnapshotFor } from "../vitest.auth"
 
 type TestUser = { id: string; email: string; name: string }
 
@@ -58,12 +58,7 @@ function savedBy(user: TestUser, name: string, id: string): RestaurantDoc {
     }
 }
 
-function rememberSession(user: TestUser): void {
-    localStorage.setItem("nb:session", JSON.stringify(user))
-}
-
 async function renderAt(path: string, rows: ReadonlyArray<RestaurantDoc>) {
-    rememberSession(testUser)
     const seeds = new Map<string, unknown>([
         [seedKey("friendships:listFriends", undefined), []],
         [seedKey("friendships:listFriendRequests", undefined), { incoming: [], outgoing: [] }],
@@ -72,7 +67,7 @@ async function renderAt(path: string, rows: ReadonlyArray<RestaurantDoc>) {
     const router = createRouter({
         routeTree,
         history: createMemoryHistory({ initialEntries: [path] }),
-        context: { queryClient: backend.queryClient, authSnapshot: createAuthSnapshot() },
+        context: { queryClient: backend.queryClient, authSnapshot: authSnapshotFor(testUser) },
     })
     await router.load()
     const tree = (phase: ConvexAuthPhase) => (
@@ -151,7 +146,6 @@ describe("home route preload", () => {
         })
 
         testUser = ben
-        rememberSession(ben)
         act(() => {
             setConvexPhase("connecting")
         })
