@@ -6,11 +6,11 @@ ships the backend.
 
 ## Environments
 
-| Environment | Backend                                                                          | Worker                                             | Ships from                      |
-| ----------- | -------------------------------------------------------------------------------- | -------------------------------------------------- | ------------------------------- |
-| Production  | Convex prod deployment                                                           | `next-bite` on `https://nextbite.kevinkraemer.com` | `release.yml`, manual           |
-| Local       | Your Convex dev deployment                                                       | `vp dev` on `http://localhost:5173`                | `pnpm convex:dev`               |
-| Preview     | Shared Convex dev deployment for now; later one Convex preview deployment per PR | `pr-<n>-next-bite.<subdomain>.workers.dev`         | preview workflow, every PR push |
+| Environment | Backend                                                                                  | Worker                                             | Ships from                      |
+| ----------- | ---------------------------------------------------------------------------------------- | -------------------------------------------------- | ------------------------------- |
+| Production  | Convex prod deployment                                                                   | `next-bite` on `https://nextbite.kevinkraemer.com` | `release.yml`, manual           |
+| Local       | Your Convex dev deployment                                                               | `vp dev` on `http://localhost:5173`                | `pnpm convex:dev`               |
+| Preview     | One Convex preview deployment per PR (`pr-<n>`), with its own schema, data, and identity | `pr-<n>-next-bite.<subdomain>.workers.dev`         | preview workflow, every PR push |
 
 `convex.yml` stays for deploying the dev backend by hand.
 
@@ -41,41 +41,67 @@ Any failed step stops the rest. A dry run typechecks the backend and dry-runs th
 
 ## GitHub environments and secrets
 
-| Name                       | Scope        | Holds                                                              |
-| -------------------------- | ------------ | ------------------------------------------------------------------ |
-| `CLOUDFLARE_API_TOKEN`     | repository   | Workers deploy and version upload                                  |
-| `CLOUDFLARE_ACCOUNT_ID`    | repository   | Cloudflare account                                                 |
-| `CONVEX_DEPLOY_TOKEN`      | `production` | prod deployment deploy key                                         |
-| `VITE_CONVEX_URL`          | `production` | prod `.convex.cloud` URL, baked into the build                     |
-| `VITE_CONVEX_SITE_URL`     | `production` | prod `.convex.site` URL, baked into the build                      |
-| `VITE_GOOGLE_MAPS_API_KEY` | `production` | Maps key restricted to the production domain                       |
-| `CONVEX_DEPLOY_TOKEN`      | `preview`    | dev deployment deploy key now; a preview deploy key later          |
-| `VITE_CONVEX_URL`          | `preview`    | dev `.convex.cloud` URL now; per-PR URL from `convex deploy` later |
-| `VITE_CONVEX_SITE_URL`     | `preview`    | dev `.convex.site` URL now; per-PR URL later                       |
-| `VITE_GOOGLE_MAPS_API_KEY` | `preview`    | Maps key restricted to `*.workers.dev` preview hosts               |
+| Name                       | Scope        | Holds                                                  |
+| -------------------------- | ------------ | ------------------------------------------------------ |
+| `CLOUDFLARE_API_TOKEN`     | repository   | Workers deploy and version upload                      |
+| `CLOUDFLARE_ACCOUNT_ID`    | repository   | Cloudflare account                                     |
+| `CONVEX_DEPLOY_TOKEN`      | `production` | prod deployment deploy key                             |
+| `VITE_CONVEX_URL`          | `production` | prod `.convex.cloud` URL, baked into the build         |
+| `VITE_CONVEX_SITE_URL`     | `production` | prod `.convex.site` URL, baked into the build          |
+| `VITE_GOOGLE_MAPS_API_KEY` | `production` | Maps key restricted to the production domain           |
+| `CONVEX_DEPLOY_TOKEN`      | `preview`    | preview deploy key from the dashboard project settings |
+| `CLOUDFLARE_API_TOKEN`     | `preview`    | token used only by preview deploys                     |
+| `CLOUDFLARE_ACCOUNT_ID`    | `preview`    | account id used only by preview deploys                |
+| `VITE_GOOGLE_MAPS_API_KEY` | `preview`    | Maps key restricted to `*.workers.dev` preview hosts   |
+
+`VITE_CONVEX_URL` and `VITE_CONVEX_SITE_URL` are never stored for previews. The preview workflow
+reads them from the `convex deploy` output at runtime and bakes them into that PR's Worker build.
+The repo's `convex` package (1.49.0) satisfies the CLI requirements for preview deploy commands.
 
 `production` carries a required reviewer (Kevin). `preview` has none, so it runs on every push. The
 repository has no GitHub environments yet, and `convex.yml` and `docs/migrations.md` still name them
 `dev` and `prod`.
 
+### Owner values checklist
+
+The owner provisions every secret value by hand. Agents wire references and docs, and never touch
+live backends unprompted.
+
+| #   | Value                                                        | Where it comes from                | Where it goes                                                  |
+| --- | ------------------------------------------------------------ | ---------------------------------- | -------------------------------------------------------------- |
+| 1   | Preview deploy key with rights to create preview deployments | Convex dashboard, project settings | GitHub `preview` environment secret `CONVEX_DEPLOY_TOKEN`      |
+| 2   | Cloudflare API token for preview deploys                     | Cloudflare dashboard               | GitHub `preview` environment secret `CLOUDFLARE_API_TOKEN`     |
+| 3   | Cloudflare account id                                        | Cloudflare dashboard               | GitHub `preview` environment secret `CLOUDFLARE_ACCOUNT_ID`    |
+| 4   | Maps browser key restricted to `*.workers.dev` preview hosts | Google Cloud console               | GitHub `preview` environment secret `VITE_GOOGLE_MAPS_API_KEY` |
+
+Dev-deployment settings that stay as-is: the dev deployment keeps its own `SITE_URL`
+(`http://localhost:5173`), its own `BETTER_AUTH_SECRET`, and its optional Mailgun sandbox pair for
+OTP testing. Nothing preview specific is stored on the dev deployment.
+
 ## Convex deployment environment
 
 Set with `npx convex env set` on each deployment, never in GitHub.
 
-| Variable                 | Production                          | Dev (shared with previews)                                             |
-| ------------------------ | ----------------------------------- | ---------------------------------------------------------------------- |
-| `BETTER_AUTH_SECRET`     | own value                           | own value                                                              |
-| `SITE_URL`               | `https://nextbite.kevinkraemer.com` | `http://localhost:5173`                                                |
-| `APP_ORIGINS`            | unset                               | `http://localhost:5193,https://pr-*-next-bite.<subdomain>.workers.dev` |
-| `AUTH_EMAIL_OTP_ENABLED` | `true` when mail is ready           | unset                                                                  |
-| `MAILGUN_API_KEY`        | prod key                            | unset, or a sandbox key to test OTP                                    |
-| `MAILGUN_DOMAIN`         | prod sending domain                 | unset, or the sandbox domain                                           |
-| `MAILGUN_DEV_FALLBACK`   | unset                               | unset                                                                  |
-| `GOOGLE_MAPS_API_KEY`    | prod key                            | dev key                                                                |
+| Variable                 | Production                          | Dev (local only)                    | Preview (per PR, `pr-<n>`)                                                                         |
+| ------------------------ | ----------------------------------- | ----------------------------------- | -------------------------------------------------------------------------------------------------- |
+| `BETTER_AUTH_SECRET`     | own value                           | own value                           | own value, set when the deployment is created                                                      |
+| `SITE_URL`               | `https://nextbite.kevinkraemer.com` | `http://localhost:5173`             | exact alias `https://pr-<n>-next-bite.<subdomain>.workers.dev`, set by the workflow at deploy time |
+| `APP_ORIGINS`            | unset                               | unset (loopback is always trusted)  | unset (exact `SITE_URL` match covers previews; S1 pattern match is fallback)                       |
+| `AUTH_EMAIL_OTP_ENABLED` | `true` when mail is ready           | unset                               | unset                                                                                              |
+| `MAILGUN_API_KEY`        | prod key                            | unset, or a sandbox key to test OTP | unset                                                                                              |
+| `MAILGUN_DOMAIN`         | prod sending domain                 | unset, or the sandbox domain        | unset                                                                                              |
+| `MAILGUN_DEV_FALLBACK`   | unset                               | unset                               | unset                                                                                              |
+| `GOOGLE_MAPS_API_KEY`    | prod key                            | dev key                             | preview `*.workers.dev` key                                                                        |
 
-`SITE_URL` and `APP_ORIGINS` come from the server-session change; the rest exist on `main`.
+`SITE_URL` and `APP_ORIGINS` come from the server-session change; the rest exist on `main`. No
+shared-backend wildcard config remains: previews do not use an `APP_ORIGINS` wildcard, and the dev
+deployment carries no preview origins.
 
 ### Trusted origin patterns
+
+Each preview deployment sets its exact alias as `SITE_URL`, so exact CORS matching covers the normal
+case. The pattern below remains as fallback for stacked and edge cases. Local dev stays on loopback,
+which is always trusted, so it needs no entry.
 
 Better Auth 1.7 accepts wildcards in `trustedOrigins`.
 `https://pr-*-next-bite.<subdomain>.workers.dev` matches
@@ -92,31 +118,53 @@ Two places do not understand the pattern:
   URL, and Better Auth builds URLs from the static `SITE_URL`. Password sign-in is unaffected; OAuth
   callbacks and emailed links would point at the wrong host. Per-PR backends fix this with an exact
   `SITE_URL` per preview.
-- `convex/cors.ts` compares upload origins with `Array.includes`, so preview uploads get no CORS
-  headers until it matches patterns.
+- `convex/cors.ts` checks exact origins first, then the S1 pattern matcher over `APP_ORIGINS`. With
+  per-PR backends the exact `SITE_URL` match covers the normal case and the pattern match stays as
+  fallback.
 
 ### Preview mail
 
-Password sign-up needs no mail (`requireEmailVerification: false`). With `MAILGUN_*` unset on the
-dev backend, `getAuthMethods` hides email OTP and nothing can be sent. Set a Mailgun sandbox domain
-only to test OTP; sandbox domains deliver only to authorized recipients. `convex/email.ts` always
-calls `api.eu.mailgun.net`, so the sandbox domain must live in the EU region. Never set
-`MAILGUN_DEV_FALLBACK` on a backend a preview uses: it turns OTP on without delivering the code.
+Password sign-up needs no mail (`requireEmailVerification: false`). `MAILGUN_API_KEY` and
+`MAILGUN_DOMAIN` stay unset on every preview deployment, so previews cannot send email and
+`getAuthMethods` hides the one-time code option. `MAILGUN_DEV_FALLBACK` is not set on any preview
+deployment. The dev backend rules are unchanged: with `MAILGUN_*` unset it behaves the same way, and
+a Mailgun sandbox domain is set only to test OTP; sandbox domains deliver only to authorized
+recipients. `convex/email.ts` always calls `api.eu.mailgun.net`, so a sandbox domain used for OTP
+testing must live in the EU region. Never set `MAILGUN_DEV_FALLBACK` on a backend a preview uses: it
+turns OTP on without delivering the code.
 
 ## Previews
 
 ```text
 on pull_request (opened, synchronize, reopened), any base branch
   skip when the head repository is a fork
-  backend    npx convex deploy with the preview environment's deploy key
-  build      vp run build with the preview environment's VITE_* values
+  backend    npx convex deploy --preview-name="pr-<n>" with the preview environment's deploy key
+             (creates the deployment when missing, otherwise reuses it with data intact;
+             never --preview-create here, which wipes data on every push;
+             on creation only, run the seed through --preview-run)
+  env        set the preview deployment's SITE_URL to its exact alias URL
+  build      vp run build with the preview deployment's VITE_CONVEX_URL and
+             VITE_CONVEX_SITE_URL from the deploy output
   upload     cf workers versions create --preview-alias pr-<n> --tag pr-<n>
   comment    sticky PR comment with the alias URL from "Version Preview Alias URL:"
 
 on pull_request (closed)
   delete versions tagged pr-<n> that are not deployed: cf workers versions delete <id> --worker-id next-bite --force
+  delete the pr-<n> preview deployment
   comment    preview removed
 ```
+
+### Preview limits
+
+- The first push per PR takes minutes: the preview deployment is created and the seed baseline runs
+  before the Worker build uploads.
+- A PR open past preview expiry loses its backend data and reseeds on the next push. Preview
+  deployments auto-expire (5 days on Free and Starter plans, 14 days on paid plans), so a stale PR
+  gets a fresh empty backend that the seed repopulates.
+- Stale PRs must actually close to free their deployment. Closing a PR deletes its preview versions
+  and its deployment; abandoned PRs rely on expiry instead.
+- Plan deployment limits bound how many concurrent previews can exist. Each open PR holds one
+  preview deployment plus its Worker versions, so closing merged PRs keeps headroom.
 
 Facts from `cf` 1.0.0-beta.27 and the Cloudflare docs:
 
