@@ -29,6 +29,10 @@ def deployed_version_ids(deployment_pages):
     ids = set()
     for payload in deployment_pages:
         for deployment in payload.get("result") or []:
+            if isinstance(deployment, str):
+                # Unparsed reference: it might be live, so fail safe and treat it as deployed.
+                ids.add(deployment)
+                continue
             for version in deployment.get("versions") or []:
                 vid = version_id(version)
                 if vid:
