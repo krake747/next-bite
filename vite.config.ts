@@ -561,7 +561,8 @@ export default defineConfig({
                 test: {
                     name: "convex",
                     environment: "edge-runtime",
-                    include: ["convex/**/*.test.ts"],
+                    include: ["convex/**/*.spec.{js,ts,jsx,tsx}"],
+                    exclude: ["**/*.pure.spec.*"],
                     testTimeout: 20000,
                     slowTestThreshold: 19500,
                     server: { deps: { inline: [/@convex-dev\/better-auth/] } },
