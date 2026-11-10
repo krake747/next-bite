@@ -164,9 +164,7 @@ export function useAddRestaurantWithHours() {
                     throw new Error("Sign in to add restaurants")
                 }
                 const collections = getSessionCollections(client, persistCallerFor(client), auth.user.id)
-                // The persisted key correlates the temp row with its synced server row and makes
-                // double-submits idempotent; the backend dedupes retries carrying the same key.
-                // A caller-supplied key survives retries, otherwise mint one per attempt.
+                // See ADR-0002: persisted key makes retries idempotent.
                 const clientMutationId = args.clientMutationId ?? crypto.randomUUID()
                 const temp = buildTempRestaurant({
                     ownerId: auth.user.id,
@@ -175,8 +173,7 @@ export function useAddRestaurantWithHours() {
                     clientMutationId,
                 })
                 const tx = collections.owner.insert(temp)
-                // The rejection surfaces via tx.state below; swallowing here avoids an
-                // unhandled rejection while the definitive error is thrown next.
+                // Swallowed here; the definitive error is thrown next.
                 await tx.when("settled").catch(() => {})
                 if (tx.state === "failed") {
                     throw tx.error?.error ?? new Error("Add failed")

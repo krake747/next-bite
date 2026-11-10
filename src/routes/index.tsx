@@ -41,9 +41,7 @@ function LandingHero() {
 }
 
 function LandingStatsSection() {
-    // Non-suspense on purpose: the Convex client is null during SSR, and the
-    // suspense hook throws there. Undefined data renders the same skeleton the
-    // Suspense fallback used to, so server HTML stays complete.
+    // See ADR-0003: null client during SSR renders skeleton.
     const stats = useConvexQuery(api.landing.getStats)
     if (stats === undefined) {
         return <TasteCardsSkeleton />

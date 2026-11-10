@@ -140,8 +140,7 @@ function isTempRestaurantId(id: Id<"restaurants">): boolean {
     return isTempId(String(id))
 }
 
-// Optimistic rows carry fabricated ids that the backend will reject. Nothing navigates to or
-// mutates against them: inserts resolve to the synced server id, and direct writes refuse them.
+// See ADR-0002: temp ids never travel; resolve by key.
 export function assertRealRestaurantId(id: Id<"restaurants">): void {
     assertRealId(String(id))
 }
@@ -189,10 +188,7 @@ export type SyncedRows = {
     values(): Iterable<RestaurantDoc>
 }
 
-// A timed-out wait is not proof of failure: the row may already exist
-// server-side (see ADR-0002). Callers distinguish this from definitive errors
-// to offer checking and retry on the same mutation key instead of minting a
-// new identity that could duplicate the row.
+// See ADR-0002: timeout is not failure; retry on the same key.
 export class SyncTimeoutError extends Error {
     readonly code = "SYNC_TIMEOUT" as const
 
@@ -206,8 +202,7 @@ export class SyncTimeoutError extends Error {
     }
 }
 
-// Matches a synced server row to the insert that created it via the persisted client mutation
-// key. Skips the optimistic temp row itself, so callers never resolve to a fabricated id.
+// See ADR-0002: resolve synced row by key, skip temp row.
 export async function resolveRestaurantIdByKey(
     rows: SyncedRows,
     clientMutationId: string,
@@ -253,11 +248,7 @@ const collectionCache = new WeakMap<
     { sessionKey: string; collections: ReturnType<typeof createRestaurantCollections> }
 >()
 
-// Collections are scoped to one signed-in session. The Convex client instance outlives sign-in,
-// so the cache slots per session key: a sign-out or account change drops the previous session's
-// synced rows instead of leaking them into the next session. Abandoned collections release with
-// their last live query; user-scoped TanStack Query entries are cleared alongside (see
-// clearUserScopedQueries).
+// See ADR-0002: collections scoped per session, no cross-session leaks.
 export function getSessionCollections(
     syncClient: SyncClient,
     persist: RestaurantPersist,
@@ -272,11 +263,7 @@ export function getSessionCollections(
     return created
 }
 
-// Evict a session's cached collections so the next read builds a fresh
-// subscription. Only evicts when the cached entry still belongs to the given
-// session; never touches another session's collections. Used to recover from
-// a poisoned mid-session subscription: the caller re-verifies auth, and the
-// next render subscribes cleanly instead of reusing the failed sync.
+// See ADR-0002: evict only own session to recover poisoned sync.
 export function dropSessionCollections(syncClient: SyncClient, sessionKey: string): boolean {
     const hit = collectionCache.get(syncClient)
     if (hit === undefined || hit.sessionKey !== sessionKey) {
@@ -330,12 +317,7 @@ export function clearUserScopedQueries(
     removeQueries({ predicate: (query) => isUserScopedQueryKey(query.queryKey) })
 }
 
-// The TanStack Query cache is shared across sessions in one tab, so user-scoped entries must be
-// evicted when the owning session changes. Eviction runs only for ready sessions whose key
-// differs from the recorded owner: mount-time runs while probing must not wipe the cache,
-// because components that mount on loaded data (gated on collections) would unmount on the
-// eviction and remount on the refetch in a loop. Rendered data now lives in the cache (the
-// official adapter), unlike the previous hand-rolled adapter that kept it in component state.
+// See ADR-0002: shared cache evicts only on owner change to avoid remount loops.
 const sessionCacheOwners = new WeakMap<object, string>()
 
 export function claimSessionCache(

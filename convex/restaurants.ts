@@ -41,8 +41,7 @@ type UploadRecord = {
     byteSize: number | null
 } | null
 
-// Fail-closed ownership: a missing record and a foreign record both reject with the same
-// message so callers cannot probe which storage IDs exist.
+// See ADR-0015: ownership comes from the server record.
 function requireUploadOwner(record: UploadRecord, ownerId: string): asserts record {
     if (!record || record.ownerId !== ownerId) {
         throw new Error("Unauthorized: storage does not belong to you")
@@ -62,10 +61,7 @@ type ImageInput = {
     readonly height?: number | undefined
 }
 
-// Server-derived attribution: ownership, display name, URL, MIME type, and
-// byte size come from the upload record, profile, and storage system, never
-// from client-claimed fields. Client-reported dimensions pass through as
-// untrusted display hints.
+// See ADR-0015: attribution comes from the server record.
 function withServerMetadata(
     image: ImageInput,
     owner: Readonly<{ ownerId: string; displayName: string }>,
@@ -93,9 +89,7 @@ function withServerMetadata(
     }
 }
 
-// Delete one image that the restaurant document claims. Verifies the server-side ownership
-// record (never the client-written entry) and the resource association, then removes the
-// blob, its record, and the entry. Returns the surviving entries for the caller to patch.
+// See ADR-0015: verify server record, then remove blob and entry.
 async function deleteAttachedImage(
     ctx: MutationCtx,
     restaurant: Doc<"restaurants">,
@@ -286,9 +280,7 @@ export const _insertRestaurant = internalMutation({
         clientMutationId: v.optional(v.string()),
     },
     handler: async (ctx, args): Promise<{ restaurantId: Id<"restaurants">; duplicate: boolean }> => {
-        // Idempotency lives inside this mutation so concurrent same-key inserts serialize: the
-        // second call sees the first call's dedupe row and returns the existing id instead of a
-        // second document.
+        // See ADR-0002: same key serializes, returns existing id.
         const mutationKey = args.clientMutationId
         if (mutationKey !== undefined) {
             const prior = await ctx.db
@@ -427,8 +419,7 @@ export const get = query({
 })
 
 export const getById = query({
-    // Null for anon, missing, and invisible alike: strangers learn nothing, not even whether
-    // the id exists.
+    // See ADR-0004: null for missing or invisible.
     args: {
         id: v.id("restaurants"),
     },
@@ -618,10 +609,7 @@ export const addWithOpeningHours = action({
     },
 })
 
-// Reconciles a submitted image list against the stored restaurant: keeps
-// already-attached entries untouched (with their stored metadata), enriches
-// genuinely new uploads with server-derived identity, attaches them, and
-// detaches removed ones. Returns the merged list to persist.
+// See ADR-0015: keep attached, enrich new, detach removed.
 type FreshUpload = {
     image: ImageInput
     record: NonNullable<UploadRecord>
@@ -772,12 +760,7 @@ export const remove = mutation({
     handler: async (ctx, args) => {
         const restaurant = await requireOwnedRestaurant(ctx, args.id)
 
-        // Fail-closed per blob: only storage with a server record owned by the restaurant owner
-        // is deleted, and never when the record associates the blob with another restaurant.
-        // Foreign, unrecorded, or elsewhere-attached blobs are left untouched (never deleted on
-        // the basis of a client-written image entry) while the restaurant document itself is
-        // removed. Rejecting the whole removal here would brick deletes of restaurants that
-        // reference legacy or orphaned images.
+        // See ADR-0015: delete only owned, never foreign blobs.
         for (const img of restaurant.images) {
             try {
                 const record = await ctx.runQuery(internal.uploads.lookupByStorage, { storageId: img.storageId })

@@ -74,10 +74,7 @@ function SubmitButton({ mode, saving }: Readonly<{ mode: "add" | "edit"; saving:
     )
 }
 
-// Owns the form's discard handshake from the outside: every exit path
-// (Cancel, success, switching drafts) runs the registered discard first so
-// staged uploads never strand, then continues. The noop default covers exits
-// before the form has mounted and registered.
+// See ADR-0015: every exit runs discard first so staged uploads never strand.
 export function useFormDiscard(): {
     registerDiscard: (discard: () => Promise<void>) => void
     discard: () => Promise<void>
@@ -100,12 +97,7 @@ function useSubmitDiscard(args: {
     const { onDiscardReady, gallery, resetForm, phaseRef } = args
     useEffect(() => {
         onDiscardReady(async () => {
-            // A committed submit handed its images to persisted ownership. A
-            // saving or uncertain submit may still commit with these images
-            // attached. None of those states may clean: reset the local draft
-            // and leave stored files for the backend either way. Read through
-            // the ref: discard fires synchronously inside the submit close
-            // path, before the phase state commit re-renders.
+            // Committed or uncertain submits keep files with the backend; reset draft only.
             const phase = phaseRef.current
             if (phase.kind === "saving" || phase.kind === "uncertain" || phase.kind === "committed") {
                 resetForm()
@@ -183,14 +175,9 @@ function useSubmitDraft(args: {
     handleSubmit: (output: RestaurantFormOutput) => Promise<void>
     handleRetry: () => void
 } {
-    // One mutation identity per draft: the key is minted when the form mounts
-    // and only rotates after a committed submit, so a timed-out submit retries
-    // on the same key instead of duplicating the restaurant. A fresh mount is
-    // a new draft with a new identity.
+    // See ADR-0002: one key per draft, retries reuse the same key.
     const [clientMutationId, setClientMutationId] = useState(() => crypto.randomUUID())
-    // One shape, two clocks: state renders the banner and button, while the ref
-    // serves the synchronous discard read inside the submit close path (state
-    // commits after close fires). The single setter below keeps them together.
+    // State renders; ref serves the synchronous discard read.
     const [submitPhase, setSubmitPhaseState] = useState<SubmitPhase>({ kind: "editing" })
     const phaseRef = useRef<SubmitPhase>(submitPhase)
     const setSubmitPhase = (phase: SubmitPhase) => {

@@ -13,7 +13,7 @@ import { appOrigins, getValidatedSiteUrl, hasMailgunConfig, isEmailOtpEnabled, i
 
 export const authComponent = createClient<DataModel>(components.betterAuth)
 
-// Public on purpose: capability flags only, no secrets or user data.
+// See ADR-0005: capability flags only.
 export const getAuthMethods = query({
     args: {},
     handler: () => ({

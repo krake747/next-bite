@@ -180,7 +180,7 @@ export const getGroup = query({
     },
     handler: async (ctx, args) => {
         const userId = await requireUserId(ctx)
-        // Null for missing groups and strangers alike: no existence oracle for nonmembers.
+        // See ADR-0004: null for missing or invisible.
         const group = await ctx.db.get(args.groupId)
         if (!group) {
             return null

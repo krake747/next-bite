@@ -38,10 +38,7 @@ export const createInvite = mutation({
 })
 
 export const getInvite = query({
-    // Public on purpose: the token is the bearer credential. Reading reveals nothing beyond
-    // what the token holder already has; acceptance validates server side per ADR-0005.
-    // Reusable group links stay usable until expiry or revocation: the effective
-    // status is computed here so previews stay honest without a write.
+    // See ADR-0005: bearer token, server-side accept.
     args: {
         token: v.string(),
         now: v.number(),

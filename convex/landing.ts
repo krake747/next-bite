@@ -80,7 +80,7 @@ async function computeStatsLive(db: GenericDatabaseReader<DataModel>): Promise<S
     }
 }
 
-// Public on purpose: aggregate counts only, no per-user or contact data leaves here.
+// See ADR-0004: aggregates only, no per-user data.
 export const getStats = query({
     args: {},
     returns: statsValidator,

@@ -412,12 +412,7 @@ export default defineConfig({
         ],
     },
     optimizeDeps: {
-        // Pre-bundle route-split deep imports so navigating to a lazy route
-        // does not trigger "optimized dependencies changed" reloads.
-        // The browser test tier imports below must stay pre-bundled too, or
-        // the first cold run reloads mid-suite and flakes.
-        // dataModel has types only (no runtime file); the scanner cannot
-        // resolve it, so exclude it instead of letting it fail the scan.
+        // See ADR-0008: pre-bundle route-split imports; dataModel excluded, no runtime file.
         exclude: ["@convex/_generated/dataModel"],
         include: [
             "@base-ui/react/avatar",
@@ -540,9 +535,7 @@ export default defineConfig({
                 },
             },
             {
-                // Backend contract tests with convex-test (plus the Better Auth
-                // component, inlined so its TS source transforms). Keep the
-                // timeout rule: slowTestThreshold is testTimeout minus 500ms.
+                // See ADR-0011: convex-test contracts; slow threshold is timeout minus 500ms.
                 test: {
                     name: "convex",
                     environment: "edge-runtime",
