@@ -1,8 +1,8 @@
 name: Deploy production
 
-# The production Worker. Runs when CI is green on main, plus manual dispatch.
-# Backend deploys stay manual through the Convex workflow; this job only ships
-# the Worker. A failed smoke test fails the run.
+# Production. Runs when CI is green on main, plus manual dispatch. Ships the
+# Convex backend prod reads, then the Worker. A failed backend deploy or smoke
+# test fails the run. See docs/environments.md.
 
 on:
   workflow_run:
@@ -19,9 +19,31 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  backend:
+    name: Deploy backend
+    if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    environment: dev
+    concurrency:
+      group: convex-dev
+      cancel-in-progress: false
+    env:
+      CONVEX_DEPLOY_KEY: ${{ secrets.CONVEX_DEPLOY_TOKEN }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
+
+      - name: Setup vp and install dependencies
+        uses: ./.github/actions/setup-vp
+
+      - name: Deploy functions, schema, and migrations
+        run: .github/scripts/backend-deploy.sh
+
   deploy:
     name: Build and deploy
-    if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
+    needs: backend
     env:
       CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
       CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
