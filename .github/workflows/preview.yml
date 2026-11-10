@@ -1,10 +1,7 @@
 name: Preview environment
 
-# Per-PR preview: one Convex preview deployment plus one Worker preview alias
-# per PR, linked from a single sticky comment. Runs on pull_request (never
-# pull_request_target) and skips forks, so the write token below only ever
-# sees first-party code. Step logic lives in .github/scripts/preview-*.sh as
-# small composed functions; this file stays declarative.
+# Per-PR Convex preview deployment plus Worker alias. Runs on pull_request (never
+# pull_request_target) and skips forks, so secrets only see first-party code.
 
 on:
   pull_request:
