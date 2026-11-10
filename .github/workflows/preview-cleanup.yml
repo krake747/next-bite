@@ -1,5 +1,10 @@
 name: Clean up PR preview
 
+# No `convex deployment delete` exists (see `npx convex deployment --help`:
+# select, create, token, usage, usage-limits), so deployment deletion stays on
+# the REST API below. Cloudflare version cleanup paginates both list calls
+# instead of trusting the first page.
+
 on:
   pull_request:
     types: [closed]
@@ -30,13 +35,8 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v7
 
-      - uses: voidzero-dev/setup-vp@v1.22.0
-        with:
-          node-version-file: ".node-version"
-          cache: true
-
-      - name: Install dependencies
-        run: vp install
+      - name: Setup vp and install dependencies
+        uses: ./.github/actions/setup-vp
 
       - name: Delete preview Worker versions
         run: |
@@ -47,31 +47,51 @@ jobs:
           WORK="$(mktemp -d)"
           trap 'rm -rf "${WORK}"' EXIT
 
-          curl -sS --fail-with-body -H "${AUTH}" \
-            "${BASE}/scripts/${WORKER_ID}/deployments?per_page=100" \
-            -o "${WORK}/deployments.json"
-          # First page only: a PR's versions are recent by construction.
-          curl -sS --fail-with-body -H "${AUTH}" \
-            "${BASE}/workers/${WORKER_ID}/versions?per_page=100" \
-            -o "${WORK}/versions.json"
+          # Page through both lists: a PR's versions are recent by
+          # construction, but the account holds every worker's versions, so
+          # the tag match must see past the first page.
+          PAGE=1
+          while true; do
+            curl -sS --fail-with-body -H "${AUTH}" \
+              "${BASE}/scripts/${WORKER_ID}/deployments?per_page=100&page=${PAGE}" \
+              -o "${WORK}/deployments_page_${PAGE}.json"
+            COUNT="$(python3 -c "import json; print(len(json.load(open('${WORK}/deployments_page_${PAGE}.json')).get('result') or []))")"
+            if [ "$COUNT" -lt 100 ]; then
+              break
+            fi
+            PAGE=$((PAGE + 1))
+          done
+          PAGE=1
+          while true; do
+            curl -sS --fail-with-body -H "${AUTH}" \
+              "${BASE}/workers/${WORKER_ID}/versions?per_page=100&page=${PAGE}" \
+              -o "${WORK}/versions_page_${PAGE}.json"
+            COUNT="$(python3 -c "import json; print(len(json.load(open('${WORK}/versions_page_${PAGE}.json')).get('result') or []))")"
+            if [ "$COUNT" -lt 100 ]; then
+              break
+            fi
+            PAGE=$((PAGE + 1))
+          done
 
-          python3 - "${WORK}/deployments.json" "${WORK}/versions.json" "${TAG}" > "${WORK}/ids.txt" <<'EOF'
-          import json, sys
-          deployments_path, versions_path, tag = sys.argv[1], sys.argv[2], sys.argv[3]
+          python3 - "${WORK}" "${TAG}" > "${WORK}/ids.txt" <<'EOF'
+          import glob, json, sys
+          work, tag = sys.argv[1], sys.argv[2]
           deployed = set()
-          with open(deployments_path) as f:
-              payload = json.load(f)
-          for deployment in payload.get("result") or []:
-              for version in deployment.get("versions") or []:
-                  vid = version.get("version_id") or version.get("id")
-                  if vid:
-                      deployed.add(vid)
-          with open(versions_path) as f:
-              payload = json.load(f)
-          for version in payload.get("result") or []:
-              annotations = version.get("annotations") or {}
-              if annotations.get("workers/tag") == tag and version.get("id") not in deployed:
-                  print(version["id"])
+          for path in glob.glob(f"{work}/deployments_page_*.json"):
+              with open(path) as f:
+                  payload = json.load(f)
+              for deployment in payload.get("result") or []:
+                  for version in deployment.get("versions") or []:
+                      vid = version.get("version_id") or version.get("id")
+                      if vid:
+                          deployed.add(vid)
+          for path in glob.glob(f"{work}/versions_page_*.json"):
+              with open(path) as f:
+                  payload = json.load(f)
+              for version in payload.get("result") or []:
+                  annotations = version.get("annotations") or {}
+                  if annotations.get("workers/tag") == tag and version.get("id") not in deployed:
+                      print(version["id"])
           EOF
 
           if [ ! -s "${WORK}/ids.txt" ]; then
@@ -87,14 +107,30 @@ jobs:
         run: |
           set -euo pipefail
           IDENTIFIER="pr-${PR_NUMBER}"
+          # The deploy key leads with a strict `preview:<team>:<project>`
+          # prefix before the first `|`. Anything else fails closed instead
+          # of querying a misparsed address.
           PREFIX="${CONVEX_DEPLOY_TOKEN%%|*}"
-          SLUGS="${PREFIX#preview:}"
+          case "$PREFIX" in
+            preview:*:*) SLUGS="${PREFIX#preview:}" ;;
+            *)
+              echo "CONVEX_DEPLOY_TOKEN does not look like a preview deploy key."
+              exit 1
+              ;;
+          esac
           TEAM="${SLUGS%%:*}"
           PROJECT="${SLUGS##*:}"
-          if [ -z "${TEAM}" ] || [ "${TEAM}" = "${PREFIX}" ] || [ -z "${PROJECT}" ]; then
+          # Exactly one colon, no empty side, no slashes or spaces.
+          if [ -z "${TEAM}" ] || [ -z "${PROJECT}" ] || [ "${SLUGS#*:}" != "${SLUGS##*:}" ]; then
             echo "CONVEX_DEPLOY_TOKEN does not look like a preview deploy key."
             exit 1
           fi
+          case "${TEAM}${PROJECT}" in
+            *"/"*|*" "*)
+              echo "CONVEX_DEPLOY_TOKEN does not look like a preview deploy key."
+              exit 1
+              ;;
+          esac
 
           WORK="$(mktemp -d)"
           trap 'rm -rf "${WORK}"' EXIT

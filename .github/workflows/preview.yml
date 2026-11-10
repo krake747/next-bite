@@ -5,20 +5,19 @@ name: Preview environment
 # pull_request_target) and skips forks, so the write token below only ever
 # sees first-party code.
 #
-# Order matters. The Convex deploy runs first and may create the preview
-# deployment; --preview-run fires only on creation and runs the baseline seed
-# with the deployment admin key, the same privileged path the backend
-# workflow uses for its internal migration. Internal-only functions are
-# callable here (admin auth bypasses the public/internal boundary), so no
-# separate seeding path is needed for visibility reasons. The explicit
-# creation-gated seed step below still exists because --preview-run fires
-# before the alias URL is known, while the seed fails closed without SITE_URL;
-# it completes the baseline once SITE_URL points at the alias.
-# Preview deployments are addressed by reference preview/<identifier>, the
-# same form the cleanup workflow uses, so env and run target the preview
-# without parsing deployment names out of URLs. Secrets come from the
-# `preview` GitHub environment. Nothing here hardcodes values from any
-# developer machine.
+# Order matters. The Convex deploy runs first and creates the preview
+# deployment on the first push, then reuses it with its data intact after that
+# (never --preview-create here: it deletes and recreates every time, wiping
+# preview data on each push). The seed runs after SITE_URL is set because it
+# fails closed without it, and it runs on every push: it is idempotent, so
+# reuse is a no-op and a post-expiry recreation reseeds. Internal-only
+# functions are callable here (deploy-key auth bypasses the public/internal
+# boundary), the same path the backend workflow uses for its internal
+# migration, so no separate seeding path is needed. Preview deployments are
+# addressed by reference preview/<identifier>, the same form the cleanup
+# workflow uses, so env and run target the preview without parsing deployment
+# names out of URLs. Secrets come from the `preview` GitHub environment.
+# Nothing here hardcodes values from any developer machine.
 
 on:
   pull_request:
@@ -51,42 +50,18 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v7
 
-      - uses: voidzero-dev/setup-vp@v1.22.0
-        with:
-          node-version-file: ".node-version"
-          cache: true
-
-      - name: Install dependencies
-        run: vp install
+      - name: Setup vp and install dependencies
+        uses: ./.github/actions/setup-vp
 
       - name: Deploy Convex preview backend
-        id: backend
         run: |
           set -euo pipefail
           PREVIEW_NAME="pr-${PR_NUMBER}"
-          if npx convex deploy --preview-name="$PREVIEW_NAME" --preview-run "seed:previewBaseline" 2>&1 | tee convex-deploy.log; then
-            echo "convex deploy finished cleanly"
-          elif grep -q "Deployed Convex functions to" convex-deploy.log; then
-            # Push landed but --preview-run failed: on creation the seed runs
-            # before this workflow can set SITE_URL, and the seed fails closed
-            # without it. Continue; the creation-gated seed step below finishes
-            # the baseline once SITE_URL is set.
-            echo "convex push landed; continuing past the creation seed failure"
-          else
-            echo "convex push failed"
-            exit 1
-          fi
+          npx convex deploy --preview-name="$PREVIEW_NAME" 2>&1 | tee convex-deploy.log
           CONVEX_URL="$(grep -oE 'https://[a-zA-Z0-9.-]+\.convex\.cloud' convex-deploy.log | head -1)"
           test -n "$CONVEX_URL"
           echo "VITE_CONVEX_URL=$CONVEX_URL" >> "$GITHUB_ENV"
           echo "VITE_CONVEX_SITE_URL=${CONVEX_URL/.convex.cloud/.convex.site}" >> "$GITHUB_ENV"
-          # --preview-run fires only when the deployment is created, so any
-          # mention of the seed in the log means this run created it.
-          if grep -q "seed:previewBaseline" convex-deploy.log; then
-            echo "created=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "created=false" >> "$GITHUB_OUTPUT"
-          fi
 
       - name: Build
         run: vp run build
@@ -106,11 +81,11 @@ jobs:
           npx convex env set SITE_URL "$PREVIEW_URL" --deployment "preview/pr-${PR_NUMBER}"
 
       - name: Seed preview baseline
-        if: steps.backend.outputs.created == 'true'
         run: |
           set -euo pipefail
-          # Idempotent (keyed by email, slug marker, and group name), so this
-          # only fills the gap --preview-run could not cover on creation.
+          # Idempotent (keyed by email, slug marker, and group name): a no-op
+          # when the deployment is reused, a repopulate when it was recreated
+          # after expiry. Runs here, after SITE_URL is set, on every push.
           npx convex run seed:previewBaseline --deployment "preview/pr-${PR_NUMBER}"
 
       - name: Update sticky preview comment

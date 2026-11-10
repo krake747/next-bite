@@ -1,6 +1,6 @@
 import { describe, expect, test } from "vitest"
 
-import { resolveCorsHeaders } from "../../convex/cors"
+import { resolveCorsHeaders } from "./cors"
 
 describe("resolveCorsHeaders", () => {
     test("sends no CORS headers without an origin", () => {

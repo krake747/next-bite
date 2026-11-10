@@ -7,12 +7,13 @@ Owned values live in `sources-of-truth.md`; this file holds tiers and examples o
 Tiers are picked by filename suffix. `pnpm test` runs them all; scope with `pnpm test:pure`,
 `pnpm test:unit`, `pnpm test:browser`, or `pnpm test:integration`.
 
-| Suffix                        | Runner | Env                   | Location                                          |
-| ----------------------------- | ------ | --------------------- | ------------------------------------------------- |
-| `*.pure.spec.ts`              | Vitest | node                  | `src/**/*.pure.spec.ts`, `lint/**/*.pure.spec.js` |
-| `*.spec.{ts,tsx}`             | Vitest | happy-dom             | `src/**/*.spec.{ts,tsx}`                          |
-| `*.browser.spec.tsx`          | Vitest | chromium (Playwright) | `src/**/*.browser.spec.tsx`                       |
-| `*.integration.spec.{ts,tsx}` | Vitest | happy-dom             | `src/**/*.integration.spec.{ts,tsx}`              |
+| Suffix                        | Runner | Env                   | Location                                                                      |
+| ----------------------------- | ------ | --------------------- | ----------------------------------------------------------------------------- |
+| `*.pure.spec.ts`              | Vitest | node                  | `src/**/*.pure.spec.ts`, `lint/**/*.pure.spec.js`, `convex/**/*.pure.spec.ts` |
+| `*.spec.{ts,tsx}`             | Vitest | happy-dom             | `src/**/*.spec.{ts,tsx}`                                                      |
+| `*.browser.spec.tsx`          | Vitest | chromium (Playwright) | `src/**/*.browser.spec.tsx`                                                   |
+| `*.integration.spec.{ts,tsx}` | Vitest | happy-dom             | `src/**/*.integration.spec.{ts,tsx}`                                          |
+| `*.test.ts`                   | Vitest | edge-runtime          | `convex/**/*.test.ts`                                                         |
 
 - `*.pure.spec.ts`: logic with no DOM. Runs in node with no setup file, stays fast.
 - `*.spec.{ts,tsx}`: unit scope. Hooks and isolated UI under happy-dom. The unit project excludes
@@ -22,6 +23,9 @@ Tiers are picked by filename suffix. `pnpm test` runs them all; scope with `pnpm
   `npx playwright install chromium --only-shell` before running this tier.
 - `*.integration.spec.{ts,tsx}`: few, only where it truly matters. Route-level specs against the
   real `routeTree` or a backend contract.
+- `*.test.ts`: backend contract tests with `convex-test` in `convex/`, run in edge-runtime. Test
+  files use `import.meta.glob("./**/*.ts")` and call functions through generated `api`/`internal`
+  references.
 
 ## Commands
 

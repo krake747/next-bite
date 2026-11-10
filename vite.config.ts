@@ -502,7 +502,11 @@ export default defineConfig({
                 test: {
                     name: "pure",
                     environment: "node",
-                    include: ["src/**/*.pure.spec.{js,ts,jsx,tsx}", "lint/**/*.pure.spec.ts"],
+                    include: [
+                        "src/**/*.pure.spec.{js,ts,jsx,tsx}",
+                        "lint/**/*.pure.spec.ts",
+                        "convex/**/*.pure.spec.{js,ts,jsx,tsx}",
+                    ],
                     testTimeout: 2000,
                     slowTestThreshold: 1500,
                 },
@@ -556,7 +560,7 @@ export default defineConfig({
                 // timeout rule: slowTestThreshold is testTimeout minus 500ms.
                 test: {
                     name: "convex",
-                    environment: "node",
+                    environment: "edge-runtime",
                     include: ["convex/**/*.test.ts"],
                     testTimeout: 20000,
                     slowTestThreshold: 19500,

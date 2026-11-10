@@ -1,0 +1,14 @@
+name: Setup vp and install dependencies
+description: Set up the vp toolchain from .node-version and install workspace dependencies.
+
+runs:
+  using: composite
+  steps:
+    - uses: voidzero-dev/setup-vp@v1.22.0
+      with:
+        node-version-file: ".node-version"
+        cache: true
+
+    - name: Install dependencies
+      shell: bash
+      run: vp install

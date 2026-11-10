@@ -21,8 +21,8 @@ Convex and the release pipeline are parked (see Out of scope). Locked decisions 
 - Secret values come from the owner's dashboards. Agents wire everything else and never touch live
   backends unprompted.
 - S1 (pattern CORS matcher) and S4 (seed function) are already built on the
-  `feat/preview-environments` integration branch. S1 stays as fallback; S4 runs unattended at each
-  preview creation.
+  `feat/preview-environments` integration branch. S1 stays as fallback; S4 runs unattended on every
+  preview push.
 
 ### Goal
 
@@ -129,10 +129,13 @@ changes must each stay reviewable.
   here: it deletes and recreates every time, wiping preview data on each push. Authenticate with a
   preview deploy key from the project dashboard settings (explicit name beats the GitHub Actions
   auto-detection so reuse stays predictable).
-- Deploy Convex functions and schema to the preview deployment. On creation only, run the S4 seed
-  through `--preview-run` (it fires only when the deployment is created; if the seed fails the
-  deploy fails but the deployment already exists, so fixing and redeploying reuses it and the
-  idempotent seed reruns as a no-op).
+- Deploy Convex functions and schema to the preview deployment. After the alias URL is known and
+  SITE_URL is set, run the S4 seed with
+  `npx convex run seed:previewBaseline --deployment "preview/pr-<n>"` on every push (it is
+  idempotent, so reuse is a no-op and post-expiry recreation reseeds; internal-only functions are
+  callable this way with the deploy key, the same path the backend workflow uses for its internal
+  migration). Never use `--preview-run` or `--preview-create` here: the former fails by construction
+  before SITE_URL exists, and the latter wipes data on every push.
 - Build the Worker with the preview deployment's `VITE_CONVEX_URL` and `VITE_CONVEX_SITE_URL`
   produced by the workflow at runtime, then
   `cf workers versions create --preview-alias pr-<n> --tag pr-<n>`.
@@ -146,7 +149,7 @@ changes must each stay reviewable.
 
 - `pnpm check:full` is green, plus: open two draft PRs with conflicting schema changes, confirm both
   previews stay working, push twice to one and confirm its data survives while the other is
-  untouched.
+  untouched. Live proof is pending the first real run.
 
 ### Out of scope
 
@@ -191,7 +194,7 @@ leave nothing behind.
 ### Verify
 
 - `pnpm check:full` is green, plus: close a test PR and confirm versions and deployment gone,
-  comment posted, and docs updated with the alias finding.
+  comment posted, and docs updated with the alias finding. Live proof is pending the first real run.
 
 ### Agents
 
@@ -220,8 +223,9 @@ Per-PR backends multiply the setup problem: without an automatic seed, every pre
   through the Better Auth email sign-up API (owner plus friend), 3 places, 1 group containing both
   users. Built on the integration branch.
 - Key everything by email and slug so reruns are no-ops.
-- Wire it into preview creation via `convex deploy --preview-run` (in S2, not here).
-- Document the exact run command for manual use against the shared dev backend.
+- Wire it into preview creation by running it after SITE_URL is set on every push (in S2, not here).
+  The exact manual command against the dev deployment is `npx convex run seed:previewBaseline` from
+  a dev-authenticated checkout, with no flags.
 
 ### Verify
 

@@ -1,17 +1,18 @@
-import { defineTestApp } from "convex-test"
+/// <reference types="vite/client" />
+import { convexTest } from "convex-test"
 import { describe, expect, test } from "vitest"
 
-import betterAuthComponent from "@convex-dev/better-auth/test"
+import { register as registerBetterAuthComponent } from "@convex-dev/better-auth/test"
 
+import { internal } from "./_generated/api"
 import schema from "./schema"
-import * as seed from "./seed"
 
-const app = defineTestApp({ schema, components: { betterAuth: betterAuthComponent } })
-const { internal, createTest } = app.defineModules({ seed })
+const modules = import.meta.glob("./**/*.ts")
 
 describe("preview seed", () => {
     test("first run creates the baseline and a rerun returns the same dataset", async () => {
-        const t = createTest()
+        const t = convexTest(schema, modules)
+        registerBetterAuthComponent(t, "betterAuth")
 
         const first = await t.mutation(internal.seed.previewBaseline, {})
 

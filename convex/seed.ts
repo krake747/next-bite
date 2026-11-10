@@ -16,21 +16,21 @@ export const SEED_GROUP_NAME = "Preview dinner club"
 const SEED_PASSWORD = "preview-baseline-dev-only"
 
 type SeedUser = {
-    email: string
-    name: string
+    readonly email: string
+    readonly name: string
 }
 
 const SEED_OWNER: SeedUser = { email: SEED_OWNER_EMAIL, name: "Preview Owner" }
 const SEED_FRIEND: SeedUser = { email: SEED_FRIEND_EMAIL, name: "Preview Friend" }
 
 type SeedRestaurant = {
-    slug: string
-    name: string
-    cuisine: string
-    label: string
+    readonly slug: string
+    readonly name: string
+    readonly cuisine: string
+    readonly label: string
 }
 
-const SEED_RESTAURANTS: SeedRestaurant[] = [
+const SEED_RESTAURANTS: ReadonlyArray<SeedRestaurant> = [
     { slug: "midnight-ramen", name: "Midnight Ramen", cuisine: "Japanese", label: "7 Preview Lane, Berlin" },
     { slug: "verde-taqueria", name: "Verde Taqueria", cuisine: "Mexican", label: "12 Preview Lane, Berlin" },
     { slug: "crumb-coffee", name: "Crumb and Coffee", cuisine: "Cafe", label: "3 Preview Lane, Berlin" },
@@ -48,6 +48,15 @@ async function findProfileByEmail(ctx: MutationCtx, email: string): Promise<{ au
     return profile ? { authUserId: profile.authUserId } : null
 }
 
+async function insertSeedProfile(ctx: MutationCtx, authUserId: string, user: SeedUser): Promise<void> {
+    await ctx.db.insert("profiles", {
+        authUserId,
+        name: formatDisplayName(user.name),
+        email: user.email,
+        createdAt: Date.now(),
+    })
+}
+
 // Users are created through the Better Auth email sign-up API, keyed by
 // email. Auth tables are never written directly; the app profile row is the
 // idempotency marker for reruns.
@@ -63,12 +72,7 @@ async function ensureSeedUser(ctx: MutationCtx, user: SeedUser): Promise<string>
             body: { name: user.name, email: user.email, password: SEED_PASSWORD },
             headers,
         })
-        await ctx.db.insert("profiles", {
-            authUserId: signedUp.user.id,
-            name: formatDisplayName(user.name),
-            email: user.email,
-            createdAt: Date.now(),
-        })
+        await insertSeedProfile(ctx, signedUp.user.id, user)
         return signedUp.user.id
     } catch (error) {
         if (!(error instanceof APIError) || error.statusCode !== 422) {
@@ -85,12 +89,7 @@ async function ensureSeedUser(ctx: MutationCtx, user: SeedUser): Promise<string>
         if (retry) {
             return retry.authUserId
         }
-        await ctx.db.insert("profiles", {
-            authUserId: signedIn.user.id,
-            name: formatDisplayName(user.name),
-            email: user.email,
-            createdAt: Date.now(),
-        })
+        await insertSeedProfile(ctx, signedIn.user.id, user)
         return signedIn.user.id
     }
 }
@@ -103,10 +102,12 @@ async function ensureSeedRestaurant(
     ownerName: string,
     place: SeedRestaurant,
 ): Promise<Id<"restaurants">> {
+    // Single-owner scope; the seed needs at most a handful of rows. Take keeps
+    // the read bounded so the scan cannot grow without limit as tables grow.
     const owned = await ctx.db
         .query("restaurants")
         .withIndex("by_owner", (q) => q.eq("ownerId", ownerId))
-        .collect()
+        .take(1000)
     const match = owned.find((row) => row.clientMutationId === seedMarker(place.slug))
     if (match) {
         return match._id
@@ -144,10 +145,12 @@ async function ensureSeedMembership(
 // The group is keyed by owner plus name. Reruns reuse it and repair missing
 // memberships instead of duplicating anything.
 async function ensureSeedGroup(ctx: MutationCtx, ownerId: string, friendId: string): Promise<Id<"groups">> {
+    // Single-owner scope; the seed needs at most one row. Take keeps the read
+    // bounded so the scan cannot grow without limit as tables grow.
     const owned = await ctx.db
         .query("groups")
         .withIndex("by_owner", (q) => q.eq("ownerId", ownerId))
-        .collect()
+        .take(1000)
     const match = owned.find((row) => row.name === SEED_GROUP_NAME)
     const groupId =
         match !== undefined
@@ -173,10 +176,12 @@ export const previewBaseline = internalMutation({
             })
         }
         const groupId = await ensureSeedGroup(ctx, ownerId, friendId)
+        // One small group; the seed needs its handful of memberships. Take
+        // keeps the read bounded so the scan cannot grow without limit.
         const members = await ctx.db
             .query("groupMembers")
             .withIndex("by_group", (q) => q.eq("groupId", groupId))
-            .collect()
+            .take(1000)
         return {
             users: [
                 { email: SEED_OWNER_EMAIL, authUserId: ownerId },

@@ -56,7 +56,10 @@ Any failed step stops the rest. A dry run typechecks the backend and dry-runs th
 
 `VITE_CONVEX_URL` and `VITE_CONVEX_SITE_URL` are never stored for previews. The preview workflow
 reads them from the `convex deploy` output at runtime and bakes them into that PR's Worker build.
-The repo's `convex` package (1.49.0) satisfies the CLI requirements for preview deploy commands.
+The preview workflow exports the `CONVEX_DEPLOY_TOKEN` secret value as `CONVEX_DEPLOY_KEY`, the
+variable name the Convex CLI reads; the cleanup workflow uses the same secret value directly as a
+Bearer token for its REST calls. The repo's `convex` package (1.49.0) satisfies the CLI requirements
+for preview deploy commands.
 
 `production` carries a required reviewer (Kevin). `preview` has none, so it runs on every push. The
 repository has no GitHub environments yet, and `convex.yml` and `docs/migrations.md` still name them
@@ -140,24 +143,28 @@ on pull_request (opened, synchronize, reopened), any base branch
   skip when the head repository is a fork
   backend    npx convex deploy --preview-name="pr-<n>" with the preview environment's deploy key
              (creates the deployment when missing, otherwise reuses it with data intact;
-             never --preview-create here, which wipes data on every push;
-             on creation only, run the seed through --preview-run)
-  env        set the preview deployment's SITE_URL to its exact alias URL
+             never --preview-create here, which wipes data on every push)
   build      vp run build with the preview deployment's VITE_CONVEX_URL and
              VITE_CONVEX_SITE_URL from the deploy output
   upload     cf workers versions create --preview-alias pr-<n> --tag pr-<n>
+  env        set the preview deployment's SITE_URL to its exact alias URL
+  seed       npx convex run seed:previewBaseline --deployment "preview/pr-<n>" on every push
+             (idempotent: a no-op on reuse, a repopulate after expiry recreation)
   comment    sticky PR comment with the alias URL from "Version Preview Alias URL:"
 
 on pull_request (closed)
   delete versions tagged pr-<n> that are not deployed: cf workers versions delete <id> --worker-id next-bite --force
   delete the pr-<n> preview deployment
   comment    preview removed
+
+Live proof is pending the first real run: no secrets or live PR were available while writing this,
+so the alias URL behavior and the S2/S3 live checks below are documented but not yet observed.
 ```
 
 ### Preview limits
 
-- The first push per PR takes minutes: the preview deployment is created and the seed baseline runs
-  before the Worker build uploads.
+- The first push per PR takes minutes: the preview deployment is created, the Worker version
+  uploads, then SITE_URL is set and the seed baseline runs before the comment posts.
 - A PR open past preview expiry loses its backend data and reseeds on the next push. Preview
   deployments auto-expire (5 days on Free and Starter plans, 14 days on paid plans), so a stale PR
   gets a fresh empty backend that the seed repopulates.
@@ -194,10 +201,12 @@ The owner runs it once against the shared dev backend, by hand, never from an ag
 never against production:
 
 ```bash
-pnpm convex run seed:previewBaseline
+npx convex run seed:previewBaseline
 ```
 
 The command targets whichever deployment the CLI is authenticated to, so run it from a checkout
-configured for the dev deployment. Sign in to the seed accounts with the dev-only password in
-`convex/seed.ts` (`SEED_PASSWORD`). With per-PR backends the same function runs on creation through
-`convex deploy --preview-run`; that wiring is not built here.
+configured for the dev deployment. No flags are needed for the dev case. Sign in to the seed
+accounts with the dev-only password in `convex/seed.ts` (`SEED_PASSWORD`). With per-PR backends the
+same function runs on every preview push through
+`npx convex run seed:previewBaseline --deployment "preview/pr-<n>"` after the workflow sets
+SITE_URL; that wiring is not built here.
