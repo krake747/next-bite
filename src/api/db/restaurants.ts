@@ -289,6 +289,28 @@ export function dropSessionCollections(syncClient: SyncClient, sessionKey: strin
     return true
 }
 
+type ReadySession = Readonly<{ client: ConvexReactClient; sessionKey: string }>
+
+const readySessions = new WeakMap<object, ReadySession>()
+
+export function publishReadySession(owner: object, session: ReadySession | null): void {
+    if (session === null) {
+        readySessions.delete(owner)
+        return
+    }
+    readySessions.set(owner, session)
+}
+
+export function preloadReadySessionCollections(owner: object): void {
+    const session = readySessions.get(owner)
+    if (session === undefined) {
+        return
+    }
+    const collections = getSessionCollections(session.client, persistCallerFor(session.client), session.sessionKey)
+    void collections.owner.preload()
+    void collections.feed.preload()
+}
+
 const USER_SCOPED_QUERY_PREFIXES = [
     "restaurants:",
     "friendships:",

@@ -7,6 +7,7 @@ import { StrictMode, Suspense } from "react"
 
 import { AuthProvider } from "@api/auth.provider"
 import { env } from "@core/env"
+import { usePublishReadySession } from "@core/restaurants"
 import { useEnsureProfile } from "@core/session"
 import { LoadingPlaceholder } from "@pattern/loading"
 import { SessionTimeoutNotice } from "@routes/-components/session-timeout-notice"
@@ -56,12 +57,12 @@ function RootComponent() {
                     <QueryClientProvider client={queryClient}>
                         <APIProvider apiKey={env.VITE_GOOGLE_MAPS_API_KEY} libraries={["places", "marker"]}>
                             <AuthProvider>
-                                <EnsureProfile>
+                                <SessionEffects>
                                     <SessionTimeoutNotice />
                                     <Suspense fallback={<LoadingPlaceholder />}>
                                         <Outlet />
                                     </Suspense>
-                                </EnsureProfile>
+                                </SessionEffects>
                             </AuthProvider>
                         </APIProvider>
                     </QueryClientProvider>
@@ -72,7 +73,8 @@ function RootComponent() {
     )
 }
 
-function EnsureProfile({ children }: Readonly<{ children: React.ReactNode }>): React.ReactNode {
+function SessionEffects({ children }: Readonly<{ children: React.ReactNode }>): React.ReactNode {
     useEnsureProfile()
+    usePublishReadySession()
     return children
 }
