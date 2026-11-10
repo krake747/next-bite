@@ -27,11 +27,6 @@ type Receiver = {
     current: unknown
 }
 
-// Test-only Convex client: serves seeded query results by function path plus args and records
-// mutations by function path. Stands in for the Convex subscription surface where the real
-// AuthProvider would otherwise shadow injected values with a live client. Queries without a
-// seed fall back to the live rows, which pushState refreshes for every subscriber, so the
-// same double drives both keyed route specs and live collection specs.
 export function createSeededClient(options: SeededClientOptions = {}) {
     const seeds = options.seeds ?? new Map<string, unknown>()
     const calls = options.calls ?? []
@@ -158,9 +153,6 @@ export function createSeededClient(options: SeededClientOptions = {}) {
         }
     }
 
-    // Drive a mid-session sync failure the way a dropped Convex subscription
-    // surfaces it: the adapter reports the error through the onUpdate error
-    // callback it registered at subscribe time.
     const failSync = (error: unknown = new Error("Convex subscription failed")): void => {
         for (const set of failers.values()) {
             for (const fail of set) {

@@ -166,10 +166,6 @@ export function ImageUpload(props: Readonly<ImageUploadProps>) {
         latestImagesRef.current = props.images
     }, [props.images])
 
-    // A batch is owned by the mount that started it. Closing or unmounting the
-    // dialog invalidates in-flight batches. While mounted, a late completion
-    // still belongs to the draft and merges into the latest gallery; after
-    // unmount it is cleaned up so nothing is stranded.
     useEffect(() => {
         return () => {
             mountedRef.current = false

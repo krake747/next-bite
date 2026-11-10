@@ -58,8 +58,6 @@ function recentAddsFrom(restaurants: Doc<"restaurants">[]): Stats["recentAdds"] 
     })
 }
 
-// Fallback for deployments seeded before the counters table existed. Exact but unbounded;
-// runs at most until the first write populates the counters, then never again.
 async function computeStatsLive(db: GenericDatabaseReader<DataModel>): Promise<Stats> {
     const [restaurants, interests] = await Promise.all([
         db.query("restaurants").collect(),

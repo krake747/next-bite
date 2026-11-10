@@ -35,18 +35,12 @@ export default defineConfig({
         process.env["E2E_NO_SERVER"] === undefined
             ? [
                   {
-                      // Build the production Worker bundle, then serve it locally. The gate proves
-                      // the built SSR boundary (single React, clean hydration). Point E2E_BASE_URL
-                      // at a dev server with E2E_NO_SERVER=1 set when iterating quickly.
                       command: "pnpm build && wrangler dev --config e2e/worker.preview.toml --port 5193",
                       url: "http://localhost:5193/",
                       reuseExistingServer: false,
                       timeout: 300000,
                   },
                   {
-                      // Password-auth journeys need the trusted localhost:5173 origin, which the
-                      // Worker preview does not have. Throwaway users and data land in the local
-                      // dev deployment only, never preview or production.
                       command: "pnpm dev --port 5173",
                       url: "http://localhost:5173/",
                       reuseExistingServer: false,

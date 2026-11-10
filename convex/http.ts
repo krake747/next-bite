@@ -8,9 +8,6 @@ import { appOrigins } from "./env"
 
 const http = httpRouter()
 
-// The upload endpoint is browser-facing cross-origin, so it reflects only
-// trusted app origins. Anything else gets no CORS headers and the browser
-// blocks the response. Non-browser callers send no Origin and are unaffected.
 function corsHeadersFor(request: Request): Record<string, string> {
     return resolveCorsHeaders(request.headers.get("Origin"), appOrigins())
 }

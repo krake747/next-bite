@@ -7,7 +7,6 @@ import { default as react } from "@vitejs/plugin-react"
 import { defineConfig, lazyPlugins } from "vite-plus"
 import { playwright } from "vite-plus/test/browser-playwright"
 
-// https://viteplus.dev/config/
 const domSetupFiles = ["./src/vitest.setup.ts"]
 const happyDomEnvironmentOptions = {
     happyDOM: {
@@ -321,8 +320,6 @@ export default defineConfig({
                 files: ["**/*.browser.spec.{ts,tsx}"],
                 plugins: ["typescript"],
                 rules: {
-                    // Browser assertions poll at runtime (`await expect.element(...)`);
-                    // the static types do not model the Thenable.
                     "typescript/await-thenable": "allow",
                 },
             },
@@ -408,10 +405,6 @@ export default defineConfig({
     resolve: {
         tsconfigPaths: true,
         alias: [
-            // dataModel is types-only upstream (dataModel.d.ts, no runtime file), so the
-            // dep scanner cannot resolve the tsconfig path and aborts the whole scan.
-            // Pointing it at the .d.ts lets the initial scan succeed; every import of
-            // this module is type-only and erased before runtime.
             {
                 find: "@convex/_generated/dataModel",
                 replacement: path.resolve(import.meta.dirname, "convex/_generated/dataModel.d.ts"),
@@ -484,8 +477,6 @@ export default defineConfig({
             include: ["src/**/*.{ts,tsx}"],
             exclude: ["src/routeTree.gen.ts", "src/vitest.setup.ts", "src/vitest.msw.setup.ts"],
         },
-        // Record wait steps (expect.poll, vi.waitFor, vi.waitUntil) so the next
-        // flaky timeout explains itself instead of just timing out.
         experimental: {
             traceTimeline: true,
         },
@@ -495,8 +486,6 @@ export default defineConfig({
             VITE_GOOGLE_MAPS_API_KEY: "test-key",
             SITE_URL: "http://localhost:5173",
         },
-        // Timeout rule: slowTestThreshold is testTimeout minus 500ms in every project, so
-        // slow warnings fire on the same margin before the timeout kills the test.
         projects: [
             {
                 test: {
@@ -524,16 +513,12 @@ export default defineConfig({
                 },
             },
             {
-                // Real-browser runner (ADR-0011 seam filled): only this project uses
-                // browser mode. Keep include plus timeouts tier scoped.
                 test: {
                     name: "browser",
                     include: ["src/**/*.browser.spec.{js,ts,jsx,tsx}"],
                     setupFiles: domSetupFiles,
                     testTimeout: 10000,
                     slowTestThreshold: 9500,
-                    // Chromium contends with the edge-runtime integration workers and trips
-                    // their 3s timeouts, so the browser tier runs after every other tier.
                     sequence: { groupOrder: 1 },
                     browser: {
                         enabled: true,

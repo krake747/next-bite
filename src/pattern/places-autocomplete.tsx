@@ -150,7 +150,6 @@ export function PlacesAutocomplete({
             cleanup()
             initializedRef.current = false
         }
-        // biasKey is the value-identity of locationBias; onChange flows via ref so typing never remounts the element
     }, [placesLib, inputId, biasKey])
 
     return (

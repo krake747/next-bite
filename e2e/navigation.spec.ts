@@ -8,9 +8,6 @@ function collectPageErrors(page: Page): unknown[] {
     return errors
 }
 
-// The primary nav renders for signed-in users only, and the Worker preview has no password
-// auth, so anonymous legs navigate directly. Signed-in nav clicks are covered by the
-// authenticated journeys on the dev server.
 test("visits Home to Friends to Groups without page errors", async ({ page }) => {
     const errors = collectPageErrors(page)
 

@@ -279,8 +279,6 @@ function applyPlaceSelection(
         setInput(form, { path: ["lng"], input: undefined })
     }
     setInput(form, { path: ["placeId"], input: selection.placeId })
-    // Prefill only what the user has not typed yet; a pick never
-    // overwrites manual input.
     if ((nameInput ?? "") === "" && selection.name !== undefined && selection.name !== "") {
         setInput(form, { path: ["name"], input: selection.name })
     }

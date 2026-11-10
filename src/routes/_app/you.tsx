@@ -22,8 +22,6 @@ export const Route = createFileRoute("/_app/you")({
         if (context.auth?.isAuthenticated !== true) {
             return null
         }
-        // Owner restaurants ride a live collection, not this cache, so only the
-        // status query warms here.
         await warmQueriesWithin(
             context.queryClient,
             [convexQueryOptions(api.social.listMyStatuses)],

@@ -17,8 +17,6 @@ export const Route = createFileRoute("/_app/invite/$token")({
     head: () => ({ meta: [{ title: "Group invitation" }] }),
     component: InviteView,
     pendingComponent: InviteLoading,
-    // No loader here: the preview args carry `now: Date.now()`, so a warmed key
-    // would never match the view's key. The preview is a single cheap fetch.
     errorComponent: InviteLoadError,
 })
 

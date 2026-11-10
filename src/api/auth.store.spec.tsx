@@ -80,8 +80,7 @@ function seedCache(email: string): void {
 }
 
 function ignoreRejection(_error: unknown): void {
-    // Mirrors production call sites, which swallow action rejections after the store
-    // records them. Each test asserts the recorded state below instead.
+    void _error
 }
 
 function resetAuth(): void {

@@ -213,8 +213,6 @@ function FriendDiscoveries({ ownerId, ownerName }: Readonly<{ ownerId: string; o
 
 function OwnListNudge() {
     const restaurants = useRestaurants()
-    // Only relevant before you have anything of your own: once you add places,
-    // the loop is running and the nudge would be noise.
     if (restaurants === undefined || restaurants.length > 0) {
         return null
     }

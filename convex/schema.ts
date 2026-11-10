@@ -119,8 +119,6 @@ export default defineSchema({
         target: inviteTargetValidator,
         invitedEmail: v.optional(v.string()),
         invitedBy: v.string(),
-        // Reusable group links stay pending across accepts; friend invites flip
-        // to accepted on first use. Revoked and expired both refuse new accepts.
         status: v.union(v.literal("pending"), v.literal("accepted"), v.literal("expired"), v.literal("revoked")),
         expiresAt: v.number(),
         createdAt: v.number(),

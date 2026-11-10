@@ -205,9 +205,6 @@ function DetailHero({
 }
 
 function DetailEditForm({ restaurant, onDone }: Readonly<{ restaurant: Restaurant; onDone: () => void }>) {
-    // Same ownership as the old dialog close: Cancel runs the form's discard
-    // first so staged uploads never strand, and the live query paints the
-    // saved edit the moment Convex syncs it. No refetch, no navigation.
     const { registerDiscard, discard } = useFormDiscard()
     return (
         <div className="p-5 md:p-4">

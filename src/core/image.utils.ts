@@ -60,7 +60,7 @@ export async function processImage(file: Readonly<File>): Promise<ProcessedImage
             originalName: file.name,
             originalSize: file.size,
             processedSize: file.size,
-            width: 0, // Dimensions unknown without loading
+            width: 0,
             height: 0,
         }
     }

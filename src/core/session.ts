@@ -109,8 +109,6 @@ export function useSessionKey(): string | null {
 
 type GatedId<T> = { readonly skip: true; readonly id: undefined } | { readonly skip: false; readonly id: T }
 
-// Session-gated optional id: skip is true until the session is ready and the id is present.
-// In the `skip: false` branch `id` narrows to `T`, so query args build with no casts.
 export function gateId<T>(status: SessionStatus, id: T | undefined): GatedId<T> {
     if (status.kind !== "ready" || id === undefined) {
         return { skip: true, id: undefined }

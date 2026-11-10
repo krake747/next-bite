@@ -64,9 +64,6 @@ type AvatarInput = {
     height?: number | undefined
 }
 
-// Avatar ownership is verified against the server upload record, and display
-// metadata comes from the record and profile, never from client-claimed fields.
-// Avatars mark the upload record so orphan sweeps skip them.
 async function resolveAvatarUpload(
     ctx: MutationCtx,
     userId: string,
@@ -113,8 +110,6 @@ export const updateMe = mutation({
         const avatar =
             args.avatar !== undefined ? await resolveAvatarUpload(ctx, userId, displayName, args.avatar) : undefined
         if (!profile) {
-            // First save from the onboarding form: no profile row exists yet. The auth record
-            // supplies the email so the onboarding path needs no separate ensure call.
             const authUser = await readAuthUser(ctx)
             if (!authUser?.email) {
                 throw new Error("Profile not found: call ensureProfile first")
@@ -130,7 +125,6 @@ export const updateMe = mutation({
         await ctx.db.patch(profile._id, {
             ...(args.name !== undefined ? { name: formatDisplayName(args.name) } : {}),
             ...(avatar !== undefined ? { avatar } : {}),
-            // Patching with undefined deletes the field; an omitted avatar means no change.
             ...(args.removeAvatar === true ? { avatar: undefined } : {}),
         })
         return profile._id

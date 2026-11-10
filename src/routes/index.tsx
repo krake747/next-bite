@@ -18,8 +18,6 @@ export const Route = createFileRoute("/")({
     },
     component: Home,
     loader: ({ context }) => {
-        // Public landing stats warm for everyone; the authenticated home at
-        // /home rides live collections with their own preload, not this cache.
         warmQueries(context.queryClient, [convexQueryOptions(api.landing.getStats)])
         return null
     },

@@ -28,10 +28,7 @@ export function VisitMemories({ restaurantId }: Readonly<{ restaurantId: Id<"res
 
     const handleRemoveStaged = (storageId: Id<"_storage">) => {
         setStaged((current) => current.filter((image) => image.storageId !== storageId))
-        void cleanupStorage.mutateAsync({ storageId }).catch(() => {
-            // Staged and unattached: a failed cleanup leaves an orphan for the
-            // backend sweeps, never a wrong deletion.
-        })
+        void cleanupStorage.mutateAsync({ storageId }).catch(() => {})
     }
 
     const handleSubmit = async () => {
@@ -40,9 +37,6 @@ export function VisitMemories({ restaurantId }: Readonly<{ restaurantId: Id<"res
         }
         setError(clearError)
         try {
-            // The client claims only location and dimensions. Ownership,
-            // display name, MIME type, and byte size are resolved server-side
-            // from the upload record, so spoofed identity fields cannot pass.
             await addVisitMemory.mutateAsync({
                 restaurantId,
                 images: staged.map((image) => ({

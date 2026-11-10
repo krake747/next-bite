@@ -65,8 +65,6 @@ export type StatsDelta = {
     readonly cuisines?: Readonly<Record<string, number>> | undefined
 }
 
-// Landing aggregates stay exact without scanning: every restaurant and interest write adjusts
-// the single counter row in the same transaction, so the public stats query reads O(1) rows.
 export async function adjustStatsCounters(
     ctx: { db: GenericDatabaseReader<DataModel> & GenericDatabaseWriter<DataModel> },
     delta: StatsDelta,

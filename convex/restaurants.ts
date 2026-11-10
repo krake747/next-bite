@@ -49,8 +49,6 @@ function requireUploadOwner(record: UploadRecord, ownerId: string): asserts reco
     }
 }
 
-// Attach requires a server ownership record matching the caller and no conflicting resource
-// association. allowId is the restaurant being written (null while adding, before it exists).
 function assertAttachable(record: UploadRecord, ownerId: string, allowId: Id<"restaurants"> | null): asserts record {
     requireUploadOwner(record, ownerId)
     if (record.restaurantId !== null && record.restaurantId !== allowId) {
@@ -514,8 +512,6 @@ async function resolveGooglePlace(
     addressLabel: string,
     placeId: string | undefined,
 ): Promise<GooglePlaceResult> {
-    // A client-held placeId (from the Places picker) wins over the
-    // name/address guess: the user already confirmed the exact place.
     const providedPlaceId = placeId !== undefined && placeId !== "" ? placeId : undefined
     if (providedPlaceId !== undefined) {
         return { placeId: providedPlaceId, lat: undefined, lng: undefined }
@@ -615,7 +611,6 @@ export const addWithOpeningHours = action({
             images: enrichedImages,
             ...(args.clientMutationId !== undefined ? { clientMutationId: args.clientMutationId } : {}),
         })
-        // A duplicate retry returns the first call's id; its images are already attached.
         if (!duplicate) {
             await attachInsertedImages(ctx, enrichedImages, userId, restaurantId)
         }

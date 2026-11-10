@@ -124,8 +124,6 @@ function AddPage() {
         void discard().then(goHome)
     }
     const changeChoice = (next: AddChoice) => {
-        // Discard before swapping drafts so staged uploads never strand:
-        // idle has no form, so its registered discard is a noop.
         void discard().then(() => {
             setChoice(next)
         })

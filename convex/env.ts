@@ -18,10 +18,6 @@ export function getValidatedSiteUrl(): string {
     return url
 }
 
-// Trusted browser origins for upload CORS, as a comma-separated list. Loopback
-// origins are always trusted so local development works with zero config;
-// every other browser origin must be listed here or the browser blocks the
-// response. Non-browser callers send no Origin and are unaffected.
 export function appOrigins(): string[] {
     const raw = env.APP_ORIGINS
     if (!isPresent(raw)) {
@@ -55,8 +51,6 @@ export function hasMailgunConfig(): boolean {
     return mailgunConfig() !== null
 }
 
-// Explicit opt-in only. Missing mail configuration fails closed everywhere else, including
-// preview and production, even when the OTP flag is on.
 export function isMailDevFallback(): boolean {
     return env.MAILGUN_DEV_FALLBACK === "true"
 }

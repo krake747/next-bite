@@ -47,9 +47,6 @@ function HomeRiver({ mine, feed }: Readonly<{ mine: ReadonlyArray<Restaurant>; f
     const auth = useAuth()
     const ownId = auth.user?.id
     const mineIds = new Set(mine.map((restaurant) => restaurant._id))
-    // The owner and feed collections never share an id in production, but
-    // seeded test clients mirror the same rows into both. Render a duplicate
-    // once, as your own card with full actions.
     const feedOnly = feed.filter((restaurant) => !mineIds.has(restaurant._id))
     const items = [...mine, ...feedOnly].toSorted((a, b) => b._creationTime - a._creationTime)
     const hasAnything = mine.length > 0 || feedOnly.length > 0

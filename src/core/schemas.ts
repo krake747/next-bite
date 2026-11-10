@@ -21,8 +21,6 @@ export type RestaurantOutput = v.InferOutput<typeof RestaurantSchema>
 
 const imageRecordSchema = v.object({
     url: v.pipe(v.string(), v.minLength(1)),
-    // The upload endpoint returns the storage id as a JSON string. Brand it here at the parse
-    // boundary; the backend revalidates the table on every call, so this proves plumbing only.
     storageId: v.custom<Id<"_storage">>((value) => typeof value === "string" && value.length > 0),
     ownerId: v.optional(v.string()),
     displayName: v.optional(v.string()),

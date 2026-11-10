@@ -31,8 +31,6 @@ function rootHead(): RootHead {
 }
 
 describe("root head", () => {
-    // Config-level contract, not rendered output: the framework consumes head() directly, so
-    // there is no DOM to query. Raw HTML coverage lives in the Playwright public SSR gate.
     test("preloads the above-the-fold display and body fonts", () => {
         const links = rootHead().links.filter((link): link is FontPreload => link.rel === "preload")
         expect(links).toHaveLength(2)

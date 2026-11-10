@@ -58,8 +58,6 @@ async function renderDialog() {
     )
 }
 
-// Direct dispatch: the unstyled test env leaves Base UI's inert backdrop above
-// the panel, so Playwright hit-testing cannot reach dialog buttons.
 function clickButton(button: { element: () => HTMLElement | SVGElement }): void {
     const node = button.element()
     if (!(node instanceof HTMLElement)) {
@@ -79,8 +77,6 @@ describe("share to group dialog", () => {
         const screen = await renderDialog()
 
         await expect.element(screen.getByRole("button", { name: "Add to group" })).toBeInTheDocument()
-        // Direct dispatch: the unstyled test env leaves Base UI's inert backdrop
-        // above the panel, so Playwright hit-testing cannot reach dialog buttons.
         clickButton(screen.getByRole("button", { name: "Add to group" }))
 
         await expect

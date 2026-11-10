@@ -84,8 +84,6 @@ export function applyUpdateArgsToDraft(draft: RestaurantDoc, args: RestaurantUpd
         draft.cuisine = args.cuisine
     }
     if (args.addressLabel !== undefined || args.coords !== undefined) {
-        // Same contract as the server write: the preview and the persisted
-        // row agree, so there is no optimistic drift to heal on sync.
         const enrichment = mergeEnrichment(draft.address.enrichment, args.coords)
         draft.address = {
             label: args.addressLabel ?? draft.address.label,
@@ -153,7 +151,6 @@ export type TempRestaurantInput = RestaurantAddArgs &
 
 export function buildTempRestaurant(input: TempRestaurantInput): RestaurantDoc {
     const now = Date.now()
-    // Client-only placeholder id replaced by the server row on sync.
     const tempId = toId<"restaurants">(`${TEMP_ID_PREFIX}${crypto.randomUUID()}`)
     return {
         _id: tempId,
@@ -323,7 +320,6 @@ const USER_SCOPED_QUERY_PREFIXES = [
 ]
 
 function isUserScopedQueryKey(queryKey: ReadonlyArray<unknown>): boolean {
-    // Runtime keys from @convex-dev/react-query are ["convexQuery", "module:function", args].
     const fn = queryKey[0] === "convexQuery" ? queryKey[1] : undefined
     return typeof fn === "string" && USER_SCOPED_QUERY_PREFIXES.some((prefix) => fn.startsWith(prefix))
 }

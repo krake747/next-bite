@@ -1,8 +1,5 @@
 import { expect, test } from "@playwright/test"
 
-// Authenticated group journey against a dev server (password auth needs the trusted
-// localhost:5173 origin, which the Worker preview does not have). Creates throwaway
-// users, groups, and restaurants in the local dev deployment only.
 test("create group, add restaurant, and view it on the shared list", async ({ page }) => {
     const stamp = Date.now()
     const email = `e2e-${stamp}@example.com`
@@ -13,8 +10,6 @@ test("create group, add restaurant, and view it on the shared list", async ({ pa
         errors.push(error)
     })
 
-    // Never depend on Google in the gate: without the Maps script the location field stays a
-    // plain labeled input.
     await page.route("**/maps.googleapis.com/**", (route) => {
         void route.abort()
     })
