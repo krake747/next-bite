@@ -44,6 +44,9 @@ jobs:
       - name: Install dependencies
         run: vp install
 
+      - name: Validate deploy env
+        run: .github/scripts/deploy-check-env.sh
+
       - name: Build and deploy
         run: |
           set -euo pipefail
@@ -55,8 +58,15 @@ jobs:
           set -euo pipefail
           for attempt in $(seq 1 30); do
             if curl -s --max-time 15 "https://nextbite.kevinkraemer.com" | grep -q "root"; then
-              echo "production serves the build at https://nextbite.kevinkraemer.com"
-              exit 0
+              echo "serving the build, confirming it is not a stale edge"
+              sleep 20
+              if curl -s --max-time 15 "https://nextbite.kevinkraemer.com" | grep -q "root" \
+                && curl -s --max-time 15 "https://nextbite.kevinkraemer.com/login" | grep -q "root"; then
+                echo "confirmed on a second pass"
+                exit 0
+              fi
+              echo "confirmation pass failed; the first hit may have been a stale edge"
+              exit 1
             fi
             sleep 10
           done
