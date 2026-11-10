@@ -18,7 +18,7 @@ function corsHeadersFor(request: Request): Record<string, string> {
 const MAX_UPLOAD_BYTES = 20 * 1024 * 1024
 const ALLOWED_CONTENT_TYPES = ["image/jpeg", "image/png", "image/webp", "image/gif"]
 
-authComponent.registerRoutes(http, createAuth, { cors: true })
+authComponent.registerRoutes(http, createAuth)
 
 function jsonResponse(request: Request, status: number, payload: unknown): Response {
     return new Response(JSON.stringify(payload), {

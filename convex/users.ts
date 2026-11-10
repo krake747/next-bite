@@ -2,6 +2,7 @@ import { v } from "convex/values"
 
 import { type Doc, type Id } from "./_generated/dataModel"
 import { mutation, query, type MutationCtx } from "./_generated/server"
+import { authComponent } from "./auth"
 import { formatDisplayName, readAuthUser, requireUserId } from "./helpers"
 import { imageObjectValidator } from "./validators"
 
@@ -27,6 +28,17 @@ export const ensureProfile = mutation({
             email: args.email.trim().toLowerCase(),
             createdAt: Date.now(),
         })
+    },
+})
+
+export const getSessionUser = query({
+    args: {},
+    handler: async (ctx): Promise<{ id: string; email: string; name: string | null; image: string | null } | null> => {
+        const user = await authComponent.safeGetAuthUser(ctx)
+        if (!user) {
+            return null
+        }
+        return { id: user._id, email: user.email, name: user.name, image: user.image ?? null }
     },
 })
 

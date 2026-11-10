@@ -25,6 +25,10 @@ function asUser(subject: string): TestConvexForDataModel<DataModel> {
 }
 
 describe("users", () => {
+    test("reports no session user for a signed-out request", async () => {
+        await expect(setup().query(api.users.getSessionUser, {})).resolves.toBeNull()
+    })
+
     test("creates user details on first ensure and returns the same id on retry", async () => {
         const t = asUser("user-1")
         const first = await t.mutation(api.users.ensureProfile, { email: "ada@example.com", name: "Ada" })

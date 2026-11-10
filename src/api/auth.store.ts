@@ -1,21 +1,10 @@
 import { useReducer, useRef } from "react"
 import * as v from "valibot"
 
+import { type RouterAuth, type SessionUser, signedOutAuth } from "./auth.identity"
 import { authClient } from "./auth.sdk"
 
-type User = {
-    readonly id: string
-    readonly email: string
-    readonly name?: string | null | undefined
-    readonly image?: string | null | undefined
-}
-
-type SessionUser = {
-    readonly id: string
-    readonly email: string
-    readonly name?: string | null | undefined
-    readonly image?: string | null | undefined
-}
+type User = SessionUser
 
 function mapSessionUserToUserPayload(user: Readonly<SessionUser>): User {
     return {
@@ -155,14 +144,31 @@ async function lookupSession(cachedUser: User | null): Promise<BootstrapOutcome>
     return { kind: "verified", user: mapSessionUserToUserPayload(user) }
 }
 
-export function useAuthStore() {
-    const [state, dispatch] = useReducer(authReducer, {
-        isAuthenticated: false,
-        isLoading: true,
-        isInitializing: true,
-        user: null,
+function initialAuthState(initial: RouterAuth | null): AuthState {
+    if (initial === null) {
+        return { isAuthenticated: false, isLoading: true, isInitializing: true, user: null, error: null }
+    }
+    return {
+        isAuthenticated: initial.isAuthenticated,
+        isLoading: false,
+        isInitializing: false,
+        user: initial.user,
         error: null,
-    })
+    }
+}
+
+export type AuthStoreOptions = {
+    readonly initial?: RouterAuth | null | undefined
+    readonly onChange?: ((auth: RouterAuth) => void) | undefined
+}
+
+export function useAuthStore(options: AuthStoreOptions = {}) {
+    const initial = options.initial ?? null
+    const [state, dispatch] = useReducer(authReducer, initial, initialAuthState)
+    const seedRef = useRef(initial)
+    const notify = (auth: RouterAuth) => {
+        options.onChange?.(auth)
+    }
     // Operation generation: every auth operation claims the current generation when it
     // starts. A completion, error, or reset only lands when its generation is still
     // current. Conflicting actions are superseded: the last starter owns pending state,
@@ -180,11 +186,13 @@ export function useAuthStore() {
     const saveUser = (userData: Readonly<User>) => {
         dispatch({ type: "SET_USER", user: userData })
         saveSessionToStorage(userData)
+        notify({ isAuthenticated: true, user: userData })
     }
 
     const clearUser = () => {
         dispatch({ type: "CLEAR_USER" })
         clearSessionFromStorage()
+        notify(signedOutAuth)
     }
 
     const saveUserIfCurrent = (userData: Readonly<User>, generation: number) => {
@@ -219,7 +227,25 @@ export function useAuthStore() {
         throw new Error(message ?? fallbackMessage)
     }
 
+    const revalidateSeededSession = async (seed: RouterAuth) => {
+        const generation = claimGeneration()
+        const outcome = await lookupSession(seed.user)
+        if (generation !== currentGeneration()) {
+            return
+        }
+        if (outcome.kind === "verified") {
+            saveUser(outcome.user)
+        } else if (outcome.kind === "clear") {
+            clearUser()
+        }
+    }
+
     const initializeAuth = async () => {
+        const seed = seedRef.current
+        if (seed !== null) {
+            await revalidateSeededSession(seed)
+            return
+        }
         const generation = claimGeneration()
         dispatch({ type: "SET_INITIALIZING", isInitializing: true })
         dispatch({ type: "SET_LOADING", isLoading: true })

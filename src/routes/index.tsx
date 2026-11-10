@@ -1,16 +1,23 @@
-import { createFileRoute, Navigate } from "@tanstack/react-router"
+import { createFileRoute, Navigate, redirect } from "@tanstack/react-router"
 
 import { useConvexQuery } from "@api/convex.context"
 import { convexQueryOptions, warmQueries } from "@api/convex.options"
 import { api } from "@api/endpoints"
 import { useAuth } from "@core/session"
 import { BackgroundLayers } from "@pattern/background-decoration"
+import { AppInitializing } from "@pattern/loading"
 import { LandingActions, LandingCloser, TasteCards, TasteCardsSkeleton } from "@routes/-components/home-sections"
 import { PageContainer } from "@routes/-layouts/page-container"
 import { PageLayout } from "@routes/-layouts/page-layout"
 
 export const Route = createFileRoute("/")({
     head: () => ({ meta: [{ title: "Our next bite" }] }),
+    beforeLoad: ({ context }) => {
+        if (context.auth?.isAuthenticated === true) {
+            // oxlint-disable-next-line typescript/only-throw-error -- TanStack Router redirects via thrown redirect objects by design
+            throw redirect({ to: "/home", replace: true })
+        }
+    },
     component: Home,
     loader: ({ context }) => {
         // Public landing stats warm for everyone; the authenticated home at
@@ -65,9 +72,9 @@ function SignedOutHome() {
 
 function Home() {
     const auth = useAuth()
-    // Auth starts unknown on the server and the first client render. The public
-    // landing is that shared paint, so crawlers get real content and hydration
-    // matches. A resolved session moves to the signed-in home.
+    if (auth.isInitializing) {
+        return <AppInitializing />
+    }
     if (auth.isAuthenticated) {
         return <Navigate to="/home" replace />
     }

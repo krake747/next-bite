@@ -447,6 +447,9 @@ export default defineConfig({
     build: {
         license: { fileName: "license.md" },
     },
+    ssr: {
+        noExternal: ["@convex-dev/better-auth"],
+    },
     plugins: lazyPlugins(() => [
         ...(process.env["VITEST"] === "true" ? [] : [cloudflare()]),
         tanstackStart({
@@ -478,6 +481,7 @@ export default defineConfig({
             VITE_CONVEX_URL: "https://example.convex.cloud",
             VITE_CONVEX_SITE_URL: "https://example.convex.site",
             VITE_GOOGLE_MAPS_API_KEY: "test-key",
+            SITE_URL: "http://localhost:5173",
         },
         // Timeout rule: slowTestThreshold is testTimeout minus 500ms in every project, so
         // slow warnings fire on the same margin before the timeout kills the test.

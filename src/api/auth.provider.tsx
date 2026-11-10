@@ -7,6 +7,7 @@ import { ConvexBetterAuthProvider } from "@convex-dev/better-auth/react"
 import { ConvexQueryClient } from "@convex-dev/react-query"
 import { env } from "@core/env"
 
+import { type RouterAuth } from "./auth.identity"
 import { authClient } from "./auth.sdk"
 import { useAuthStore } from "./auth.store"
 
@@ -23,21 +24,20 @@ async function noopServerAuthResult(): Promise<boolean> {
     return false
 }
 
-const serverAuthStore: AuthStore = {
-    // Auth-unknown: the server has no session, so it renders the same loading variant as the
-    // client's first render. Matching first renders keeps hydration clean; resolved auth state
-    // arrives as a normal post-hydration update.
-    isAuthenticated: false,
-    isLoading: true,
-    isInitializing: true,
-    user: null,
-    error: null,
-    initializeAuth: noopServerAuthStep,
-    signInWithPassword: noopServerAuthResult,
-    signUpWithPassword: noopServerAuthResult,
-    requestOtp: noopServerAuthResult,
-    verifyOtp: noopServerAuthResult,
-    signOut: noopServerAuthStep,
+function serverAuthStore(initial: RouterAuth | null): AuthStore {
+    return {
+        isAuthenticated: initial?.isAuthenticated ?? false,
+        isLoading: initial === null,
+        isInitializing: initial === null,
+        user: initial?.user ?? null,
+        error: null,
+        initializeAuth: noopServerAuthStep,
+        signInWithPassword: noopServerAuthResult,
+        signUpWithPassword: noopServerAuthResult,
+        requestOtp: noopServerAuthResult,
+        verifyOtp: noopServerAuthResult,
+        signOut: noopServerAuthStep,
+    }
 }
 
 export function useAuthContext() {
@@ -72,7 +72,15 @@ function ConvexAuthBridge({ client, children }: Readonly<{ client: ConvexReactCl
 const connectedQueryClients = new WeakMap<QueryClient, ConvexPair>()
 const liveQueryClients = new WeakSet<QueryClient>()
 
-export function AuthProvider({ children }: Readonly<{ children: React.ReactNode }>) {
+export function AuthProvider({
+    initialAuth = null,
+    onAuthChange,
+    children,
+}: Readonly<{
+    initialAuth?: RouterAuth | null
+    onAuthChange?: (auth: RouterAuth) => void
+    children: React.ReactNode
+}>) {
     const queryClient = useQueryClient()
     const [pair] = useState<ConvexPair | null>(() => {
         if (typeof window === "undefined") {
@@ -88,7 +96,7 @@ export function AuthProvider({ children }: Readonly<{ children: React.ReactNode 
         connectedQueryClients.set(queryClient, created)
         return created
     })
-    const store = useAuthStore()
+    const store = useAuthStore({ initial: initialAuth, onChange: onAuthChange })
 
     useEffect(() => {
         if (pair !== null && !liveQueryClients.has(queryClient)) {
@@ -105,7 +113,7 @@ export function AuthProvider({ children }: Readonly<{ children: React.ReactNode 
     }, [pair, queryClient])
 
     if (pair === null) {
-        return <AuthContext.Provider value={serverAuthStore}>{children}</AuthContext.Provider>
+        return <AuthContext.Provider value={serverAuthStore(initialAuth)}>{children}</AuthContext.Provider>
     }
 
     return (

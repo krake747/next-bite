@@ -2,6 +2,7 @@ import { RouterProvider, createMemoryHistory, createRouter } from "@tanstack/rea
 import { fireEvent, screen, waitFor } from "@testing-library/react"
 import { afterEach, describe, expect, test, vi } from "vitest"
 
+import { createAuthSnapshot } from "@api/auth.session"
 import { ConvexProvider } from "@api/convex.context"
 import { createSeededClient, seedKey } from "@api/db/seeded.client"
 
@@ -56,7 +57,7 @@ async function renderAt(path: string, extraSeeds?: ReadonlyMap<string, unknown>)
     const router = createRouter({
         routeTree,
         history: createMemoryHistory({ initialEntries: [path] }),
-        context: { queryClient: backend.queryClient },
+        context: { queryClient: backend.queryClient, authSnapshot: createAuthSnapshot() },
     })
     await router.load()
     renderDocument(
