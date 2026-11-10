@@ -25,10 +25,13 @@ export const getAuthMethods = query({
 })
 
 export const createAuth = (ctx: GenericCtx<DataModel>) => {
-    // Resolved per call, not at module load: fresh deployments accept a push before
-    // any env vars exist, and the first push would otherwise fail module analysis.
-    // Missing SITE_URL still fails fast here, on first auth use.
-    const siteUrl = getValidatedSiteUrl()
+    // registerRoutes builds one static instance at module load just to read basePath,
+    // passing an empty object as ctx. Fresh deployments have no env vars yet, so the
+    // static call gets a swap-in baseURL and the push succeeds. Every real request
+    // builds its own instance below with the live env, and a missing SITE_URL still
+    // throws there. Keyed on emptiness, not on ctx shape: HTTP action ctx has no db.
+    const staticRegistration = Object.keys(ctx).length === 0
+    const siteUrl = staticRegistration ? "http://localhost" : getValidatedSiteUrl()
     return betterAuth({
         baseURL: siteUrl,
         trustedOrigins: [...new Set([siteUrl, ...appOrigins()])],
