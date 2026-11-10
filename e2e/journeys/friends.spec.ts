@@ -29,7 +29,7 @@ async function newUserPage(
     return page
 }
 
-test("friend request, accept, share, and shared discovery", async ({ browser, viewport }) => {
+test("friend request, accept, and the friend's save in the feed", async ({ browser, viewport }) => {
     const stamp = Date.now()
     const annaName = `Anna ${stamp}`
     const benName = `Ben ${stamp}`
@@ -65,18 +65,8 @@ test("friend request, accept, share, and shared discovery", async ({ browser, vi
     await anna.getByRole("button", { name: "Add Restaurant", exact: true }).click()
     await expect(anna.getByRole("heading", { name: "Add Restaurant" })).toBeHidden({ timeout: 30000 })
 
-    await anna.goto("/")
-    await expect(anna.getByText(placeName).first()).toBeVisible({ timeout: 20000 })
-    await anna.getByText(placeName).first().click()
-    await expect(anna.getByRole("button", { name: "Share" })).toBeVisible({ timeout: 20000 })
-    await anna.getByRole("button", { name: "Share" }).click()
-    const dialog = anna.getByRole("dialog")
-    await dialog.getByRole("button", { name: "Share" }).click()
-    await expect(dialog.getByRole("button", { name: "Remove" })).toBeVisible({ timeout: 20000 })
-    await anna.keyboard.press("Escape")
-
-    await ben.goto("/friends")
-    await expect(ben.getByText(placeName)).toBeVisible({ timeout: 20000 })
+    await ben.goto("/home")
+    await expect(ben.getByText(placeName).first()).toBeVisible({ timeout: 20000 })
 
     expect(aErrors).toEqual([])
     expect(bErrors).toEqual([])

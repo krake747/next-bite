@@ -7,15 +7,7 @@ import { toId } from "@api/data.model"
 import { api } from "@api/endpoints"
 import { type Restaurant } from "@core/restaurants"
 import { useAuth } from "@core/session"
-import {
-    emptySocial,
-    useAddComment,
-    useDeleteComment,
-    useSocialForRestaurant,
-    useToggleInterest,
-    useToggleLike,
-    type RestaurantSocial,
-} from "@core/social"
+import { emptySocial, useSocialForRestaurant, useToggleInterest, type RestaurantSocial } from "@core/social"
 import { type Viewer } from "@core/social.counts"
 import { ShareToGroupDialog } from "@features/groups/share-to-group-dialog"
 import { PlanSection } from "@features/plans/plans"
@@ -24,10 +16,7 @@ import { RestaurantForm, useFormDiscard } from "@features/restaurants/restaurant
 import { RestaurantGallery } from "@features/restaurants/restaurant-gallery"
 import { RestaurantHeader } from "@features/restaurants/restaurant-header"
 import { RestaurantInterestButton } from "@features/restaurants/restaurant-interest-button"
-import { CommentList } from "@features/social/comment-list"
 import { PhotoGallery } from "@features/social/photo-gallery"
-import { ReactionBar } from "@features/social/reaction-bar"
-import { VisitMemories } from "@features/social/visit-memories"
 import { AvatarGroup } from "@pattern/avatar-group"
 import { type GalleryPhoto } from "@pattern/gallery"
 import { LoadingPlaceholder } from "@pattern/loading"
@@ -67,8 +56,6 @@ function RestaurantDetailError({ reset }: Readonly<{ reset: () => void }>) {
     )
 }
 
-const asCommentId = toId<"comments">
-
 function DetailHero({
     restaurant,
     social,
@@ -83,7 +70,6 @@ function DetailHero({
     const navigate = useNavigate()
     const auth = useAuth()
     const toggleInterest = useToggleInterest()
-    const toggleLike = useToggleLike()
     const [showHours, setShowHours] = useState(false)
     const [editing, setEditing] = useState(false)
     const isOwner = auth.isAuthenticated && auth.user !== null && restaurant.ownerId === auth.user.id
@@ -98,14 +84,6 @@ function DetailHero({
             return
         }
         toggleInterest.mutate({ restaurantId: restaurant._id, status: "want" })
-    }
-
-    const handleToggleLike = () => {
-        if (!auth.isAuthenticated) {
-            goToLogin()
-            return
-        }
-        toggleLike.mutate({ restaurantId: restaurant._id })
     }
 
     return (
@@ -141,23 +119,6 @@ function DetailHero({
                                 wanted={social.wanted}
                                 wantCount={social.wantCount}
                                 onToggleWant={toggleWant}
-                            />
-                            <ReactionBar
-                                reactions={{
-                                    liked: social.liked,
-                                    likeCount: social.likeCount,
-                                    onToggleLike: handleToggleLike,
-                                    commentCount: social.comments.length,
-                                    onComment: () => {
-                                        document.getElementById("detail-comments")?.scrollIntoView({
-                                            behavior: "smooth",
-                                            block: "start",
-                                        })
-                                    },
-                                    wanted: social.wanted,
-                                    wantCount: social.wantCount,
-                                    onToggleWant: toggleWant,
-                                }}
                             />
                             {isOwner && (
                                 <Button
@@ -231,46 +192,6 @@ function DetailPhotos({ photos }: Readonly<{ photos: ReadonlyArray<GalleryPhoto>
             <div className="pt-3">
                 <PhotoGallery photos={photos} />
             </div>
-        </div>
-    )
-}
-
-function DetailComments({
-    restaurant,
-    social,
-}: Readonly<{
-    restaurant: Restaurant
-    social: RestaurantSocial
-}>) {
-    const auth = useAuth()
-    const addComment = useAddComment()
-    const deleteComment = useDeleteComment()
-    const isAuthenticated = auth.isAuthenticated
-    const currentUser = auth.user?.name ?? auth.user?.email
-    return (
-        <div id="detail-comments" className="scroll-mt-4 rounded-card border border-border bg-surface p-4 shadow-card">
-            <CommentList
-                comments={social.comments.map((comment) => ({
-                    id: comment._id,
-                    author: comment.displayName,
-                    text: comment.text,
-                    time: new Date(comment.createdAt).toLocaleDateString(),
-                }))}
-                currentUser={currentUser}
-                onAdd={
-                    isAuthenticated
-                        ? (text) => {
-                              addComment.mutate({ restaurantId: restaurant._id, text })
-                          }
-                        : undefined
-                }
-                onDelete={(id) => {
-                    deleteComment.mutate({ id: asCommentId(id) })
-                }}
-            />
-            {!isAuthenticated && (
-                <p className="pt-2 text-sm text-muted-foreground">Sign in to join the conversation.</p>
-            )}
         </div>
     )
 }
@@ -355,8 +276,6 @@ function RestaurantDetailView() {
                 />
                 <DetailPhotos photos={photos} />
                 <PlanSection restaurantId={restaurant._id} />
-                <VisitMemories restaurantId={restaurant._id} />
-                <DetailComments restaurant={restaurant} social={social} />
             </div>
         </PageContainer>
     )

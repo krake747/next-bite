@@ -28,7 +28,6 @@ describe("RestaurantSchema", () => {
             lng: 6.1,
             notes: "Great terrace",
             placeId: "place-1",
-            rating: 5,
         })
         expect(result.success).toBe(true)
     })
@@ -38,17 +37,6 @@ describe("RestaurantSchema", () => {
         expect(failureMessages(RestaurantSchema, { ...validRestaurant, cuisine: "" })).toContain("Cuisine is required")
         expect(failureMessages(RestaurantSchema, { ...validRestaurant, location: "" })).toContain(
             "Location is required",
-        )
-    })
-
-    test("holds the rating inside 1 to 7", () => {
-        expect(v.safeParse(RestaurantSchema, { ...validRestaurant, rating: 1 }).success).toBe(true)
-        expect(v.safeParse(RestaurantSchema, { ...validRestaurant, rating: 7 }).success).toBe(true)
-        expect(failureMessages(RestaurantSchema, { ...validRestaurant, rating: 0 })).toContain(
-            "Rating must be at least 1",
-        )
-        expect(failureMessages(RestaurantSchema, { ...validRestaurant, rating: 8 })).toContain(
-            "Rating must be at most 7",
         )
     })
 

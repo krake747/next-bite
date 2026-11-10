@@ -10,9 +10,6 @@ export const RestaurantSchema = v.object({
     lng: v.optional(v.number()),
     notes: v.optional(v.string()),
     link: v.optional(v.string()),
-    rating: v.optional(
-        v.pipe(v.number(), v.minValue(1, "Rating must be at least 1"), v.maxValue(7, "Rating must be at most 7")),
-    ),
     images: v.optional(v.array(v.string())),
     placeId: v.optional(v.string()),
 })

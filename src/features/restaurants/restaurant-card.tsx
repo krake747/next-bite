@@ -1,8 +1,7 @@
 import { lazy, Suspense, useState } from "react"
 
-import { useUpdateRestaurant, useDeleteRestaurant, type Restaurant } from "@core/restaurants"
-import { emptySocialSummary, type RestaurantSocial, type RestaurantSocialSummary } from "@core/social"
-import { EmojiRating } from "@pattern/emoji-rating"
+import { useDeleteRestaurant, type Restaurant } from "@core/restaurants"
+import { emptySocial, type RestaurantSocial } from "@core/social"
 import { Card } from "@ui/card"
 
 import { DeleteConfirmDialog } from "./delete-confirm-dialog"
@@ -25,13 +24,12 @@ export function RestaurantCard({
 }: Readonly<
     {
         restaurant: Restaurant
-        social?: RestaurantSocial | RestaurantSocialSummary | undefined
+        social?: RestaurantSocial | undefined
         onToggleWant?: (() => void) | undefined
         detailsHref?: string | undefined
     } & React.ComponentProps<typeof Card>
 >) {
     const [dialog, setDialog] = useState<"closed" | "hours" | "delete">("closed")
-    const updateRestaurant = useUpdateRestaurant()
     const deleteRestaurant = useDeleteRestaurant()
 
     const enrichment = restaurant.address.enrichment
@@ -46,12 +44,8 @@ export function RestaurantCard({
 
     const photos = restaurant.images.map((img) => ({ url: img.url }))
 
-    const active = social ?? emptySocialSummary
+    const active = social ?? emptySocial
     const handleToggleWant = onToggleWant ?? (() => {})
-
-    const handleRate = async (index: number) => {
-        await updateRestaurant.mutateAsync({ id: restaurant._id, rating: index + 1 })
-    }
 
     const handleDialogOpenChange = (open: boolean) => {
         if (!open) {
@@ -108,12 +102,6 @@ export function RestaurantCard({
                         <RestaurantCardMap location={coords} name={restaurant.name} />
                     </Suspense>
                 )}
-                <div className="px-5 py-2 md:px-4 md:py-2">
-                    <EmojiRating
-                        rating={restaurant.rating !== undefined ? restaurant.rating - 1 : undefined}
-                        onRate={handleRate}
-                    />
-                </div>
             </Card>
 
             <OpeningHoursDialog

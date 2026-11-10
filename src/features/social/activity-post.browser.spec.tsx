@@ -13,11 +13,6 @@ describe("ActivityPost", () => {
                 restaurant={{ name: "Trattoria Verde", cuisine: "Italian" }}
                 social={{ ownerName: "Alex", wantCount: 4, interestedNames: ["Alex", "Priya"] }}
                 reactions={{
-                    liked: false,
-                    likeCount: 3,
-                    onToggleLike: () => {},
-                    commentCount: 2,
-                    onComment: () => {},
                     wanted: true,
                     wantCount: 4,
                     onToggleWant: () => {},

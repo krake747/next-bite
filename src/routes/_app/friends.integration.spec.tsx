@@ -3,7 +3,6 @@ import { fireEvent, screen, waitFor } from "@testing-library/react"
 import { describe, expect, test, vi } from "vitest"
 
 import { ConvexProvider } from "@api/convex.context"
-import { type RestaurantDoc } from "@api/db/restaurants"
 import { createSeededClient, seedKey, type MutationCall } from "@api/db/seeded.client"
 
 import { routeTree } from "../../routeTree.gen"
@@ -43,30 +42,12 @@ function seedQuery(fn: string, args: unknown, value: unknown): void {
     querySeeds.set(seedKey(fn, args), value)
 }
 
-function sharedRestaurant(overrides?: Partial<Omit<RestaurantDoc, "_id">> & { _id?: string }): RestaurantDoc {
-    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- test fixture shaped to the restaurant document
-    return {
-        _id: "r1",
-        _creationTime: 1000,
-        ownerId: "ben",
-        ownerName: "Ben",
-        name: "Ben's Bistro",
-        cuisine: "French",
-        address: { label: "Luxembourg City" },
-        images: [],
-        visibility: "shared",
-        createdAt: 1000,
-        ...overrides,
-    } as unknown as RestaurantDoc
-}
-
 function seedFriends(): void {
     seedQuery("friendships:listFriends", undefined, [{ authUserId: "ben", name: "Ben" }])
     seedQuery("friendships:listFriendRequests", undefined, {
         incoming: [{ authUserId: "cas", name: "Cas" }],
         outgoing: [{ authUserId: "dan", name: "Dan" }],
     })
-    seedQuery("friendships:listDiscoveries", { friendAuthUserId: "ben" }, [sharedRestaurant()])
     seedQuery("restaurants:feed", undefined, [])
     seedQuery("restaurants:get", undefined, [])
 }
@@ -90,7 +71,7 @@ async function renderAt(path: string): Promise<void> {
 }
 
 describe("friends screen", () => {
-    test("renders friends with their recent discoveries", async () => {
+    test("renders friends", async () => {
         testUser = { id: "user-1", email: "alex@example.com", name: "Alex" }
         querySeeds.clear()
         seedFriends()
@@ -98,9 +79,6 @@ describe("friends screen", () => {
 
         await waitFor(() => {
             expect(screen.getByText("Ben")).toBeInTheDocument()
-        })
-        await waitFor(() => {
-            expect(screen.getByText("Ben's Bistro")).toBeInTheDocument()
         })
     })
 

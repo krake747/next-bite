@@ -10,7 +10,7 @@ import { type PlaceSelection } from "@pattern/places-autocomplete"
 import { Button } from "@ui/button"
 
 import { suggestCuisine } from "./cuisine-suggestion"
-import { LinkField, LocationSection, NameCuisineFields, NotesSection, RatingSection } from "./restaurant-form-fields"
+import { LinkField, LocationSection, NameCuisineFields, NotesSection } from "./restaurant-form-fields"
 import { useRestaurantImages, type GalleryDraft } from "./use-restaurant-images"
 
 export type RestaurantFormProps =
@@ -287,7 +287,6 @@ function initialInputFor(props: Readonly<RestaurantFormProps>) {
               lng: props.restaurant.address.enrichment?.coords?.lng,
               notes: props.restaurant.details?.notes ?? "",
               link: props.restaurant.details?.link ?? "",
-              rating: props.restaurant.rating,
           }
         : props.initial !== undefined
           ? { ...props.initial }
@@ -350,7 +349,6 @@ export function RestaurantForm(props: Readonly<RestaurantFormProps>) {
             <LocationSection form={form} onLocationChange={handleLocationChange} />
             <NotesSection form={form} />
             <LinkField form={form} />
-            {props.mode === "edit" && <RatingSection form={form} />}
             <ImageUpload
                 images={gallery.images}
                 onImagesChange={(updated) => {

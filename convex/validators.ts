@@ -23,6 +23,8 @@ export const shareTargetValidator = v.union(
     v.object({ kind: v.literal("group"), groupId: v.id("groups") }),
 )
 
+export const groupShareTargetValidator = v.object({ kind: v.literal("group"), groupId: v.id("groups") })
+
 export const inviteTargetValidator = v.union(
     v.object({ kind: v.literal("friend") }),
     v.object({ kind: v.literal("group"), groupId: v.id("groups") }),

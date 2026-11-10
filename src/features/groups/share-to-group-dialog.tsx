@@ -1,6 +1,5 @@
 import { type Id } from "@api/data.model"
-import { useMyGroups, useRestaurantShares, useShareWithGroup, useShareWithUser, useUnshare } from "@core/groups"
-import { useFriends } from "@core/social"
+import { useMyGroups, useRestaurantShares, useShareWithGroup, useUnshare } from "@core/groups"
 import { InlineLoading } from "@pattern/loading"
 import { Button } from "@ui/button"
 import { Dialog, DialogContent, DialogTitle } from "@ui/dialog"
@@ -17,17 +16,12 @@ export function ShareToGroupDialog({
     onOpenChange: (open: boolean) => void
 }>) {
     const groups = useMyGroups()
-    const friends = useFriends()
     const shares = useRestaurantShares(restaurantId)
     const shareWithGroup = useShareWithGroup()
-    const shareWithUser = useShareWithUser()
     const unshare = useUnshare()
 
     const sharedGroupIds = new Set(
         (shares ?? []).flatMap((share) => (share.target.kind === "group" ? [share.target.groupId] : [])),
-    )
-    const sharedUserIds = new Set(
-        (shares ?? []).flatMap((share) => (share.target.kind === "user" ? [share.target.userId] : [])),
     )
 
     return (
@@ -35,62 +29,8 @@ export function ShareToGroupDialog({
             <DialogContent size="md" className="max-h-[85vh]">
                 <DialogTitle>Share</DialogTitle>
                 <p className="mt-1 text-sm text-muted-foreground">
-                    Share {restaurantName} with friends and groups. Only people you share with see it.
+                    Your friends already see {restaurantName}. Add it to a group so its members see it too.
                 </p>
-                <h3 className="pt-4 font-display text-base font-semibold text-foreground">Friends</h3>
-                <div className="pt-2">
-                    {friends === undefined ? (
-                        <InlineLoading>Loading friends…</InlineLoading>
-                    ) : friends.length === 0 ? (
-                        <p className="text-sm text-muted-foreground">
-                            No friends yet. Add some from the Friends tab first.
-                        </p>
-                    ) : (
-                        <ul className="space-y-2">
-                            {friends.map((friend) => {
-                                const shared = sharedUserIds.has(friend.authUserId)
-                                return (
-                                    <li
-                                        key={friend.authUserId}
-                                        className="flex items-center justify-between gap-3 rounded-card border border-border bg-surface p-3"
-                                    >
-                                        <span className="truncate text-sm font-medium text-foreground">
-                                            {friend.name}
-                                        </span>
-                                        {shared ? (
-                                            <Button
-                                                size="sm"
-                                                tone="secondary"
-                                                disabled={unshare.isPending}
-                                                onClick={() => {
-                                                    unshare.mutate({
-                                                        restaurantId,
-                                                        target: { kind: "user", userId: friend.authUserId },
-                                                    })
-                                                }}
-                                            >
-                                                Remove
-                                            </Button>
-                                        ) : (
-                                            <Button
-                                                size="sm"
-                                                disabled={shareWithUser.isPending}
-                                                onClick={() => {
-                                                    shareWithUser.mutate({
-                                                        restaurantId,
-                                                        userId: friend.authUserId,
-                                                    })
-                                                }}
-                                            >
-                                                Share
-                                            </Button>
-                                        )}
-                                    </li>
-                                )
-                            })}
-                        </ul>
-                    )}
-                </div>
                 <h3 className="pt-4 font-display text-base font-semibold text-foreground">Groups</h3>
                 <div className="pt-2">
                     {groups === undefined ? (

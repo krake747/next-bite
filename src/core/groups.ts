@@ -15,7 +15,6 @@ export const useRestaurantShares = (restaurantId: Id<"restaurants">) => {
 }
 
 export const useShareWithGroup = () => useConvexMutation(api.shares.shareWithGroup)
-export const useShareWithUser = () => useConvexMutation(api.shares.shareWithUser)
 export const useUnshare = () => useConvexMutation(api.shares.unshare)
 export const useCreateGroup = () => useConvexMutation(api.groups.createGroup)
 

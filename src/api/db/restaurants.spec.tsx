@@ -150,10 +150,9 @@ describe("restaurant shape translators", () => {
         // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- test-only restaurant id
         const id = "r1" as unknown as Id<"restaurants">
 
-        applyUpdateArgsToDraft(draft, { id, name: "Sushi Bar", rating: 5 })
+        applyUpdateArgsToDraft(draft, { id, name: "Sushi Bar" })
 
         expect(draft.name).toBe("Sushi Bar")
-        expect(draft.rating).toBe(5)
         expect(draft.cuisine).toBe("Italian")
     })
 
