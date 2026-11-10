@@ -1,3 +1,9 @@
+---
+name: Parent
+about: Outcome that maps over typed sub-issues
+labels: needs-triage
+---
+
 ## Context
 
 <!-- Narrative plus locked decisions. More context than any sub. Link ADRs, not copies. -->

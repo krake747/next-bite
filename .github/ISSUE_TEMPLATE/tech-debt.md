@@ -1,3 +1,9 @@
+---
+name: Tech debt
+about: Process, docs, or codebase improvement, as a sub of a parent
+labels: needs-triage, improvement
+---
+
 Part of #<!-- parent number -->
 
 ## Goal
