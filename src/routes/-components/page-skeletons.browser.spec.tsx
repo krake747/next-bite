@@ -1,3 +1,4 @@
+import "../../fonts.css"
 import "../../index.css"
 import { QueryClientProvider } from "@tanstack/react-query"
 import {
@@ -7,7 +8,7 @@ import {
     createRouter,
     type RouteComponent,
 } from "@tanstack/react-router"
-import { afterEach, beforeEach, describe, expect, test, vi } from "vitest"
+import { afterEach, beforeAll, beforeEach, describe, expect, test, vi } from "vitest"
 import { render } from "vitest-browser-react"
 import { page } from "vitest/browser"
 
@@ -209,6 +210,15 @@ const viewports = [
     { name: "desktop", width: 1280, height: 900 },
     { name: "mobile", width: 390, height: 844 },
 ] as const
+
+const appFonts = ['400 16px "DM Sans Variable"', '600 16px "Bricolage Grotesque Variable"'] as const
+
+beforeAll(async () => {
+    const loaded = await Promise.all(appFonts.map(async (font) => document.fonts.load(font)))
+    if (loaded.some((faces) => faces.length === 0)) {
+        throw new Error("App fonts did not load")
+    }
+})
 
 beforeEach(() => {
     ownRestaurants = [restaurant("r1", "Trattoria Verde"), restaurant("r2", "Sushi Bar")]

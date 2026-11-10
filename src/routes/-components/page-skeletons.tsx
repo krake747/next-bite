@@ -6,9 +6,9 @@ import { fieldLabel } from "@ui/variants"
 
 function TextSkeleton({ className, width }: Readonly<{ className?: string | undefined; width: string }>) {
     return (
-        <p className={className}>
+        <div className={className}>
             <Skeleton className={cx("inline-block h-[0.75em] align-middle", width)} />
-        </p>
+        </div>
     )
 }
 
