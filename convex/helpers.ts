@@ -1,4 +1,4 @@
-import { type GenericDatabaseReader, type GenericDatabaseWriter } from "convex/server"
+import { type GenericDatabaseReader } from "convex/server"
 
 import { FALLBACK_DISPLAY_NAME } from "../src/core/constants"
 import { type DataModel, type Doc, type Id } from "./_generated/dataModel"
@@ -55,39 +55,6 @@ export async function requireMembership(
         throw new Error("Unauthorized: group membership required")
     }
     return membership
-}
-
-export const STATS_COUNTER_KEY = "global"
-
-export type StatsDelta = {
-    readonly restaurants?: number | undefined
-    readonly wants?: number | undefined
-    readonly cuisines?: Readonly<Record<string, number>> | undefined
-}
-
-export async function adjustStatsCounters(
-    ctx: { db: GenericDatabaseReader<DataModel> & GenericDatabaseWriter<DataModel> },
-    delta: StatsDelta,
-): Promise<void> {
-    const existing = await ctx.db
-        .query("statsCounters")
-        .withIndex("by_key", (q) => q.eq("key", STATS_COUNTER_KEY))
-        .unique()
-    const cuisineCounts: Record<string, number> = { ...existing?.cuisineCounts }
-    for (const [cuisine, change] of Object.entries(delta.cuisines ?? {})) {
-        cuisineCounts[cuisine] = Math.max(0, (cuisineCounts[cuisine] ?? 0) + change)
-    }
-    const row = {
-        key: STATS_COUNTER_KEY,
-        restaurantCount: Math.max(0, (existing?.restaurantCount ?? 0) + (delta.restaurants ?? 0)),
-        wantCount: Math.max(0, (existing?.wantCount ?? 0) + (delta.wants ?? 0)),
-        cuisineCounts,
-    }
-    if (existing) {
-        await ctx.db.patch(existing._id, row)
-    } else {
-        await ctx.db.insert("statsCounters", row)
-    }
 }
 
 type DbGet = {

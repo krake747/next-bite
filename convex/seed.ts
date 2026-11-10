@@ -4,7 +4,7 @@ import { type Id } from "./_generated/dataModel"
 import { internalMutation, type MutationCtx } from "./_generated/server"
 import { createAuth } from "./auth"
 import { getValidatedSiteUrl } from "./env"
-import { adjustStatsCounters, formatDisplayName } from "./helpers"
+import { formatDisplayName } from "./helpers"
 
 export const SEED_OWNER_EMAIL = "preview-owner@example.com"
 export const SEED_FRIEND_EMAIL = "preview-friend@example.com"
@@ -119,7 +119,6 @@ async function ensureSeedRestaurant(
         clientMutationId: seedMarker(place.slug),
         createdAt: Date.now(),
     })
-    await adjustStatsCounters(ctx, { restaurants: 1, cuisines: { [place.cuisine]: 1 } })
     return restaurantId
 }
 
