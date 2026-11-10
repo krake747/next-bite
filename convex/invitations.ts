@@ -125,7 +125,7 @@ async function acceptGroupInvite(
     if (existing) {
         return { result: "alreadyMember", groupId }
     }
-    await ctx.db.insert("groupMembers", { groupId, userId, role: "member", joinedAt: Date.now() })
+    await ctx.db.insert("groupMembers", { groupId, userId, joinedAt: Date.now() })
     return { result: "accepted", groupId }
 }
 
@@ -187,14 +187,8 @@ export const revokeInvite = mutation({
             const groupId = inviteTarget.groupId
             const group = await ctx.db.get(groupId)
             if (group) {
-                const callerMembership = await ctx.db
-                    .query("groupMembers")
-                    .withIndex("by_group_user", (q) => q.eq("groupId", groupId).eq("userId", userId))
-                    .unique()
-                const isInviter = invite.invitedBy === userId
-                const isAdmin = callerMembership?.role === "admin"
-                if (!isInviter && !isAdmin) {
-                    throw new Error("Unauthorized: only the inviter or a group admin can revoke this link")
+                if (invite.invitedBy !== userId && group.ownerId !== userId) {
+                    throw new Error("Unauthorized: only the inviter or the group owner can revoke this link")
                 }
             } else if (invite.invitedBy !== userId) {
                 throw new Error("Unauthorized: only the inviter can revoke this link")

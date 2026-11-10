@@ -71,7 +71,7 @@ describe("share to group dialog", () => {
         querySeeds.clear()
         mutationCalls.length = 0
         querySeeds.set(seedKey("groups:listMyGroups", undefined), [
-            { group: { _id: "g1", name: "Food Crew" }, role: "admin" },
+            { group: { _id: "g1", name: "Food Crew" }, isOwner: true },
         ])
         querySeeds.set(seedKey("shares:listShares", { restaurantId: "r1" }), [])
         const screen = await renderDialog()
@@ -91,7 +91,7 @@ describe("share to group dialog", () => {
         querySeeds.clear()
         mutationCalls.length = 0
         querySeeds.set(seedKey("groups:listMyGroups", undefined), [
-            { group: { _id: "g1", name: "Food Crew" }, role: "admin" },
+            { group: { _id: "g1", name: "Food Crew" }, isOwner: true },
         ])
         querySeeds.set(seedKey("shares:listShares", { restaurantId: "r1" }), [
             { _id: "s1", target: { kind: "group", groupId: "g1" }, displayName: "Food Crew" },

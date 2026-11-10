@@ -73,7 +73,7 @@ describe("reusable group invitation links", () => {
         expect(benGroups).toHaveLength(1)
     })
 
-    test("only the inviter or a group admin can revoke", async () => {
+    test("only the inviter or the group owner can revoke", async () => {
         const t = setup()
         await registerUser(t, "anna", "anna@example.com")
         await registerUser(t, "ben", "ben@example.com")
@@ -103,7 +103,7 @@ describe("reusable group invitation links", () => {
         const benToken = await asUser(t, "ben").mutation(api.invitations.createInvite, {
             target: { kind: "group", groupId },
         })
-        await asUser(t, "ben").mutation(api.groups.removeMember, { groupId, userId: "ben" })
+        await asUser(t, "ben").mutation(api.groups.leaveGroup, { groupId })
 
         await expect(asUser(t, "cas").mutation(api.invitations.acceptInvite, { token: benToken })).rejects.toThrow(
             "no longer valid",

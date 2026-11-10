@@ -123,18 +123,13 @@ async function ensureSeedRestaurant(
     return restaurantId
 }
 
-async function ensureSeedMembership(
-    ctx: MutationCtx,
-    groupId: Id<"groups">,
-    userId: string,
-    role: "admin" | "member",
-): Promise<void> {
+async function ensureSeedMembership(ctx: MutationCtx, groupId: Id<"groups">, userId: string): Promise<void> {
     const membership = await ctx.db
         .query("groupMembers")
         .withIndex("by_group_user", (q) => q.eq("groupId", groupId).eq("userId", userId))
         .unique()
     if (!membership) {
-        await ctx.db.insert("groupMembers", { groupId, userId, role, joinedAt: Date.now() })
+        await ctx.db.insert("groupMembers", { groupId, userId, joinedAt: Date.now() })
     }
 }
 
@@ -152,8 +147,8 @@ async function ensureSeedGroup(ctx: MutationCtx, ownerId: string, friendId: stri
         match !== undefined
             ? match._id
             : await ctx.db.insert("groups", { ownerId, name: SEED_GROUP_NAME, createdAt: Date.now() })
-    await ensureSeedMembership(ctx, groupId, ownerId, "admin")
-    await ensureSeedMembership(ctx, groupId, friendId, "member")
+    await ensureSeedMembership(ctx, groupId, ownerId)
+    await ensureSeedMembership(ctx, groupId, friendId)
     return groupId
 }
 
