@@ -38,14 +38,13 @@ as-is and add your own props alongside it:
 type DialogPanelProps = VariantProps<typeof panel> & React.ComponentProps<typeof BaseDialog.Popup>
 ```
 
-The only `Omit` that belongs in `ui/` is withholding a prop entirely, such as a `render` passthrough
-the wrapper does not support. `DialogAction` narrowing `render` to element-or-children is the model,
-not an exception: the two-branch contract cannot honor render callbacks, so the type says so. What
-stays enforced: destructure `children` explicitly instead of letting it ride inside `...props`, so
-the render output names what it renders; name the passthrough spread `...props`, never `...rest`;
-use `useRender` for anything accepting a `render` prop. Base prop shapes live in
-`node_modules/@base-ui/react/<component>/*.d.ts`. Check in review: `children` is destructured and
-rendered; the spread is named `...props`; `render` goes through `useRender`.
+The only `Omit` that belongs in `ui/` withholds a prop entirely, such as `DialogAction` narrowing
+`render` to element-or-children because it cannot honor render callbacks. What stays enforced:
+destructure `children` explicitly instead of letting it ride inside `...props`, so the render output
+names what it renders; name the passthrough spread `...props`, never `...rest`; use `useRender` for
+anything accepting a `render` prop. Base prop shapes live in Base UI's type definitions. Check in
+review: `children` is destructured and rendered; the spread is named `...props`; `render` goes
+through `useRender`.
 
 ## Every prop has a caller, extraction waits for the third copy
 
@@ -56,8 +55,7 @@ caller. Check: grep the prop name; zero production call sites means removal.
 ## Style: owned readonly types
 
 Owned types carry `readonly` modifiers and `ReadonlyArray<T>`; unowned or inline shapes wrap at the
-use site with `Readonly<>`. Inline `export` and `use()` are lint-enforced (see `AGENTS.md`). Check
-in review.
+use site with `Readonly<>`. Check in review.
 
 ## Coupled lifecycles have explicit states and owners
 
@@ -82,8 +80,8 @@ representation.
 
 A test must fail when the behavior breaks and pass when only internals move. Tests that cannot fail
 get deleted; tests coupled to hook shapes or call order get rewritten against rendered output and
-observable effects. Tiers, placement, and query conventions are owned by `docs/agents/testing.md`;
-this rule is the bar for what a test proves. Check: describe what breaks the test; "nothing" means
+observable effects. Tiers, placement, and query conventions are owned by `docs/testing.md`; this
+rule is the bar for what a test proves. Check: describe what breaks the test; "nothing" means
 deletion.
 
 ## Spec doubles track the prod function
@@ -94,11 +92,11 @@ prod moves. Check: a hand-rolled mock of a function that exists in `src/` names 
 
 ## Convex access lives in grouped domain modules
 
-Convex endpoints are called only from the module that owns the domain workflow
-(`src/core/session.ts`, `restaurants.ts`, `social.ts`, `groups.ts`, `plans.ts`). Routes, features,
-and patterns import those modules directly; there is no shared hooks barrel. A new Convex endpoint
-gets a method on the owning module so endpoint moves stay local instead of scattering across call
-sites. Check in review: a new `useConvexMutation(api.…)` alias outside the five domain modules.
+Convex endpoints are called only from the `src/core/<domain>.ts` module that owns the workflow.
+Routes, features, and patterns import those modules directly; there is no shared hooks barrel. A new
+Convex endpoint gets a method on the owning module so endpoint moves stay local instead of
+scattering across call sites. Check in review: a new `useConvexMutation(api.…)` alias outside a
+domain module.
 
 ## Absent UI state is a status union
 

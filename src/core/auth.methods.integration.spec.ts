@@ -6,10 +6,6 @@ import { type DataModel } from "@convex/_generated/dataModel"
 import schema from "@convex/schema"
 
 vi.stubEnv("CONVEX_SITE_URL", "https://example.convex.site")
-vi.stubEnv("GOOGLE_CLIENT_ID", "")
-vi.stubEnv("GOOGLE_CLIENT_SECRET", "")
-vi.stubEnv("GITHUB_CLIENT_ID", "")
-vi.stubEnv("GITHUB_CLIENT_SECRET", "")
 vi.stubEnv("AUTH_EMAIL_OTP_ENABLED", "false")
 
 const modules = import.meta.glob("../../convex/**/*.ts")

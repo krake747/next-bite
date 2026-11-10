@@ -4,19 +4,15 @@ A web app for tracking restaurant recommendations from friends.
 
 ## Language
 
-**Restaurant**: A dining establishment discovered by a friend. Each restaurant has a name, cuisine
-type, location (a Google Maps place), opening hours, an emoji rating, optional notes, and optional
-photos. _Avoid_: Place, venue, spot
+**Restaurant**: A dining establishment discovered by a friend. _Avoid_: Place, venue, spot
 
 **Friend**: A person who discovers or recommends restaurants. A user manages their own list of
 friends. _Avoid_: Contact, recommender, reviewer
 
 **User**: An authenticated person using the app. A user owns their friend list and restaurant
 collection, and sees restaurants shared with them by friends and groups. _Avoid_: Account, member,
-profile in product copy. The `profiles` table and `profile` field on `api.users.getMe` are storage
-names for the same record; render them as user details. `Login` is allowed only for auth mechanics
-(sign in, sign up, your login). A group role named `member` is part of `Group`, not a synonym for
-`User`.
+profile in product copy. `Login` is allowed only for auth mechanics (sign in, sign up, your login).
+A group role named `member` is part of `Group`, not a synonym for `User`.
 
 **Rating**: A score from 1 to 7 represented as an emoji: 🫥 (terrible), 😞 (bad), 😐 (okay), 🙂
 (good), 😊 (great), 🤩 (outstanding), 🍆 (legendary). Set by the user for each restaurant they've
@@ -61,5 +57,4 @@ _Avoid_: Memory
 
 **Friend update**: A friend's shared restaurant as shown under Latest from friends, with the
 restaurant name, cuisine, notes, and like, comment, and want counts. _Avoid_: Activity, post,
-reaction, feed item, social summary as product nouns. Code may keep `ActivityPost`, `ReactionBar`,
-and `social.*` as internal identifiers until the planned rename lands.
+reaction, feed item, social summary as product nouns.
