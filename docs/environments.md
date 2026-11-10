@@ -170,7 +170,9 @@ close path are both observed working end to end.
   deployments auto-expire (5 days on Free and Starter plans, 14 days on paid plans), so a stale PR
   gets a fresh empty backend that the seed repopulates.
 - Stale PRs must actually close to free their deployment. Closing a PR deletes its preview versions
-  and its deployment; abandoned PRs rely on expiry instead.
+  and its deployment; abandoned PRs rely on expiry instead. The versions step also reaps other
+  `pr-<n>`-tagged versions whose PR is already closed, so versions skipped as latest at their own
+  close do not accumulate.
 - Cloudflare refuses to delete the single latest Worker version. Cleanup keeps it and moves on; the
   next upload makes it deletable, and the alias limit evicts it eventually.
 - Plan deployment limits bound how many concurrent previews can exist. Each open PR holds one

@@ -6,7 +6,10 @@ versions carrying the tag that no deployment still references.
 
 import glob
 import json
+import re
 import sys
+
+PR_TAG = re.compile(r"^pr-(\d+)$")
 
 
 def load_pages(pattern):
@@ -51,14 +54,47 @@ def stale_tagged_ids(deployment_pages, version_pages, tag):
     return stale
 
 
+def foreign_tagged_ids(deployment_pages, version_pages, own_tag):
+    """Undeployed version ids grouped by foreign pr-<n> tag, as tag<tab>id lines.
+
+    Skips the run's own tag, non-conforming tags, and anything a deployment
+    references. Callers decide per tag (e.g. by PR state) and delete with the
+    same latest-version tolerance as the own-tag path.
+    """
+    deployed = deployed_version_ids(deployment_pages)
+    lines = []
+    for payload in version_pages:
+        for version in payload.get("result") or []:
+            if not isinstance(version, dict):
+                continue
+            annotations = version.get("annotations") or {}
+            tag = annotations.get("workers/tag")
+            vid = version_id(version)
+            if not tag or tag == own_tag or not PR_TAG.match(tag):
+                continue
+            if vid and vid not in deployed:
+                lines.append(f"{tag}\t{vid}")
+    return lines
+
+
 def main(argv):
-    work_dir, tag = argv[1], argv[2]
-    ids = stale_tagged_ids(
-        load_pages(f"{work_dir}/deployments_page_*.json"),
-        load_pages(f"{work_dir}/versions_page_*.json"),
-        tag,
-    )
-    print("\n".join(ids))
+    command = argv[1]
+    work_dir = argv[2]
+    own_tag = argv[3]
+    if command == "own":
+        ids = stale_tagged_ids(
+            load_pages(f"{work_dir}/deployments_page_*.json"),
+            load_pages(f"{work_dir}/versions_page_*.json"),
+            own_tag,
+        )
+        print("\n".join(ids))
+    elif command == "foreign":
+        lines = foreign_tagged_ids(
+            load_pages(f"{work_dir}/deployments_page_*.json"),
+            load_pages(f"{work_dir}/versions_page_*.json"),
+            own_tag,
+        )
+        print("\n".join(lines))
 
 
 if __name__ == "__main__":
