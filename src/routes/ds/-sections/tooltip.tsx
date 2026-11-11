@@ -48,8 +48,10 @@ export const tooltipMeta = {
         },
     ],
     guidance: {
-        whenToUse: "Name an icon-only control or explain a label that cannot grow.",
-        whenToAvoid: "Do not use for paragraphs or actions; tips disappear and never hold interactive content.",
+        whenToUse:
+            "Name an icon-only control or explain a label that cannot grow. One line on hover or focus; mount one provider near the shell to set the delay.",
+        whenToAvoid:
+            "Do not use for paragraphs or actions; tips disappear and never hold interactive content. For previews with rich content, use a Popover.",
     },
 } as const
 

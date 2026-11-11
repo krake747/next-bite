@@ -33,7 +33,8 @@ export const textLinkMeta = {
     ],
     guidance: {
         whenToUse: "Send the user somewhere from inside a sentence or a short paragraph.",
-        whenToAvoid: "Do not use for actions; buttons act, links go. Standalone calls to action get a Button.",
+        whenToAvoid:
+            "Do not use for actions; buttons act, links go. Standalone calls to action get a Button, and icon-only destinations get an IconButton with a label.",
     },
 } as const
 

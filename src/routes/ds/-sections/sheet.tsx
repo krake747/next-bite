@@ -64,8 +64,10 @@ export const sheetMeta = {
         { name: "bottom", description: "Short pickers a thumb can reach." },
     ],
     guidance: {
-        whenToUse: "Handle a supporting task without losing the page behind it.",
-        whenToAvoid: "Do not use for the main flow or for alerts; those get a page or a dialog.",
+        whenToUse:
+            "Handle a supporting task without losing the page behind it. Right fits detail and edit panels, bottom fits thumb-reach pickers, left holds small-screen navigation.",
+        whenToAvoid:
+            "Do not use for the main flow or for alerts; those get a page or a Dialog. One panel at a time; never stack a Sheet over a Dialog.",
     },
 } as const
 

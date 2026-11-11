@@ -37,6 +37,20 @@ function DesignSystemSectionPage() {
                 {entry.meta.title}
             </h1>
             <p className="mt-2 font-mono text-xs text-muted-foreground">{entry.meta.importPath}</p>
+            {entry.meta.guidance !== undefined && (
+                <section aria-label="Guidance" className="pt-6">
+                    <h2 className="font-display text-xl font-semibold text-balance text-foreground">When to use</h2>
+                    <p className="mt-1 text-muted-foreground">{entry.meta.guidance.whenToUse}</p>
+                    {entry.meta.guidance.whenToAvoid !== undefined && (
+                        <>
+                            <h2 className="pt-4 font-display text-xl font-semibold text-balance text-foreground">
+                                When not to use
+                            </h2>
+                            <p className="mt-1 text-muted-foreground">{entry.meta.guidance.whenToAvoid}</p>
+                        </>
+                    )}
+                </section>
+            )}
             <SessionGate status={status} context="the design system">
                 <div className="pt-6">
                     <entry.Demo />
@@ -68,22 +82,6 @@ function DesignSystemSectionPage() {
             )}
             <h2 className="pt-8 font-display text-xl font-semibold text-balance text-foreground">Usage</h2>
             <p className="mt-1 text-muted-foreground">{entry.meta.body}</p>
-            {entry.meta.guidance !== undefined && (
-                <>
-                    <h2 className="pt-8 font-display text-xl font-semibold text-balance text-foreground">
-                        When to use
-                    </h2>
-                    <p className="mt-1 text-muted-foreground">{entry.meta.guidance.whenToUse}</p>
-                    {entry.meta.guidance.whenToAvoid !== undefined && (
-                        <>
-                            <h2 className="pt-8 font-display text-xl font-semibold text-balance text-foreground">
-                                When not to use
-                            </h2>
-                            <p className="mt-1 text-muted-foreground">{entry.meta.guidance.whenToAvoid}</p>
-                        </>
-                    )}
-                </>
-            )}
         </div>
     )
 }

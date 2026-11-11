@@ -36,8 +36,10 @@ export const aspectRatioMeta = {
         },
     ],
     guidance: {
-        whenToUse: "Reserve space for media with known proportions before it loads.",
-        whenToAvoid: "Do not wrap plain text or cards; the frame clips anything that needs natural height.",
+        whenToUse:
+            "Reserve space for media with known proportions before it loads, so the layout never jumps. Pick the ratio from the media itself, such as 16 / 9 for video stills.",
+        whenToAvoid:
+            "Do not wrap plain text or cards; the frame clips anything that needs natural height. Text and cards size themselves.",
     },
 } as const
 

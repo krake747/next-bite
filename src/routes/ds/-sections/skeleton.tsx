@@ -27,9 +27,10 @@ export const skeletonMeta = {
         },
     ],
     guidance: {
-        whenToUse: "Hold the shape of content on first paint when no cached data can render.",
+        whenToUse:
+            "Hold the shape of content on first paint when no cached data can render. Size each block like the content it stands in for so nothing jumps.",
         whenToAvoid:
-            "Do not use for short waits with known shape or when cached content can show instead; see loading.",
+            "Do not use for short waits that resolve before a skeleton matters, or when cached content can show instead; see the Loading pattern. Never ship a skeleton as content; it is a stand-in, not an empty state.",
     },
 } as const
 

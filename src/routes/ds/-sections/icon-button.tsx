@@ -47,8 +47,10 @@ export const iconButtonMeta = {
         { name: "inverse", description: "Actions on dark media." },
     ],
     guidance: {
-        whenToUse: "Repeat an obvious action in tight space, such as close, add, or search.",
-        whenToAvoid: "Do not use when the action needs explaining; use a Button with a visible label.",
+        whenToUse:
+            "Repeat an obvious action in tight space, such as close, add, or search. Match the tone to the surface: neutral floats over content, plain sits inline in headers and rows, destructive removes, inverse rides on dark media.",
+        whenToAvoid:
+            "Do not use when the action needs explaining; use a Button with a visible label instead, and never pair the icon with visible text. The accessible name comes from label, never from the icon alone.",
     },
 } as const
 

@@ -78,8 +78,10 @@ export const dialogMeta = {
         { name: "tone deep", description: "A heavier backdrop when the choice needs full attention." },
     ],
     guidance: {
-        whenToUse: "Confirm or collect something that cannot live inline on the page.",
-        whenToAvoid: "Do not stack dialogs or open one from another; finish the first task first.",
+        whenToUse:
+            "Confirm or collect something that cannot live inline on the page. Size sm confirms, md handles the default task, and the deep backdrop is reserved for choices needing full attention.",
+        whenToAvoid:
+            "Do not stack dialogs or open one from another; finish the first task first. For supporting tasks that keep the page visible, use a Sheet; for short previews with no actions, use a Popover.",
     },
 } as const
 
