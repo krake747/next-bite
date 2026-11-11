@@ -15,10 +15,10 @@ export function usePlansForGroup(groupId: Id<"groups"> | undefined) {
     })
 }
 
-export function usePlansForRestaurant(restaurantId: Id<"restaurants"> | undefined) {
+export function usePlansForRestaurant(placeId: Id<"places"> | undefined) {
     const status = useSessionStatus()
-    const gated = gateId(status, restaurantId)
-    return useConvexQuery(api.plans.listPlansForRestaurant, gated.skip ? undefined : { restaurantId: gated.id }, {
+    const gated = gateId(status, placeId)
+    return useConvexQuery(api.plans.listPlansForRestaurant, gated.skip ? undefined : { placeId: gated.id }, {
         skip: gated.skip,
     })
 }

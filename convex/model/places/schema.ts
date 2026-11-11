@@ -1,54 +1,52 @@
 import { defineTable } from "convex/server"
 import { v } from "convex/values"
 
-import { enrichmentValidator, restaurantImageValidator, shareTargetValidator } from "../../validators"
+import { placeGoogleValidator } from "../../validators"
 
 export const placesTables = {
-    restaurants: defineTable({
+    places: defineTable({
         ownerId: v.id("profiles"),
         name: v.string(),
-        cuisine: v.string(),
+        cuisine: v.optional(v.string()),
         address: v.object({
             label: v.string(),
-            enrichment: v.optional(enrichmentValidator),
+            google: v.optional(placeGoogleValidator),
         }),
-        details: v.optional(
-            v.object({
-                notes: v.optional(v.string()),
-                link: v.optional(v.string()),
-            }),
-        ),
-        images: v.array(restaurantImageValidator),
-        visibility: v.union(v.literal("private"), v.literal("shared")),
+        note: v.optional(v.string()),
+        link: v.optional(v.string()),
         clientMutationId: v.optional(v.string()),
     }).index("by_owner", ["ownerId"]),
-    clientMutations: defineTable({
-        key: v.string(),
-        userId: v.id("profiles"),
-        restaurantId: v.id("restaurants"),
-    }).index("by_user_key", ["userId", "key"]),
-    restaurantShares: defineTable({
-        restaurantId: v.id("restaurants"),
-        sharedBy: v.id("profiles"),
-        target: shareTargetValidator,
-        targetGroupId: v.optional(v.id("groups")),
+    photos: defineTable({
+        storageId: v.id("_storage"),
+        placeId: v.id("places"),
+        url: v.string(),
+        width: v.optional(v.number()),
+        height: v.optional(v.number()),
+        mimeType: v.optional(v.string()),
+        byteSize: v.optional(v.number()),
     })
-        .index("by_restaurant", ["restaurantId"])
-        .index("by_sharer", ["sharedBy"])
-        .index("by_target_group", ["targetGroupId"]),
-    interests: defineTable({
-        restaurantId: v.id("restaurants"),
+        .index("by_storage", ["storageId"])
+        .index("by_place", ["placeId"]),
+    saves: defineTable({
+        placeId: v.id("places"),
         userId: v.id("profiles"),
         status: v.union(v.literal("want"), v.literal("been")),
         updatedAt: v.number(),
     })
-        .index("by_restaurant", ["restaurantId"])
+        .index("by_place", ["placeId"])
         .index("by_user", ["userId"])
-        .index("by_user_restaurant", ["userId", "restaurantId"]),
-    restaurantImages: defineTable({
-        storageId: v.id("_storage"),
-        restaurantId: v.id("restaurants"),
+        .index("by_user_place", ["userId", "placeId"]),
+    groupPlaces: defineTable({
+        groupId: v.id("groups"),
+        placeId: v.id("places"),
+        addedBy: v.id("profiles"),
     })
-        .index("by_storage", ["storageId"])
-        .index("by_restaurant", ["restaurantId"]),
+        .index("by_group", ["groupId"])
+        .index("by_place", ["placeId"])
+        .index("by_group_place", ["groupId", "placeId"]),
+    clientMutations: defineTable({
+        key: v.string(),
+        userId: v.id("profiles"),
+        placeId: v.id("places"),
+    }).index("by_user_key", ["userId", "key"]),
 }

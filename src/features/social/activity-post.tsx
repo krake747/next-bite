@@ -1,4 +1,4 @@
-import { AvatarGroup, type AvatarMember } from "@pattern/avatar-group"
+import { AvatarGroup } from "@pattern/avatar-group"
 import { photoUrls } from "@pattern/gallery"
 import { LazyImage } from "@pattern/lazy-image"
 import { SocialMetadata } from "@pattern/social-metadata"
@@ -8,6 +8,44 @@ import { ReactionBar, type Reactions } from "./reaction-bar"
 export type ActivityAuthor = {
     readonly name: string
     readonly src?: string | undefined
+}
+
+export function ActivityPost({
+    author,
+    time,
+    text,
+    restaurant,
+    ownerName,
+    wantCount,
+    reactions,
+}: Readonly<{
+    author: ActivityAuthor
+    time: string
+    text: string
+    restaurant: Readonly<{
+        name: string
+        cuisine?: string | undefined
+        images?: ReadonlyArray<Readonly<{ url: string }>> | undefined
+    }>
+    ownerName?: string | undefined
+    wantCount?: number | string | undefined
+    reactions?: Reactions | undefined
+}>) {
+    return (
+        <article className="overflow-hidden rounded-card border border-border bg-surface shadow-card">
+            <ActivityAuthorHeader author={author} time={time} />
+            <div className="space-y-3 p-4">
+                <p className="text-body text-foreground">{text}</p>
+                <ActivityRestaurant
+                    name={restaurant.name}
+                    cuisine={restaurant.cuisine}
+                    imageUrls={photoUrls(restaurant.images ?? [])}
+                />
+                <SocialMetadata ownerName={ownerName} wantCount={wantCount} />
+                {reactions !== undefined && <ReactionBar reactions={reactions} />}
+            </div>
+        </article>
+    )
 }
 
 function ActivityAuthorHeader({ author, time }: Readonly<{ author: ActivityAuthor; time: string }>) {
@@ -41,61 +79,5 @@ function ActivityRestaurant({
                 {cuisine !== undefined && cuisine !== "" && <p className="text-sm text-muted-foreground">{cuisine}</p>}
             </div>
         </div>
-    )
-}
-
-const idleReactions: Reactions = {
-    wanted: false,
-    wantCount: 0,
-    onToggleWant: () => {},
-}
-
-export function ActivityPost({
-    author,
-    time,
-    text,
-    restaurant,
-    social,
-    reactions,
-}: Readonly<{
-    author: ActivityAuthor
-    time: string
-    text: string
-    restaurant: Readonly<{
-        name: string
-        cuisine?: string | undefined
-        images?: ReadonlyArray<Readonly<{ url: string }>> | undefined
-    }>
-    social?:
-        | Readonly<{
-              ownerName?: string | undefined
-              wantCount?: number | undefined
-              beenCount?: number | undefined
-              interestedNames?: ReadonlyArray<string> | undefined
-          }>
-        | undefined
-    reactions?: Reactions | undefined
-}>) {
-    const active = reactions ?? idleReactions
-    const friends: ReadonlyArray<AvatarMember> = (social?.interestedNames ?? []).map((name) => ({ name }))
-    return (
-        <article className="overflow-hidden rounded-card border border-border bg-surface shadow-card">
-            <ActivityAuthorHeader author={author} time={time} />
-            <div className="space-y-3 p-4">
-                <p className="text-body text-foreground">{text}</p>
-                <ActivityRestaurant
-                    name={restaurant.name}
-                    cuisine={restaurant.cuisine}
-                    imageUrls={photoUrls(restaurant.images ?? [])}
-                />
-                <SocialMetadata
-                    ownerName={social?.ownerName}
-                    wantCount={social?.wantCount}
-                    beenCount={social?.beenCount}
-                />
-                {friends.length > 0 && <AvatarGroup members={friends} />}
-                <ReactionBar reactions={active} />
-            </div>
-        </article>
     )
 }

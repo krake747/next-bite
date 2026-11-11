@@ -16,22 +16,21 @@ import type * as groups from "../groups.js";
 import type * as helpers from "../helpers.js";
 import type * as http from "../http.js";
 import type * as identity from "../identity.js";
-import type * as interests from "../interests.js";
 import type * as invites from "../invites.js";
 import type * as model_groups_groups from "../model/groups/groups.js";
 import type * as model_groups_invites from "../model/groups/invites.js";
 import type * as model_groups_memberships from "../model/groups/memberships.js";
 import type * as model_identity_profiles from "../model/identity/profiles.js";
-import type * as model_places_images from "../model/places/images.js";
+import type * as model_places_hours from "../model/places/hours.js";
+import type * as model_places_photos from "../model/places/photos.js";
+import type * as model_places_places from "../model/places/places.js";
 import type * as model_social_friendships from "../model/social/friendships.js";
+import type * as places from "../places.js";
 import type * as plans from "../plans.js";
-import type * as restaurants from "../restaurants.js";
 import type * as seed from "../seed.js";
-import type * as shares from "../shares.js";
 import type * as social from "../social.js";
 import type * as storage from "../storage.js";
 import type * as validators from "../validators.js";
-import type * as visibility from "../visibility.js";
 
 import type {
   ApiFromModules,
@@ -48,22 +47,21 @@ declare const fullApi: ApiFromModules<{
   helpers: typeof helpers;
   http: typeof http;
   identity: typeof identity;
-  interests: typeof interests;
   invites: typeof invites;
   "model/groups/groups": typeof model_groups_groups;
   "model/groups/invites": typeof model_groups_invites;
   "model/groups/memberships": typeof model_groups_memberships;
   "model/identity/profiles": typeof model_identity_profiles;
-  "model/places/images": typeof model_places_images;
+  "model/places/hours": typeof model_places_hours;
+  "model/places/photos": typeof model_places_photos;
+  "model/places/places": typeof model_places_places;
   "model/social/friendships": typeof model_social_friendships;
+  places: typeof places;
   plans: typeof plans;
-  restaurants: typeof restaurants;
   seed: typeof seed;
-  shares: typeof shares;
   social: typeof social;
   storage: typeof storage;
   validators: typeof validators;
-  visibility: typeof visibility;
 }>;
 
 /**

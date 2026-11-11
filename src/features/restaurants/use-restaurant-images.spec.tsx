@@ -10,8 +10,8 @@ import { useRestaurantImages, type GalleryCleanup, type GalleryDraft } from "./u
 let galleryRef: GalleryDraft | null = null
 let cleanupMock = vi.fn<GalleryCleanup>(async () => {})
 
-function Probe({ initial, add, cleanup }: Readonly<{ initial: ImageRecord[]; add: boolean; cleanup: GalleryCleanup }>) {
-    const gallery = useRestaurantImages(initial, { mode: add ? "add" : "edit", cleanup })
+function Probe({ cleanup }: Readonly<{ cleanup: GalleryCleanup }>) {
+    const gallery = useRestaurantImages({ cleanup })
     useEffect(() => {
         galleryRef = gallery
     })
@@ -32,15 +32,19 @@ function stagedImage(id: string): ImageRecord {
     return { url: `https://example.com/${id}.jpg`, storageId: storageId(id) }
 }
 
-function renderGallery(initial: ImageRecord[], add: boolean): void {
+function renderGallery(): void {
     galleryRef = null
     cleanupMock = vi.fn<GalleryCleanup>(async () => {})
-    render(<Probe initial={initial} add={add} cleanup={cleanupMock} />)
+    render(<Probe cleanup={cleanupMock} />)
 }
 
 describe("useRestaurantImages ownership", () => {
     test("retries failed cleanups on the next discard", async () => {
-        renderGallery([stagedImage("s1")], true)
+        renderGallery()
+        await act(async () => {
+            currentGallery().setImages([stagedImage("s1")])
+            await Promise.resolve()
+        })
         using warn = vi.spyOn(console, "warn").mockImplementation(() => {})
         vi.mocked(cleanupMock).mockRejectedValueOnce(new Error("denied"))
         await act(async () => {
@@ -57,25 +61,12 @@ describe("useRestaurantImages ownership", () => {
         expect(cleanupMock).toHaveBeenNthCalledWith(2, { storageId: "s1" })
     })
 
-    test("cleans session-added uploads on edit-mode discard but keeps attached", async () => {
-        renderGallery([stagedImage("attached")], false)
-
+    test("cleans removed and staged ids on explicit discard", async () => {
+        renderGallery()
         await act(async () => {
-            const gallery = currentGallery()
-            gallery.setImages([stagedImage("attached"), stagedImage("s9")])
+            currentGallery().setImages([stagedImage("s1"), stagedImage("s2")])
             await Promise.resolve()
         })
-        await act(async () => {
-            await currentGallery().discardChanges()
-        })
-
-        expect(cleanupMock).toHaveBeenCalledTimes(1)
-        expect(cleanupMock).toHaveBeenCalledWith({ storageId: "s9" })
-    })
-
-    test("cleans removed and staged ids on explicit discard", async () => {
-        renderGallery([stagedImage("s1"), stagedImage("s2")], true)
-
         await act(async () => {
             currentGallery().setImages([stagedImage("s1")])
             await Promise.resolve()
@@ -89,8 +80,11 @@ describe("useRestaurantImages ownership", () => {
     })
 
     test("commit transfers ownership and clears the draft", async () => {
-        renderGallery([stagedImage("s1"), stagedImage("s2")], true)
-
+        renderGallery()
+        await act(async () => {
+            currentGallery().setImages([stagedImage("s1"), stagedImage("s2")])
+            await Promise.resolve()
+        })
         await act(async () => {
             currentGallery().setImages([stagedImage("s1")])
             await Promise.resolve()

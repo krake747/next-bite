@@ -11,7 +11,8 @@ describe("ActivityPost", () => {
                 time="2 hours ago"
                 text="You have to try this place."
                 restaurant={{ name: "Trattoria Verde", cuisine: "Italian" }}
-                social={{ ownerName: "Alex", wantCount: 4, interestedNames: ["Alex", "Priya"] }}
+                ownerName="Alex"
+                wantCount={4}
                 reactions={{
                     wanted: true,
                     wantCount: 4,

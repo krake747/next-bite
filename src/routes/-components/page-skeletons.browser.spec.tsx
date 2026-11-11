@@ -14,7 +14,7 @@ import { page } from "vitest/browser"
 
 import { ConvexProvider } from "@api/convex.context"
 import { convexQueryOptions } from "@api/convex.options"
-import { type RestaurantDoc } from "@api/db/restaurants"
+import { type PlaceCard } from "@api/db/restaurants"
 import { createSeededClient, seedKey } from "@api/db/seeded.client"
 import { api } from "@api/endpoints"
 import { type SessionStatus } from "@core/session"
@@ -27,8 +27,8 @@ import { Route as YouRoute } from "../_app/you"
 
 const testUser = { id: "user-1", email: "alex@example.com", name: "Alex" }
 let sessionKind: SessionStatus["kind"] = "loading"
-let ownRestaurants: ReadonlyArray<RestaurantDoc> = []
-let feedRestaurants: ReadonlyArray<RestaurantDoc> = []
+let ownRestaurants: ReadonlyArray<PlaceCard> = []
+let feedRestaurants: ReadonlyArray<PlaceCard> = []
 
 const auth = vi.hoisted(() => {
     const noop = async () => {
@@ -73,7 +73,7 @@ vi.mock("@core/restaurants", async (importOriginal) => {
     }
 })
 
-function restaurant(id: string, name: string, owner = testUser): RestaurantDoc {
+function restaurant(id: string, name: string, owner = testUser, mySave: PlaceCard["mySave"] = null): PlaceCard {
     // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- test fixture shaped to the restaurant document
     return {
         _id: id,
@@ -83,9 +83,10 @@ function restaurant(id: string, name: string, owner = testUser): RestaurantDoc {
         name,
         cuisine: "Italian",
         address: { label: "Luxembourg City" },
-        images: [],
-        visibility: "private",
-    } as unknown as RestaurantDoc
+        photos: [],
+        mySave,
+        wantCount: 0,
+    } as unknown as PlaceCard
 }
 
 const seeds = new Map<string, unknown>([
@@ -104,13 +105,6 @@ const seeds = new Map<string, unknown>([
         ],
     ],
     [seedKey("social:requests", undefined), { incoming: [], outgoing: [] }],
-    [
-        seedKey("interests:listMyStatuses", undefined),
-        [
-            { restaurantId: "r1", status: "want" },
-            { restaurantId: "r2", status: "want" },
-        ],
-    ],
     [
         seedKey("identity:me", undefined),
         {
@@ -207,7 +201,10 @@ beforeAll(async () => {
 })
 
 beforeEach(() => {
-    ownRestaurants = [restaurant("r1", "Trattoria Verde"), restaurant("r2", "Sushi Bar")]
+    ownRestaurants = [
+        restaurant("r1", "Trattoria Verde", testUser, "want"),
+        restaurant("r2", "Sushi Bar", testUser, "want"),
+    ]
     feedRestaurants = [restaurant("r3", "Pho House", { id: "ben", email: "ben@example.com", name: "Ben" })]
 })
 

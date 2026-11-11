@@ -3,7 +3,7 @@ import { screen, waitFor } from "@testing-library/react"
 import { describe, expect, test, vi } from "vitest"
 
 import { ConvexProvider } from "@api/convex.context"
-import { type RestaurantDoc } from "@api/db/restaurants"
+import { type PlaceCard } from "@api/db/restaurants"
 import { createSeededClient, seedKey, type MutationCall } from "@api/db/seeded.client"
 
 import { routeTree } from "../../routeTree.gen"
@@ -43,8 +43,8 @@ function seedQuery(fn: string, args: unknown, value: unknown): void {
     querySeeds.set(seedKey(fn, args), value)
 }
 
-function savedRestaurant(overrides?: Partial<Omit<RestaurantDoc, "_id">> & { _id?: string }): RestaurantDoc {
-    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- test fixture shaped to the restaurant document
+function savedPlace(overrides?: Partial<Omit<PlaceCard, "_id">> & { _id?: string }): PlaceCard {
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- test fixture shaped to the place card
     return {
         _id: "r1",
         _creationTime: 1000,
@@ -53,18 +53,18 @@ function savedRestaurant(overrides?: Partial<Omit<RestaurantDoc, "_id">> & { _id
         name: "Trattoria Verde",
         cuisine: "Italian",
         address: { label: "Luxembourg City" },
-        images: [],
-        visibility: "private",
+        photos: [],
+        mySave: null,
+        wantCount: 0,
         ...overrides,
-    } as unknown as RestaurantDoc
+    } as unknown as PlaceCard
 }
 
 function seedYou(): void {
-    seedQuery("restaurants:get", undefined, [
-        savedRestaurant(),
-        savedRestaurant({ _id: "r2", name: "Sushi Bar", cuisine: "Japanese" }),
+    seedQuery("places:mine", undefined, [
+        savedPlace(),
+        savedPlace({ _id: "r2", name: "Sushi Bar", cuisine: "Japanese", mySave: "want" }),
     ])
-    seedQuery("interests:listMyStatuses", undefined, [{ restaurantId: "r2", status: "want" }])
 }
 
 async function renderAt(path: string): Promise<void> {
@@ -104,8 +104,7 @@ describe("you screen", () => {
     test("shows empty states with no saves", async () => {
         testUser = { id: "user-1", email: "alex@example.com", name: "Alex" }
         querySeeds.clear()
-        seedQuery("restaurants:get", undefined, [])
-        seedQuery("interests:listMyStatuses", undefined, [])
+        seedQuery("places:mine", undefined, [])
         await renderAt("/you")
 
         await waitFor(() => {

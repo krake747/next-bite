@@ -13,11 +13,12 @@ export function RestaurantGallery({
 }: Readonly<{
     photos: ReadonlyArray<GalleryPhoto>
     name: string
-    cuisine: string
+    cuisine?: string | undefined
     actions?: React.ReactNode | undefined
 }>) {
     const lightbox = useLightbox(photos)
     const cover = photos[0]?.url
+    const tagline = cuisine ?? "Saved place"
     const hasImages = photos.length > 0
 
     return (
@@ -33,7 +34,7 @@ export function RestaurantGallery({
                         <div className="flex items-center gap-2">
                             <ForkKnifeIcon className="size-5 text-muted-foreground" />
                             <span className="font-sans text-xs tracking-wide text-muted-foreground uppercase">
-                                {cuisine}
+                                {tagline}
                             </span>
                         </div>
                     </div>
@@ -42,7 +43,7 @@ export function RestaurantGallery({
                 <div className="absolute top-3 left-3">
                     <Badge tone="brand">
                         <ForkKnifeIcon className="mr-1 size-3" />
-                        {cuisine}
+                        {tagline}
                     </Badge>
                 </div>
 

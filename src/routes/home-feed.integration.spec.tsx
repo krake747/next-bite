@@ -3,7 +3,7 @@ import { screen, within, waitFor } from "@testing-library/react"
 import { describe, expect, test, vi } from "vitest"
 
 import { ConvexProvider } from "@api/convex.context"
-import { type RestaurantDoc } from "@api/db/restaurants"
+import { type PlaceCard } from "@api/db/restaurants"
 import { createSeededClient, seedKey } from "@api/db/seeded.client"
 
 import { routeTree } from "../routeTree.gen"
@@ -33,7 +33,7 @@ vi.mock("@api/auth.provider", async (importOriginal) => {
     }
 })
 
-function ownedRestaurant(name: string, owner: { id: string; name: string }, id: string): RestaurantDoc {
+function ownedRestaurant(name: string, owner: { id: string; name: string }, id: string): PlaceCard {
     // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- test fixture shaped to the restaurant document
     return {
         _id: id,
@@ -43,13 +43,14 @@ function ownedRestaurant(name: string, owner: { id: string; name: string }, id: 
         name,
         cuisine: "Italian",
         address: { label: "Luxembourg City" },
-        images: [],
-        visibility: "shared",
-    } as unknown as RestaurantDoc
+        photos: [],
+        mySave: null,
+        wantCount: 0,
+    } as unknown as PlaceCard
 }
 
 async function renderHome(
-    feed: ReadonlyArray<RestaurantDoc>,
+    feed: ReadonlyArray<PlaceCard>,
     friends: ReadonlyArray<{ profileId: string; name: string }> = [],
 ): Promise<void> {
     const seeds = new Map<string, unknown>([[seedKey("social:friends", undefined), friends]])

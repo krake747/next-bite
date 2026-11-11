@@ -87,7 +87,6 @@ function AddRestaurantFormCard({
             )}
             <RestaurantForm
                 key={choiceKey}
-                mode="add"
                 onSuccess={onSuccess}
                 onCancel={onCancel}
                 onDiscardReady={onDiscardReady}

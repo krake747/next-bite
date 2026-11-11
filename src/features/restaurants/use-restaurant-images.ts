@@ -5,7 +5,7 @@ import { type ImageRecord } from "@core/restaurants"
 
 export type GalleryCleanup = (args: { storageId: Id<"_storage"> }) => Promise<unknown>
 
-async function cleanupUnownedIds(
+async function cleanupStagedIds(
     storageIds: ReadonlyArray<Id<"_storage">>,
     mutate: GalleryCleanup,
     cleaned: Set<Id<"_storage">>,
@@ -33,47 +33,34 @@ export type GalleryDraft = {
     readonly commitSubmit: () => Promise<void>
 }
 
-export function useRestaurantImages(
-    initialImages: ReadonlyArray<ImageRecord>,
-    options: Readonly<{ mode: "add" | "edit"; cleanup: GalleryCleanup }>,
-): GalleryDraft {
+export function useRestaurantImages(options: Readonly<{ cleanup: GalleryCleanup }>): GalleryDraft {
     const { cleanup } = options
-    const [images, setImagesState] = useState<ImageRecord[]>([...initialImages])
-    const [initialIds] = useState(() => new Set(initialImages.map((image) => image.storageId)))
+    const [images, setImagesState] = useState<ImageRecord[]>([])
     const removedRef = useRef(new Set<Id<"_storage">>())
     const cleanedRef = useRef(new Set<Id<"_storage">>())
 
-    const cleanupStorageIds = async (storageIds: ReadonlyArray<Id<"_storage">>): Promise<Id<"_storage">[]> => {
-        return cleanupUnownedIds(storageIds, cleanup, cleanedRef.current)
-    }
-
     const discardChanges = async () => {
-        if (options.mode === "add") {
-            const failed = await cleanupStorageIds([...images.map((img) => img.storageId), ...removedRef.current])
-            const failedIds = new Set(failed)
-            setImagesState(images.filter((image) => failedIds.has(image.storageId)))
-            removedRef.current = new Set(failed)
-        } else {
-            const sessionAdded = images.map((image) => image.storageId).filter((id) => !initialIds.has(id))
-            const failed = await cleanupStorageIds(sessionAdded)
-            const failedIds = new Set(failed)
-            setImagesState(images.filter((image) => failedIds.has(image.storageId)))
-        }
+        const failed = await cleanupStagedIds(
+            [...images.map((image) => image.storageId), ...removedRef.current],
+            cleanup,
+            cleanedRef.current,
+        )
+        const failedIds = new Set(failed)
+        setImagesState(images.filter((image) => failedIds.has(image.storageId)))
+        removedRef.current = new Set(failed)
     }
 
     const commitSubmit = async () => {
-        const failed = await cleanupStorageIds([...removedRef.current])
+        const failed = await cleanupStagedIds([...removedRef.current], cleanup, cleanedRef.current)
         removedRef.current = new Set(failed)
         setImagesState([])
     }
 
     const replaceImages = (next: ImageRecord[]): void => {
-        if (options.mode === "add") {
-            const nextIds = new Set(next.map((image) => image.storageId))
-            for (const image of images) {
-                if (!nextIds.has(image.storageId)) {
-                    removedRef.current.add(image.storageId)
-                }
+        const nextIds = new Set(next.map((image) => image.storageId))
+        for (const image of images) {
+            if (!nextIds.has(image.storageId)) {
+                removedRef.current.add(image.storageId)
             }
         }
         setImagesState([...next])
