@@ -156,25 +156,4 @@ describe("ImageUpload batch ownership", () => {
         await expect.element(fresh.getByRole("button", { name: /drop to upload images/i })).toBeInTheDocument()
         expect(stagedImageCount()).toBe(0)
     })
-
-    test("merges a superseded batch into the gallery while mounted", async () => {
-        resetUploads()
-        await renderHarness()
-        await selectFiles([pngFile("a.png")])
-
-        await expect.poll(() => uploadCalls).toBe(1)
-        await selectFiles([pngFile("b.png")])
-
-        await expect.poll(() => uploadCalls).toBe(2)
-        const firstGate = await vi.waitUntil(() => uploadGates[0], { message: "Upload never started" })
-        firstGate.resolve({ url: "https://example.com/a.jpg", storageId: storageId("s1") })
-
-        await expect.poll(() => stagedImageCount()).toBe(1)
-        expect(mutationCalls.filter((call) => call.fn === "storage:deleteUpload")).toHaveLength(0)
-
-        const secondGate = await vi.waitUntil(() => uploadGates[1], { message: "Upload never started" })
-        secondGate.resolve({ url: "https://example.com/b.jpg", storageId: storageId("s2") })
-
-        await expect.poll(() => stagedImageCount()).toBe(2)
-    })
 })

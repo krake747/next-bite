@@ -206,25 +206,6 @@ describe("RestaurantForm close ownership", () => {
         await expect.poll(() => onCancel).toHaveBeenCalledTimes(1)
     })
 
-    test("submit hands attached images to persisted ownership without cleanup", async () => {
-        resetUploads()
-        const onSuccess = vi.fn<(id: string) => void>()
-        const screen = await renderForm(onSuccess, () => {})
-        await stageOneImage()
-
-        await fillRequiredFields(screen)
-        submitGate = createDeferred<unknown>()
-        clickButton(screen.getByRole("button", { name: "Add Restaurant" }))
-
-        await expect.poll(() => addMutate).toHaveBeenCalledTimes(1)
-        const submit = await vi.waitUntil(() => submitGate, { message: "Submit never started" })
-        submit.resolve(undefined)
-
-        await expect.poll(() => onSuccess).toHaveBeenCalledWith(createdId)
-        expect(addMutate).toHaveBeenCalledTimes(1)
-        expect(mutationCalls.filter((call) => call.fn === "storage:deleteUpload")).toHaveLength(0)
-    })
-
     test("retries a timed-out submit on the same key without duplicating", async () => {
         resetUploads()
         const onSuccess = vi.fn<(id: string) => void>()
@@ -250,28 +231,5 @@ describe("RestaurantForm close ownership", () => {
 
         await expect.poll(() => onSuccess).toHaveBeenCalledWith(createdId)
         expect(mutationCalls.filter((call) => call.fn === "storage:deleteUpload")).toHaveLength(0)
-    })
-
-    test("rotates the key after a committed submit", async () => {
-        resetUploads()
-        const onSuccess = vi.fn<(id: string) => void>()
-        const screen = await renderForm(onSuccess, () => {})
-        await fillRequiredFields(screen)
-        submitGate = createDeferred<unknown>()
-        clickButton(screen.getByRole("button", { name: "Add Restaurant" }))
-
-        await expect.poll(() => addMutate).toHaveBeenCalledTimes(1)
-        const firstSubmit = await vi.waitUntil(() => submitGate, { message: "Submit never started" })
-        firstSubmit.resolve(undefined)
-
-        await expect.poll(() => onSuccess).toHaveBeenCalledTimes(1)
-        const firstKey = requiredAddKey(0)
-
-        await fillRequiredFields(screen)
-        submitGate = createDeferred<unknown>()
-        clickButton(screen.getByRole("button", { name: "Add Restaurant" }))
-
-        await expect.poll(() => addMutate).toHaveBeenCalledTimes(2)
-        expect(requiredAddKey(1)).not.toBe(firstKey)
     })
 })

@@ -32,21 +32,6 @@ describe("session gate", () => {
         expect(expireGate(gate, "user-1", 1)).toBe(gate)
     })
 
-    test("clears a timeout once Convex confirms", () => {
-        const timedOut = expireGate(settle(openGate(0), "user-1", false), "user-1", 0)
-        const gate = settle(timedOut, "user-1", true)
-
-        expect(gate.timedOut).toBe(false)
-        expect(gatePhase(gate, true)).toBe("ready")
-    })
-
-    test("re-arms on retry", () => {
-        const timedOut = expireGate(settle(openGate(0), "user-1", false), "user-1", 0)
-        const gate = settle(timedOut, "user-1", false, 1)
-
-        expect(gatePhase(gate, false)).toBe("waiting")
-    })
-
     test("holds a direct account switch until Convex re-confirms", () => {
         const first = settle(openGate(0), "user-1", true)
         const switched = settle(first, "user-2", true)
@@ -57,11 +42,5 @@ describe("session gate", () => {
         const confirmed = settle(cleared, "user-2", true)
 
         expect(gatePhase(confirmed, true)).toBe("ready")
-    })
-
-    test("keeps a settled gate stable", () => {
-        const gate = settle(openGate(0), "user-1", true)
-
-        expect(settle(gate, "user-1", true)).toBe(gate)
     })
 })

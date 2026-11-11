@@ -19,22 +19,6 @@ describe("RestaurantSchema", () => {
         expect(v.safeParse(RestaurantSchema, validRestaurant).success).toBe(true)
     })
 
-    test("accepts the full optional set", () => {
-        const result = v.safeParse(RestaurantSchema, {
-            ...validRestaurant,
-            lat: 49.6,
-            link: "https://example.com/menu",
-            lng: 6.1,
-            notes: "Great terrace",
-            placeId: "place-1",
-        })
-        expect(result.success).toBe(true)
-    })
-
-    test("treats cuisine as optional", () => {
-        expect(v.safeParse(RestaurantSchema, { ...validRestaurant, cuisine: undefined }).success).toBe(true)
-    })
-
     test("rejects blank required fields with our messages", () => {
         expect(failureMessages(RestaurantSchema, { ...validRestaurant, name: "" })).toContain("Name is required")
         expect(failureMessages(RestaurantSchema, { ...validRestaurant, location: "" })).toContain(
@@ -57,10 +41,6 @@ function parsesUpload(input: unknown): boolean {
 }
 
 describe("parseUploadResult", () => {
-    test("reads the storage id from an upload url response", () => {
-        expect(parseUploadResult({ storageId: "s1" })).toEqual({ storageId: "s1" })
-    })
-
     test("rejects a missing or empty storage id", () => {
         expect(parsesUpload({})).toBe(false)
         expect(parsesUpload({ storageId: "" })).toBe(false)

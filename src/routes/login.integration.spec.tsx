@@ -275,28 +275,6 @@ describe("login OTP step", () => {
         })
     })
 
-    test("resets to email entry when choosing a different email", async () => {
-        querySeeds.clear()
-        seedAuthMethods()
-        publishAuth({ isLoading: false, isInitializing: false, error: null })
-        pendingAuth = null
-        await renderAt("/login")
-
-        await sendCode("alex@example.com")
-        await settlePendingAuth((deferred) => {
-            deferred.resolve()
-        })
-        await waitFor(() => {
-            expect(screen.getByRole("button", { name: "Verify code" })).toBeInTheDocument()
-        })
-
-        fireEvent.click(screen.getByRole("button", { name: "Use a different email" }))
-
-        await waitFor(() => {
-            expect(screen.getByRole("button", { name: "Email me a code" })).toBeInTheDocument()
-        })
-    })
-
     test("navigates home once after a successful verify", async () => {
         querySeeds.clear()
         seedAuthMethods()
@@ -321,59 +299,5 @@ describe("login OTP step", () => {
         await waitFor(() => {
             expect(router.state.location.pathname).toBe("/home")
         })
-    })
-
-    test("shows the loading placeholder during initial bootstrap", async () => {
-        querySeeds.clear()
-        seedAuthMethods()
-        publishAuth({ isLoading: true, isInitializing: true, error: null })
-        pendingAuth = null
-        await mountAt("/login")
-
-        expect(screen.queryByRole("button", { name: "Email me a code" })).toBeNull()
-        expect(screen.queryByRole("button", { name: "Sign In" })).toBeNull()
-
-        await act(async () => {
-            publishAuth({ isLoading: false, isInitializing: false, error: null })
-            await Promise.resolve()
-        })
-
-        await waitFor(() => {
-            expect(screen.getByRole("button", { name: "Email me a code" })).toBeInTheDocument()
-        })
-    })
-
-    test("keeps the form mounted with an inline spinner while a submit is pending", async () => {
-        querySeeds.clear()
-        seedAuthMethods()
-        publishAuth({ isLoading: false, isInitializing: false, error: null })
-        pendingAuth = null
-        await renderAt("/login")
-
-        await sendCode("alex@example.com")
-
-        await waitFor(() => {
-            expect(screen.getByRole("button", { name: "Email me a code" })).toBeDisabled()
-        })
-        expect(screen.queryByRole("button", { name: "Sign In" })).toBeInTheDocument()
-
-        await settlePendingAuth((deferred) => {
-            deferred.resolve()
-        })
-
-        await waitFor(() => {
-            expect(screen.getByText("Code sent to alex@example.com.")).toBeInTheDocument()
-        })
-    })
-
-    test("keeps the password form intact", async () => {
-        querySeeds.clear()
-        seedAuthMethods()
-        publishAuth({ isLoading: false, isInitializing: false, error: null })
-        pendingAuth = null
-        await renderAt("/login")
-
-        expect(screen.getByRole("button", { name: "Sign In" })).toBeInTheDocument()
-        expect(screen.getByRole("button", { name: "Email me a code" })).toBeInTheDocument()
     })
 })

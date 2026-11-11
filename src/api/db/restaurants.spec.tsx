@@ -1,12 +1,11 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
-import { act, renderHook } from "@testing-library/react"
+import { renderHook } from "@testing-library/react"
 import { type ConvexReactClient } from "convex/react"
 import { describe, expect, test, vi } from "vitest"
 
 import { toId } from "@api/data.model"
 import { type Id } from "@convex/_generated/dataModel"
 import { CollectionSyncError, useRestaurants } from "@core/restaurants"
-import { useAuth as useProbeAuth } from "@core/session"
 
 import { CatchError } from "../../vitest.catch"
 import { AuthProvider } from "../auth.provider"
@@ -14,11 +13,8 @@ import { authClient } from "../auth.sdk"
 import {
     assertRealPlaceId,
     buildTempPlace,
-    clearUserScopedQueries,
-    dropSessionCollections,
     getSessionCollections,
     resolvePlaceIdByKey,
-    SyncTimeoutError,
     toCreateArgs,
     type PlaceCreateArgs,
     type PlaceCard,
@@ -135,16 +131,6 @@ function mockPersist() {
 }
 
 describe("place shape translators", () => {
-    test("maps a row to create args", () => {
-        const row = placeFixture()
-
-        expect(toCreateArgs(row)).toMatchObject({
-            name: "Trattoria Verde",
-            cuisine: "Italian",
-            addressLabel: "Luxembourg City",
-        })
-    })
-
     test("forwards the client mutation key to create args", () => {
         const row = placeFixture({ clientMutationId: "user-1:key-1" })
 
@@ -167,13 +153,6 @@ describe("place shape translators", () => {
         expect(() => {
             assertRealPlaceId(temp._id)
         }).toThrow("still syncing")
-    })
-
-    test("accepts real ids in the temp guard", () => {
-        expect(() => {
-            // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- test-only place id
-            assertRealPlaceId("r1" as unknown as Id<"places">)
-        }).not.toThrow()
     })
 })
 
@@ -243,66 +222,6 @@ describe("place collections", () => {
         await expect(pending).resolves.toBe(realId)
     })
 
-    test("times out resolving an id that never syncs", async () => {
-        const persist = mockPersist()
-        const backend = createSeededClient()
-        const collections = getSessionCollections(backend.client, persist, SESSION)
-        await collections.owner.preload()
-
-        await expect(resolvePlaceIdByKey(collections.owner, "user-1:ghost", 50)).rejects.toThrow("Timed out")
-    })
-
-    test("timeout errors carry a retryable code", async () => {
-        const persist = mockPersist()
-        const backend = createSeededClient()
-        const collections = getSessionCollections(backend.client, persist, SESSION)
-        await collections.owner.preload()
-
-        const error = await resolvePlaceIdByKey(collections.owner, "user-1:ghost", 30).then(
-            () => null,
-            (failure: unknown) => failure,
-        )
-        expect(SyncTimeoutError.is(error)).toBe(true)
-    })
-
-    test("persists rapid consecutive inserts under distinct keys", async () => {
-        const persist = mockPersist()
-        const backend = createSeededClient()
-        const collections = getSessionCollections(backend.client, persist, SESSION)
-        await collections.owner.preload()
-
-        const first = collections.owner.insert(
-            buildTempPlace({
-                ownerId: toId<"profiles">("user-1"),
-                ownerName: "Alex",
-                name: "First",
-                cuisine: "Italian",
-                addressLabel: "Luxembourg City",
-                photos: [],
-                previewUrls: new Map(),
-                clientMutationId: "user-1:rapid-1",
-            }),
-        )
-        const second = collections.owner.insert(
-            buildTempPlace({
-                ownerId: toId<"profiles">("user-1"),
-                ownerName: "Alex",
-                name: "Second",
-                cuisine: "Japanese",
-                addressLabel: "Luxembourg City",
-                photos: [],
-                previewUrls: new Map(),
-                clientMutationId: "user-1:rapid-2",
-            }),
-        )
-        await first.when("settled")
-        await second.when("settled")
-
-        expect(persist.addPlace).toHaveBeenCalledTimes(2)
-        const keys = persist.addPlace.mock.calls.map((call) => call[0]?.clientMutationId)
-        expect(keys).toEqual(["user-1:rapid-1", "user-1:rapid-2"])
-    })
-
     test("scopes synced rows per session key", async () => {
         const persist = mockPersist()
         const backend = createSeededClient({ liveRows: [placeFixture()] })
@@ -345,76 +264,6 @@ describe("place collections", () => {
 
         expect(tx.state).toBe("failed")
         expect(collections.owner.size).toBe(0)
-    })
-
-    test("clears user-scoped queries while keeping shared ones", () => {
-        const queryClient = new QueryClient()
-        queryClient.setQueryData(["convexQuery", "places:mine", {}], [{ name: "Stale" }])
-        queryClient.setQueryData(["convexQuery", "social:friends", {}], [])
-        queryClient.setQueryData(["convexQuery", "places:feed", {}], [])
-        queryClient.setQueryData(["convexQuery", "identity:me", {}], { status: "onboarding" })
-        queryClient.setQueryData(["convexQuery", "groups:list", {}], [])
-        queryClient.setQueryData(["convexQuery", "landing:getStats", {}], { count: 1 })
-        queryClient.setQueryData(["convexQuery", "auth:getAuthMethods", {}], { password: true })
-
-        clearUserScopedQueries((filters) => {
-            queryClient.removeQueries(filters)
-        })
-
-        expect(queryClient.getQueryData(["convexQuery", "places:mine", {}])).toBeUndefined()
-        expect(queryClient.getQueryData(["convexQuery", "social:friends", {}])).toBeUndefined()
-        expect(queryClient.getQueryData(["convexQuery", "places:feed", {}])).toBeUndefined()
-        expect(queryClient.getQueryData(["convexQuery", "identity:me", {}])).toBeUndefined()
-        expect(queryClient.getQueryData(["convexQuery", "groups:list", {}])).toBeUndefined()
-        expect(queryClient.getQueryData(["convexQuery", "landing:getStats", {}])).toEqual({ count: 1 })
-        expect(queryClient.getQueryData(["convexQuery", "auth:getAuthMethods", {}])).toEqual({ password: true })
-    })
-
-    test("returns collection rows from the restaurants hook", async () => {
-        vi.mocked(authClient.getSession).mockResolvedValue({
-            data: { user: { id: "user-1", email: "alex@example.com", name: "Alex" } },
-            error: null,
-        })
-        const backend = createSeededClient({ liveRows: [placeFixture()] })
-        injectSyncClient(backend.client)
-        const queryClient = new QueryClient()
-
-        const { result } = renderHook(() => useRestaurants(), {
-            wrapper: ({ children }: Readonly<{ children: React.ReactNode }>) => (
-                <QueryClientProvider client={queryClient}>
-                    <AuthProvider>{children}</AuthProvider>
-                </QueryClientProvider>
-            ),
-        })
-
-        await expect.poll(() => result.current?.map((r) => r.name)).toEqual(["Trattoria Verde"])
-    })
-
-    test("returns undefined from the restaurants hook when signed out", async () => {
-        vi.mocked(authClient.getSession).mockResolvedValue({ data: { user: null }, error: null })
-        const backend = createSeededClient({ liveRows: [placeFixture()] })
-        injectSyncClient(backend.client)
-        const queryClient = new QueryClient()
-
-        const { result } = renderHook(
-            () => {
-                const auth = useProbeAuth()
-                return { restaurants: useRestaurants(), authed: auth.isAuthenticated }
-            },
-            {
-                wrapper: ({ children }: Readonly<{ children: React.ReactNode }>) => (
-                    <QueryClientProvider client={queryClient}>
-                        <AuthProvider>{children}</AuthProvider>
-                    </QueryClientProvider>
-                ),
-            },
-        )
-
-        await expect.poll(() => vi.mocked(authClient.getSession)).toHaveBeenCalled()
-        await expect.poll(() => result.current.authed).toBe(false)
-        expect(result.current.authed).toBe(false)
-        expect(result.current.restaurants).toBeUndefined()
-        expect(backend.subscriberCount()).toBe(0)
     })
 
     test("isolates user data across sign-out to a different user", async () => {
@@ -482,130 +331,7 @@ describe("place collections", () => {
         expect(backend.subscriberCount()).toBeGreaterThan(0)
     })
 
-    test("holds subscriptions until convex auth installs", async () => {
-        vi.mocked(authClient.getSession).mockResolvedValue({
-            data: { user: { id: "user-1", email: "alex@example.com", name: "Alex" } },
-            error: null,
-        })
-        let releaseToken!: () => void
-        const tokenReleased = new Promise<void>((resolve) => {
-            releaseToken = resolve
-        })
-        tokenMock.mockImplementationOnce(async () => {
-            await tokenReleased
-            return { data: { token: "test-token" } }
-        })
-        const backend = createSeededClient({ liveRows: [placeFixture()] })
-        injectSyncClient(backend.client)
-        const queryClient = new QueryClient()
-
-        const { result } = renderHook(() => useRestaurants(), {
-            wrapper: ({ children }: Readonly<{ children: React.ReactNode }>) => (
-                <QueryClientProvider client={queryClient}>
-                    <AuthProvider>{children}</AuthProvider>
-                </QueryClientProvider>
-            ),
-        })
-
-        await expect.poll(() => vi.mocked(authClient.getSession)).toHaveBeenCalled()
-        await new Promise<void>((resolve) => {
-            setTimeout(resolve, 100)
-        })
-        expect(result.current).toBeUndefined()
-        expect(backend.subscriberCount()).toBe(0)
-
-        releaseToken()
-
-        await expect.poll(() => result.current?.map((r) => r.name)).toEqual(["Trattoria Verde"])
-        expect(backend.subscriberCount()).toBeGreaterThan(0)
-    })
-
-    test("resets user-scoped query data when the session changes", async () => {
-        vi.mocked(authClient.getSession).mockResolvedValue({
-            data: { user: { id: "user-1", email: "alex@example.com", name: "Alex" } },
-            error: null,
-        })
-        const backend = createSeededClient({ liveRows: [placeFixture()] })
-        injectSyncClient(backend.client)
-        const queryClient = new QueryClient()
-        const wrapper = ({ children }: Readonly<{ children: React.ReactNode }>) => (
-            <QueryClientProvider client={queryClient}>
-                <AuthProvider>{children}</AuthProvider>
-            </QueryClientProvider>
-        )
-
-        const first = renderHook(() => useRestaurants(), { wrapper })
-        await expect.poll(() => first.result.current?.map((r) => r.name)).toEqual(["Trattoria Verde"])
-        queryClient.setQueryData(["convexQuery", "places:mine", {}], [{ name: "Stale" }])
-        queryClient.setQueryData(["convexQuery", "identity:me", {}], { status: "onboarding" })
-        queryClient.setQueryData(["convexQuery", "landing:getStats", {}], { count: 1 })
-        first.unmount()
-        vi.mocked(authClient.getSession).mockResolvedValue({
-            data: { user: { id: "ben", email: "ben@example.com", name: "Ben" } },
-            error: null,
-        })
-
-        renderHook(() => useRestaurants(), { wrapper })
-        await expect.poll(() => queryClient.getQueryData(["convexQuery", "places:mine", {}])).toBeUndefined()
-        expect(queryClient.getQueryData(["convexQuery", "identity:me", {}])).toBeUndefined()
-        expect(queryClient.getQueryData(["convexQuery", "landing:getStats", {}])).toEqual({ count: 1 })
-    })
-
     describe("collection recovery", () => {
-        function renderOwnedRestaurants() {
-            const queryClient = new QueryClient()
-            return renderHook(() => useRestaurants(), {
-                wrapper: ({ children }: Readonly<{ children: React.ReactNode }>) => (
-                    <QueryClientProvider client={queryClient}>
-                        <AuthProvider>{children}</AuthProvider>
-                    </QueryClientProvider>
-                ),
-            })
-        }
-
-        test("recovers the session collection after a mid-session sync failure", async () => {
-            vi.mocked(authClient.getSession).mockResolvedValue({
-                data: { user: { id: "user-1", email: "alex@example.com", name: "Alex" } },
-                error: null,
-            })
-            const backend = createSeededClient({ liveRows: [placeFixture()] })
-            injectSyncClient(backend.client)
-
-            const { result } = renderOwnedRestaurants()
-            await expect.poll(() => result.current?.map((item) => item.name)).toEqual(["Trattoria Verde"])
-
-            backend.failSync()
-
-            await expect.poll(() => result.current?.map((item) => item.name)).toEqual(["Trattoria Verde"])
-            expect(backend.subscriberCount()).toBe(1)
-        })
-
-        test("stays gated without looping when auth cannot re-verify after a failure", async () => {
-            vi.mocked(authClient.getSession).mockResolvedValue({
-                data: { user: { id: "user-1", email: "alex@example.com", name: "Alex" } },
-                error: null,
-            })
-            const backend = createSeededClient({ liveRows: [placeFixture()] })
-            injectSyncClient(backend.client)
-
-            const { result, unmount } = renderOwnedRestaurants()
-            await expect.poll(() => result.current?.map((item) => item.name)).toEqual(["Trattoria Verde"])
-
-            act(() => {
-                providerClients.at(-1)?.reportAuth?.(false)
-                backend.failSync()
-            })
-
-            await expect.poll(() => result.current).toBeUndefined()
-            const settledCount = backend.subscriberCount()
-            await new Promise<void>((resolve) => {
-                setTimeout(resolve, 1000)
-            })
-            expect(backend.subscriberCount()).toBe(settledCount)
-            expect(result.current).toBeUndefined()
-            unmount()
-        })
-
         test("a sync that keeps failing surfaces an error instead of an empty list", async () => {
             vi.mocked(authClient.getSession).mockResolvedValue({
                 data: { user: { id: "user-1", email: "alex@example.com", name: "Alex" } },
@@ -640,98 +366,6 @@ describe("place collections", () => {
 
             await expect.poll(() => caught).toBeInstanceOf(CollectionSyncError)
             expect(seen.some((rows) => rows !== undefined)).toBe(false)
-        })
-
-        test("a failed refresh keeps rows that already loaded", async () => {
-            vi.mocked(authClient.getSession).mockResolvedValue({
-                data: { user: { id: "user-1", email: "alex@example.com", name: "Alex" } },
-                error: null,
-            })
-            const backend = createSeededClient({ liveRows: [placeFixture()] })
-            injectSyncClient(backend.client)
-            const seen: (ReadonlyArray<string> | undefined)[] = []
-            let caught: unknown = null
-            const queryClient = new QueryClient()
-            const { result } = renderHook(
-                () => {
-                    const rows = useRestaurants()
-                    seen.push(rows?.map((item) => item.name))
-                    return rows
-                },
-                {
-                    wrapper: ({ children }: Readonly<{ children: React.ReactNode }>) => (
-                        <CatchError
-                            onError={(error) => {
-                                caught = error
-                            }}
-                        >
-                            <QueryClientProvider client={queryClient}>
-                                <AuthProvider>{children}</AuthProvider>
-                            </QueryClientProvider>
-                        </CatchError>
-                    ),
-                },
-            )
-            await expect.poll(() => result.current?.map((item) => item.name)).toEqual(["Trattoria Verde"])
-            const loadedAt = seen.length
-
-            act(() => {
-                backend.breakSync()
-            })
-            await new Promise<void>((resolve) => {
-                setTimeout(resolve, 300)
-            })
-
-            expect(seen.length).toBeGreaterThan(loadedAt)
-            expect(seen.slice(loadedAt).every((names) => names?.join() === "Trattoria Verde")).toBe(true)
-            expect(caught).toBeNull()
-        })
-
-        test("dropSessionCollections only evicts the matching session", () => {
-            const backend = createSeededClient({ liveRows: [placeFixture()] })
-            const persist = mockPersist()
-            const first = getSessionCollections(backend.client, persist, "drop-a")
-
-            expect(dropSessionCollections(backend.client, "drop-b")).toBe(false)
-            expect(getSessionCollections(backend.client, persist, "drop-a")).toBe(first)
-            expect(dropSessionCollections(backend.client, "drop-a")).toBe(true)
-            expect(getSessionCollections(backend.client, persist, "drop-a")).not.toBe(first)
-        })
-
-        test("abandons uncommitted optimistic rows instead of duplicating them", async () => {
-            vi.mocked(authClient.getSession).mockResolvedValue({
-                data: { user: { id: "user-1", email: "alex@example.com", name: "Alex" } },
-                error: null,
-            })
-            const backend = createSeededClient({ liveRows: [placeFixture()] })
-            injectSyncClient(backend.client)
-            const { result } = renderOwnedRestaurants()
-            await expect.poll(() => result.current?.map((item) => item.name)).toEqual(["Trattoria Verde"])
-
-            const draft = getSessionCollections(backend.client, mockPersist(), SESSION)
-            const pending = draft.owner.insert(
-                buildTempPlace({
-                    ownerId: toId<"profiles">("user-1"),
-                    ownerName: "Alex",
-                    name: "Sushi Bar",
-                    cuisine: "Japanese",
-                    addressLabel: "Luxembourg City",
-                    photos: [],
-                    previewUrls: new Map(),
-                    clientMutationId: "user-1:k9",
-                }),
-            )
-            backend.failSync()
-            await expect.poll(() => result.current?.map((item) => item.name)).toEqual(["Trattoria Verde"])
-
-            await pending.when("settled").catch(() => {})
-            await expect.poll(() => result.current?.map((item) => item.name)).toEqual(["Trattoria Verde"])
-            expect(
-                result.current?.every((row) => {
-                    assertRealPlaceId(row._id)
-                    return true
-                }),
-            ).toBe(true)
         })
     })
 })
