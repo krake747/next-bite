@@ -3,7 +3,7 @@ import { v } from "convex/values"
 
 import { FALLBACK_DISPLAY_NAME } from "../../../src/core/constants"
 import { type DataModel, type Doc, type Id } from "../../_generated/dataModel"
-import { internalMutation, type QueryCtx } from "../../_generated/server"
+import { type QueryCtx } from "../../_generated/server"
 import { identityTables } from "./schema"
 
 type ProfileDb = GenericDatabaseReader<DataModel>
@@ -119,24 +119,3 @@ export async function setProfileAvatar(
 export async function clearProfileAvatar(db: ProfileWriter, profileId: Id<"profiles">): Promise<void> {
     await db.patch("profiles", profileId, { avatar: undefined })
 }
-
-// Backfill for the relaxed createdAt key (see schema comment). Strips the
-// legacy field with replace, since patch never removes keys. Idempotent:
-// reruns report migrated 0. Listed in .github/scripts/backend-migrate.sh.
-export const stripProfilesCreatedAt = internalMutation({
-    args: {},
-    returns: v.object({ total: v.number(), migrated: v.number() }),
-    handler: async (ctx) => {
-        const all = await ctx.db.query("profiles").collect()
-        let migrated = 0
-        for (const doc of all) {
-            if (doc.createdAt === undefined) {
-                continue
-            }
-            const { _id, _creationTime, createdAt: _legacy, ...clean } = doc
-            await ctx.db.replace("profiles", _id, clean)
-            migrated += 1
-        }
-        return { total: all.length, migrated }
-    },
-})
