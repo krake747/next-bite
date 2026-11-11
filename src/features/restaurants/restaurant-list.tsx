@@ -1,5 +1,5 @@
+import { type RestaurantSocial } from "@core/interests"
 import { type Restaurant } from "@core/restaurants"
-import { type RestaurantSocial } from "@core/social"
 
 import { EmptyRestaurantsState } from "./empty-restaurants-state"
 import { RestaurantCard } from "./restaurant-card"

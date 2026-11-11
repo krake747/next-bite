@@ -19,11 +19,11 @@ function asUser(t: TestConvexForDataModel<DataModel>, subject: string): TestConv
 }
 
 async function registerUser(t: TestConvexForDataModel<DataModel>, subject: string, email: string): Promise<void> {
-    await asUser(t, subject).mutation(api.users.ensureProfile, { email, name: subject })
+    await asUser(t, subject).mutation(api.identity.ensureProfile, { email, name: subject })
 }
 
 async function idOf(t: TestConvexForDataModel<DataModel>, subject: string): Promise<Id<"profiles">> {
-    const me = await asUser(t, subject).query(api.users.getMe, {})
+    const me = await asUser(t, subject).query(api.identity.me, {})
     if (me.status !== "ready") {
         throw new Error(`No profile for ${subject}`)
     }

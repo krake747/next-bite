@@ -19,7 +19,7 @@ export const Route = createFileRoute("/_app/account")({
         if (context.auth?.isAuthenticated !== true) {
             return null
         }
-        await warmQueriesWithin(context.queryClient, [convexQueryOptions(api.users.getMe)], LOADER_WARM_BUDGET_MS)
+        await warmQueriesWithin(context.queryClient, [convexQueryOptions(api.identity.me)], LOADER_WARM_BUDGET_MS)
         return null
     },
 })

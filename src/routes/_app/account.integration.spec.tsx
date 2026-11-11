@@ -43,7 +43,7 @@ function seedQuery(fn: string, args: unknown, value: unknown): void {
 }
 
 function seedReadyProfile(): void {
-    seedQuery("users:getMe", undefined, {
+    seedQuery("identity:me", undefined, {
         status: "ready",
         profile: { _id: "p1", authUserId: "user-1", name: "Alex", email: "alex@example.com" },
     })
@@ -71,7 +71,7 @@ describe("account screen", () => {
     test("shows the onboarding form without user details", async () => {
         testUser = { id: "user-1", email: "alex@example.com", name: "Alex" }
         querySeeds.clear()
-        seedQuery("users:getMe", undefined, { status: "onboarding" })
+        seedQuery("identity:me", undefined, { status: "onboarding" })
         await renderAt("/account")
 
         await waitFor(() => {
@@ -93,7 +93,7 @@ describe("account screen", () => {
         fireEvent.blur(screen.getByLabelText("Display name"))
 
         await waitFor(() => {
-            expect(mutationCalls).toContainEqual({ fn: "users:updateMe", args: { name: "Alexander" } })
+            expect(mutationCalls).toContainEqual({ fn: "identity:rename", args: { name: "Alexander" } })
         })
         expect(screen.getByDisplayValue("Alexander")).toBeInTheDocument()
         expect(screen.queryByRole("alert")).not.toBeInTheDocument()
@@ -111,7 +111,7 @@ describe("account screen", () => {
         })
         fireEvent.blur(screen.getByLabelText("Display name"))
 
-        expect(mutationCalls.filter((call) => call.fn === "users:updateMe")).toHaveLength(0)
+        expect(mutationCalls.filter((call) => call.fn === "identity:rename")).toHaveLength(0)
         expect(screen.queryByRole("alert")).not.toBeInTheDocument()
     })
 
@@ -131,6 +131,6 @@ describe("account screen", () => {
         await waitFor(() => {
             expect(screen.getByRole("alert")).toHaveTextContent("Name cannot be empty")
         })
-        expect(mutationCalls.filter((call) => call.fn === "users:updateMe")).toHaveLength(0)
+        expect(mutationCalls.filter((call) => call.fn === "identity:rename")).toHaveLength(0)
     })
 })

@@ -24,6 +24,7 @@ import {
 import { googleMapsApiKey } from "./env"
 import { requireOwnedRestaurant, withOwnerNames } from "./helpers"
 import { requireProfile, signedInProfile, viewerProfile } from "./model/identity/profiles"
+import { friendIds } from "./model/social/friendships"
 import { coordsValidator, enrichmentValidator, openingHoursValidator, restaurantImageValidator } from "./validators"
 import { isRestaurantVisibleTo } from "./visibility"
 
@@ -42,7 +43,7 @@ async function requireActionProfile(ctx: ActionCtx): Promise<ProfileId> {
     if (!identity) {
         throw new Error("Unauthorized: authentication required")
     }
-    const profileId = await ctx.runQuery(internal.users._viewerProfileId, {})
+    const profileId = await ctx.runQuery(internal.identity._viewerProfileId, {})
     if (profileId === null) {
         throw new Error("Unauthorized: profile required")
     }
@@ -450,20 +451,8 @@ export const feed = query({
         }
         const userId = me._id
 
-        const friendships = await ctx.db
-            .query("friendships")
-            .withIndex("by_owner", (q) => q.eq("ownerId", userId))
-            .take(FEED_FRIEND_CAP * 2)
-        const candidateIds = new Set(friendships.filter((row) => row.status === "accepted").map((row) => row.friendId))
-        candidateIds.delete(userId)
-
         const discoveries: Doc<"restaurants">[] = []
-        let checked = 0
-        for (const ownerId of candidateIds) {
-            if (checked >= FEED_FRIEND_CAP) {
-                break
-            }
-            checked += 1
+        for (const ownerId of await friendIds(ctx.db, userId, FEED_FRIEND_CAP)) {
             const owned = await ctx.db
                 .query("restaurants")
                 .withIndex("by_owner", (q) => q.eq("ownerId", ownerId))

@@ -1,165 +1,102 @@
-import { type GenericDatabaseReader, type GenericMutationCtx } from "convex/server"
 import { v } from "convex/values"
 
-import { countReactions } from "../src/core/social.counts"
-import { type DataModel, type Doc, type Id } from "./_generated/dataModel"
-import { mutation, query } from "./_generated/server"
-import { getProfiles, nameOf, requireProfile, signedInProfile, viewerProfile } from "./model/identity/profiles"
-import { isRestaurantVisibleTo } from "./visibility"
+import { type Id } from "./_generated/dataModel"
+import { mutation, query, type QueryCtx } from "./_generated/server"
+import {
+    getProfiles,
+    nameOf,
+    profileByEmail,
+    profileSummaryValidator,
+    requireProfile,
+    signedInProfile,
+} from "./model/identity/profiles"
+import {
+    acceptFriendship,
+    endFriendship,
+    FRIEND_LIMIT,
+    friendIds,
+    incomingRequestIds,
+    outgoingRequestIds,
+    REQUEST_LIMIT,
+    requestFriendship,
+} from "./model/social/friendships"
 
-async function requireRestaurant(
-    ctx: {
-        db: { get: (id: Id<"restaurants">) => Promise<Doc<"restaurants"> | null> }
-    },
-    restaurantId: Id<"restaurants">,
-): Promise<Doc<"restaurants">> {
-    const restaurant = await ctx.db.get(restaurantId)
-    if (!restaurant) {
-        throw new Error("Restaurant not found")
-    }
-    return restaurant
+type ProfileSummary = { profileId: Id<"profiles">; name: string }
+
+async function summaries(ctx: QueryCtx, ids: ReadonlyArray<Id<"profiles">>): Promise<ProfileSummary[]> {
+    const names = await getProfiles(ctx.db, ids)
+    return ids.map((profileId) => ({ profileId, name: nameOf(names, profileId) }))
 }
 
-async function requireVisibleRestaurant(
-    ctx: GenericMutationCtx<DataModel>,
-    restaurantId: Id<"restaurants">,
-): Promise<Id<"profiles">> {
-    const me = await requireProfile(ctx)
-    const restaurant = await requireRestaurant(ctx, restaurantId)
-    const visible = await isRestaurantVisibleTo(ctx.db, me._id, restaurant)
-    if (!visible) {
-        throw new Error("Unauthorized: restaurant is not shared with you")
-    }
-    return me._id
-}
-
-type NamedInterest = Pick<Doc<"interests">, "restaurantId" | "userId" | "status"> & { displayName: string }
-
-type SocialRows = {
-    interests: NamedInterest[]
-}
-
-async function collectSocialFor(
-    db: GenericDatabaseReader<DataModel>,
-    restaurantId: Id<"restaurants">,
-): Promise<SocialRows> {
-    const rows = await db
-        .query("interests")
-        .withIndex("by_restaurant", (q) => q.eq("restaurantId", restaurantId))
-        .collect()
-    const names = await getProfiles(
-        db,
-        rows.map((row) => row.userId),
-    )
-    return {
-        interests: rows.map((row) => ({
-            restaurantId: row.restaurantId,
-            userId: row.userId,
-            status: row.status,
-            displayName: nameOf(names, row.userId),
-        })),
-    }
-}
-
-export const getForRestaurant = query({
-    args: {
-        restaurantId: v.id("restaurants"),
-    },
-    handler: async (ctx, args) => {
-        // See ADR-0004: null for missing or invisible.
-        const me = await viewerProfile(ctx)
-        if (!me) {
-            return null
-        }
-        const restaurant = await ctx.db.get(args.restaurantId)
-        if (!restaurant) {
-            return null
-        }
-        const visible = await isRestaurantVisibleTo(ctx.db, me._id, restaurant)
-        if (!visible) {
-            return null
-        }
-        return collectSocialFor(ctx.db, args.restaurantId)
-    },
-})
-
-export const listMyStatuses = query({
+export const friends = query({
     args: {},
+    returns: v.array(profileSummaryValidator),
     handler: async (ctx) => {
         const me = await signedInProfile(ctx)
-        if (!me) {
+        if (me === null) {
             return []
         }
-        const rows = await ctx.db
-            .query("interests")
-            .withIndex("by_user", (q) => q.eq("userId", me._id))
-            .collect()
-        return rows.map((row) => ({ restaurantId: row.restaurantId, status: row.status }))
+        return summaries(ctx, await friendIds(ctx.db, me._id, FRIEND_LIMIT))
     },
 })
 
-export const getSummaries = query({
-    // See ADR-0004: private lists stay unenumerable; callers page in 30s.
-    args: {
-        restaurantIds: v.array(v.id("restaurants")),
-    },
-    handler: async (ctx, args) => {
-        if (args.restaurantIds.length > 30) {
-            throw new Error("Too many restaurants requested")
+export const requests = query({
+    args: {},
+    returns: v.object({
+        incoming: v.array(profileSummaryValidator),
+        outgoing: v.array(profileSummaryValidator),
+    }),
+    handler: async (ctx) => {
+        const me = await signedInProfile(ctx)
+        if (me === null) {
+            return { incoming: [], outgoing: [] }
         }
-        const me = await viewerProfile(ctx)
-        const userId = me?._id ?? null
-        return Promise.all(
-            args.restaurantIds.map(async (restaurantId) => {
-                const restaurant = await ctx.db.get(restaurantId)
-                if (!restaurant) {
-                    return null
-                }
-                if (userId === null || !(await isRestaurantVisibleTo(ctx.db, userId, restaurant))) {
-                    return null
-                }
-                const { interests } = await collectSocialFor(ctx.db, restaurantId)
-                const counts = countReactions(
-                    interests,
-                    userId === null ? { kind: "signed-out" } : { kind: "signed-in", id: userId },
-                )
-                return {
-                    restaurantId,
-                    wantCount: counts.wantCount,
-                    beenCount: counts.beenCount,
-                    wanted: counts.wanted,
-                    interestedNames: counts.interestedNames.slice(0, 5),
-                }
-            }),
-        )
+        const [incoming, outgoing] = await Promise.all([
+            incomingRequestIds(ctx.db, me._id, REQUEST_LIMIT),
+            outgoingRequestIds(ctx.db, me._id, REQUEST_LIMIT),
+        ])
+        return { incoming: await summaries(ctx, incoming), outgoing: await summaries(ctx, outgoing) }
     },
 })
 
-export const toggleInterest = mutation({
+export const requestByEmail = mutation({
     args: {
-        restaurantId: v.id("restaurants"),
-        status: v.union(v.literal("want"), v.literal("been")),
+        email: v.string(),
     },
+    returns: v.union(v.literal("pending"), v.literal("accepted")),
     handler: async (ctx, args) => {
-        const userId = await requireVisibleRestaurant(ctx, args.restaurantId)
-        const existing = await ctx.db
-            .query("interests")
-            .withIndex("by_user_restaurant", (q) => q.eq("userId", userId).eq("restaurantId", args.restaurantId))
-            .unique()
-        if (existing) {
-            if (existing.status === args.status) {
-                await ctx.db.delete(existing._id)
-                return null
-            }
-            await ctx.db.patch("interests", existing._id, { status: args.status, updatedAt: Date.now() })
-            return existing._id
+        const me = await requireProfile(ctx)
+        if (args.email.trim() === "") {
+            throw new Error("Email is required")
         }
-        const interestId = await ctx.db.insert("interests", {
-            restaurantId: args.restaurantId,
-            userId,
-            status: args.status,
-            updatedAt: Date.now(),
-        })
-        return interestId
+        const friend = await profileByEmail(ctx.db, args.email)
+        if (friend === null) {
+            throw new Error("Nobody joined with that email yet")
+        }
+        return requestFriendship(ctx.db, me._id, friend._id)
+    },
+})
+
+export const accept = mutation({
+    args: {
+        friendId: v.id("profiles"),
+    },
+    returns: v.null(),
+    handler: async (ctx, args) => {
+        const me = await requireProfile(ctx)
+        await acceptFriendship(ctx.db, me._id, args.friendId)
+        return null
+    },
+})
+
+export const remove = mutation({
+    args: {
+        friendId: v.id("profiles"),
+    },
+    returns: v.null(),
+    handler: async (ctx, args) => {
+        const me = await requireProfile(ctx)
+        await endFriendship(ctx.db, me._id, args.friendId)
+        return null
     },
 })

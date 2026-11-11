@@ -1,6 +1,5 @@
 import { type GenericDatabaseReader } from "convex/server"
 
-import { FALLBACK_DISPLAY_NAME } from "../src/core/constants"
 import { type DataModel, type Doc, type Id } from "./_generated/dataModel"
 import { authComponent } from "./auth"
 import { getProfiles, nameOf } from "./model/identity/profiles"
@@ -8,11 +7,6 @@ import { getProfiles, nameOf } from "./model/identity/profiles"
 export { FALLBACK_DISPLAY_NAME } from "../src/core/constants"
 
 export const FALLBACK_GROUP_NAME = "Unknown group"
-
-export function formatDisplayName(raw: string | null | undefined, fallbackEmail?: string): string {
-    const trimmed = (raw ?? fallbackEmail ?? "").trim().slice(0, 60)
-    return trimmed === "" ? FALLBACK_DISPLAY_NAME : trimmed
-}
 
 export type AuthUserRecord = {
     name?: string | null | undefined

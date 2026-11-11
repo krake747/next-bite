@@ -5,9 +5,10 @@ import { useSuspenseConvexQuery } from "@api/convex.context"
 import { convexQueryOptions, warmQueriesWithin } from "@api/convex.options"
 import { toId } from "@api/data.model"
 import { api } from "@api/endpoints"
+import { isViewer, useViewer } from "@core/identity"
+import { emptySocial, useSocialForRestaurant, useToggleInterest, type RestaurantSocial } from "@core/interests"
 import { type Restaurant } from "@core/restaurants"
-import { useAuth, isViewer, useViewer } from "@core/session"
-import { emptySocial, useSocialForRestaurant, useToggleInterest, type RestaurantSocial } from "@core/social"
+import { useAuth } from "@core/session"
 import { ShareToGroupDialog } from "@features/groups/share-to-group-dialog"
 import { PlanSection } from "@features/plans/plans"
 import { OpeningHoursDialog } from "@features/restaurants/opening-hours-dialog"
@@ -34,7 +35,7 @@ export const Route = createFileRoute("/_app/restaurants/$restaurantId")({
     loader: async ({ context, params }) => {
         const restaurantId = toId<"restaurants">(params.restaurantId)
         const detail = convexQueryOptions(api.restaurants.getById, { id: restaurantId })
-        const social = convexQueryOptions(api.social.getForRestaurant, { restaurantId })
+        const social = convexQueryOptions(api.interests.getForRestaurant, { restaurantId })
         await warmQueriesWithin(
             context.queryClient,
             context.auth?.isAuthenticated === true ? [detail, social] : [detail],

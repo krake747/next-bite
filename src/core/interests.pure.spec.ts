@@ -2,7 +2,7 @@ import { describe, expect, test } from "vitest"
 
 import { type Id } from "@convex/_generated/dataModel"
 
-import { feedTextFor, orderFeedByRecency, summarizeSocial, withoutTempIds, type SocialSnapshot } from "./social"
+import { feedTextFor, orderFeedByRecency, summarizeSocial, withoutTempIds, type SocialSnapshot } from "./interests"
 
 const snapshot: SocialSnapshot = {
     interests: [

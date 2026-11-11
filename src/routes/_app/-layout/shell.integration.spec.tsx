@@ -152,7 +152,7 @@ describe("app shell", () => {
             "/home",
             new Map([
                 [
-                    seedKey("users:getMe", undefined),
+                    seedKey("identity:me", undefined),
                     {
                         status: "ready",
                         profile: {

@@ -147,7 +147,7 @@ describe("group detail", () => {
     const groupId = "g1"
 
     function seedDetail(): void {
-        seedQuery("users:getMe", undefined, {
+        seedQuery("identity:me", undefined, {
             status: "ready",
             profile: { _id: "user-1", authUserId: "user-1", name: "Alex", email: "alex@example.com" },
         })
@@ -166,7 +166,7 @@ describe("group detail", () => {
         )
         seedQuery("shares:listForGroup", { groupId }, [ownerRestaurant({ visibility: "shared" })])
         seedQuery("restaurants:get", undefined, [ownerRestaurant({ _id: "r2", name: "Sushi Bar" })])
-        seedQuery("social:getSummaries", { restaurantIds: ["r1"] }, [
+        seedQuery("interests:getSummaries", { restaurantIds: ["r1"] }, [
             {
                 restaurantId: "r1",
                 wantCount: 2,

@@ -1,6 +1,7 @@
 import { type GenericDatabaseReader } from "convex/server"
 
 import { type DataModel, type Doc, type Id } from "./_generated/dataModel"
+import { areFriends } from "./model/social/friendships"
 
 export async function isRestaurantVisibleTo(
     db: GenericDatabaseReader<DataModel>,
@@ -10,11 +11,7 @@ export async function isRestaurantVisibleTo(
     if (restaurant.ownerId === viewerId) {
         return true
     }
-    const friendship = await db
-        .query("friendships")
-        .withIndex("by_owner_friend", (q) => q.eq("ownerId", restaurant.ownerId).eq("friendId", viewerId))
-        .unique()
-    if (friendship?.status === "accepted") {
+    if (await areFriends(db, restaurant.ownerId, viewerId)) {
         return true
     }
     const shares = await db

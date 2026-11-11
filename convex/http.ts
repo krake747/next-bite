@@ -54,7 +54,7 @@ http.route({
     method: "POST",
     handler: httpAction(async (ctx, request) => {
         try {
-            const ownerId = await ctx.runQuery(internal.users._viewerProfileId, {})
+            const ownerId = await ctx.runQuery(internal.identity._viewerProfileId, {})
             if (ownerId === null) {
                 return jsonResponse(request, 401, { error: "Sign in to upload photos" })
             }

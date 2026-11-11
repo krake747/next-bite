@@ -1,3 +1,5 @@
+import { type Viewer } from "./viewer"
+
 export type ReactionInterest = {
     readonly status: "want" | "been"
     readonly userId: string
@@ -10,8 +12,6 @@ export type ReactionCounts = {
     readonly wanted: boolean
     readonly interestedNames: string[]
 }
-
-export type Viewer = { readonly kind: "signed-in"; readonly id: string } | { readonly kind: "signed-out" }
 
 export function countReactions(interests: ReadonlyArray<ReactionInterest>, viewer: Viewer): ReactionCounts {
     const wants = interests.filter((interest) => interest.status === "want")

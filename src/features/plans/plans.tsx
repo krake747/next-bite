@@ -1,9 +1,10 @@
 import { useState } from "react"
 
 import { type Id } from "@api/data.model"
+import { isViewer, useViewer } from "@core/identity"
 import { clearError, errorFrom, type FormError } from "@core/outcome"
 import { useCreatePlan, usePlansForGroup, usePlansForRestaurant, useUpdatePlanStatus } from "@core/plans"
-import { useAuth, isViewer, useViewer } from "@core/session"
+import { useAuth } from "@core/session"
 import { LoadingPlaceholder } from "@pattern/loading"
 import { Button } from "@ui/button"
 

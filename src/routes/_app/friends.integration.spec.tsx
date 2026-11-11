@@ -43,8 +43,8 @@ function seedQuery(fn: string, args: unknown, value: unknown): void {
 }
 
 function seedFriends(): void {
-    seedQuery("friendships:listFriends", undefined, [{ profileId: "ben", name: "Ben" }])
-    seedQuery("friendships:listFriendRequests", undefined, {
+    seedQuery("social:friends", undefined, [{ profileId: "ben", name: "Ben" }])
+    seedQuery("social:requests", undefined, {
         incoming: [{ profileId: "cas", name: "Cas" }],
         outgoing: [{ profileId: "dan", name: "Dan" }],
     })
@@ -109,7 +109,7 @@ describe("friends screen", () => {
         fireEvent.click(screen.getByRole("button", { name: "Accept" }))
 
         await waitFor(() => {
-            expect(mutationCalls).toContainEqual({ fn: "friendships:acceptFriend", args: { friendId: "cas" } })
+            expect(mutationCalls).toContainEqual({ fn: "social:accept", args: { friendId: "cas" } })
         })
     })
 
@@ -126,7 +126,7 @@ describe("friends screen", () => {
         fireEvent.click(screen.getByRole("button", { name: "Remove" }))
 
         await waitFor(() => {
-            expect(mutationCalls).toContainEqual({ fn: "friendships:removeFriend", args: { friendId: "ben" } })
+            expect(mutationCalls).toContainEqual({ fn: "social:remove", args: { friendId: "ben" } })
         })
     })
 
@@ -145,7 +145,7 @@ describe("friends screen", () => {
 
         await waitFor(() => {
             expect(mutationCalls).toContainEqual({
-                fn: "friendships:requestFriendByEmail",
+                fn: "social:requestByEmail",
                 args: { email: "eve@example.com" },
             })
         })
@@ -154,8 +154,8 @@ describe("friends screen", () => {
     test("shows an empty state with no friends", async () => {
         testUser = { id: "user-1", email: "alex@example.com", name: "Alex" }
         querySeeds.clear()
-        seedQuery("friendships:listFriends", undefined, [])
-        seedQuery("friendships:listFriendRequests", undefined, { incoming: [], outgoing: [] })
+        seedQuery("social:friends", undefined, [])
+        seedQuery("social:requests", undefined, { incoming: [], outgoing: [] })
         seedQuery("restaurants:feed", undefined, [])
         seedQuery("restaurants:get", undefined, [])
         await renderAt("/friends")

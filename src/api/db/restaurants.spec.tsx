@@ -389,9 +389,9 @@ describe("restaurant collections", () => {
     test("clears user-scoped queries while keeping shared ones", () => {
         const queryClient = new QueryClient()
         queryClient.setQueryData(["convexQuery", "restaurants:get", {}], [{ name: "Stale" }])
-        queryClient.setQueryData(["convexQuery", "friendships:listFriends", {}], [])
-        queryClient.setQueryData(["convexQuery", "social:getSummaries", {}], [])
-        queryClient.setQueryData(["convexQuery", "users:getMe", {}], { status: "onboarding" })
+        queryClient.setQueryData(["convexQuery", "social:friends", {}], [])
+        queryClient.setQueryData(["convexQuery", "interests:getSummaries", {}], [])
+        queryClient.setQueryData(["convexQuery", "identity:me", {}], { status: "onboarding" })
         queryClient.setQueryData(["convexQuery", "groups:listMyGroups", {}], [])
         queryClient.setQueryData(["convexQuery", "landing:getStats", {}], { count: 1 })
         queryClient.setQueryData(["convexQuery", "auth:getAuthMethods", {}], { password: true })
@@ -401,9 +401,9 @@ describe("restaurant collections", () => {
         })
 
         expect(queryClient.getQueryData(["convexQuery", "restaurants:get", {}])).toBeUndefined()
-        expect(queryClient.getQueryData(["convexQuery", "friendships:listFriends", {}])).toBeUndefined()
-        expect(queryClient.getQueryData(["convexQuery", "social:getSummaries", {}])).toBeUndefined()
-        expect(queryClient.getQueryData(["convexQuery", "users:getMe", {}])).toBeUndefined()
+        expect(queryClient.getQueryData(["convexQuery", "social:friends", {}])).toBeUndefined()
+        expect(queryClient.getQueryData(["convexQuery", "interests:getSummaries", {}])).toBeUndefined()
+        expect(queryClient.getQueryData(["convexQuery", "identity:me", {}])).toBeUndefined()
         expect(queryClient.getQueryData(["convexQuery", "groups:listMyGroups", {}])).toBeUndefined()
         expect(queryClient.getQueryData(["convexQuery", "landing:getStats", {}])).toEqual({ count: 1 })
         expect(queryClient.getQueryData(["convexQuery", "auth:getAuthMethods", {}])).toEqual({ password: true })
@@ -576,7 +576,7 @@ describe("restaurant collections", () => {
         const first = renderHook(() => useRestaurants(), { wrapper })
         await expect.poll(() => first.result.current?.map((r) => r.name)).toEqual(["Trattoria Verde"])
         queryClient.setQueryData(["convexQuery", "restaurants:get", {}], [{ name: "Stale" }])
-        queryClient.setQueryData(["convexQuery", "users:getMe", {}], { status: "onboarding" })
+        queryClient.setQueryData(["convexQuery", "identity:me", {}], { status: "onboarding" })
         queryClient.setQueryData(["convexQuery", "landing:getStats", {}], { count: 1 })
         first.unmount()
         vi.mocked(authClient.getSession).mockResolvedValue({
@@ -586,7 +586,7 @@ describe("restaurant collections", () => {
 
         renderHook(() => useRestaurants(), { wrapper })
         await expect.poll(() => queryClient.getQueryData(["convexQuery", "restaurants:get", {}])).toBeUndefined()
-        expect(queryClient.getQueryData(["convexQuery", "users:getMe", {}])).toBeUndefined()
+        expect(queryClient.getQueryData(["convexQuery", "identity:me", {}])).toBeUndefined()
         expect(queryClient.getQueryData(["convexQuery", "landing:getStats", {}])).toEqual({ count: 1 })
     })
 

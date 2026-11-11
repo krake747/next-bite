@@ -24,8 +24,9 @@ import {
 import { api } from "@api/endpoints"
 
 import { env } from "./env"
+import { useViewerProfile } from "./identity"
 import { parseImageRecord, type ImageRecord } from "./schemas"
-import { retrySessionGate, useSessionKey, useViewerProfile } from "./session"
+import { retrySessionGate, useSessionKey } from "./session"
 
 export class CollectionSyncError extends Error {
     constructor() {
@@ -151,7 +152,7 @@ async function resolveOwnerProfile(
     if (cached !== undefined) {
         return cached
     }
-    const me = await client.query(api.users.getMe, {})
+    const me = await client.query(api.identity.me, {})
     return me.status === "ready" ? me.profile : undefined
 }
 

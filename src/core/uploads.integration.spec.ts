@@ -19,7 +19,7 @@ function asUser(t: TestConvexForDataModel<DataModel>, subject: string): TestConv
 }
 
 async function registerUser(t: TestConvexForDataModel<DataModel>, subject: string): Promise<void> {
-    await asUser(t, subject).mutation(api.users.ensureProfile, { email: `${subject}@example.com`, name: subject })
+    await asUser(t, subject).mutation(api.identity.ensureProfile, { email: `${subject}@example.com`, name: subject })
 }
 
 async function storeBlob(t: TestConvexForDataModel<DataModel>): Promise<Id<"_storage">> {
@@ -41,7 +41,7 @@ async function createRestaurant(t: TestConvexForDataModel<DataModel>, subject: s
 }
 
 async function idOf(t: TestConvexForDataModel<DataModel>, subject: string): Promise<Id<"profiles">> {
-    const me = await asUser(t, subject).query(api.users.getMe, {})
+    const me = await asUser(t, subject).query(api.identity.me, {})
     if (me.status !== "ready") {
         throw new Error(`No profile for ${subject}`)
     }
@@ -369,7 +369,7 @@ describe("avatar ownership", () => {
         await recordUpload(t, bensFile, "ben")
 
         await expect(
-            asUser(t, "anna").mutation(api.users.updateMe, {
+            asUser(t, "anna").mutation(api.identity.setAvatar, {
                 avatar: { url: `https://example.com/${bensFile}.jpg`, storageId: bensFile },
             }),
         ).rejects.toThrow("does not belong")
@@ -381,11 +381,11 @@ describe("avatar ownership", () => {
         const bensFile = await storeBlob(t)
         await recordUpload(t, bensFile, "ben")
 
-        await asUser(t, "ben").mutation(api.users.updateMe, {
+        await asUser(t, "ben").mutation(api.identity.setAvatar, {
             avatar: { url: `https://example.com/${bensFile}.jpg`, storageId: bensFile },
         })
 
-        const me = await asUser(t, "ben").query(api.users.getMe, {})
+        const me = await asUser(t, "ben").query(api.identity.me, {})
         expect(me).toMatchObject({
             status: "ready",
             profile: {

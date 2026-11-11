@@ -14,5 +14,5 @@ const startAuth = convexBetterAuthReactStart({
 export const { handler } = startAuth
 
 export async function resolveServerAuth(): Promise<RouterAuth | null> {
-    return resolveRequestAuth(getRequestHeaders(), async () => startAuth.fetchAuthQuery(api.users.getSessionUser))
+    return resolveRequestAuth(getRequestHeaders(), async () => startAuth.fetchAuthQuery(api.identity.sessionUser))
 }
