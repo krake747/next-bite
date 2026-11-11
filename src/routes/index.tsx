@@ -1,13 +1,10 @@
 import { createFileRoute } from "@tanstack/react-router"
 
-import { useConvexQuery } from "@api/convex.context"
-import { convexQueryOptions, warmQueries } from "@api/convex.options"
-import { api } from "@api/endpoints"
 import { useAuth } from "@core/session"
 import { BackgroundLayers } from "@pattern/background-decoration"
 import { AppInitializing } from "@pattern/loading"
 import { redirectSignedIn } from "@routes/-components/auth-redirects"
-import { LandingActions, LandingCloser, TasteCards, TasteCardsSkeleton } from "@routes/-components/home-sections"
+import { LandingActions, LandingCloser } from "@routes/-components/home-sections"
 import { PageContainer } from "@routes/-layouts/page-container"
 import { PublicLayout } from "@routes/-layouts/public-layout"
 
@@ -17,10 +14,6 @@ export const Route = createFileRoute("/")({
         redirectSignedIn(context.auth, "/home")
     },
     component: Home,
-    loader: ({ context }) => {
-        warmQueries(context.queryClient, [convexQueryOptions(api.landing.getStats)])
-        return null
-    },
 })
 
 function LandingHero() {
@@ -40,24 +33,11 @@ function LandingHero() {
     )
 }
 
-function LandingStatsSection() {
-    // See ADR-0003: null client during SSR renders skeleton.
-    const stats = useConvexQuery(api.landing.getStats)
-    if (stats === undefined) {
-        return <TasteCardsSkeleton />
-    }
-    if (stats.totalRestaurants === 0) {
-        return null
-    }
-    return <TasteCards tastes={stats.recentAdds} />
-}
-
 function SignedOutHome() {
     return (
         <PublicLayout>
             <LandingHero />
             <PageContainer>
-                <LandingStatsSection />
                 <LandingCloser />
             </PageContainer>
         </PublicLayout>
