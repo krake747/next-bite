@@ -3,7 +3,6 @@ import { mutationOptions, useMutation, useQueryClient, type QueryClient } from "
 import { type ConvexReactClient } from "convex/react"
 import { useEffect, useRef, useState } from "react"
 
-import { getConvexSessionToken } from "@api/auth.sdk"
 import { useConvexClient, useConvexMutation, useConvexAction } from "@api/convex.context"
 import { type Doc, type Id } from "@api/data.model"
 import {
@@ -23,9 +22,8 @@ import {
 } from "@api/db/restaurants"
 import { api } from "@api/endpoints"
 
-import { env } from "./env"
 import { useViewerProfile } from "./identity"
-import { parseImageRecord, type ImageRecord } from "./schemas"
+import { parseUploadResult, type ImageRecord } from "./schemas"
 import { retrySessionGate, useSessionKey } from "./session"
 
 export class CollectionSyncError extends Error {
@@ -243,26 +241,22 @@ export const useRefreshOpeningHours = () => useConvexAction(api.restaurants.refr
 export const useLookupPlaceIdAndHours = () => useConvexAction(api.restaurants.lookupPlaceIdAndHours)
 
 export function useUploadImage() {
+    const client = useConvexClient()
     return async (file: Readonly<File>): Promise<ImageRecord> => {
-        const token = await getConvexSessionToken()
-        if (token === null) {
+        if (client === null) {
             throw new Error("Sign in to upload photos")
         }
-        const uploadUrl = `${env.VITE_CONVEX_SITE_URL}/upload`
-
+        const uploadUrl = await client.mutation(api.storage.generateUploadUrl, {})
         const response = await fetch(uploadUrl, {
             method: "POST",
-            headers: { "Content-Type": file.type, Authorization: `Bearer ${token}` },
+            headers: { "Content-Type": file.type },
             body: file,
         })
-
         if (!response.ok) {
-            const errorText = await response.text()
-            throw new Error(`Upload failed: ${response.status} ${errorText}`)
+            throw new Error(`Upload failed: ${response.status} ${await response.text()}`)
         }
-
-        const result = parseImageRecord(await response.json())
-        return { url: result.url, storageId: result.storageId }
+        const { storageId } = parseUploadResult(await response.json())
+        return { url: URL.createObjectURL(file), storageId }
     }
 }
 

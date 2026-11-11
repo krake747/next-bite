@@ -1,8 +1,8 @@
 # Convex migrations
 
-Schema changes that stored data will not match need a migration. Migration functions live in
-`convex/migrate.ts`; the list in `.github/scripts/backend-migrate.sh` runs after every backend
-deploy (see `environments.md`), so every listed migration must be idempotent.
+Schema changes that stored data will not match need a migration. Migrations are internal mutations
+next to the data they touch; the list in `.github/scripts/backend-migrate.sh` runs after every
+backend deploy (see `environments.md`), so every listed migration must be idempotent.
 
 ## Relax, backfill, tighten
 
@@ -16,20 +16,13 @@ deploy (see `environments.md`), so every listed migration must be idempotent.
 4. **Re-tighten** the schema (drop legacy fields, restore required ones) and deploy again. `lint`
    and `lint:ts` may stay red in the relaxed interim commits.
 
-## Upload ownership quarantine
+## Image claims
 
-Uploads from before owner records existed have blobs in storage with no `uploads` row. They are
-quarantined, never trusted:
-
-- Attaching a storage ID requires a server record owned by the caller, so legacy blobs cannot be
-  grafted onto restaurants.
-- Deletion paths reject missing or foreign records. Removing a restaurant deletes only blobs with a
-  matching owner record.
-- Orphan cleanup accepts only unassociated owner records; attached blobs go through the
-  restaurant-bound path.
-- Never backfill ownership by guessing from restaurant images, and never delete production storage
-  without explicit approval. To reclaim a legacy blob, verify the uploader out of band, record
-  ownership, then use the normal path.
+Upload ownership is the first claim (ADR-0015). Restaurant images stored before claim records
+existed get one from `storage:backfillImageClaims`, which claims each embedded image for the
+restaurant that holds it. Avatars need no backfill because profiles are indexed by avatar storage
+ID. The daily cleanup deletes any blob older than a day that holds no claim, so the backfill must
+run before the first cleanup on a deployment with legacy images.
 
 ## Troubleshooting
 

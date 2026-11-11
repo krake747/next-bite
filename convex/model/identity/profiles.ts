@@ -1,18 +1,14 @@
-import { type GenericDatabaseReader, type GenericDatabaseWriter, type StorageReader } from "convex/server"
-import { v, type Infer } from "convex/values"
+import { type GenericDatabaseReader, type GenericDatabaseWriter } from "convex/server"
+import { v } from "convex/values"
 
 import { FALLBACK_DISPLAY_NAME } from "../../../src/core/constants"
 import { type DataModel, type Doc, type Id } from "../../_generated/dataModel"
 import { type QueryCtx } from "../../_generated/server"
-import { type imageObjectValidator } from "../../validators"
 import { identityTables } from "./schema"
 
 type ProfileDb = GenericDatabaseReader<DataModel>
 type ProfileWriter = GenericDatabaseWriter<DataModel>
 type ProfileCtx = Pick<QueryCtx, "auth" | "db">
-type AvatarCtx = { readonly db: ProfileWriter; readonly storage: StorageReader }
-
-export type AvatarInput = Infer<typeof imageObjectValidator>
 
 export const profileValidator = v.object({
     _id: v.id("profiles"),
@@ -103,34 +99,21 @@ export async function renameProfile(db: ProfileWriter, profileId: Id<"profiles">
     await db.patch("profiles", profileId, { name: formatDisplayName(name) })
 }
 
-async function claimAvatarUpload(
-    ctx: AvatarCtx,
-    profileId: Id<"profiles">,
-    avatar: AvatarInput,
-): Promise<NonNullable<Doc<"profiles">["avatar"]>> {
-    const record = await ctx.db
-        .query("uploads")
-        .withIndex("by_storage", (q) => q.eq("storageId", avatar.storageId))
-        .unique()
-    if (record === null || record.ownerId !== profileId) {
-        throw new Error("Unauthorized: storage does not belong to you")
-    }
-    await ctx.db.patch("uploads", record._id, { purpose: "avatar", expiresAt: undefined })
-    const url = (await ctx.storage.getUrl(avatar.storageId)) ?? avatar.url
-    return {
-        url,
-        storageId: avatar.storageId,
-        ownerId: profileId,
-        ...(record.mimeType !== undefined ? { mimeType: record.mimeType } : {}),
-        ...(record.byteSize !== undefined ? { byteSize: record.byteSize } : {}),
-        ...(avatar.width !== undefined ? { width: avatar.width } : {}),
-        ...(avatar.height !== undefined ? { height: avatar.height } : {}),
-    }
+export type AvatarRecord = NonNullable<Doc<"profiles">["avatar"]>
+
+export async function avatarHolder(db: ProfileDb, storageId: Id<"_storage">): Promise<Doc<"profiles"> | null> {
+    return db
+        .query("profiles")
+        .withIndex("by_avatar_storage", (q) => q.eq("avatar.storageId", storageId))
+        .first()
 }
 
-export async function setProfileAvatar(ctx: AvatarCtx, profileId: Id<"profiles">, avatar: AvatarInput): Promise<void> {
-    const claimed = await claimAvatarUpload(ctx, profileId, avatar)
-    await ctx.db.patch("profiles", profileId, { avatar: claimed })
+export async function setProfileAvatar(
+    db: ProfileWriter,
+    profileId: Id<"profiles">,
+    avatar: AvatarRecord,
+): Promise<void> {
+    await db.patch("profiles", profileId, { avatar })
 }
 
 export async function clearProfileAvatar(db: ProfileWriter, profileId: Id<"profiles">): Promise<void> {

@@ -46,9 +46,6 @@ Set per deployment with `npx convex env set`, never in GitHub.
 
 - `SITE_URL`: the app origin that owns auth cookies. Production uses the public domain, local uses
   `http://localhost:5173`, and each preview gets its exact alias from the workflow.
-- `APP_ORIGINS`: extra trusted origins, comma-separated, exact or with `*` inside one host label.
-  Auth trusts `SITE_URL` plus these. Upload CORS trusts only these plus loopback, so any other
-  origin that uploads must be listed.
 - `BETTER_AUTH_SECRET`: its own value on every deployment.
 - `AUTH_EMAIL_OTP_ENABLED`, `MAILGUN_API_KEY`, `MAILGUN_DOMAIN`: the emailed code appears only when
   enabled and mail is configured. Previews set none, so they cannot send mail. To test codes
@@ -58,8 +55,8 @@ Set per deployment with `npx convex env set`, never in GitHub.
   a deployment that previews or the production domain read.
 - `GOOGLE_MAPS_API_KEY`: the server-side Maps key.
 
-While the production domain reads dev, dev's `SITE_URL` and `APP_ORIGINS` decide how production auth
-builds URLs and which origins may upload.
+While the production domain reads dev, dev's `SITE_URL` decides how production auth builds URLs and
+which origin auth trusts.
 
 ## Previews
 

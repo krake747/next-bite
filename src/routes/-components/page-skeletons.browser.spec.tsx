@@ -49,17 +49,6 @@ const auth = vi.hoisted(() => {
     }
 })
 
-vi.mock("@api/auth.sdk", async (importOriginal) => {
-    const original = await importOriginal<typeof import("@api/auth.sdk")>()
-    return {
-        ...original,
-        getConvexSessionToken: async () => {
-            await Promise.resolve()
-            return "test-token"
-        },
-    }
-})
-
 vi.mock("@api/auth.provider", async (importOriginal) => {
     const original = await importOriginal<typeof import("@api/auth.provider")>()
     return { ...original, useAuthContext: () => auth }

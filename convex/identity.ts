@@ -14,7 +14,7 @@ import {
     signedInProfile,
     viewerProfile,
 } from "./model/identity/profiles"
-import { imageObjectValidator } from "./validators"
+import { claimableImage } from "./storage"
 
 const meValidator = v.union(
     v.object({ status: v.literal("ready"), profile: profileValidator }),
@@ -97,12 +97,20 @@ export const rename = mutation({
 
 export const setAvatar = mutation({
     args: {
-        avatar: imageObjectValidator,
+        storageId: v.id("_storage"),
     },
     returns: v.id("profiles"),
     handler: async (ctx, args) => {
         const profile = await profileOrCreate(ctx, undefined)
-        await setProfileAvatar(ctx, profile._id, args.avatar)
+        if (profile.avatar?.storageId === args.storageId) {
+            return profile._id
+        }
+        const image = await claimableImage(ctx, args.storageId)
+        const url = await ctx.storage.getUrl(args.storageId)
+        if (url === null) {
+            throw new Error("Upload not found")
+        }
+        await setProfileAvatar(ctx.db, profile._id, { url, storageId: args.storageId, ownerId: profile._id, ...image })
         return profile._id
     },
 })

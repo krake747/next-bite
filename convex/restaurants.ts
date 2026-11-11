@@ -24,7 +24,9 @@ import {
 import { googleMapsApiKey } from "./env"
 import { requireOwnedRestaurant, withOwnerNames } from "./helpers"
 import { requireProfile, signedInProfile, viewerProfile } from "./model/identity/profiles"
+import { claimImage, imageClaim, releaseImage } from "./model/places/images"
 import { friendIds } from "./model/social/friendships"
+import { claimableImage, isClaimed, type StoredImage } from "./storage"
 import { coordsValidator, enrichmentValidator, openingHoursValidator, restaurantImageValidator } from "./validators"
 import { isRestaurantVisibleTo } from "./visibility"
 
@@ -50,27 +52,6 @@ async function requireActionProfile(ctx: ActionCtx): Promise<ProfileId> {
     return profileId
 }
 
-type UploadRecord = {
-    ownerId: ProfileId
-    restaurantId: Id<"restaurants"> | null
-    mimeType: string | null
-    byteSize: number | null
-} | null
-
-// See ADR-0015: ownership comes from the server record.
-function requireUploadOwner(record: UploadRecord, ownerId: ProfileId): asserts record {
-    if (!record || record.ownerId !== ownerId) {
-        throw new Error("Unauthorized: storage does not belong to you")
-    }
-}
-
-function assertAttachable(record: UploadRecord, ownerId: ProfileId, allowId: Id<"restaurants"> | null): asserts record {
-    requireUploadOwner(record, ownerId)
-    if (record.restaurantId !== null && record.restaurantId !== allowId) {
-        throw new Error("Storage is already attached to another restaurant")
-    }
-}
-
 type ImageInput = {
     readonly storageId: Id<"_storage">
     readonly width?: number | undefined
@@ -81,7 +62,7 @@ type ImageInput = {
 function withServerMetadata(
     image: ImageInput,
     ownerId: ProfileId,
-    record: NonNullable<UploadRecord>,
+    stored: StoredImage,
     url: string,
 ): {
     url: string
@@ -98,24 +79,22 @@ function withServerMetadata(
         ...(image.width !== undefined ? { width: image.width } : {}),
         ...(image.height !== undefined ? { height: image.height } : {}),
         ownerId,
-        ...(record.mimeType !== null ? { mimeType: record.mimeType } : {}),
-        ...(record.byteSize !== null ? { byteSize: record.byteSize } : {}),
+        mimeType: stored.mimeType,
+        byteSize: stored.byteSize,
     }
 }
 
-// See ADR-0015: verify server record, then remove blob and entry.
 async function deleteAttachedImage(
     ctx: MutationCtx,
     restaurant: Doc<"restaurants">,
     storageId: Id<"_storage">,
 ): Promise<Doc<"restaurants">["images"]> {
-    const record = await ctx.runQuery(internal.uploads.lookupByStorage, { storageId })
-    requireUploadOwner(record, restaurant.ownerId)
-    if (record.restaurantId !== null && record.restaurantId !== restaurant._id) {
+    const claim = await imageClaim(ctx.db, storageId)
+    if (claim?.restaurantId !== restaurant._id) {
         throw new Error("Storage ID is not part of this restaurant")
     }
+    await releaseImage(ctx.db, storageId)
     await ctx.storage.delete(storageId)
-    await ctx.runMutation(internal.uploads.removeRecord, { storageId })
     return restaurant.images.filter((img) => img.storageId !== storageId)
 }
 
@@ -293,12 +272,18 @@ export const _insertRestaurant = internalMutation({
                 return { restaurantId: prior.restaurantId, duplicate: true }
             }
         }
+        for (const image of args.images) {
+            await claimableImage(ctx, image.storageId)
+        }
         const { clientMutationId: _dedupeKey, ...doc } = args
         const restaurantId = await ctx.db.insert("restaurants", {
             ...doc,
             ...(mutationKey !== undefined ? { clientMutationId: mutationKey } : {}),
             visibility: "private",
         })
+        for (const image of args.images) {
+            await claimImage(ctx.db, image.storageId, restaurantId)
+        }
         if (mutationKey !== undefined) {
             await ctx.db.insert("clientMutations", {
                 key: mutationKey,
@@ -473,21 +458,19 @@ export const feed = query({
 
 type AttachableUpload = {
     readonly image: ImageInput
-    readonly record: NonNullable<UploadRecord>
+    readonly stored: StoredImage
 }
 
 type SubmittedImage = Infer<typeof restaurantImageValidator>
 
 async function collectAttachableUploads(
     ctx: ActionCtx,
-    userId: ProfileId,
     images: ReadonlyArray<SubmittedImage>,
 ): Promise<AttachableUpload[]> {
     const attachable: AttachableUpload[] = []
     for (const img of images) {
-        const record = await ctx.runQuery(internal.uploads.lookupByStorage, { storageId: img.storageId })
-        assertAttachable(record, userId, null)
-        attachable.push({ image: img, record })
+        const stored = await ctx.runQuery(internal.storage._storedImage, { storageId: img.storageId })
+        attachable.push({ image: img, stored })
     }
     return attachable
 }
@@ -528,31 +511,16 @@ async function enrichAttachedImages(
     userId: ProfileId,
 ): Promise<ReturnType<typeof withServerMetadata>[]> {
     return Promise.all(
-        attachable.map(async ({ image, record }) => {
+        attachable.map(async ({ image, stored }) => {
             const url =
                 (await ctx.storage.getUrl(image.storageId)) ??
                 images.find((candidate) => candidate.storageId === image.storageId)?.url
             if (url === undefined) {
                 throw new Error("Uploaded image is missing its URL")
             }
-            return withServerMetadata(image, userId, record, url)
+            return withServerMetadata(image, userId, stored, url)
         }),
     )
-}
-
-async function attachInsertedImages(
-    ctx: ActionCtx,
-    enrichedImages: ReadonlyArray<ReturnType<typeof withServerMetadata>>,
-    userId: ProfileId,
-    restaurantId: Id<"restaurants">,
-): Promise<void> {
-    for (const img of enrichedImages) {
-        await ctx.runMutation(internal.uploads.attach, {
-            storageId: img.storageId,
-            ownerId: userId,
-            restaurantId,
-        })
-    }
 }
 
 export const addWithOpeningHours = action({
@@ -572,7 +540,7 @@ export const addWithOpeningHours = action({
         assertRestaurantText(args)
         const images = args.images ?? []
         assertImageLimit(images)
-        const attachable = await collectAttachableUploads(ctx, userId, images)
+        const attachable = await collectAttachableUploads(ctx, images)
 
         const google = await resolveGooglePlace(args.name, args.addressLabel, args.placeId)
         const coords = resolveCoords(google, args.coords ?? undefined)
@@ -581,7 +549,7 @@ export const addWithOpeningHours = action({
         const enrichment = buildEnrichment({ placeId: google.placeId, coords, openingHours })
         const details = cleanDetails({ notes: args.notes, link: args.link })
         const enrichedImages = await enrichAttachedImages(ctx, attachable, images, userId)
-        const { restaurantId, duplicate } = await ctx.runMutation(internal.restaurants._insertRestaurant, {
+        const { restaurantId } = await ctx.runMutation(internal.restaurants._insertRestaurant, {
             ownerId: userId,
             name: args.name,
             cuisine: args.cuisine,
@@ -593,9 +561,6 @@ export const addWithOpeningHours = action({
             images: enrichedImages,
             ...(args.clientMutationId !== undefined ? { clientMutationId: args.clientMutationId } : {}),
         })
-        if (!duplicate) {
-            await attachInsertedImages(ctx, enrichedImages, userId, restaurantId)
-        }
         return restaurantId
     },
 })
@@ -603,7 +568,7 @@ export const addWithOpeningHours = action({
 // See ADR-0015: keep attached, enrich new, detach removed.
 type FreshUpload = {
     image: ImageInput
-    record: NonNullable<UploadRecord>
+    stored: StoredImage
     url: string
 }
 
@@ -618,10 +583,9 @@ async function collectFreshUploads(
         if (previousIds.has(img.storageId)) {
             continue
         }
-        const record = await ctx.runQuery(internal.uploads.lookupByStorage, { storageId: img.storageId })
-        assertAttachable(record, restaurant.ownerId, restaurant._id)
+        const stored = await claimableImage(ctx, img.storageId)
         const url = (await ctx.storage.getUrl(img.storageId)) ?? img.url
-        fresh.push({ image: img, record, url })
+        fresh.push({ image: img, stored, url })
     }
     return fresh
 }
@@ -635,26 +599,20 @@ async function attachFreshUploads(
     if (fresh.length === 0) {
         return
     }
-    for (const { image, record, url } of fresh) {
-        const enriched = withServerMetadata(image, restaurant.ownerId, record, url)
-        storedById.set(image.storageId, enriched)
-        await ctx.runMutation(internal.uploads.attach, {
-            storageId: image.storageId,
-            ownerId: restaurant.ownerId,
-            restaurantId: restaurant._id,
-        })
+    for (const { image, stored, url } of fresh) {
+        storedById.set(image.storageId, withServerMetadata(image, restaurant.ownerId, stored, url))
+        await claimImage(ctx.db, image.storageId, restaurant._id)
     }
 }
 
 async function detachRemovedUploads(
     ctx: MutationCtx,
-    restaurant: Doc<"restaurants">,
     previousIds: ReadonlySet<Id<"_storage">>,
     nextIds: ReadonlySet<Id<"_storage">>,
 ): Promise<void> {
     for (const storageId of previousIds) {
         if (!nextIds.has(storageId)) {
-            await ctx.runMutation(internal.uploads.detach, { storageId, ownerId: restaurant.ownerId })
+            await releaseImage(ctx.db, storageId)
         }
     }
 }
@@ -675,7 +633,7 @@ async function syncRestaurantImages(
             merged.push(kept)
         }
     }
-    await detachRemovedUploads(ctx, restaurant, previousIds, nextIds)
+    await detachRemovedUploads(ctx, previousIds, nextIds)
     return merged
 }
 
@@ -741,22 +699,11 @@ export const remove = mutation({
     handler: async (ctx, args) => {
         const restaurant = await requireOwnedRestaurant(ctx.db, args.id, (await requireProfile(ctx))._id)
 
-        // See ADR-0015: delete only owned, never foreign blobs.
         for (const img of restaurant.images) {
-            try {
-                const record = await ctx.runQuery(internal.uploads.lookupByStorage, { storageId: img.storageId })
-                if (!record || record.ownerId !== restaurant.ownerId) {
-                    console.warn("Skipping storage delete with missing or foreign ownership:", img.storageId)
-                    continue
-                }
-                if (record.restaurantId !== null && record.restaurantId !== args.id) {
-                    console.warn("Skipping storage delete attached to another restaurant:", img.storageId)
-                    continue
-                }
+            const claim = await imageClaim(ctx.db, img.storageId)
+            if (claim?.restaurantId === args.id) {
+                await releaseImage(ctx.db, img.storageId)
                 await ctx.storage.delete(img.storageId)
-                await ctx.runMutation(internal.uploads.removeRecord, { storageId: img.storageId })
-            } catch (error) {
-                console.warn("Failed to delete orphaned image:", img.storageId, error)
             }
         }
 
@@ -794,13 +741,12 @@ export const cleanupStorage = mutation({
         const me = await requireProfile(ctx)
 
         if (args.restaurantId === undefined) {
-            const record = await ctx.runQuery(internal.uploads.lookupByStorage, { storageId: args.storageId })
-            requireUploadOwner(record, me._id)
-            if (record.restaurantId !== null) {
-                throw new Error("Storage is attached to a restaurant; remove it from the restaurant instead")
+            if (await isClaimed(ctx.db, args.storageId)) {
+                throw new Error("Storage is attached; remove it where it is used instead")
             }
-            await ctx.storage.delete(args.storageId)
-            await ctx.runMutation(internal.uploads.removeRecord, { storageId: args.storageId })
+            if ((await ctx.db.system.get("_storage", args.storageId)) !== null) {
+                await ctx.storage.delete(args.storageId)
+            }
             return
         }
 

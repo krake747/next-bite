@@ -15,13 +15,6 @@ const storageId = (value: string): Id<"_storage"> => value as unknown as Id<"_st
 const updateMutate = vi.fn<() => Promise<unknown>>()
 const removeMutate = vi.fn<() => Promise<unknown>>()
 
-vi.mock("@api/auth.sdk", () => ({
-    getConvexSessionToken: async () => {
-        await Promise.resolve()
-        return "test-token"
-    },
-}))
-
 vi.mock("@core/image.utils", async (importOriginal) => {
     const original = await importOriginal<typeof import("@core/image.utils")>()
     return {
@@ -101,9 +94,7 @@ describe("AvatarSection", () => {
         await selectFiles([new File(["pixels"], "a.png", { type: "image/png" })])
 
         await expect.poll(() => updateMutate).toHaveBeenCalledTimes(1)
-        expect(updateMutate).toHaveBeenCalledWith({
-            avatar: { url: "https://example.com/a.jpg", storageId: "s9" },
-        })
+        expect(updateMutate).toHaveBeenCalledWith({ storageId: "s9" })
     })
 
     test("shows an error when the update fails", async () => {

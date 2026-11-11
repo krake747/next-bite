@@ -9,7 +9,7 @@ import { type DataModel } from "./_generated/dataModel"
 import { query } from "./_generated/server"
 import authConfig from "./auth.config"
 import { sendOtpEmail } from "./email"
-import { appOrigins, getValidatedSiteUrl, hasMailgunConfig, isEmailOtpEnabled, isMailDevFallback } from "./env"
+import { getValidatedSiteUrl, hasMailgunConfig, isEmailOtpEnabled, isMailDevFallback } from "./env"
 
 export const authComponent = createClient<DataModel>(components.betterAuth)
 
@@ -32,7 +32,7 @@ export const createAuth = (ctx: GenericCtx<DataModel>) => {
     const siteUrl = staticRegistration ? "http://localhost" : getValidatedSiteUrl()
     return betterAuth({
         baseURL: siteUrl,
-        trustedOrigins: [...new Set([siteUrl, ...appOrigins()])],
+        trustedOrigins: [siteUrl],
         database: authComponent.adapter(ctx),
         emailAndPassword: {
             enabled: true,

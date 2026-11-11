@@ -45,4 +45,10 @@ export const placesTables = {
         .index("by_restaurant", ["restaurantId"])
         .index("by_user", ["userId"])
         .index("by_user_restaurant", ["userId", "restaurantId"]),
+    restaurantImages: defineTable({
+        storageId: v.id("_storage"),
+        restaurantId: v.id("restaurants"),
+    })
+        .index("by_storage", ["storageId"])
+        .index("by_restaurant", ["restaurantId"]),
 }

@@ -1,7 +1,7 @@
 import * as v from "valibot"
 import { describe, expect, test } from "vitest"
 
-import { parseImageRecord, RestaurantSchema } from "./schemas"
+import { parseUploadResult, RestaurantSchema } from "./schemas"
 
 const validRestaurant = {
     cuisine: "Italian",
@@ -48,27 +48,23 @@ describe("RestaurantSchema", () => {
     })
 })
 
-function parsesRecord(input: unknown): boolean {
+function parsesUpload(input: unknown): boolean {
     try {
-        parseImageRecord(input)
+        parseUploadResult(input)
         return true
     } catch {
         return false
     }
 }
 
-describe("parseImageRecord", () => {
-    test("accepts a staged upload record", () => {
-        expect(parseImageRecord({ storageId: "s1", url: "https://example.com/a.jpg", ownerId: "ben" })).toMatchObject({
-            storageId: "s1",
-            url: "https://example.com/a.jpg",
-            ownerId: "ben",
-        })
+describe("parseUploadResult", () => {
+    test("reads the storage id from an upload url response", () => {
+        expect(parseUploadResult({ storageId: "s1" })).toEqual({ storageId: "s1" })
     })
 
-    test("rejects an empty url or storage id", () => {
-        expect(parsesRecord({ storageId: "s1", url: "" })).toBe(false)
-        expect(parsesRecord({ storageId: "", url: "https://example.com/a.jpg" })).toBe(false)
-        expect(parsesRecord({ storageId: 42, url: "https://example.com/a.jpg" })).toBe(false)
+    test("rejects a missing or empty storage id", () => {
+        expect(parsesUpload({})).toBe(false)
+        expect(parsesUpload({ storageId: "" })).toBe(false)
+        expect(parsesUpload({ storageId: 42 })).toBe(false)
     })
 })
