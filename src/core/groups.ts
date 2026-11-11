@@ -9,13 +9,13 @@ export const useMyGroups = () => {
     return useConvexQuery(api.groups.list, undefined, { skip: status.kind !== "ready" })
 }
 
-export const useRestaurantShares = (restaurantId: Id<"restaurants">) => {
+export const useGroupPlaces = (groupId: Id<"groups">) => {
     const status = useSessionStatus()
-    return useConvexQuery(api.shares.listShares, { restaurantId }, { skip: status.kind !== "ready" })
+    return useConvexQuery(api.places.forGroup, { groupId }, { skip: status.kind !== "ready" })
 }
 
-export const useShareWithGroup = () => useConvexMutation(api.shares.shareWithGroup)
-export const useUnshare = () => useConvexMutation(api.shares.unshare)
+export const useAddToGroup = () => useConvexMutation(api.places.addToGroup)
+export const useRemoveFromGroup = () => useConvexMutation(api.places.removeFromGroup)
 export const useCreateGroup = () => useConvexMutation(api.groups.create)
 
 export const useCreateInvite = () => useConvexMutation(api.invites.create)

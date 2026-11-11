@@ -9,7 +9,7 @@ export function RestaurantInterestButton({
     onToggleWant,
 }: Readonly<{
     wanted: boolean
-    wantCount: number
+    wantCount: number | string
     onToggleWant: () => void
 }>) {
     return (
@@ -27,7 +27,7 @@ export function RestaurantInterestButton({
         >
             <BookmarkIcon className="size-4" weight={wanted ? "fill" : "regular"} />
             {wanted ? "Want to try" : "Want to try?"}
-            {wantCount > 0 && <span className="text-xs font-medium tabular-nums opacity-80">{wantCount}</span>}
+            {wantCount !== 0 && <span className="text-xs font-medium tabular-nums opacity-80">{wantCount}</span>}
         </button>
     )
 }

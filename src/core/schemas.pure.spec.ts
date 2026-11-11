@@ -22,7 +22,6 @@ describe("RestaurantSchema", () => {
     test("accepts the full optional set", () => {
         const result = v.safeParse(RestaurantSchema, {
             ...validRestaurant,
-            images: ["https://example.com/a.jpg"],
             lat: 49.6,
             link: "https://example.com/menu",
             lng: 6.1,
@@ -32,9 +31,12 @@ describe("RestaurantSchema", () => {
         expect(result.success).toBe(true)
     })
 
+    test("treats cuisine as optional", () => {
+        expect(v.safeParse(RestaurantSchema, { ...validRestaurant, cuisine: undefined }).success).toBe(true)
+    })
+
     test("rejects blank required fields with our messages", () => {
         expect(failureMessages(RestaurantSchema, { ...validRestaurant, name: "" })).toContain("Name is required")
-        expect(failureMessages(RestaurantSchema, { ...validRestaurant, cuisine: "" })).toContain("Cuisine is required")
         expect(failureMessages(RestaurantSchema, { ...validRestaurant, location: "" })).toContain(
             "Location is required",
         )
@@ -42,9 +44,6 @@ describe("RestaurantSchema", () => {
 
     test("rejects mistyped optionals", () => {
         expect(v.safeParse(RestaurantSchema, { ...validRestaurant, lat: "49.6" }).success).toBe(false)
-        expect(v.safeParse(RestaurantSchema, { ...validRestaurant, images: "https://example.com/a.jpg" }).success).toBe(
-            false,
-        )
     })
 })
 

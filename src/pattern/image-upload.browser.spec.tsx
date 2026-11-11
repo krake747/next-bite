@@ -148,7 +148,7 @@ describe("ImageUpload batch ownership", () => {
         await expect
             .poll(() => mutationCalls)
             .toContainEqual({
-                fn: "restaurants:cleanupStorage",
+                fn: "storage:deleteUpload",
                 args: { storageId: "s1" },
             })
 
@@ -170,7 +170,7 @@ describe("ImageUpload batch ownership", () => {
         firstGate.resolve({ url: "https://example.com/a.jpg", storageId: storageId("s1") })
 
         await expect.poll(() => stagedImageCount()).toBe(1)
-        expect(mutationCalls.filter((call) => call.fn === "restaurants:cleanupStorage")).toHaveLength(0)
+        expect(mutationCalls.filter((call) => call.fn === "storage:deleteUpload")).toHaveLength(0)
 
         const secondGate = await vi.waitUntil(() => uploadGates[1], { message: "Upload never started" })
         secondGate.resolve({ url: "https://example.com/b.jpg", storageId: storageId("s2") })

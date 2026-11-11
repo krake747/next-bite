@@ -4,7 +4,7 @@ import { afterEach, beforeEach, describe, expect, test, vi } from "vitest"
 
 import { ConvexProvider } from "@api/convex.context"
 import { toId } from "@api/data.model"
-import { type RestaurantDoc } from "@api/db/restaurants"
+import { type PlaceCard } from "@api/db/restaurants"
 import { createSeededClient, seedKey } from "@api/db/seeded.client"
 import { pendingOptions } from "@routes/-components/route-pending"
 
@@ -36,9 +36,9 @@ vi.mock("@api/auth.provider", async (importOriginal) => {
     }
 })
 
-const restaurantId = toId<"restaurants">("r1")
+const restaurantId = toId<"places">("r1")
 
-const verde: RestaurantDoc = {
+const verde: PlaceCard = {
     _id: restaurantId,
     _creationTime: 1000,
     ownerId: toId<"profiles">(alex.id),
@@ -46,8 +46,9 @@ const verde: RestaurantDoc = {
     name: "Trattoria Verde",
     cuisine: "Italian",
     address: { label: "Luxembourg City" },
-    images: [],
-    visibility: "shared",
+    photos: [],
+    mySave: null,
+    wantCount: 0,
 }
 
 type Gate = { promise: Promise<void>; open: () => void }
@@ -71,8 +72,7 @@ let gate: Gate | undefined
 
 async function renderAt(path: string) {
     const seeds = new Map<string, unknown>([
-        [seedKey("restaurants:getById", { id: restaurantId }), verde],
-        [seedKey("interests:getForRestaurant", { restaurantId }), null],
+        [seedKey("places:get", { id: restaurantId }), verde],
         [seedKey("social:friends", undefined), []],
         [seedKey("social:requests", undefined), { incoming: [], outgoing: [] }],
     ])

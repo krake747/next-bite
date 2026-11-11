@@ -1,24 +1,19 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router"
 import { useState } from "react"
 
-import { useSuspenseConvexQuery } from "@api/convex.context"
+import { useSuspenseConvexQuery, useConvexAction } from "@api/convex.context"
 import { convexQueryOptions, warmQueriesWithin } from "@api/convex.options"
 import { toId } from "@api/data.model"
 import { api } from "@api/endpoints"
-import { isViewer, useViewer } from "@core/identity"
-import { emptySocial, useSocialForRestaurant, useToggleInterest, type RestaurantSocial } from "@core/interests"
 import { type Restaurant } from "@core/restaurants"
+import { useToggleWant } from "@core/saves"
 import { useAuth } from "@core/session"
-import { ShareToGroupDialog } from "@features/groups/share-to-group-dialog"
 import { PlanSection } from "@features/plans/plans"
 import { OpeningHoursDialog } from "@features/restaurants/opening-hours-dialog"
-import { RestaurantForm, useFormDiscard } from "@features/restaurants/restaurant-form"
+import { type OpeningHours } from "@features/restaurants/opening-hours-utils"
 import { RestaurantGallery } from "@features/restaurants/restaurant-gallery"
 import { RestaurantHeader } from "@features/restaurants/restaurant-header"
 import { RestaurantInterestButton } from "@features/restaurants/restaurant-interest-button"
-import { PhotoGallery } from "@features/social/photo-gallery"
-import { AvatarGroup } from "@pattern/avatar-group"
-import { type GalleryPhoto } from "@pattern/gallery"
 import { LoadingPlaceholder } from "@pattern/loading"
 import { QueryErrorState } from "@pattern/query-error"
 import { SocialMetadata } from "@pattern/social-metadata"
@@ -33,14 +28,9 @@ export const Route = createFileRoute("/_app/restaurants/$restaurantId")({
     pendingComponent: DetailLoading,
     errorComponent: RestaurantDetailError,
     loader: async ({ context, params }) => {
-        const restaurantId = toId<"restaurants">(params.restaurantId)
-        const detail = convexQueryOptions(api.restaurants.getById, { id: restaurantId })
-        const social = convexQueryOptions(api.interests.getForRestaurant, { restaurantId })
-        await warmQueriesWithin(
-            context.queryClient,
-            context.auth?.isAuthenticated === true ? [detail, social] : [detail],
-            LOADER_WARM_BUDGET_MS,
-        )
+        const restaurantId = toId<"places">(params.restaurantId)
+        const detail = convexQueryOptions(api.places.get, { id: restaurantId })
+        await warmQueriesWithin(context.queryClient, [detail], LOADER_WARM_BUDGET_MS)
         return null
     },
 })
@@ -56,142 +46,110 @@ function RestaurantDetailError({ reset }: Readonly<{ reset: () => void }>) {
     )
 }
 
-function DetailHero({
-    restaurant,
-    social,
-    photos,
-    shareAction,
-}: Readonly<{
-    restaurant: Restaurant
-    social: RestaurantSocial
-    photos: ReadonlyArray<GalleryPhoto>
-    shareAction: React.ReactNode
-}>) {
+function DetailHero({ restaurant }: Readonly<{ restaurant: Restaurant }>) {
     const navigate = useNavigate()
     const auth = useAuth()
-    const viewer = useViewer()
-    const toggleInterest = useToggleInterest()
+    const toggleWant = useToggleWant(restaurant._id, restaurant.mySave)
+    const fetchHours = useConvexAction(api.places.hours)
     const [showHours, setShowHours] = useState(false)
-    const [editing, setEditing] = useState(false)
-    const isOwner = isViewer(viewer, restaurant.ownerId)
+    const [hours, setHours] = useState<OpeningHours | undefined>(undefined)
+    const [hoursFailed, setHoursFailed] = useState(false)
+
+    const googlePlaceId = restaurant.address.google?.placeId
 
     const goToLogin = () => {
         void navigate({ to: "/login" })
     }
 
-    const toggleWant = () => {
+    const handleToggleWant = () => {
         if (!auth.isAuthenticated) {
             goToLogin()
             return
         }
-        toggleInterest.mutate({ restaurantId: restaurant._id, status: "want" })
+        toggleWant()
+    }
+
+    const handleShowHours = () => {
+        setHoursFailed(false)
+        setShowHours(true)
+        if (hours === undefined) {
+            void fetchHours
+                .mutateAsync({ placeId: restaurant._id })
+                .then(setHours)
+                .catch(() => {
+                    setHoursFailed(true)
+                })
+        }
     }
 
     return (
         <div className="overflow-hidden rounded-card border border-border bg-surface shadow-card">
-            {editing ? (
-                <DetailEditForm
-                    restaurant={restaurant}
-                    onDone={() => {
-                        setEditing(false)
-                    }}
-                />
-            ) : (
-                <div className="grid divide-border lg:grid-cols-5 lg:divide-x">
-                    <div className="lg:col-span-3">
-                        <RestaurantGallery photos={photos} name={restaurant.name} cuisine={restaurant.cuisine} />
-                    </div>
-                    <div className="min-w-0 lg:col-span-2">
-                        <RestaurantHeader
-                            name={restaurant.name}
-                            link={restaurant.details?.link}
-                            ownerName={restaurant.ownerName}
-                            wantCount={social.wantCount}
-                            beenCount={social.beenCount}
-                            location={restaurant.address.label}
-                            hasLocation={restaurant.address.enrichment?.coords !== undefined}
-                            openingHours={restaurant.address.enrichment?.openingHours}
-                            onShowHours={() => {
-                                setShowHours(true)
-                            }}
+            <div className="grid divide-border lg:grid-cols-5 lg:divide-x">
+                <div className="lg:col-span-3">
+                    <RestaurantGallery photos={restaurant.photos} name={restaurant.name} cuisine={restaurant.cuisine} />
+                </div>
+                <div className="min-w-0 lg:col-span-2">
+                    <RestaurantHeader
+                        name={restaurant.name}
+                        link={restaurant.link}
+                        ownerName={restaurant.ownerName}
+                        wantCount={restaurant.wantCount}
+                        location={restaurant.address.label}
+                        hasLocation={restaurant.address.google?.lat !== undefined}
+                    />
+                    <div className="flex flex-wrap items-center gap-3 px-5 pb-2 md:px-4">
+                        <RestaurantInterestButton
+                            wanted={restaurant.mySave === "want"}
+                            wantCount={restaurant.wantCount}
+                            onToggleWant={handleToggleWant}
                         />
-                        <div className="flex flex-wrap items-center gap-3 px-5 pb-2 md:px-4">
-                            <RestaurantInterestButton
-                                wanted={social.wanted}
-                                wantCount={social.wantCount}
-                                onToggleWant={toggleWant}
-                            />
-                            {isOwner && (
-                                <Button
-                                    tone="secondary"
-                                    onClick={() => {
-                                        setEditing(true)
-                                    }}
-                                >
-                                    Edit
-                                </Button>
-                            )}
-                            {shareAction}
-                        </div>
-                        <div className="space-y-3 p-5 md:p-4">
-                            {restaurant.details?.notes !== undefined && restaurant.details.notes !== "" && (
-                                <div>
-                                    <h2 className="font-display text-lg font-semibold text-balance text-foreground">
-                                        Why it&apos;s recommended
-                                    </h2>
-                                    <p className="text-body mt-1 leading-relaxed text-pretty text-foreground">
-                                        {restaurant.details.notes}
-                                    </p>
-                                </div>
-                            )}
-                            <SocialMetadata
-                                ownerName={restaurant.ownerName}
-                                wantCount={social.wantCount}
-                                beenCount={social.beenCount}
-                            />
-                            {social.interestedNames.length > 0 && (
-                                <AvatarGroup members={social.interestedNames.map((name) => ({ name }))} />
-                            )}
-                        </div>
+                        {googlePlaceId !== undefined && googlePlaceId !== "" && (
+                            <Button tone="secondary" onClick={handleShowHours}>
+                                Hours
+                            </Button>
+                        )}
+                    </div>
+                    <div className="space-y-3 p-5 md:p-4">
+                        {restaurant.note !== undefined && restaurant.note !== "" && (
+                            <div>
+                                <h2 className="font-display text-lg font-semibold text-balance text-foreground">
+                                    Why it&apos;s recommended
+                                </h2>
+                                <p className="text-body mt-1 leading-relaxed text-pretty text-foreground">
+                                    {restaurant.note}
+                                </p>
+                            </div>
+                        )}
+                        <SocialMetadata ownerName={restaurant.ownerName} wantCount={restaurant.wantCount} />
+                        {hoursFailed && (
+                            <p role="alert" className="text-sm text-destructive">
+                                Could not load opening hours.
+                            </p>
+                        )}
                     </div>
                 </div>
-            )}
+            </div>
             <OpeningHoursDialog
                 show={showHours}
                 onOpenChange={setShowHours}
-                openingHours={restaurant.address.enrichment?.openingHours}
+                openingHours={hours}
                 restaurantName={restaurant.name}
             />
         </div>
     )
 }
 
-function DetailEditForm({ restaurant, onDone }: Readonly<{ restaurant: Restaurant; onDone: () => void }>) {
-    const { registerDiscard, discard } = useFormDiscard()
-    return (
-        <div className="p-5 md:p-4">
-            <RestaurantForm
-                mode="edit"
-                restaurant={restaurant}
-                onSuccess={onDone}
-                onCancel={() => {
-                    void discard().then(onDone)
-                }}
-                onDiscardReady={registerDiscard}
-            />
-        </div>
-    )
-}
-
-function DetailPhotos({ photos }: Readonly<{ photos: ReadonlyArray<GalleryPhoto> }>) {
+function DetailPhotos({ photos }: Readonly<{ photos: ReadonlyArray<{ readonly url: string }> }>) {
     if (photos.length === 0) {
         return null
     }
     return (
         <div className="rounded-card border border-border bg-surface p-4 shadow-card">
-            <h2 className="font-display text-lg font-semibold text-balance text-foreground">Friends&apos; photos</h2>
-            <div className="pt-3">
-                <PhotoGallery photos={photos} />
+            <h2 className="font-display text-lg font-semibold text-balance text-foreground">Photos</h2>
+            <div className="grid grid-cols-3 gap-2 pt-3">
+                {photos.map((photo) => (
+                    <img key={photo.url} src={photo.url} alt="" className="aspect-square rounded-lg object-cover" />
+                ))}
             </div>
         </div>
     )
@@ -222,58 +180,22 @@ function DetailNotFound() {
     )
 }
 
-function DetailShare({ restaurant }: Readonly<{ restaurant: Restaurant }>) {
-    const viewer = useViewer()
-    const [showShare, setShowShare] = useState(false)
-    if (!isViewer(viewer, restaurant.ownerId)) {
-        return null
-    }
-    return (
-        <>
-            <Button
-                tone="secondary"
-                onClick={() => {
-                    setShowShare(true)
-                }}
-            >
-                Share
-            </Button>
-            <ShareToGroupDialog
-                restaurantId={restaurant._id}
-                restaurantName={restaurant.name}
-                show={showShare}
-                onOpenChange={setShowShare}
-            />
-        </>
-    )
-}
-
 function RestaurantDetailView() {
     const { restaurantId } = Route.useParams()
-    const restaurantConvexId = toId<"restaurants">(restaurantId)
-    const restaurant = useSuspenseConvexQuery(api.restaurants.getById, { id: restaurantConvexId })
-    const viewer = useViewer()
-    const restaurantSocial = useSocialForRestaurant(restaurantConvexId, viewer)
+    const restaurantConvexId = toId<"places">(restaurantId)
+    const restaurant = useSuspenseConvexQuery(api.places.get, { id: restaurantConvexId })
 
     if (restaurant === null) {
         return <DetailNotFound />
     }
 
-    const social = restaurantSocial ?? emptySocial
-    const photos = restaurant.images.map((img) => ({ url: img.url, author: restaurant.ownerName }))
-
     return (
         <PageContainer>
             <BackNav backTo="/" label="Back to restaurants" />
             <div className="mx-auto max-w-3xl space-y-6 pt-4 lg:max-w-5xl">
-                <DetailHero
-                    restaurant={restaurant}
-                    social={social}
-                    photos={photos}
-                    shareAction={<DetailShare restaurant={restaurant} />}
-                />
-                <DetailPhotos photos={photos} />
-                <PlanSection restaurantId={restaurant._id} />
+                <DetailHero restaurant={restaurant} />
+                <DetailPhotos photos={restaurant.photos} />
+                <PlanSection placeId={restaurant._id} />
             </div>
         </PageContainer>
     )

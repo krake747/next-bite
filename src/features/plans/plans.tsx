@@ -94,11 +94,11 @@ function PlanList({
 
 export function PlanSection({
     groupId,
-    restaurantId,
-}: Readonly<{ groupId?: Id<"groups"> | undefined; restaurantId?: Id<"restaurants"> | undefined }>) {
+    placeId,
+}: Readonly<{ groupId?: Id<"groups"> | undefined; placeId?: Id<"places"> | undefined }>) {
     const auth = useAuth()
     const groupPlans = usePlansForGroup(groupId)
-    const restaurantPlans = usePlansForRestaurant(groupId === undefined ? restaurantId : undefined)
+    const restaurantPlans = usePlansForRestaurant(groupId === undefined ? placeId : undefined)
     const createPlan = useCreatePlan()
     const [title, setTitle] = useState("")
     const [dateInput, setDateInput] = useState("")
@@ -131,7 +131,7 @@ export function PlanSection({
         try {
             await createPlan.mutateAsync({
                 ...(groupId !== undefined ? { groupId } : {}),
-                ...(restaurantId !== undefined ? { restaurantId } : {}),
+                ...(placeId !== undefined ? { placeId } : {}),
                 title: title.trim(),
                 date: parsed,
             })

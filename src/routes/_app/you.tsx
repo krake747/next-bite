@@ -1,16 +1,11 @@
 import { createFileRoute, Link } from "@tanstack/react-router"
 
-import { useSuspenseConvexQuery } from "@api/convex.context"
-import { convexQueryOptions, warmQueriesWithin } from "@api/convex.options"
-import { type Doc } from "@api/data.model"
-import { api } from "@api/endpoints"
-import { orderFeedByRecency } from "@core/interests"
-import { useRestaurants } from "@core/restaurants"
+import { useRestaurants, type Restaurant } from "@core/restaurants"
+import { orderFeedByRecency } from "@core/saves"
 import { useSessionStatus } from "@core/session"
 import { Header, HeaderSubtitle, HeaderTitle } from "@pattern/header"
 import { QueryErrorState } from "@pattern/query-error"
 import { RestaurantListsSkeleton } from "@routes/-components/page-skeletons"
-import { LOADER_WARM_BUDGET_MS } from "@routes/-components/route-pending"
 import { SessionGate } from "@routes/-components/session-gate"
 import { PageContainer } from "@routes/-layouts/page-container"
 
@@ -18,17 +13,6 @@ export const Route = createFileRoute("/_app/you")({
     head: () => ({ meta: [{ title: "You - Next Bite" }] }),
     component: YouPage,
     errorComponent: YouError,
-    loader: async ({ context }) => {
-        if (context.auth?.isAuthenticated !== true) {
-            return null
-        }
-        await warmQueriesWithin(
-            context.queryClient,
-            [convexQueryOptions(api.interests.listMyStatuses)],
-            LOADER_WARM_BUDGET_MS,
-        )
-        return null
-    },
 })
 
 function YouError({ reset }: Readonly<{ reset: () => void }>) {
@@ -42,8 +26,6 @@ function YouError({ reset }: Readonly<{ reset: () => void }>) {
         </PageContainer>
     )
 }
-
-type Restaurant = Doc<"restaurants">
 
 function RestaurantsSection({
     title,
@@ -72,7 +54,10 @@ function RestaurantsSection({
                                 {restaurant.name}
                             </Link>
                             <p className="mt-1 text-sm text-muted-foreground">
-                                {restaurant.cuisine} · {restaurant.address.label}
+                                {restaurant.cuisine !== undefined && restaurant.cuisine !== ""
+                                    ? `${restaurant.cuisine} · `
+                                    : ""}
+                                {restaurant.address.label}
                             </p>
                         </li>
                     ))}
@@ -84,15 +69,13 @@ function RestaurantsSection({
 
 function YouContent() {
     const restaurants = useRestaurants()
-    const statuses = useSuspenseConvexQuery(api.interests.listMyStatuses)
 
     if (restaurants === undefined) {
         return <RestaurantListsSkeleton />
     }
     const saved = orderFeedByRecency(restaurants)
-    const byStatus = new Map(statuses.map((s) => [s.restaurantId, s.status]))
-    const want = saved.filter((r) => byStatus.get(r._id) === "want")
-    const been = saved.filter((r) => byStatus.get(r._id) === "been")
+    const want = saved.filter((r) => r.mySave === "want")
+    const been = saved.filter((r) => r.mySave === "been")
 
     return (
         <div className="flex flex-col gap-8">

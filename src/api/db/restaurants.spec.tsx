@@ -12,18 +12,16 @@ import { CatchError } from "../../vitest.catch"
 import { AuthProvider } from "../auth.provider"
 import { authClient } from "../auth.sdk"
 import {
-    applyUpdateArgsToDraft,
-    assertRealRestaurantId,
-    buildTempRestaurant,
+    assertRealPlaceId,
+    buildTempPlace,
     clearUserScopedQueries,
     dropSessionCollections,
     getSessionCollections,
-    resolveRestaurantIdByKey,
+    resolvePlaceIdByKey,
     SyncTimeoutError,
-    toAddArgs,
-    toUpdateArgs,
-    type RestaurantAddArgs,
-    type RestaurantDoc,
+    toCreateArgs,
+    type PlaceCreateArgs,
+    type PlaceCard,
 } from "./restaurants"
 import { createSeededClient } from "./seeded.client"
 
@@ -109,8 +107,8 @@ vi.mock("../auth.sdk", () => ({
     },
 }))
 
-function restaurantFixture(overrides?: Partial<RestaurantDoc>): RestaurantDoc {
-    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- test fixture shaped to the restaurant document
+function placeFixture(overrides?: Partial<PlaceCard>): PlaceCard {
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- test fixture shaped to the place card
     return {
         _id: "r1",
         _creationTime: 1000,
@@ -119,119 +117,78 @@ function restaurantFixture(overrides?: Partial<RestaurantDoc>): RestaurantDoc {
         name: "Trattoria Verde",
         cuisine: "Italian",
         address: { label: "Luxembourg City" },
-        images: [],
-        visibility: "private",
+        photos: [],
+        mySave: null,
+        wantCount: 0,
         ...overrides,
-    } as unknown as RestaurantDoc
+    } as unknown as PlaceCard
 }
 
 function mockPersist() {
     return {
-        updateRestaurant: vi.fn<(args: { id: Id<"restaurants">; name?: string | undefined }) => Promise<unknown>>(
-            async () => {
-                await Promise.resolve()
-            },
-        ),
-        addRestaurant: vi.fn<(args: RestaurantAddArgs) => Promise<Id<"restaurants">>>(async () => {
+        addPlace: vi.fn<(args: PlaceCreateArgs) => Promise<Id<"places">>>(async () => {
             await Promise.resolve()
-            // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- test-only storage id
-            return "r9" as unknown as Id<"restaurants">
+            // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- test-only place id
+            return "r9" as unknown as Id<"places">
         }),
     }
 }
 
-describe("restaurant shape translators", () => {
-    test("maps an update to the matching document fields", () => {
-        const draft = restaurantFixture()
-        // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- test-only restaurant id
-        const id = "r1" as unknown as Id<"restaurants">
+describe("place shape translators", () => {
+    test("maps a row to create args", () => {
+        const row = placeFixture()
 
-        applyUpdateArgsToDraft(draft, { id, name: "Sushi Bar" })
-
-        expect(draft.name).toBe("Sushi Bar")
-        expect(draft.cuisine).toBe("Italian")
-    })
-
-    test("maps a full row back to update args", () => {
-        const row = restaurantFixture({ name: "Sushi Bar" })
-
-        expect(toUpdateArgs(row)).toMatchObject({ name: "Sushi Bar", cuisine: "Italian" })
-    })
-
-    test("maps a row to add args", () => {
-        const row = restaurantFixture()
-
-        expect(toAddArgs(row)).toMatchObject({
+        expect(toCreateArgs(row)).toMatchObject({
             name: "Trattoria Verde",
             cuisine: "Italian",
             addressLabel: "Luxembourg City",
         })
     })
 
-    test("forwards the client mutation key to add args", () => {
-        const row = restaurantFixture({ clientMutationId: "user-1:key-1" })
+    test("forwards the client mutation key to create args", () => {
+        const row = placeFixture({ clientMutationId: "user-1:key-1" })
 
-        expect(toAddArgs(row)).toMatchObject({ clientMutationId: "user-1:key-1" })
+        expect(toCreateArgs(row)).toMatchObject({ clientMutationId: "user-1:key-1" })
     })
 
     test("builds temp rows carrying the client mutation key", () => {
-        const temp = buildTempRestaurant({
+        const temp = buildTempPlace({
             ownerId: toId<"profiles">("user-1"),
             ownerName: "Alex",
             name: "Trattoria Verde",
             cuisine: "Italian",
             addressLabel: "Luxembourg City",
+            photos: [],
+            previewUrls: new Map(),
             clientMutationId: "user-1:key-1",
         })
 
         expect(temp.clientMutationId).toBe("user-1:key-1")
         expect(() => {
-            assertRealRestaurantId(temp._id)
+            assertRealPlaceId(temp._id)
         }).toThrow("still syncing")
     })
 
     test("accepts real ids in the temp guard", () => {
         expect(() => {
-            // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- test-only restaurant id
-            assertRealRestaurantId("r1" as unknown as Id<"restaurants">)
+            // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- test-only place id
+            assertRealPlaceId("r1" as unknown as Id<"places">)
         }).not.toThrow()
     })
 })
 
-describe("restaurant collections", () => {
-    test("shows an optimistic update immediately and converges on sync", async () => {
+describe("place collections", () => {
+    test("rejects local updates because places are append-only", async () => {
         const persist = mockPersist()
-        const backend = createSeededClient({ liveRows: [restaurantFixture()] })
+        const backend = createSeededClient({ liveRows: [placeFixture()] })
         const collections = getSessionCollections(backend.client, persist, SESSION)
         await collections.owner.preload()
-        // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- test-only restaurant id
-        const id = "r1" as unknown as Id<"restaurants">
+        // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- test-only place id
+        const id = "r1" as unknown as Id<"places">
 
         const tx = collections.owner.update(id, (draft) => {
             draft.name = "Sushi Bar"
         })
-        expect(collections.owner.get(id)?.name).toBe("Sushi Bar")
-        await tx.when("settled")
-
-        expect(tx.state).toBe("completed")
-        expect(persist.updateRestaurant).toHaveBeenCalledWith(expect.objectContaining({ id: "r1", name: "Sushi Bar" }))
-        backend.pushState([{ ...restaurantFixture(), name: "Sushi Bar" }])
-        expect(collections.owner.get(id)?.name).toBe("Sushi Bar")
-    })
-
-    test("rolls back an optimistic update when persistence fails", async () => {
-        const persist = mockPersist()
-        persist.updateRestaurant.mockRejectedValueOnce(new Error("mutation failed"))
-        const backend = createSeededClient({ liveRows: [restaurantFixture()] })
-        const collections = getSessionCollections(backend.client, persist, SESSION)
-        await collections.owner.preload()
-        // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- test-only restaurant id
-        const id = "r1" as unknown as Id<"restaurants">
-
-        const tx = collections.owner.update(id, (draft) => {
-            draft.name = "Sushi Bar"
-        })
-        expect(collections.owner.get(id)?.name).toBe("Sushi Bar")
         await tx.when("settled").catch(() => {})
 
         expect(tx.state).toBe("failed")
@@ -244,17 +201,17 @@ describe("restaurant collections", () => {
         const collections = getSessionCollections(backend.client, persist, SESSION)
         await collections.owner.preload()
 
-        const tx = collections.owner.insert({ ...restaurantFixture() })
+        const tx = collections.owner.insert({ ...placeFixture() })
         expect(collections.owner.size).toBe(1)
         await tx.when("settled")
 
         expect(tx.state).toBe("completed")
-        expect(persist.addRestaurant).toHaveBeenCalledWith(
+        expect(persist.addPlace).toHaveBeenCalledWith(
             expect.objectContaining({ name: "Trattoria Verde", addressLabel: "Luxembourg City" }),
         )
-        // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- test-only restaurant id
-        const realId = "r9" as unknown as Id<"restaurants">
-        backend.pushState([{ ...restaurantFixture(), _id: realId }])
+        // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- test-only place id
+        const realId = "r9" as unknown as Id<"places">
+        backend.pushState([{ ...placeFixture(), _id: realId }])
         expect(collections.owner.get(realId)?.name).toBe("Trattoria Verde")
         expect(collections.owner.size).toBe(1)
     })
@@ -265,21 +222,23 @@ describe("restaurant collections", () => {
         const collections = getSessionCollections(backend.client, persist, SESSION)
         await collections.owner.preload()
 
-        const temp = buildTempRestaurant({
+        const temp = buildTempPlace({
             ownerId: toId<"profiles">("user-1"),
             ownerName: "Alex",
             name: "Trattoria Verde",
             cuisine: "Italian",
             addressLabel: "Luxembourg City",
+            photos: [],
+            previewUrls: new Map(),
             clientMutationId: "user-1:delayed",
         })
         const tx = collections.owner.insert(temp)
         await tx.when("settled")
-        // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- test-only restaurant id
-        const realId = "r9" as unknown as Id<"restaurants">
+        // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- test-only place id
+        const realId = "r9" as unknown as Id<"places">
 
-        const pending = resolveRestaurantIdByKey(collections.owner, "user-1:delayed", 5000)
-        backend.pushState([{ ...restaurantFixture(), _id: realId, clientMutationId: "user-1:delayed" }])
+        const pending = resolvePlaceIdByKey(collections.owner, "user-1:delayed", 5000)
+        backend.pushState([{ ...placeFixture(), _id: realId, clientMutationId: "user-1:delayed" }])
 
         await expect(pending).resolves.toBe(realId)
     })
@@ -290,7 +249,7 @@ describe("restaurant collections", () => {
         const collections = getSessionCollections(backend.client, persist, SESSION)
         await collections.owner.preload()
 
-        await expect(resolveRestaurantIdByKey(collections.owner, "user-1:ghost", 50)).rejects.toThrow("Timed out")
+        await expect(resolvePlaceIdByKey(collections.owner, "user-1:ghost", 50)).rejects.toThrow("Timed out")
     })
 
     test("timeout errors carry a retryable code", async () => {
@@ -299,7 +258,7 @@ describe("restaurant collections", () => {
         const collections = getSessionCollections(backend.client, persist, SESSION)
         await collections.owner.preload()
 
-        const error = await resolveRestaurantIdByKey(collections.owner, "user-1:ghost", 30).then(
+        const error = await resolvePlaceIdByKey(collections.owner, "user-1:ghost", 30).then(
             () => null,
             (failure: unknown) => failure,
         )
@@ -313,36 +272,40 @@ describe("restaurant collections", () => {
         await collections.owner.preload()
 
         const first = collections.owner.insert(
-            buildTempRestaurant({
+            buildTempPlace({
                 ownerId: toId<"profiles">("user-1"),
                 ownerName: "Alex",
                 name: "First",
                 cuisine: "Italian",
                 addressLabel: "Luxembourg City",
+                photos: [],
+                previewUrls: new Map(),
                 clientMutationId: "user-1:rapid-1",
             }),
         )
         const second = collections.owner.insert(
-            buildTempRestaurant({
+            buildTempPlace({
                 ownerId: toId<"profiles">("user-1"),
                 ownerName: "Alex",
                 name: "Second",
                 cuisine: "Japanese",
                 addressLabel: "Luxembourg City",
+                photos: [],
+                previewUrls: new Map(),
                 clientMutationId: "user-1:rapid-2",
             }),
         )
         await first.when("settled")
         await second.when("settled")
 
-        expect(persist.addRestaurant).toHaveBeenCalledTimes(2)
-        const keys = persist.addRestaurant.mock.calls.map((call) => call[0]?.clientMutationId)
+        expect(persist.addPlace).toHaveBeenCalledTimes(2)
+        const keys = persist.addPlace.mock.calls.map((call) => call[0]?.clientMutationId)
         expect(keys).toEqual(["user-1:rapid-1", "user-1:rapid-2"])
     })
 
     test("scopes synced rows per session key", async () => {
         const persist = mockPersist()
-        const backend = createSeededClient({ liveRows: [restaurantFixture()] })
+        const backend = createSeededClient({ liveRows: [placeFixture()] })
 
         const anna = getSessionCollections(backend.client, persist, "anna")
         await anna.owner.preload()
@@ -360,18 +323,20 @@ describe("restaurant collections", () => {
 
     test("rolls back an optimistic insert when persistence fails", async () => {
         const persist = mockPersist()
-        persist.addRestaurant.mockRejectedValueOnce(new Error("mutation failed"))
+        persist.addPlace.mockRejectedValueOnce(new Error("mutation failed"))
         const backend = createSeededClient()
         const collections = getSessionCollections(backend.client, persist, SESSION)
         await collections.owner.preload()
 
         const tx = collections.owner.insert(
-            buildTempRestaurant({
+            buildTempPlace({
                 ownerId: toId<"profiles">("user-1"),
                 ownerName: "Alex",
                 name: "Trattoria Verde",
                 cuisine: "Italian",
                 addressLabel: "Luxembourg City",
+                photos: [],
+                previewUrls: new Map(),
                 clientMutationId: "user-1:doomed",
             }),
         )
@@ -384,9 +349,9 @@ describe("restaurant collections", () => {
 
     test("clears user-scoped queries while keeping shared ones", () => {
         const queryClient = new QueryClient()
-        queryClient.setQueryData(["convexQuery", "restaurants:get", {}], [{ name: "Stale" }])
+        queryClient.setQueryData(["convexQuery", "places:mine", {}], [{ name: "Stale" }])
         queryClient.setQueryData(["convexQuery", "social:friends", {}], [])
-        queryClient.setQueryData(["convexQuery", "interests:getSummaries", {}], [])
+        queryClient.setQueryData(["convexQuery", "places:feed", {}], [])
         queryClient.setQueryData(["convexQuery", "identity:me", {}], { status: "onboarding" })
         queryClient.setQueryData(["convexQuery", "groups:list", {}], [])
         queryClient.setQueryData(["convexQuery", "landing:getStats", {}], { count: 1 })
@@ -396,9 +361,9 @@ describe("restaurant collections", () => {
             queryClient.removeQueries(filters)
         })
 
-        expect(queryClient.getQueryData(["convexQuery", "restaurants:get", {}])).toBeUndefined()
+        expect(queryClient.getQueryData(["convexQuery", "places:mine", {}])).toBeUndefined()
         expect(queryClient.getQueryData(["convexQuery", "social:friends", {}])).toBeUndefined()
-        expect(queryClient.getQueryData(["convexQuery", "interests:getSummaries", {}])).toBeUndefined()
+        expect(queryClient.getQueryData(["convexQuery", "places:feed", {}])).toBeUndefined()
         expect(queryClient.getQueryData(["convexQuery", "identity:me", {}])).toBeUndefined()
         expect(queryClient.getQueryData(["convexQuery", "groups:list", {}])).toBeUndefined()
         expect(queryClient.getQueryData(["convexQuery", "landing:getStats", {}])).toEqual({ count: 1 })
@@ -410,7 +375,7 @@ describe("restaurant collections", () => {
             data: { user: { id: "user-1", email: "alex@example.com", name: "Alex" } },
             error: null,
         })
-        const backend = createSeededClient({ liveRows: [restaurantFixture()] })
+        const backend = createSeededClient({ liveRows: [placeFixture()] })
         injectSyncClient(backend.client)
         const queryClient = new QueryClient()
 
@@ -427,7 +392,7 @@ describe("restaurant collections", () => {
 
     test("returns undefined from the restaurants hook when signed out", async () => {
         vi.mocked(authClient.getSession).mockResolvedValue({ data: { user: null }, error: null })
-        const backend = createSeededClient({ liveRows: [restaurantFixture()] })
+        const backend = createSeededClient({ liveRows: [placeFixture()] })
         injectSyncClient(backend.client)
         const queryClient = new QueryClient()
 
@@ -458,7 +423,7 @@ describe("restaurant collections", () => {
             error: null,
         })
         const annasBackend = createSeededClient({
-            liveRows: [restaurantFixture({ ownerId: toId<"profiles">("anna"), ownerName: "Anna" })],
+            liveRows: [placeFixture({ ownerId: toId<"profiles">("anna"), ownerName: "Anna" })],
         })
         injectSyncClient(annasBackend.client)
         const queryClient = new QueryClient()
@@ -477,7 +442,7 @@ describe("restaurant collections", () => {
             error: null,
         })
         const bensBackend = createSeededClient({
-            liveRows: [restaurantFixture({ ownerId: toId<"profiles">("ben"), ownerName: "Ben", name: "Sushi Bar" })],
+            liveRows: [placeFixture({ ownerId: toId<"profiles">("ben"), ownerName: "Ben", name: "Sushi Bar" })],
         })
         injectSyncClient(bensBackend.client)
 
@@ -492,7 +457,7 @@ describe("restaurant collections", () => {
             error: null,
         })
         tokenMock.mockResolvedValue({ data: null })
-        const gated = createSeededClient({ liveRows: [restaurantFixture()] })
+        const gated = createSeededClient({ liveRows: [placeFixture()] })
         injectSyncClient(gated.client)
         const queryClient = new QueryClient()
         const wrapper = ({ children }: Readonly<{ children: React.ReactNode }>) => (
@@ -509,7 +474,7 @@ describe("restaurant collections", () => {
         unmount()
 
         tokenMock.mockResolvedValue({ data: { token: "test-token" } })
-        const backend = createSeededClient({ liveRows: [restaurantFixture()] })
+        const backend = createSeededClient({ liveRows: [placeFixture()] })
         injectSyncClient(backend.client)
 
         const second = renderHook(() => useRestaurants(), { wrapper })
@@ -530,7 +495,7 @@ describe("restaurant collections", () => {
             await tokenReleased
             return { data: { token: "test-token" } }
         })
-        const backend = createSeededClient({ liveRows: [restaurantFixture()] })
+        const backend = createSeededClient({ liveRows: [placeFixture()] })
         injectSyncClient(backend.client)
         const queryClient = new QueryClient()
 
@@ -560,7 +525,7 @@ describe("restaurant collections", () => {
             data: { user: { id: "user-1", email: "alex@example.com", name: "Alex" } },
             error: null,
         })
-        const backend = createSeededClient({ liveRows: [restaurantFixture()] })
+        const backend = createSeededClient({ liveRows: [placeFixture()] })
         injectSyncClient(backend.client)
         const queryClient = new QueryClient()
         const wrapper = ({ children }: Readonly<{ children: React.ReactNode }>) => (
@@ -571,7 +536,7 @@ describe("restaurant collections", () => {
 
         const first = renderHook(() => useRestaurants(), { wrapper })
         await expect.poll(() => first.result.current?.map((r) => r.name)).toEqual(["Trattoria Verde"])
-        queryClient.setQueryData(["convexQuery", "restaurants:get", {}], [{ name: "Stale" }])
+        queryClient.setQueryData(["convexQuery", "places:mine", {}], [{ name: "Stale" }])
         queryClient.setQueryData(["convexQuery", "identity:me", {}], { status: "onboarding" })
         queryClient.setQueryData(["convexQuery", "landing:getStats", {}], { count: 1 })
         first.unmount()
@@ -581,7 +546,7 @@ describe("restaurant collections", () => {
         })
 
         renderHook(() => useRestaurants(), { wrapper })
-        await expect.poll(() => queryClient.getQueryData(["convexQuery", "restaurants:get", {}])).toBeUndefined()
+        await expect.poll(() => queryClient.getQueryData(["convexQuery", "places:mine", {}])).toBeUndefined()
         expect(queryClient.getQueryData(["convexQuery", "identity:me", {}])).toBeUndefined()
         expect(queryClient.getQueryData(["convexQuery", "landing:getStats", {}])).toEqual({ count: 1 })
     })
@@ -603,7 +568,7 @@ describe("restaurant collections", () => {
                 data: { user: { id: "user-1", email: "alex@example.com", name: "Alex" } },
                 error: null,
             })
-            const backend = createSeededClient({ liveRows: [restaurantFixture()] })
+            const backend = createSeededClient({ liveRows: [placeFixture()] })
             injectSyncClient(backend.client)
 
             const { result } = renderOwnedRestaurants()
@@ -620,7 +585,7 @@ describe("restaurant collections", () => {
                 data: { user: { id: "user-1", email: "alex@example.com", name: "Alex" } },
                 error: null,
             })
-            const backend = createSeededClient({ liveRows: [restaurantFixture()] })
+            const backend = createSeededClient({ liveRows: [placeFixture()] })
             injectSyncClient(backend.client)
 
             const { result, unmount } = renderOwnedRestaurants()
@@ -682,7 +647,7 @@ describe("restaurant collections", () => {
                 data: { user: { id: "user-1", email: "alex@example.com", name: "Alex" } },
                 error: null,
             })
-            const backend = createSeededClient({ liveRows: [restaurantFixture()] })
+            const backend = createSeededClient({ liveRows: [placeFixture()] })
             injectSyncClient(backend.client)
             const seen: (ReadonlyArray<string> | undefined)[] = []
             let caught: unknown = null
@@ -723,7 +688,7 @@ describe("restaurant collections", () => {
         })
 
         test("dropSessionCollections only evicts the matching session", () => {
-            const backend = createSeededClient({ liveRows: [restaurantFixture()] })
+            const backend = createSeededClient({ liveRows: [placeFixture()] })
             const persist = mockPersist()
             const first = getSessionCollections(backend.client, persist, "drop-a")
 
@@ -738,19 +703,21 @@ describe("restaurant collections", () => {
                 data: { user: { id: "user-1", email: "alex@example.com", name: "Alex" } },
                 error: null,
             })
-            const backend = createSeededClient({ liveRows: [restaurantFixture()] })
+            const backend = createSeededClient({ liveRows: [placeFixture()] })
             injectSyncClient(backend.client)
             const { result } = renderOwnedRestaurants()
             await expect.poll(() => result.current?.map((item) => item.name)).toEqual(["Trattoria Verde"])
 
             const draft = getSessionCollections(backend.client, mockPersist(), SESSION)
             const pending = draft.owner.insert(
-                buildTempRestaurant({
+                buildTempPlace({
                     ownerId: toId<"profiles">("user-1"),
                     ownerName: "Alex",
                     name: "Sushi Bar",
                     cuisine: "Japanese",
                     addressLabel: "Luxembourg City",
+                    photos: [],
+                    previewUrls: new Map(),
                     clientMutationId: "user-1:k9",
                 }),
             )
@@ -761,7 +728,7 @@ describe("restaurant collections", () => {
             await expect.poll(() => result.current?.map((item) => item.name)).toEqual(["Trattoria Verde"])
             expect(
                 result.current?.every((row) => {
-                    assertRealRestaurantId(row._id)
+                    assertRealPlaceId(row._id)
                     return true
                 }),
             ).toBe(true)

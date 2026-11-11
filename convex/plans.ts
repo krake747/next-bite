@@ -5,8 +5,8 @@ import { type DataModel, type Id } from "./_generated/dataModel"
 import { mutation, query } from "./_generated/server"
 import { requireMembership } from "./helpers"
 import { getProfiles, nameOf, requireProfile, signedInProfile } from "./model/identity/profiles"
+import { canViewPlace } from "./model/places/places"
 import { areFriends } from "./model/social/friendships"
-import { isRestaurantVisibleTo } from "./visibility"
 
 const planStatusValidator = v.union(v.literal("planned"), v.literal("done"), v.literal("cancelled"))
 
@@ -24,18 +24,18 @@ async function validatePlanTarget(
     ctx: PlanDb,
     userId: ProfileId,
     groupId: Id<"groups"> | undefined,
-    restaurantId: Id<"restaurants"> | undefined,
+    placeId: Id<"places"> | undefined,
 ): Promise<void> {
     if (groupId !== undefined) {
         await requireMembership(ctx.db, groupId, userId)
     }
-    if (restaurantId !== undefined) {
-        const restaurant = await ctx.db.get(restaurantId)
-        if (!restaurant) {
-            throw new Error("Restaurant not found")
+    if (placeId !== undefined) {
+        const place = await ctx.db.get("places", placeId)
+        if (place === null) {
+            throw new Error("Place not found")
         }
-        if (!(await isRestaurantVisibleTo(ctx.db, userId, restaurant))) {
-            throw new Error("Unauthorized: restaurant is not shared with you")
+        if (!(await canViewPlace(ctx.db, userId, place))) {
+            throw new Error("Unauthorized: place is not visible to you")
         }
     }
 }
@@ -71,15 +71,15 @@ async function validatePlanParticipants(
 export const createPlan = mutation({
     args: {
         groupId: v.optional(v.id("groups")),
-        restaurantId: v.optional(v.id("restaurants")),
+        placeId: v.optional(v.id("places")),
         title: v.string(),
         date: v.number(),
         participantIds: v.optional(v.array(v.id("profiles"))),
     },
     handler: async (ctx, args) => {
         const userId = (await requireProfile(ctx))._id
-        if (args.groupId === undefined && args.restaurantId === undefined) {
-            throw new Error("A plan needs a group, a restaurant, or both")
+        if (args.groupId === undefined && args.placeId === undefined) {
+            throw new Error("A plan needs a group, a place, or both")
         }
         const title = args.title.trim().slice(0, 80)
         if (title === "") {
@@ -88,11 +88,11 @@ export const createPlan = mutation({
         if (!Number.isFinite(args.date) || args.date <= 0) {
             throw new Error("Plan date is required")
         }
-        await validatePlanTarget(ctx, userId, args.groupId, args.restaurantId)
+        await validatePlanTarget(ctx, userId, args.groupId, args.placeId)
         const validated = await validatePlanParticipants(ctx, userId, args.groupId, args.participantIds)
         const planId = await ctx.db.insert("plans", {
             ...(args.groupId !== undefined ? { groupId: args.groupId } : {}),
-            ...(args.restaurantId !== undefined ? { restaurantId: args.restaurantId } : {}),
+            ...(args.placeId !== undefined ? { placeId: args.placeId } : {}),
             createdBy: userId,
             title,
             date: args.date,
@@ -145,7 +145,7 @@ export const listPlansForGroup = query({
 
 export const listPlansForRestaurant = query({
     args: {
-        restaurantId: v.id("restaurants"),
+        placeId: v.id("places"),
     },
     handler: async (ctx, args) => {
         const me = await signedInProfile(ctx)
@@ -153,16 +153,16 @@ export const listPlansForRestaurant = query({
             return []
         }
         const userId = me._id
-        const restaurant = await ctx.db.get(args.restaurantId)
-        if (!restaurant) {
-            throw new Error("Restaurant not found")
+        const place = await ctx.db.get("places", args.placeId)
+        if (place === null) {
+            throw new Error("Place not found")
         }
-        if (!(await isRestaurantVisibleTo(ctx.db, userId, restaurant))) {
-            throw new Error("Unauthorized: restaurant is not shared with you")
+        if (!(await canViewPlace(ctx.db, userId, place))) {
+            throw new Error("Unauthorized: place is not visible to you")
         }
         const plans = await ctx.db
             .query("plans")
-            .withIndex("by_restaurant", (q) => q.eq("restaurantId", args.restaurantId))
+            .withIndex("by_place", (q) => q.eq("placeId", args.placeId))
             .take(50)
         const visiblePlans: typeof plans = []
         for (const plan of plans) {
@@ -209,20 +209,20 @@ export const updatePlanStatus = mutation({
     },
     handler: async (ctx, args) => {
         const userId = (await requireProfile(ctx))._id
-        const plan = await ctx.db.get(args.planId)
+        const plan = await ctx.db.get("plans", args.planId)
         if (!plan) {
             throw new Error("Plan not found")
         }
         if (plan.groupId !== undefined) {
             await requireMembership(ctx.db, plan.groupId, userId)
-            const group = await ctx.db.get(plan.groupId)
+            const group = await ctx.db.get("groups", plan.groupId)
             if (plan.createdBy !== userId && group?.ownerId !== userId) {
                 throw new Error("Unauthorized: only the organizer or the group owner can update this plan")
             }
         } else if (plan.createdBy !== userId) {
             throw new Error("Unauthorized: only the organizer can update this plan")
         }
-        await ctx.db.patch(args.planId, { status: args.status })
+        await ctx.db.patch("plans", args.planId, { status: args.status })
         return args.planId
     },
 })

@@ -4,7 +4,7 @@ import { beforeEach, describe, expect, test, vi } from "vitest"
 
 import { ConvexProvider, type ConvexAuthPhase } from "@api/convex.context"
 import { toId } from "@api/data.model"
-import { type RestaurantDoc } from "@api/db/restaurants"
+import { type PlaceCard } from "@api/db/restaurants"
 import { createSeededClient, seedKey } from "@api/db/seeded.client"
 
 import { routeTree } from "../routeTree.gen"
@@ -40,24 +40,25 @@ vi.mock("@api/auth.provider", async (importOriginal) => {
     }
 })
 
-const OWNER_KEY = seedKey("restaurants:get", {})
-const FEED_KEY = seedKey("restaurants:feed", {})
+const OWNER_KEY = seedKey("places:mine", {})
+const FEED_KEY = seedKey("places:feed", {})
 
-function savedBy(user: TestUser, name: string, id: string): RestaurantDoc {
+function savedBy(user: TestUser, name: string, id: string): PlaceCard {
     return {
-        _id: toId<"restaurants">(id),
+        _id: toId<"places">(id),
         _creationTime: 1000,
         ownerId: toId<"profiles">(user.id),
         ownerName: user.name,
         name,
         cuisine: "Italian",
         address: { label: "Luxembourg City" },
-        images: [],
-        visibility: "shared",
+        photos: [],
+        mySave: null,
+        wantCount: 0,
     }
 }
 
-async function renderAt(path: string, rows: ReadonlyArray<RestaurantDoc>) {
+async function renderAt(path: string, rows: ReadonlyArray<PlaceCard>) {
     const seeds = new Map<string, unknown>([
         [seedKey("social:friends", undefined), []],
         [seedKey("social:requests", undefined), { incoming: [], outgoing: [] }],

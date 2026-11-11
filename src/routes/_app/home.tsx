@@ -2,8 +2,8 @@ import { PlusIcon } from "@phosphor-icons/react"
 import { createFileRoute } from "@tanstack/react-router"
 
 import { useViewer } from "@core/identity"
-import { orderFeedByRecency } from "@core/interests"
 import { preloadHomeCollections, useFeedRestaurants, useRestaurants, type Restaurant } from "@core/restaurants"
+import { orderFeedByRecency } from "@core/saves"
 import { useAuth, useSessionStatus } from "@core/session"
 import { RestaurantCard } from "@features/restaurants/restaurant-card"
 import { RestaurantList } from "@features/restaurants/restaurant-list"
@@ -85,7 +85,6 @@ function HomeDiscover({ restaurants }: Readonly<{ restaurants: ReadonlyArray<Res
             <p className="mt-1 text-muted-foreground">Every restaurant on your short list.</p>
             <RestaurantList
                 restaurants={restaurants}
-                socialFor={actions.socialFor}
                 onToggleWant={(restaurant) => {
                     actions.toggleWantFor(restaurant)()
                 }}
@@ -126,7 +125,7 @@ function HomeContent() {
     return (
         <div className="mx-auto w-full max-w-3xl">
             <HomeHeader name={auth.user?.name?.split(" ")[0] ?? "food lover"} count={restaurantListState.length} />
-            <SocialActionsProvider restaurants={[...feed, ...restaurantListState]}>
+            <SocialActionsProvider>
                 <div className="pt-8">
                     <HomeRiver mine={restaurantListState} feed={feed} />
                 </div>

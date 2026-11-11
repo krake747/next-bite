@@ -3,7 +3,7 @@ import { fireEvent, screen, waitFor, within } from "@testing-library/react"
 import { describe, expect, test, vi } from "vitest"
 
 import { ConvexProvider } from "@api/convex.context"
-import { type RestaurantDoc } from "@api/db/restaurants"
+import { type PlaceCard } from "@api/db/restaurants"
 import { createSeededClient, seedKey, type MutationCall } from "@api/db/seeded.client"
 
 import { routeTree } from "../../routeTree.gen"
@@ -61,8 +61,8 @@ async function renderAt(path: string): Promise<void> {
     })
 }
 
-function ownerRestaurant(overrides?: Partial<Omit<RestaurantDoc, "_id">> & { _id?: string }): RestaurantDoc {
-    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- test fixture shaped to the restaurant document
+function ownerPlace(overrides?: Partial<Omit<PlaceCard, "_id">> & { _id?: string }): PlaceCard {
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- test fixture shaped to the place card
     return {
         _id: "r1",
         _creationTime: 1000,
@@ -71,10 +71,11 @@ function ownerRestaurant(overrides?: Partial<Omit<RestaurantDoc, "_id">> & { _id
         name: "Trattoria Verde",
         cuisine: "Italian",
         address: { label: "Luxembourg City" },
-        images: [],
-        visibility: "private",
+        photos: [],
+        mySave: null,
+        wantCount: 0,
         ...overrides,
-    } as unknown as RestaurantDoc
+    } as unknown as PlaceCard
 }
 
 describe("groups list", () => {
@@ -164,20 +165,8 @@ describe("group detail", () => {
                 ],
             },
         )
-        seedQuery("shares:listForGroup", { groupId }, [ownerRestaurant({ visibility: "shared" })])
-        seedQuery("restaurants:get", undefined, [ownerRestaurant({ _id: "r2", name: "Sushi Bar" })])
-        seedQuery("interests:getSummaries", { restaurantIds: ["r1"] }, [
-            {
-                restaurantId: "r1",
-                wantCount: 2,
-                beenCount: 1,
-                wanted: false,
-                likeCount: 0,
-                liked: false,
-                commentCount: 0,
-                interestedNames: [],
-            },
-        ])
+        seedQuery("places:forGroup", { groupId }, [ownerPlace({ wantCount: 2 })])
+        seedQuery("places:mine", undefined, [ownerPlace({ _id: "r2", name: "Sushi Bar" })])
     }
 
     test("renders identity and members", async () => {
@@ -202,7 +191,7 @@ describe("group detail", () => {
             expect(screen.getByText("Trattoria Verde")).toBeInTheDocument()
         })
         await waitFor(() => {
-            expect(screen.getByText(/2 want · 1 been/)).toBeInTheDocument()
+            expect(screen.getByText(/2 want/)).toBeInTheDocument()
         })
     })
 
@@ -211,8 +200,8 @@ describe("group detail", () => {
         querySeeds.clear()
         seedQuery("groups:list", undefined, [])
         seedQuery("groups:get", { groupId }, null)
-        seedQuery("shares:listForGroup", { groupId }, [])
-        seedQuery("restaurants:get", undefined, [])
+        seedQuery("places:forGroup", { groupId }, [])
+        seedQuery("places:mine", undefined, [])
         await renderAt(`/groups/${groupId}`)
 
         await waitFor(() => {
@@ -234,8 +223,8 @@ describe("group detail", () => {
 
         await waitFor(() => {
             expect(mutationCalls).toContainEqual({
-                fn: "shares:unshare",
-                args: { restaurantId: "r1", target: { kind: "group", groupId } },
+                fn: "places:removeFromGroup",
+                args: { placeId: "r1", groupId },
             })
         })
     })
@@ -253,7 +242,7 @@ describe("group detail", () => {
         fireEvent.click(screen.getByRole("button", { name: "Add to group" }))
 
         await waitFor(() => {
-            expect(mutationCalls).toContainEqual({ fn: "shares:shareWithGroup", args: { restaurantId: "r2", groupId } })
+            expect(mutationCalls).toContainEqual({ fn: "places:addToGroup", args: { placeId: "r2", groupId } })
         })
     })
 })

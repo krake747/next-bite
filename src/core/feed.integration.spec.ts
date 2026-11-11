@@ -27,78 +27,85 @@ async function befriend(t: TestConvexForDataModel<DataModel>, a: string, b: stri
     await asUser(t, b).mutation(api.invites.accept, { token })
 }
 
-async function createRestaurant(
-    t: TestConvexForDataModel<DataModel>,
-    subject: string,
-    name: string,
-): Promise<Id<"restaurants">> {
-    return asUser(t, subject).action(api.restaurants.addWithOpeningHours, {
+async function createPlace(t: TestConvexForDataModel<DataModel>, subject: string, name: string): Promise<Id<"places">> {
+    return asUser(t, subject).mutation(api.places.create, {
         name,
         cuisine: "Italian",
         addressLabel: "Luxembourg City",
+        photos: [],
     })
 }
 
 async function feedNames(t: TestConvexForDataModel<DataModel>, subject: string): Promise<string[]> {
-    const feed = await asUser(t, subject).query(api.restaurants.feed, {})
-    return feed.map((r) => r.name)
-}
-
-async function joinGroup(
-    t: TestConvexForDataModel<DataModel>,
-    groupId: Id<"groups">,
-    owner: string,
-    subject: string,
-): Promise<void> {
-    const token = await asUser(t, owner).mutation(api.invites.create, { target: { kind: "group", groupId } })
-    await asUser(t, subject).mutation(api.invites.accept, { token })
+    const feed = await asUser(t, subject).query(api.places.feed, {})
+    return feed.map((card) => card.name)
 }
 
 describe("friends feed", () => {
-    test("shows a friend's restaurant without a share", async () => {
+    test("shows a friend's place without any group", async () => {
         const t = setup()
         await registerUser(t, "anna")
         await registerUser(t, "ben")
         await befriend(t, "anna", "ben")
-        await createRestaurant(t, "anna", "Trattoria Verde")
+        await createPlace(t, "anna", "Trattoria Verde")
 
         expect(await feedNames(t, "ben")).toContain("Trattoria Verde")
     })
 
-    test("excludes the caller's own restaurants", async () => {
+    test("excludes the caller's own places", async () => {
         const t = setup()
         await registerUser(t, "anna")
         await registerUser(t, "ben")
         await befriend(t, "anna", "ben")
-        await createRestaurant(t, "ben", "Ben's Diner")
+        await createPlace(t, "ben", "Ben's Diner")
 
         expect(await feedNames(t, "ben")).not.toContain("Ben's Diner")
     })
 
-    test("excludes unshared restaurants from strangers", async () => {
+    test("excludes places from strangers", async () => {
         const t = setup()
         await registerUser(t, "anna")
         await registerUser(t, "ben")
         await registerUser(t, "cas")
         await befriend(t, "anna", "ben")
-        await createRestaurant(t, "cas", "Cas's Cafe")
+        await createPlace(t, "cas", "Cas's Cafe")
 
         expect(await feedNames(t, "ben")).not.toContain("Cas's Cafe")
     })
 
-    test("shows a group-shared restaurant from a friend", async () => {
+    test("merges newest first", async () => {
         const t = setup()
         await registerUser(t, "anna")
         await registerUser(t, "ben")
-        await registerUser(t, "dan")
-        await befriend(t, "ben", "dan")
-        const groupId = await asUser(t, "anna").mutation(api.groups.create, { name: "Food Crew" })
-        await joinGroup(t, groupId, "anna", "ben")
-        await joinGroup(t, groupId, "anna", "dan")
-        const restaurantId = await createRestaurant(t, "dan", "Dan's Deli")
-        await asUser(t, "dan").mutation(api.shares.shareWithGroup, { restaurantId, groupId })
+        await befriend(t, "anna", "ben")
+        await createPlace(t, "anna", "Older")
+        await createPlace(t, "anna", "Newer")
 
-        expect(await feedNames(t, "ben")).toContain("Dan's Deli")
+        expect(await feedNames(t, "ben")).toEqual(["Newer", "Older"])
+    })
+
+    test("caps each friend at ten places and the feed at thirty", async () => {
+        const t = setup()
+        await registerUser(t, "anna")
+        const friends: string[] = []
+        for (let index = 0; index < 4; index += 1) {
+            const friend = `friend${index}`
+            friends.push(friend)
+            await registerUser(t, friend)
+            await befriend(t, "anna", friend)
+        }
+        for (const [ownerIndex, friend] of friends.entries()) {
+            for (let placeIndex = 0; placeIndex < 12; placeIndex += 1) {
+                await createPlace(t, friend, `${ownerIndex}-${placeIndex}`)
+            }
+        }
+
+        const feed = await asUser(t, "anna").query(api.places.feed, {})
+        expect(feed).toHaveLength(30)
+        for (const friend of friends) {
+            const own = feed.filter((card) => card.ownerName === friend)
+            expect(own.length).toBeLessThanOrEqual(10)
+        }
     })
 
     test("returns empty when nothing is shared yet", async () => {

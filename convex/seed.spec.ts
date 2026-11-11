@@ -23,11 +23,7 @@ describe("preview seed", () => {
         const [ownerId, friendId] = first.users.map((user) => user.profileId)
         expect(ownerId).not.toBe(friendId)
 
-        expect(first.restaurants.map((place) => place.slug)).toEqual([
-            "midnight-ramen",
-            "verde-taqueria",
-            "crumb-coffee",
-        ])
+        expect(first.places.map((place) => place.slug)).toEqual(["midnight-ramen", "verde-taqueria", "crumb-coffee"])
 
         expect(first.group.name).toBe("Preview dinner club")
         expect(first.group.memberProfileIds).toHaveLength(2)

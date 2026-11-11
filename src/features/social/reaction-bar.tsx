@@ -5,7 +5,7 @@ import { focusRing } from "@ui/variants"
 
 type ReactionButtonProps = Readonly<{
     pressed: boolean
-    count: number
+    count: number | string
     label: string
     onToggle: () => void
     children: React.ReactNode
@@ -32,7 +32,7 @@ function ReactionButton({ pressed, count, label, onToggle, children }: ReactionB
 
 export type Reactions = {
     readonly wanted: boolean
-    readonly wantCount: number
+    readonly wantCount: number | string
     readonly onToggleWant: () => void
 }
 

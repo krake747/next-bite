@@ -3,22 +3,19 @@ import { mutationOptions, useMutation, useQueryClient, type QueryClient } from "
 import { type ConvexReactClient } from "convex/react"
 import { useEffect, useRef, useState } from "react"
 
-import { useConvexClient, useConvexMutation, useConvexAction } from "@api/convex.context"
+import { useConvexClient, useConvexMutation } from "@api/convex.context"
 import { type Doc, type Id } from "@api/data.model"
 import {
-    applyUpdateArgsToDraft,
-    assertRealRestaurantId,
-    buildTempRestaurant,
+    buildTempPlace,
     claimSessionCache,
     dropSessionCollections,
     getSessionCollections,
     persistCallerFor,
     preloadReadySessionCollections,
     publishReadySession,
-    resolveRestaurantIdByKey,
-    type RestaurantAddArgs,
-    type RestaurantDoc,
-    type RestaurantUpdateArgs,
+    resolvePlaceIdByKey,
+    type PlaceCard,
+    type PlaceCreateArgs,
 } from "@api/db/restaurants"
 import { api } from "@api/endpoints"
 
@@ -52,6 +49,7 @@ function useSessionSyncRecovery(
             retrySessionGate()
         } else if (syncFailed && failedRef.current) {
             setExhausted(true)
+            failedRef.current = false
         } else if (recovered) {
             failedRef.current = false
             setExhausted(false)
@@ -60,7 +58,7 @@ function useSessionSyncRecovery(
     return exhausted
 }
 
-type Rows = ReadonlyArray<RestaurantDoc>
+type Rows = ReadonlyArray<PlaceCard>
 type SettledRows = { readonly sessionKey: string; readonly rows: Rows }
 type LiveRead = Readonly<{ status: string; isLoadingError: boolean; isSyncError: boolean }>
 
@@ -133,7 +131,7 @@ export function usePublishReadySession(): void {
         return () => {
             publishReadySession(queryClient, null)
         }
-    }, [queryClient, client, sessionKey])
+    }, [sessionKey, client, queryClient])
 }
 
 export function preloadHomeCollections(queryClient: QueryClient): void {
@@ -154,13 +152,20 @@ async function resolveOwnerProfile(
     return me.status === "ready" ? me.profile : undefined
 }
 
-export function useAddRestaurantWithHours() {
+type PlacePreview = {
+    readonly storageId: Id<"_storage">
+    readonly url: string
+    readonly width?: number | undefined
+    readonly height?: number | undefined
+}
+
+export function useAddPlace() {
     const client = useConvexClient()
     const sessionKey = useSessionKey()
     const profile = useViewerProfile()
     return useMutation(
         mutationOptions({
-            mutationFn: async (args: RestaurantAddArgs): Promise<Id<"restaurants">> => {
+            mutationFn: async (args: PlaceCreateArgs & { readonly previews: ReadonlyArray<PlacePreview> }) => {
                 if (client === null || sessionKey === null) {
                     throw new Error("Sign in to add restaurants")
                 }
@@ -171,11 +176,13 @@ export function useAddRestaurantWithHours() {
                 const collections = getSessionCollections(client, persistCallerFor(client), sessionKey)
                 // See ADR-0002: persisted key makes retries idempotent.
                 const clientMutationId = args.clientMutationId ?? crypto.randomUUID()
-                const temp = buildTempRestaurant({
+                const previewUrls = new Map(args.previews.map((preview) => [String(preview.storageId), preview.url]))
+                const temp = buildTempPlace({
                     ownerId: owner._id,
                     ownerName: owner.name,
                     ...args,
                     clientMutationId,
+                    previewUrls,
                 })
                 const tx = collections.owner.insert(temp)
                 // Swallowed here; the definitive error is thrown next.
@@ -183,62 +190,11 @@ export function useAddRestaurantWithHours() {
                 if (tx.state === "failed") {
                     throw tx.error?.error ?? new Error("Add failed")
                 }
-                return resolveRestaurantIdByKey(collections.owner, clientMutationId)
+                return resolvePlaceIdByKey(collections.owner, clientMutationId)
             },
         }),
     )
 }
-
-export function useUpdateRestaurant() {
-    const client = useConvexClient()
-    const sessionKey = useSessionKey()
-    return useMutation(
-        mutationOptions({
-            mutationFn: async (args: RestaurantUpdateArgs) => {
-                assertRealRestaurantId(args.id)
-                if (client === null || sessionKey === null) {
-                    throw new Error("Sign in to edit restaurants")
-                }
-                const collections = getSessionCollections(client, persistCallerFor(client), sessionKey)
-                const targets = [collections.owner, collections.feed].filter((collection) => collection.has(args.id))
-                if (targets.length === 0) {
-                    await client.mutation(api.restaurants.update, args)
-                    return
-                }
-                for (const target of targets) {
-                    const tx = target.update(args.id, (draft) => {
-                        applyUpdateArgsToDraft(draft, args)
-                    })
-                    await tx.when("settled")
-                    if (tx.state === "failed") {
-                        throw tx.error?.error ?? new Error("Update failed")
-                    }
-                }
-            },
-        }),
-    )
-}
-
-export function useDeleteRestaurant() {
-    const client = useConvexClient()
-    const sessionKey = useSessionKey()
-    return useMutation(
-        mutationOptions({
-            mutationFn: async (args: { id: Id<"restaurants"> }) => {
-                assertRealRestaurantId(args.id)
-                if (client === null || sessionKey === null) {
-                    throw new Error("Sign in to delete restaurants")
-                }
-                await client.mutation(api.restaurants.remove, args)
-            },
-        }),
-    )
-}
-
-export const useDeleteImage = () => useConvexMutation(api.restaurants.deleteImage)
-export const useCleanupStorage = () => useConvexMutation(api.restaurants.cleanupStorage)
-export const useRefreshOpeningHours = () => useConvexAction(api.restaurants.refreshOpeningHours)
-export const useLookupPlaceIdAndHours = () => useConvexAction(api.restaurants.lookupPlaceIdAndHours)
 
 export function useUploadImage() {
     const client = useConvexClient()
@@ -260,6 +216,8 @@ export function useUploadImage() {
     }
 }
 
+export const useDeleteUpload = () => useConvexMutation(api.storage.deleteUpload)
+
 export type { ImageRecord } from "./schemas"
 
-export type Restaurant = RestaurantDoc
+export type { PlaceCard as Restaurant } from "@api/db/restaurants"

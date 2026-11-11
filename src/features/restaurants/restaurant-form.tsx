@@ -2,8 +2,8 @@ import { Form, reset, setInput, useField, useForm, type FormStore } from "@formi
 import { useEffect, useRef, useState } from "react"
 
 import { type Id } from "@api/data.model"
-import { SyncTimeoutError, type RestaurantAddArgs, type RestaurantUpdateArgs } from "@api/db/restaurants"
-import { useAddRestaurantWithHours, useCleanupStorage, useUpdateRestaurant, type Restaurant } from "@core/restaurants"
+import { SyncTimeoutError, type PlaceCreateArgs } from "@api/db/restaurants"
+import { useAddPlace, useDeleteUpload, type ImageRecord } from "@core/restaurants"
 import { RestaurantSchema, type RestaurantOutput } from "@core/schemas"
 import { ImageUpload } from "@pattern/image-upload"
 import { type PlaceSelection } from "@pattern/places-autocomplete"
@@ -13,40 +13,19 @@ import { suggestCuisine } from "./cuisine-suggestion"
 import { LinkField, LocationSection, NameCuisineFields, NotesSection } from "./restaurant-form-fields"
 import { useRestaurantImages, type GalleryDraft } from "./use-restaurant-images"
 
-export type RestaurantFormProps =
-    | {
-          mode: "add"
-          initial?: Readonly<{
-              name: string
-              cuisine: string
-              location: string
-              lat?: number | undefined
-              lng?: number | undefined
-              placeId?: string | undefined
-          }>
-          onSuccess: (restaurantId: Id<"restaurants">) => void
-          onCancel: () => void
-          onDiscardReady: (discard: () => Promise<void>) => void
-      }
-    | {
-          mode: "edit"
-          restaurant: Restaurant
-          onSuccess: () => void
-          onCancel: () => void
-          onDiscardReady: (discard: () => Promise<void>) => void
-      }
-
-type StripUndefined<T extends Record<string, unknown>> = {
-    [K in keyof T as undefined extends T[K] ? K : never]+?: Exclude<T[K], undefined>
-} & {
-    [K in keyof T as undefined extends T[K] ? never : K]: T[K]
-}
-
-function stripUndefined<T extends Record<string, unknown>>(output: T): StripUndefined<T> {
-    const stripped = Object.fromEntries(Object.entries(output).filter(([, field]) => field !== undefined))
-    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- entries are filtered to defined values, matching the type
-    return stripped as StripUndefined<T>
-}
+export type AddRestaurantFormProps = Readonly<{
+    initial?: Readonly<{
+        name: string
+        cuisine: string
+        location: string
+        lat?: number | undefined
+        lng?: number | undefined
+        placeId?: string | undefined
+    }>
+    onSuccess: (placeId: string) => void
+    onCancel: () => void
+    onDiscardReady: (discard: () => Promise<void>) => void
+}>
 
 type SubmitPhase =
     | { kind: "editing" }
@@ -64,14 +43,6 @@ function toFailedPhase(error: unknown): Extract<SubmitPhase, { kind: "uncertain"
         }
     }
     return { kind: "failed", message: error instanceof Error ? error.message : "Saving failed." }
-}
-
-function SubmitButton({ mode, saving }: Readonly<{ mode: "add" | "edit"; saving: boolean }>) {
-    return (
-        <Button type="submit" disabled={saving}>
-            {saving ? "Saving…" : mode === "add" ? "Add Restaurant" : "Save Changes"}
-        </Button>
-    )
 }
 
 // See ADR-0015: every exit runs discard first so staged uploads never strand.
@@ -125,51 +96,44 @@ function SubmitPhaseBanner({ phase, onRetry }: Readonly<{ phase: SubmitPhase; on
     )
 }
 
-async function submitNewRestaurant(input: {
-    add: (args: RestaurantAddArgs) => Promise<Id<"restaurants">>
-    gallery: Pick<GalleryDraft, "images">
-    output: Readonly<Omit<RestaurantOutput, "images">>
-    clientMutationId: string
-}): Promise<Id<"restaurants">> {
-    const { location, lat, lng, placeId, ...rest } = stripUndefined(input.output)
-    const coords = lat !== undefined && lng !== undefined ? { lat, lng } : undefined
-    return input.add({
-        ...rest,
-        addressLabel: location,
-        ...(coords !== undefined ? { coords } : {}),
-        ...(placeId !== undefined ? { placeId } : {}),
-        images: input.gallery.images,
-        clientMutationId: input.clientMutationId,
-    })
-}
+type RestaurantFormOutput = Readonly<RestaurantOutput>
 
-async function submitExistingRestaurant(input: {
-    update: (args: RestaurantUpdateArgs) => Promise<unknown>
-    gallery: Pick<GalleryDraft, "images">
-    output: Readonly<Omit<RestaurantOutput, "images" | "placeId">>
-    restaurantId: Id<"restaurants">
-}): Promise<void> {
-    const { location, lat, lng, ...rest } = stripUndefined(input.output)
-    const coords = lat !== undefined && lng !== undefined ? { lat, lng } : undefined
-    await input.update({
-        id: input.restaurantId,
-        ...rest,
+function toCreateArgs(
+    output: RestaurantFormOutput,
+    gallery: Pick<GalleryDraft, "images">,
+    clientMutationId: string,
+): PlaceCreateArgs {
+    const { location, lat, lng, placeId, notes, link, cuisine, ...rest } = output
+    const google =
+        placeId !== undefined || lat !== undefined || lng !== undefined
+            ? {
+                  ...(placeId !== undefined ? { placeId } : {}),
+                  ...(lat !== undefined ? { lat } : {}),
+                  ...(lng !== undefined ? { lng } : {}),
+              }
+            : undefined
+    return {
+        name: rest.name,
+        ...(cuisine !== undefined && cuisine !== "" ? { cuisine } : {}),
         addressLabel: location,
-        ...(coords !== undefined ? { coords } : {}),
-        images: input.gallery.images,
-    })
+        ...(google !== undefined ? { google } : {}),
+        ...(notes !== undefined && notes !== "" ? { note: notes } : {}),
+        ...(link !== undefined && link !== "" ? { link } : {}),
+        photos: gallery.images.map((image) => ({
+            storageId: image.storageId,
+            ...(image.width !== undefined ? { width: image.width } : {}),
+            ...(image.height !== undefined ? { height: image.height } : {}),
+        })),
+        clientMutationId,
+    }
 }
-
-type RestaurantFormOutput = Readonly<Omit<RestaurantOutput, "images" | "placeId">>
 
 function useSubmitDraft(args: {
-    target: { mode: "add" } | { mode: "edit"; restaurantId: Id<"restaurants"> }
     gallery: GalleryDraft
     resetForm: () => void
     onDiscardReady: (discard: () => Promise<void>) => void
-    onSuccess: (restaurantId: Id<"restaurants"> | undefined) => void
-    add: (input: RestaurantAddArgs) => Promise<Id<"restaurants">>
-    update: (input: RestaurantUpdateArgs) => Promise<unknown>
+    onSuccess: (placeId: Id<"places">) => void
+    add: (input: PlaceCreateArgs & { readonly previews: ReadonlyArray<ImageRecord> }) => Promise<Id<"places">>
 }): {
     submitPhase: SubmitPhase
     handleSubmit: (output: RestaurantFormOutput) => Promise<void>
@@ -197,32 +161,19 @@ function useSubmitDraft(args: {
         lastOutputRef.current = output
         setSubmitPhase({ kind: "saving" })
         try {
-            const createdId =
-                args.target.mode === "add"
-                    ? await submitNewRestaurant({
-                          add: args.add,
-                          gallery: args.gallery,
-                          output,
-                          clientMutationId,
-                      })
-                    : undefined
-            if (args.target.mode === "edit") {
-                await submitExistingRestaurant({
-                    update: args.update,
-                    gallery: args.gallery,
-                    output,
-                    restaurantId: args.target.restaurantId,
-                })
-            }
+            const placeId = await args.add({
+                ...toCreateArgs(output, args.gallery, clientMutationId),
+                previews: args.gallery.images,
+            })
             await args.gallery.commitSubmit()
             args.resetForm()
             setSubmitPhase({ kind: "committed" })
             setClientMutationId(crypto.randomUUID())
-            args.onSuccess(createdId)
+            args.onSuccess(placeId)
         } catch (error) {
             setSubmitPhase(toFailedPhase(error))
             if (!SyncTimeoutError.is(error)) {
-                console.error(`Error ${args.target.mode === "add" ? "adding" : "updating"} restaurant:`, error)
+                console.error("Error adding restaurant:", error)
             }
         }
     }
@@ -238,18 +189,6 @@ function useSubmitDraft(args: {
 }
 
 type RestaurantFormStore = FormStore<typeof RestaurantSchema>
-
-function successFor(props: Readonly<RestaurantFormProps>): (restaurantId: Id<"restaurants"> | undefined) => void {
-    return (restaurantId) => {
-        if (props.mode === "add") {
-            if (restaurantId !== undefined) {
-                props.onSuccess(restaurantId)
-            }
-        } else {
-            props.onSuccess()
-        }
-    }
-}
 
 function applyPlaceSelection(
     form: RestaurantFormStore,
@@ -277,45 +216,16 @@ function applyPlaceSelection(
     }
 }
 
-function initialInputFor(props: Readonly<RestaurantFormProps>) {
-    return props.mode === "edit"
-        ? {
-              name: props.restaurant.name,
-              cuisine: props.restaurant.cuisine,
-              location: props.restaurant.address.label,
-              lat: props.restaurant.address.enrichment?.coords?.lat,
-              lng: props.restaurant.address.enrichment?.coords?.lng,
-              notes: props.restaurant.details?.notes ?? "",
-              link: props.restaurant.details?.link ?? "",
-          }
-        : props.initial !== undefined
-          ? { ...props.initial }
-          : undefined
+function initialInputFor(props: AddRestaurantFormProps) {
+    return props.initial !== undefined ? { ...props.initial } : undefined
 }
 
-function FormActions({
-    mode,
-    saving,
-    onCancel,
-}: Readonly<{ mode: "add" | "edit"; saving: boolean; onCancel: () => void }>) {
-    return (
-        <div className="flex justify-end gap-2 pt-2">
-            <Button type="button" tone="secondary" onClick={onCancel}>
-                Cancel
-            </Button>
-            <SubmitButton mode={mode} saving={saving} />
-        </div>
-    )
-}
-
-export function RestaurantForm(props: Readonly<RestaurantFormProps>) {
-    const addRestaurantWithHours = useAddRestaurantWithHours()
-    const updateRestaurant = useUpdateRestaurant()
-    const cleanupStorage = useCleanupStorage()
-    const gallery = useRestaurantImages(props.mode === "edit" ? props.restaurant.images : [], {
-        mode: props.mode,
+export function RestaurantForm(props: AddRestaurantFormProps) {
+    const addPlace = useAddPlace()
+    const deleteUpload = useDeleteUpload()
+    const gallery = useRestaurantImages({
         cleanup: async (args) => {
-            await cleanupStorage.mutateAsync(args)
+            await deleteUpload.mutateAsync(args)
         },
     })
 
@@ -328,15 +238,13 @@ export function RestaurantForm(props: Readonly<RestaurantFormProps>) {
     const cuisineField = useField(form, { path: ["cuisine"] })
 
     const submit = useSubmitDraft({
-        target: props.mode === "add" ? { mode: "add" } : { mode: "edit", restaurantId: props.restaurant._id },
         gallery,
         resetForm: () => {
             reset(form)
         },
         onDiscardReady: props.onDiscardReady,
-        onSuccess: successFor(props),
-        add: addRestaurantWithHours.mutateAsync,
-        update: updateRestaurant.mutateAsync,
+        onSuccess: props.onSuccess,
+        add: addPlace.mutateAsync,
     })
 
     const handleLocationChange = (selection: PlaceSelection) => {
@@ -354,15 +262,15 @@ export function RestaurantForm(props: Readonly<RestaurantFormProps>) {
                 onImagesChange={(updated) => {
                     gallery.setImages([...updated])
                 }}
-                {...(props.mode === "edit" ? { restaurantId: props.restaurant._id } : {})}
             />
-            <FormActions
-                mode={props.mode}
-                saving={submit.submitPhase.kind === "saving"}
-                onCancel={() => {
-                    props.onCancel()
-                }}
-            />
+            <div className="flex justify-end gap-2 pt-2">
+                <Button type="button" tone="secondary" onClick={props.onCancel}>
+                    Cancel
+                </Button>
+                <Button type="submit" disabled={submit.submitPhase.kind === "saving"}>
+                    {submit.submitPhase.kind === "saving" ? "Saving…" : "Add Restaurant"}
+                </Button>
+            </div>
             <SubmitPhaseBanner phase={submit.submitPhase} onRetry={submit.handleRetry} />
         </Form>
     )

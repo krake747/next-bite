@@ -87,27 +87,25 @@ async function ensureSeedRestaurant(
     ctx: MutationCtx,
     ownerId: ProfileId,
     place: SeedRestaurant,
-): Promise<Id<"restaurants">> {
+): Promise<Id<"places">> {
     // Single-owner scope; the seed needs at most a handful of rows. Take keeps
     // the read bounded so the scan cannot grow without limit as tables grow.
     const owned = await ctx.db
-        .query("restaurants")
+        .query("places")
         .withIndex("by_owner", (q) => q.eq("ownerId", ownerId))
         .take(1000)
     const match = owned.find((row) => row.clientMutationId === seedMarker(place.slug))
     if (match) {
         return match._id
     }
-    const restaurantId = await ctx.db.insert("restaurants", {
+    const placeId = await ctx.db.insert("places", {
         ownerId,
         name: place.name,
         cuisine: place.cuisine,
         address: { label: place.label },
-        images: [],
-        visibility: "shared",
         clientMutationId: seedMarker(place.slug),
     })
-    return restaurantId
+    return placeId
 }
 
 async function ensureSeedMembership(ctx: MutationCtx, groupId: Id<"groups">, userId: ProfileId): Promise<void> {
@@ -143,11 +141,11 @@ export const previewBaseline = internalMutation({
     handler: async (ctx) => {
         const ownerId = await ensureSeedUser(ctx, SEED_OWNER)
         const friendId = await ensureSeedUser(ctx, SEED_FRIEND)
-        const restaurants = []
+        const places = []
         for (const place of SEED_RESTAURANTS) {
-            restaurants.push({
+            places.push({
                 slug: place.slug,
-                restaurantId: await ensureSeedRestaurant(ctx, ownerId, place),
+                placeId: await ensureSeedRestaurant(ctx, ownerId, place),
             })
         }
         const groupId = await ensureSeedGroup(ctx, ownerId, friendId)
@@ -162,7 +160,7 @@ export const previewBaseline = internalMutation({
                 { email: SEED_OWNER_EMAIL, profileId: ownerId },
                 { email: SEED_FRIEND_EMAIL, profileId: friendId },
             ],
-            restaurants,
+            places,
             group: {
                 name: SEED_GROUP_NAME,
                 groupId,

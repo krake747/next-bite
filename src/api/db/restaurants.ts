@@ -5,188 +5,152 @@ import { type ConvexReactClient } from "convex/react"
 import { type Doc, type Id, toId } from "@api/data.model"
 import { api } from "@api/endpoints"
 import { sleep } from "@core/async"
-import { mergeDetails, mergeEnrichment } from "@core/restaurant.details"
 import { assertRealId, isTempId, TEMP_ID_PREFIX } from "@core/temp.ids"
 
 const SYNC_RESOLVE_POLL_MS = 50
 
-export type RestaurantDoc = Doc<"restaurants"> & { ownerName: string }
-
-export type SyncClient = Pick<ConvexReactClient, "watchQuery">
-
-export type RestaurantCoords = {
-    readonly lat: number
-    readonly lng: number
-}
-
-export type RestaurantImageInput = {
+export type PlacePhoto = {
     readonly url: string
+    readonly width?: number
+    readonly height?: number
     readonly storageId: Id<"_storage">
 }
 
-export type RestaurantUpdateArgs = {
-    readonly id: Id<"restaurants">
-    readonly name?: string
-    readonly cuisine?: string
-    readonly addressLabel?: string
-    readonly coords?: RestaurantCoords
-    readonly notes?: string
-    readonly link?: string
-    readonly images?: RestaurantImageInput[]
-    readonly visibility?: "private" | "shared"
+export type SaveStatus = "want" | "been"
+
+export type PlaceCard = Doc<"places"> & {
+    readonly ownerName: string
+    readonly photos: ReadonlyArray<PlacePhoto>
+    readonly mySave: SaveStatus | null
+    readonly wantCount: number | string
 }
 
-export type RestaurantAddArgs = {
-    readonly name: string
-    readonly cuisine: string
-    readonly addressLabel: string
-    readonly notes?: string
-    readonly link?: string
-    readonly coords?: RestaurantCoords
+export type SyncClient = Pick<ConvexReactClient, "watchQuery">
+
+export type PlacePhotoInput = {
+    readonly storageId: Id<"_storage">
+    readonly width?: number
+    readonly height?: number
+}
+
+export type PlaceGoogleInput = {
     readonly placeId?: string
-    readonly images?: RestaurantImageInput[]
+    readonly lat?: number
+    readonly lng?: number
+}
+
+export type PlaceCreateArgs = {
+    readonly name: string
+    readonly cuisine?: string
+    readonly addressLabel: string
+    readonly google?: PlaceGoogleInput
+    readonly note?: string
+    readonly link?: string
+    readonly photos: PlacePhotoInput[]
     readonly clientMutationId?: string
 }
 
 export type RestaurantPersist = {
-    readonly updateRestaurant: (args: RestaurantUpdateArgs) => Promise<unknown>
-    readonly addRestaurant: (args: RestaurantAddArgs) => Promise<Id<"restaurants">>
-}
-
-function copyStoredImages(
-    images: ReadonlyArray<Readonly<{ url: string; storageId: Id<"_storage"> }>>,
-): RestaurantImageInput[] {
-    return images.map((img) => ({ url: img.url, storageId: img.storageId }))
-}
-
-function coordsArg(coords: RestaurantCoords | undefined): { coords: RestaurantCoords } | Record<string, never> {
-    if (coords === undefined) {
-        return {}
-    }
-    return { coords: { lat: coords.lat, lng: coords.lng } }
+    readonly addPlace: (args: PlaceCreateArgs) => Promise<Id<"places">>
 }
 
 export function persistCallerFor(client: ConvexReactClient): RestaurantPersist {
     return {
-        updateRestaurant: async (args) => {
-            await client.mutation(api.restaurants.update, args)
-        },
-        addRestaurant: async (args) => client.action(api.restaurants.addWithOpeningHours, args),
+        addPlace: async (args) => client.mutation(api.places.create, args),
     }
 }
 
-export function applyUpdateArgsToDraft(draft: RestaurantDoc, args: RestaurantUpdateArgs): void {
-    if (args.name !== undefined) {
-        draft.name = args.name
+function toPhotoInput(photo: PlacePhoto): PlacePhotoInput {
+    const input: { storageId: Id<"_storage">; width?: number; height?: number } = {
+        storageId: photo.storageId,
     }
-    if (args.cuisine !== undefined) {
-        draft.cuisine = args.cuisine
+    if (photo.width !== undefined) {
+        input.width = photo.width
     }
-    if (args.addressLabel !== undefined || args.coords !== undefined) {
-        const enrichment = mergeEnrichment(draft.address.enrichment, args.coords)
-        draft.address = {
-            label: args.addressLabel ?? draft.address.label,
-            ...(enrichment !== undefined ? { enrichment } : {}),
-        }
+    if (photo.height !== undefined) {
+        input.height = photo.height
     }
-    if (args.notes !== undefined || args.link !== undefined) {
-        const details = mergeDetails(draft.details, { notes: args.notes, link: args.link })
-        if (details !== undefined) {
-            draft.details = details
-        }
-    }
-    if (args.images !== undefined) {
-        draft.images = copyStoredImages(args.images)
-    }
-    if (args.visibility !== undefined) {
-        draft.visibility = args.visibility
-    }
+    return input
 }
 
-export function toUpdateArgs(row: RestaurantDoc): RestaurantUpdateArgs {
-    return {
-        id: row._id,
-        name: row.name,
-        cuisine: row.cuisine,
-        addressLabel: row.address.label,
-        ...coordsArg(row.address.enrichment?.coords),
-        ...(row.details?.notes !== undefined ? { notes: row.details.notes } : {}),
-        ...(row.details?.link !== undefined ? { link: row.details.link } : {}),
-        images: copyStoredImages(row.images),
-        visibility: row.visibility,
+function tempPhoto(
+    photo: PlacePhotoInput,
+    previewUrls: ReadonlyMap<string, string>,
+): PlacePhotoInput & { readonly url: string } {
+    const out: { storageId: Id<"_storage">; url: string; width?: number; height?: number } = {
+        storageId: photo.storageId,
+        url: previewUrls.get(String(photo.storageId)) ?? "",
     }
+    if (photo.width !== undefined) {
+        out.width = photo.width
+    }
+    if (photo.height !== undefined) {
+        out.height = photo.height
+    }
+    return out
 }
 
-export function toAddArgs(row: RestaurantDoc): RestaurantAddArgs {
+export function toCreateArgs(row: PlaceCard): PlaceCreateArgs {
     return {
         name: row.name,
-        cuisine: row.cuisine,
+        ...(row.cuisine !== undefined ? { cuisine: row.cuisine } : {}),
         addressLabel: row.address.label,
-        ...(row.details?.notes !== undefined && row.details.notes !== "" ? { notes: row.details.notes } : {}),
-        ...(row.details?.link !== undefined && row.details.link !== "" ? { link: row.details.link } : {}),
-        ...coordsArg(row.address.enrichment?.coords),
-        ...(row.address.enrichment?.placeId !== undefined ? { placeId: row.address.enrichment.placeId } : {}),
-        images: copyStoredImages(row.images),
+        ...(row.address.google !== undefined ? { google: { ...row.address.google } } : {}),
+        ...(row.note !== undefined ? { note: row.note } : {}),
+        ...(row.link !== undefined ? { link: row.link } : {}),
+        photos: row.photos.map((photo) => toPhotoInput(photo)),
         ...(row.clientMutationId !== undefined ? { clientMutationId: row.clientMutationId } : {}),
     }
 }
 
-function isTempRestaurantId(id: Id<"restaurants">): boolean {
-    return isTempId(String(id))
-}
+export type TempPlaceInput = PlaceCreateArgs &
+    Readonly<{
+        ownerId: Id<"profiles">
+        ownerName: string
+        clientMutationId: string
+        previewUrls: ReadonlyMap<string, string>
+    }>
 
-// See ADR-0002: temp ids never travel; resolve by key.
-export function assertRealRestaurantId(id: Id<"restaurants">): void {
-    assertRealId(String(id))
-}
-
-export type TempRestaurantInput = RestaurantAddArgs &
-    Readonly<{ ownerId: Id<"profiles">; ownerName: string; clientMutationId: string }>
-
-export function buildTempRestaurant(input: TempRestaurantInput): RestaurantDoc {
+export function buildTempPlace(input: TempPlaceInput): PlaceCard {
     const now = Date.now()
-    const tempId = toId<"restaurants">(`${TEMP_ID_PREFIX}${crypto.randomUUID()}`)
+    const tempId = toId<"places">(`${TEMP_ID_PREFIX}${crypto.randomUUID()}`)
     return {
         _id: tempId,
         _creationTime: now,
         ownerId: input.ownerId,
         ownerName: input.ownerName,
         name: input.name,
-        cuisine: input.cuisine,
+        ...(input.cuisine !== undefined ? { cuisine: input.cuisine } : {}),
         address: {
             label: input.addressLabel,
-            ...(input.coords !== undefined || input.placeId !== undefined
+            ...(input.google !== undefined
                 ? {
-                      enrichment: {
-                          ...(input.placeId !== undefined ? { placeId: input.placeId } : {}),
-                          ...(input.coords !== undefined ? { coords: { ...input.coords } } : {}),
+                      google: {
+                          ...(input.google.placeId !== undefined ? { placeId: input.google.placeId } : {}),
+                          ...(input.google.lat !== undefined ? { lat: input.google.lat } : {}),
+                          ...(input.google.lng !== undefined ? { lng: input.google.lng } : {}),
                       },
                   }
                 : {}),
         },
-        ...(input.notes !== undefined || input.link !== undefined
-            ? {
-                  details: {
-                      ...(input.notes !== undefined ? { notes: input.notes } : {}),
-                      ...(input.link !== undefined ? { link: input.link } : {}),
-                  },
-              }
-            : {}),
-        images: copyStoredImages(input.images ?? []),
-        visibility: "private",
+        ...(input.note !== undefined ? { note: input.note } : {}),
+        ...(input.link !== undefined ? { link: input.link } : {}),
+        photos: input.photos.map((photo) => tempPhoto(photo, input.previewUrls)),
+        mySave: null,
+        wantCount: 0,
         clientMutationId: input.clientMutationId,
     }
 }
 
 export type SyncedRows = {
-    values(): Iterable<RestaurantDoc>
+    values(): Iterable<PlaceCard>
 }
 
 // See ADR-0002: timeout is not failure; retry on the same key.
 export class SyncTimeoutError extends Error {
     readonly code = "SYNC_TIMEOUT" as const
 
-    constructor(message = "Timed out waiting for the synced restaurant") {
+    constructor(message = "Timed out waiting for the synced place") {
         super(message)
         this.name = "SyncTimeoutError"
     }
@@ -197,15 +161,15 @@ export class SyncTimeoutError extends Error {
 }
 
 // See ADR-0002: resolve synced row by key, skip temp row.
-export async function resolveRestaurantIdByKey(
+export async function resolvePlaceIdByKey(
     rows: SyncedRows,
     clientMutationId: string,
     timeoutMs = 15000,
-): Promise<Id<"restaurants">> {
+): Promise<Id<"places">> {
     const startedAt = Date.now()
     for (;;) {
         for (const row of rows.values()) {
-            if (row.clientMutationId === clientMutationId && !isTempRestaurantId(row._id)) {
+            if (row.clientMutationId === clientMutationId && !isTempId(String(row._id))) {
                 return row._id
             }
         }
@@ -216,30 +180,29 @@ export async function resolveRestaurantIdByKey(
     }
 }
 
-function createRestaurantCollections(syncClient: SyncClient, persist: RestaurantPersist) {
+function createPlaceCollections(syncClient: SyncClient, persist: RestaurantPersist) {
     const shared = {
         client: syncClient,
-        getKey: (item: RestaurantDoc) => item._id,
-        onUpdate: async ({ transaction }: { transaction: { mutations: { modified: RestaurantDoc }[] } }) => {
+        getKey: (item: PlaceCard) => item._id,
+        onInsert: async ({ transaction }: { transaction: { mutations: { modified: PlaceCard }[] } }) => {
             for (const mutation of transaction.mutations) {
-                await persist.updateRestaurant(toUpdateArgs(mutation.modified))
+                await persist.addPlace(toCreateArgs(mutation.modified))
             }
         },
-        onInsert: async ({ transaction }: { transaction: { mutations: { modified: RestaurantDoc }[] } }) => {
-            for (const mutation of transaction.mutations) {
-                await persist.addRestaurant(toAddArgs(mutation.modified))
-            }
+        onUpdate: async (): Promise<void> => {
+            await Promise.resolve()
+            throw new Error("Places cannot be edited")
         },
     }
     return {
-        owner: createCollection(convexCollectionOptions({ ...shared, query: api.restaurants.get, queryArgs: {} })),
-        feed: createCollection(convexCollectionOptions({ ...shared, query: api.restaurants.feed, queryArgs: {} })),
+        owner: createCollection(convexCollectionOptions({ ...shared, query: api.places.mine, queryArgs: {} })),
+        feed: createCollection(convexCollectionOptions({ ...shared, query: api.places.feed, queryArgs: {} })),
     }
 }
 
 const collectionCache = new WeakMap<
     object,
-    { sessionKey: string; collections: ReturnType<typeof createRestaurantCollections> }
+    { sessionKey: string; collections: ReturnType<typeof createPlaceCollections> }
 >()
 
 // See ADR-0002: collections scoped per session, no cross-session leaks.
@@ -247,12 +210,12 @@ export function getSessionCollections(
     syncClient: SyncClient,
     persist: RestaurantPersist,
     sessionKey: string,
-): ReturnType<typeof createRestaurantCollections> {
+): ReturnType<typeof createPlaceCollections> {
     const hit = collectionCache.get(syncClient)
     if (hit !== undefined && hit.sessionKey === sessionKey) {
         return hit.collections
     }
-    const created = createRestaurantCollections(syncClient, persist)
+    const created = createPlaceCollections(syncClient, persist)
     collectionCache.set(syncClient, { sessionKey, collections: created })
     return created
 }
@@ -289,16 +252,7 @@ export function preloadReadySessionCollections(owner: object): void {
     void collections.feed.preload()
 }
 
-const USER_SCOPED_QUERY_PREFIXES = [
-    "restaurants:",
-    "identity:",
-    "social:",
-    "interests:",
-    "groups:",
-    "shares:",
-    "plans:",
-    "invites:",
-]
+const USER_SCOPED_QUERY_PREFIXES = ["places:", "identity:", "social:", "groups:", "plans:", "invites:"]
 
 function isUserScopedQueryKey(queryKey: ReadonlyArray<unknown>): boolean {
     const fn = queryKey[0] === "convexQuery" ? queryKey[1] : undefined
@@ -330,4 +284,9 @@ export function claimSessionCache(
         clearUserScopedQueries(removeQueries)
     }
     sessionCacheOwners.set(queryClient, sessionKey)
+}
+
+// See ADR-0002: temp ids never travel; collections resolve by key.
+export function assertRealPlaceId(id: Id<"places">): void {
+    assertRealId(String(id))
 }
