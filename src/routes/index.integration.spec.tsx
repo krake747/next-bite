@@ -93,7 +93,7 @@ describe("landing with a server-resolved session", () => {
         await waitFor(() => {
             expectPublicLanding()
         })
-        expect(screen.getByRole("region", { name: "Sample community activity" })).toBeInTheDocument()
+        expect(screen.getByRole("region", { name: "Get started" })).toBeInTheDocument()
     })
 
     test("a returning user is sent to the signed-in home before the landing renders", async () => {

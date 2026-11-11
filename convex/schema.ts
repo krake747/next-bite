@@ -157,7 +157,6 @@ export default defineSchema({
     })
         .index("by_storage", ["storageId"])
         .index("by_expires", ["expiresAt"]),
-    // Aggregates stay O(1); pre-counters deployments compute live.
     statsCounters: defineTable({
         key: v.string(),
         restaurantCount: v.number(),

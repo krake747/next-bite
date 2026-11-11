@@ -28,7 +28,7 @@ describe("warmQueries", () => {
         const client = new QueryClient()
         const query = vi.spyOn(client, "query")
 
-        warmQueries(client, [convexQueryOptions(api.landing.getStats)])
+        warmQueries(client, [convexQueryOptions(api.users.getMe)])
 
         expect(query).not.toHaveBeenCalled()
     })
@@ -38,7 +38,7 @@ describe("warmQueries", () => {
         const client = new QueryClient({ defaultOptions: { queries: { queryFn: async () => "warm" } } })
         const query = vi.spyOn(client, "query")
 
-        warmQueries(client, [convexQueryOptions(api.landing.getStats)])
+        warmQueries(client, [convexQueryOptions(api.users.getMe)])
 
         expect(query).toHaveBeenCalledTimes(1)
     })
@@ -48,22 +48,22 @@ describe("warmQueriesWithin", () => {
     test("resolves with the data cached when the query settles inside the budget", async () => {
         // oxlint-disable-next-line typescript/require-await -- test resolver intentionally performs no async work
         const client = new QueryClient({ defaultOptions: { queries: { queryFn: async () => "warm" } } })
-        const stats = convexQueryOptions(api.landing.getStats)
+        const me = convexQueryOptions(api.users.getMe)
 
-        await warmQueriesWithin(client, [stats], 1000)
+        await warmQueriesWithin(client, [me], 1000)
 
-        expect(client.getQueryData(stats.queryKey)).toBe("warm")
+        expect(client.getQueryData(me.queryKey)).toBe("warm")
     })
 
     test("stops waiting at the budget when the query is slow", async () => {
         const never = new Promise<string>(() => {})
         const client = new QueryClient({ defaultOptions: { queries: { queryFn: async () => never } } })
-        const stats = convexQueryOptions(api.landing.getStats)
+        const me = convexQueryOptions(api.users.getMe)
         const started = Date.now()
 
-        await warmQueriesWithin(client, [stats], 50)
+        await warmQueriesWithin(client, [me], 50)
 
         expect(Date.now() - started).toBeLessThan(1000)
-        expect(client.getQueryData(stats.queryKey)).toBeUndefined()
+        expect(client.getQueryData(me.queryKey)).toBeUndefined()
     })
 })
