@@ -4,10 +4,10 @@
         "github": {
             "type": "remote",
             "url": "https://api.githubcopilot.com/mcp/",
-            "disabled": false,
+            "enabled": true,
             "oauth": false,
             "headers": {
-                "Authorization": "Bearer {env:GITHUB_PERSONAL_ACCESS_TOKEN}",
+                "Authorization": "Bearer {env:GITHUB_NEXTBITE_TOKEN}",
                 "X-MCP-Toolsets": "context,pull_requests,repos,actions,issues"
             }
         },
