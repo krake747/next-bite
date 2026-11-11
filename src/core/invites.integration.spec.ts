@@ -28,48 +28,51 @@ describe("reusable group invitation links", () => {
         await registerUser(t, "anna", "anna@example.com")
         await registerUser(t, "ben", "ben@example.com")
         await registerUser(t, "cas", "cas@example.com")
-        const groupId = await asUser(t, "anna").mutation(api.groups.createGroup, { name: "Food Crew" })
+        const groupId = await asUser(t, "anna").mutation(api.groups.create, { name: "Food Crew" })
 
-        const token = await asUser(t, "anna").mutation(api.invitations.createInvite, {
+        const token = await asUser(t, "anna").mutation(api.invites.create, {
             target: { kind: "group", groupId },
         })
 
-        await expect(asUser(t, "ben").mutation(api.invitations.acceptInvite, { token })).resolves.toEqual({
+        await expect(asUser(t, "ben").mutation(api.invites.accept, { token })).resolves.toEqual({
             result: "accepted",
             groupId,
         })
-        await expect(asUser(t, "cas").mutation(api.invitations.acceptInvite, { token })).resolves.toEqual({
+        await expect(asUser(t, "cas").mutation(api.invites.accept, { token })).resolves.toEqual({
             result: "accepted",
             groupId,
         })
-        await expect(asUser(t, "ben").mutation(api.invitations.acceptInvite, { token })).resolves.toEqual({
+        await expect(asUser(t, "ben").mutation(api.invites.accept, { token })).resolves.toEqual({
             result: "alreadyMember",
             groupId,
         })
 
-        const benGroups = await asUser(t, "ben").query(api.groups.listMyGroups, {})
+        const benGroups = await asUser(t, "ben").query(api.groups.list, {})
         expect(benGroups).toHaveLength(1)
-        const casGroups = await asUser(t, "cas").query(api.groups.listMyGroups, {})
+        const casGroups = await asUser(t, "cas").query(api.groups.list, {})
         expect(casGroups).toHaveLength(1)
     })
 
-    test("revocation stops new accepts but keeps existing members", async () => {
+    test("revocation deletes the link so new accepts read as not found", async () => {
         const t = setup()
         await registerUser(t, "anna", "anna@example.com")
         await registerUser(t, "ben", "ben@example.com")
         await registerUser(t, "cas", "cas@example.com")
-        const groupId = await asUser(t, "anna").mutation(api.groups.createGroup, { name: "Food Crew" })
+        const groupId = await asUser(t, "anna").mutation(api.groups.create, { name: "Food Crew" })
 
-        const token = await asUser(t, "anna").mutation(api.invitations.createInvite, {
+        const token = await asUser(t, "anna").mutation(api.invites.create, {
             target: { kind: "group", groupId },
         })
-        await asUser(t, "ben").mutation(api.invitations.acceptInvite, { token })
-        await asUser(t, "anna").mutation(api.invitations.revokeInvite, { token })
+        await asUser(t, "ben").mutation(api.invites.accept, { token })
+        await expect(asUser(t, "anna").mutation(api.invites.revoke, { token })).resolves.toEqual({
+            result: "revoked",
+        })
 
-        await expect(asUser(t, "cas").mutation(api.invitations.acceptInvite, { token })).rejects.toThrow("revoked")
-        await expect(t.query(api.invitations.getInvite, { token, now: Date.now() })).rejects.toThrow("revoked")
+        await expect(asUser(t, "cas").mutation(api.invites.accept, { token })).rejects.toThrow("not found")
+        await expect(t.query(api.invites.get, { token, now: Date.now() })).rejects.toThrow("not found")
+        await expect(asUser(t, "anna").mutation(api.invites.revoke, { token })).rejects.toThrow("not found")
 
-        const benGroups = await asUser(t, "ben").query(api.groups.listMyGroups, {})
+        const benGroups = await asUser(t, "ben").query(api.groups.list, {})
         expect(benGroups).toHaveLength(1)
     })
 
@@ -78,14 +81,14 @@ describe("reusable group invitation links", () => {
         await registerUser(t, "anna", "anna@example.com")
         await registerUser(t, "ben", "ben@example.com")
         await registerUser(t, "cas", "cas@example.com")
-        const groupId = await asUser(t, "anna").mutation(api.groups.createGroup, { name: "Food Crew" })
+        const groupId = await asUser(t, "anna").mutation(api.groups.create, { name: "Food Crew" })
 
-        const token = await asUser(t, "anna").mutation(api.invitations.createInvite, {
+        const token = await asUser(t, "anna").mutation(api.invites.create, {
             target: { kind: "group", groupId },
         })
-        await expect(asUser(t, "cas").mutation(api.invitations.revokeInvite, { token })).rejects.toThrow("Unauthorized")
-        await asUser(t, "ben").mutation(api.invitations.acceptInvite, { token })
-        await expect(asUser(t, "ben").mutation(api.invitations.revokeInvite, { token })).rejects.toThrow("Unauthorized")
+        await expect(asUser(t, "cas").mutation(api.invites.revoke, { token })).rejects.toThrow("Unauthorized")
+        await asUser(t, "ben").mutation(api.invites.accept, { token })
+        await expect(asUser(t, "ben").mutation(api.invites.revoke, { token })).rejects.toThrow("Unauthorized")
     })
 
     test("loses validity when the inviter leaves", async () => {
@@ -93,19 +96,19 @@ describe("reusable group invitation links", () => {
         await registerUser(t, "anna", "anna@example.com")
         await registerUser(t, "ben", "ben@example.com")
         await registerUser(t, "cas", "cas@example.com")
-        const groupId = await asUser(t, "anna").mutation(api.groups.createGroup, { name: "Food Crew" })
+        const groupId = await asUser(t, "anna").mutation(api.groups.create, { name: "Food Crew" })
 
-        const annaToken = await asUser(t, "anna").mutation(api.invitations.createInvite, {
+        const annaToken = await asUser(t, "anna").mutation(api.invites.create, {
             target: { kind: "group", groupId },
         })
-        await asUser(t, "ben").mutation(api.invitations.acceptInvite, { token: annaToken })
+        await asUser(t, "ben").mutation(api.invites.accept, { token: annaToken })
 
-        const benToken = await asUser(t, "ben").mutation(api.invitations.createInvite, {
+        const benToken = await asUser(t, "ben").mutation(api.invites.create, {
             target: { kind: "group", groupId },
         })
-        await asUser(t, "ben").mutation(api.groups.leaveGroup, { groupId })
+        await asUser(t, "ben").mutation(api.groups.leave, { groupId })
 
-        await expect(asUser(t, "cas").mutation(api.invitations.acceptInvite, { token: benToken })).rejects.toThrow(
+        await expect(asUser(t, "cas").mutation(api.invites.accept, { token: benToken })).rejects.toThrow(
             "no longer valid",
         )
     })
@@ -114,16 +117,16 @@ describe("reusable group invitation links", () => {
         const t = setup()
         await registerUser(t, "anna", "anna@example.com")
         await registerUser(t, "ben", "ben@example.com")
-        const groupId = await asUser(t, "anna").mutation(api.groups.createGroup, { name: "Food Crew" })
+        const groupId = await asUser(t, "anna").mutation(api.groups.create, { name: "Food Crew" })
 
-        const token = await asUser(t, "anna").mutation(api.invitations.createInvite, {
+        const token = await asUser(t, "anna").mutation(api.invites.create, {
             target: { kind: "group", groupId },
         })
         vi.useFakeTimers()
         try {
             vi.setSystemTime(Date.now() + 8 * 24 * 60 * 60 * 1000)
-            await expect(t.query(api.invitations.getInvite, { token, now: Date.now() })).rejects.toThrow("expired")
-            await expect(asUser(t, "ben").mutation(api.invitations.acceptInvite, { token })).rejects.toThrow("expired")
+            await expect(t.query(api.invites.get, { token, now: Date.now() })).rejects.toThrow("expired")
+            await expect(asUser(t, "ben").mutation(api.invites.accept, { token })).rejects.toThrow("expired")
         } finally {
             vi.useRealTimers()
         }

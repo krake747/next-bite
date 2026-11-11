@@ -25,11 +25,7 @@ export const Route = createFileRoute("/_app/groups/")({
         if (context.auth?.isAuthenticated !== true) {
             return null
         }
-        await warmQueriesWithin(
-            context.queryClient,
-            [convexQueryOptions(api.groups.listMyGroups)],
-            LOADER_WARM_BUDGET_MS,
-        )
+        await warmQueriesWithin(context.queryClient, [convexQueryOptions(api.groups.list)], LOADER_WARM_BUDGET_MS)
         return null
     },
 })
@@ -103,7 +99,7 @@ function CreateGroupForm() {
 }
 
 function GroupsView() {
-    const groups = useSuspenseConvexQuery(api.groups.listMyGroups)
+    const groups = useSuspenseConvexQuery(api.groups.list)
 
     return (
         <>

@@ -297,7 +297,7 @@ const USER_SCOPED_QUERY_PREFIXES = [
     "groups:",
     "shares:",
     "plans:",
-    "invitations:",
+    "invites:",
 ]
 
 function isUserScopedQueryKey(queryKey: ReadonlyArray<unknown>): boolean {

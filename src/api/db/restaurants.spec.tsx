@@ -388,7 +388,7 @@ describe("restaurant collections", () => {
         queryClient.setQueryData(["convexQuery", "social:friends", {}], [])
         queryClient.setQueryData(["convexQuery", "interests:getSummaries", {}], [])
         queryClient.setQueryData(["convexQuery", "identity:me", {}], { status: "onboarding" })
-        queryClient.setQueryData(["convexQuery", "groups:listMyGroups", {}], [])
+        queryClient.setQueryData(["convexQuery", "groups:list", {}], [])
         queryClient.setQueryData(["convexQuery", "landing:getStats", {}], { count: 1 })
         queryClient.setQueryData(["convexQuery", "auth:getAuthMethods", {}], { password: true })
 
@@ -400,7 +400,7 @@ describe("restaurant collections", () => {
         expect(queryClient.getQueryData(["convexQuery", "social:friends", {}])).toBeUndefined()
         expect(queryClient.getQueryData(["convexQuery", "interests:getSummaries", {}])).toBeUndefined()
         expect(queryClient.getQueryData(["convexQuery", "identity:me", {}])).toBeUndefined()
-        expect(queryClient.getQueryData(["convexQuery", "groups:listMyGroups", {}])).toBeUndefined()
+        expect(queryClient.getQueryData(["convexQuery", "groups:list", {}])).toBeUndefined()
         expect(queryClient.getQueryData(["convexQuery", "landing:getStats", {}])).toEqual({ count: 1 })
         expect(queryClient.getQueryData(["convexQuery", "auth:getAuthMethods", {}])).toEqual({ password: true })
     })

@@ -60,7 +60,7 @@ function InviteView() {
     const { token } = Route.useParams()
     const navigate = useNavigate()
     const auth = useAuth()
-    const preview = useSuspenseConvexQuery(api.invitations.getInvite, { token, now: Date.now() })
+    const preview = useSuspenseConvexQuery(api.invites.get, { token, now: Date.now() })
     const acceptInvite = useAcceptInvite()
     const [acceptError, setAcceptError] = useState<FormError>(clearError)
     const [accepted, setAccepted] = useState(false)
@@ -107,7 +107,7 @@ function InviteView() {
                 <Header>
                     <HeaderTitle>{preview.groupName ?? "A group"} invited you</HeaderTitle>
                     <HeaderSubtitle>
-                        {preview.invitedByName} shared a reusable group link. Sign in to join{" "}
+                        {preview.createdByName} shared a reusable group link. Sign in to join{" "}
                         {preview.groupName ?? "the group"}.
                     </HeaderSubtitle>
                 </Header>

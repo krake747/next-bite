@@ -81,7 +81,7 @@ describe("groups list", () => {
     test("renders the caller's groups", async () => {
         testUser = { id: "user-1", email: "alex@example.com", name: "Alex" }
         querySeeds.clear()
-        seedQuery("groups:listMyGroups", undefined, [{ group: { _id: "g1", name: "Food Crew" }, isOwner: true }])
+        seedQuery("groups:list", undefined, [{ group: { _id: "g1", name: "Food Crew" }, isOwner: true }])
         await renderAt("/groups")
 
         await waitFor(() => {
@@ -92,7 +92,7 @@ describe("groups list", () => {
     test("shows an actionable empty state with no groups", async () => {
         testUser = { id: "user-1", email: "alex@example.com", name: "Alex" }
         querySeeds.clear()
-        seedQuery("groups:listMyGroups", undefined, [])
+        seedQuery("groups:list", undefined, [])
         await renderAt("/groups")
 
         await waitFor(() => {
@@ -127,7 +127,7 @@ describe("groups list", () => {
     test("creates a group from the form", async () => {
         testUser = { id: "user-1", email: "alex@example.com", name: "Alex" }
         querySeeds.clear()
-        seedQuery("groups:listMyGroups", undefined, [])
+        seedQuery("groups:list", undefined, [])
         mutationCalls.length = 0
         await renderAt("/groups")
 
@@ -138,7 +138,7 @@ describe("groups list", () => {
         fireEvent.click(screen.getByRole("button", { name: "Create group" }))
 
         await waitFor(() => {
-            expect(mutationCalls).toContainEqual({ fn: "groups:createGroup", args: { name: "Sunday Crew" } })
+            expect(mutationCalls).toContainEqual({ fn: "groups:create", args: { name: "Sunday Crew" } })
         })
     })
 })
@@ -151,9 +151,9 @@ describe("group detail", () => {
             status: "ready",
             profile: { _id: "user-1", authUserId: "user-1", name: "Alex", email: "alex@example.com" },
         })
-        seedQuery("groups:listMyGroups", undefined, [{ group: { _id: groupId, name: "Food Crew" }, isOwner: true }])
+        seedQuery("groups:list", undefined, [{ group: { _id: groupId, name: "Food Crew" }, isOwner: true }])
         seedQuery(
-            "groups:getGroup",
+            "groups:get",
             { groupId },
             {
                 group: { _id: groupId, name: "Food Crew" },
@@ -209,8 +209,8 @@ describe("group detail", () => {
     test("shows the not-found card to strangers", async () => {
         testUser = { id: "user-1", email: "alex@example.com", name: "Alex" }
         querySeeds.clear()
-        seedQuery("groups:listMyGroups", undefined, [])
-        seedQuery("groups:getGroup", { groupId }, null)
+        seedQuery("groups:list", undefined, [])
+        seedQuery("groups:get", { groupId }, null)
         seedQuery("shares:listForGroup", { groupId }, [])
         seedQuery("restaurants:get", undefined, [])
         await renderAt(`/groups/${groupId}`)

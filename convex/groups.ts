@@ -1,99 +1,56 @@
 import { v } from "convex/values"
 
 import { mutation, query } from "./_generated/server"
-import { requireMembership } from "./helpers"
-import { getProfiles, nameOf, requireProfile, signedInProfile } from "./model/identity/profiles"
+import {
+    createGroupRecord,
+    getGroupView,
+    groupListEntryValidator,
+    groupViewValidator,
+    leaveGroupRecord,
+    listGroups,
+} from "./model/groups/groups"
+import { GROUP_LIMIT } from "./model/groups/memberships"
+import { requireProfile, signedInProfile } from "./model/identity/profiles"
 
-export const createGroup = mutation({
+export const create = mutation({
     args: {
         name: v.string(),
     },
-    handler: async (ctx, args) => {
-        const userId = (await requireProfile(ctx))._id
-        const name = args.name.trim()
-        if (name === "" || name.length > 80) {
-            throw new Error("Group name must be 1-80 characters")
-        }
-        const groupId = await ctx.db.insert("groups", { ownerId: userId, name })
-        await ctx.db.insert("groupMembers", { groupId, userId })
-        return groupId
-    },
+    returns: v.id("groups"),
+    handler: async (ctx, args) => createGroupRecord(ctx.db, (await requireProfile(ctx))._id, args.name),
 })
 
-export const leaveGroup = mutation({
+export const leave = mutation({
     args: {
         groupId: v.id("groups"),
     },
-    handler: async (ctx, args) => {
-        const userId = (await requireProfile(ctx))._id
-        const group = await ctx.db.get(args.groupId)
-        if (!group) {
-            throw new Error("Group not found")
-        }
-        if (userId === group.ownerId) {
-            throw new Error("The group owner cannot leave")
-        }
-        const membership = await requireMembership(ctx.db, args.groupId, userId)
-        await ctx.db.delete(membership._id)
-        return membership._id
-    },
+    returns: v.id("groupMembers"),
+    handler: async (ctx, args) => leaveGroupRecord(ctx.db, (await requireProfile(ctx))._id, args.groupId),
 })
 
-export const listMyGroups = query({
+export const list = query({
     args: {},
+    returns: v.array(groupListEntryValidator),
     handler: async (ctx) => {
         const me = await signedInProfile(ctx)
-        if (!me) {
+        if (me === null) {
             return []
         }
-        const userId = me._id
-        const memberships = await ctx.db
-            .query("groupMembers")
-            .withIndex("by_user", (q) => q.eq("userId", userId))
-            .collect()
-        const groups = await Promise.all(memberships.map(async (membership) => ctx.db.get(membership.groupId)))
-        return groups.flatMap((group) => (group ? [{ group, isOwner: group.ownerId === userId }] : []))
+        return listGroups(ctx.db, me._id, GROUP_LIMIT)
     },
 })
 
-export const getGroup = query({
+export const get = query({
     args: {
         groupId: v.id("groups"),
     },
+    returns: v.union(groupViewValidator, v.null()),
     handler: async (ctx, args) => {
         const me = await signedInProfile(ctx)
         // See ADR-0004: null for missing or invisible.
-        if (!me) {
+        if (me === null) {
             return null
         }
-        const userId = me._id
-        const group = await ctx.db.get(args.groupId)
-        if (!group) {
-            return null
-        }
-        const membership = await ctx.db
-            .query("groupMembers")
-            .withIndex("by_group_user", (q) => q.eq("groupId", args.groupId).eq("userId", userId))
-            .unique()
-        if (!membership) {
-            return null
-        }
-        const members = await ctx.db
-            .query("groupMembers")
-            .withIndex("by_group", (q) => q.eq("groupId", args.groupId))
-            .collect()
-        const names = await getProfiles(
-            ctx.db,
-            members.map((member) => member.userId),
-        )
-        return {
-            group,
-            isOwner: group.ownerId === userId,
-            members: members.map((member) => ({
-                userId: member.userId,
-                name: nameOf(names, member.userId),
-                isOwner: member.userId === group.ownerId,
-            })),
-        }
+        return getGroupView(ctx.db, me._id, args.groupId)
     },
 })

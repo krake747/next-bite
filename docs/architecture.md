@@ -44,6 +44,8 @@ is a reactive view, not a second database.
   Only a ready session authorizes (ADR-0025).
 - `convex/identity.ts` and `convex/social.ts` are the public API for profiles and friendships. A
   friendship is one row per direction, and accepting writes both rows in one mutation.
+- `convex/groups.ts` and `convex/invites.ts` are the public API for groups and invites. Revoking an
+  invite deletes its row, and invite expiry is checked at read time.
 
 ## Storage, email, AI
 

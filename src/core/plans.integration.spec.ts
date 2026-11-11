@@ -31,8 +31,8 @@ async function idOf(t: TestConvexForDataModel<DataModel>, subject: string): Prom
 }
 
 async function befriend(t: TestConvexForDataModel<DataModel>, a: string, b: string): Promise<void> {
-    const token = await asUser(t, a).mutation(api.invitations.createInvite, { target: { kind: "friend" } })
-    await asUser(t, b).mutation(api.invitations.acceptInvite, { token })
+    const token = await asUser(t, a).mutation(api.invites.create, { target: { kind: "friend" } })
+    await asUser(t, b).mutation(api.invites.accept, { token })
 }
 
 async function createRestaurant(t: TestConvexForDataModel<DataModel>, subject: string): Promise<Id<"restaurants">> {
@@ -48,11 +48,11 @@ describe("bounded meal planning", () => {
         const t = setup()
         await registerUser(t, "anna", "anna@example.com")
         await registerUser(t, "ben", "ben@example.com")
-        const groupId = await asUser(t, "anna").mutation(api.groups.createGroup, { name: "Food Crew" })
-        const token = await asUser(t, "anna").mutation(api.invitations.createInvite, {
+        const groupId = await asUser(t, "anna").mutation(api.groups.create, { name: "Food Crew" })
+        const token = await asUser(t, "anna").mutation(api.invites.create, {
             target: { kind: "group", groupId },
         })
-        await asUser(t, "ben").mutation(api.invitations.acceptInvite, { token })
+        await asUser(t, "ben").mutation(api.invites.accept, { token })
 
         const planId = await asUser(t, "anna").mutation(api.plans.createPlan, {
             groupId,
@@ -74,7 +74,7 @@ describe("bounded meal planning", () => {
         const t = setup()
         await registerUser(t, "anna", "anna@example.com")
         await registerUser(t, "cas", "cas@example.com")
-        const groupId = await asUser(t, "anna").mutation(api.groups.createGroup, { name: "Food Crew" })
+        const groupId = await asUser(t, "anna").mutation(api.groups.create, { name: "Food Crew" })
 
         await expect(
             asUser(t, "cas").mutation(api.plans.createPlan, {
@@ -101,10 +101,10 @@ describe("bounded meal planning", () => {
             }),
         ).rejects.toThrow("not shared")
 
-        const friendToken = await asUser(t, "anna").mutation(api.invitations.createInvite, {
+        const friendToken = await asUser(t, "anna").mutation(api.invites.create, {
             target: { kind: "friend" },
         })
-        await asUser(t, "ben").mutation(api.invitations.acceptInvite, { token: friendToken })
+        await asUser(t, "ben").mutation(api.invites.accept, { token: friendToken })
 
         const planId = await asUser(t, "anna").mutation(api.plans.createPlan, {
             restaurantId,
@@ -135,7 +135,7 @@ describe("bounded meal planning", () => {
         await registerUser(t, "cas", "cas@example.com")
         const restaurantId = await createRestaurant(t, "anna")
         await befriend(t, "anna", "cas")
-        const groupId = await asUser(t, "anna").mutation(api.groups.createGroup, { name: "Food Crew" })
+        const groupId = await asUser(t, "anna").mutation(api.groups.create, { name: "Food Crew" })
         await asUser(t, "anna").mutation(api.plans.createPlan, {
             groupId,
             restaurantId,
@@ -152,12 +152,12 @@ describe("bounded meal planning", () => {
         await registerUser(t, "anna", "anna@example.com")
         await registerUser(t, "ben", "ben@example.com")
         await registerUser(t, "cas", "cas@example.com")
-        const groupId = await asUser(t, "anna").mutation(api.groups.createGroup, { name: "Food Crew" })
-        const token = await asUser(t, "anna").mutation(api.invitations.createInvite, {
+        const groupId = await asUser(t, "anna").mutation(api.groups.create, { name: "Food Crew" })
+        const token = await asUser(t, "anna").mutation(api.invites.create, {
             target: { kind: "group", groupId },
         })
-        await asUser(t, "ben").mutation(api.invitations.acceptInvite, { token })
-        await asUser(t, "cas").mutation(api.invitations.acceptInvite, { token })
+        await asUser(t, "ben").mutation(api.invites.accept, { token })
+        await asUser(t, "cas").mutation(api.invites.accept, { token })
 
         const planId = await asUser(t, "ben").mutation(api.plans.createPlan, {
             groupId,
