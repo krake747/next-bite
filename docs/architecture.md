@@ -26,7 +26,7 @@ that `convex/schema.ts` composes; env names in `src/core/env.ts`.
   client-only placeholders: it breaks hydration on every page.
 - Server functions only for server boundaries such as the session, email, external APIs, and AI.
   HTTP routes only for auth, uploads, AI streaming, and webhooks.
-- `e2e/public-ssr.spec.ts` and `e2e/restaurant-boundary.spec.ts` prove the boundary.
+- `e2e/smoke.spec.ts` checks that the built Worker paints the landing page.
 
 ## Data flow
 

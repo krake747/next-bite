@@ -27,7 +27,7 @@ The browser tier needs chromium once: `npx playwright install chromium --only-sh
 | Full interaction components      | Browser spec                                                    |
 | Route-level or backend contract  | Integration spec, or a convex contract                          |
 | Convex schema or function change | `convex/_generated/ai/guidelines.md`, then `docs/migrations.md` |
-| SSR boundary or auth shell       | `pnpm test:e2e`                                                 |
+| Built Worker smoke               | `pnpm test:e2e`                                                 |
 
 Paste failing and passing runs verbatim into the ticket or PR. Stop only processes your run started,
 never broad kills. Secrets come from `.env.local`; never invent or print them.
@@ -65,13 +65,10 @@ reloads.
 
 ## End to end
 
-`pnpm test:e2e` is on demand, outside the push gate and CI. Run it when the SSR boundary or auth
-shell changes. Boundary specs run against the built production Worker served locally, so they prove
-the built SSR boundary, not the dev server; that build forces `DEV=false`, so dev-only routes such
-as `/ds` redirect. Journeys in `e2e/journeys/` run on the dev server against your dev deployment:
-sync backend code first with `npx convex dev --once`, and read backend failures with
-`npx convex logs --history`. To iterate against servers you already run, set `E2E_NO_SERVER=1` and
-point `E2E_BASE_URL` at one.
+`pnpm test:e2e` is on demand, outside the push gate and CI. It runs one smoke test,
+`e2e/smoke.spec.ts`, against the built production Worker served locally: the landing page paints its
+heading. To run it against a server you already have, set `E2E_NO_SERVER=1` and point `E2E_BASE_URL`
+at it.
 
 ## Coverage
 
