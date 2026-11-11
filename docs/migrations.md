@@ -20,8 +20,9 @@ backend deploy (see `environments.md`), so every listed migration must be idempo
 
 Upload ownership is the first claim (ADR-0015). A place photo is claimed by its `photos` row and an
 avatar by its profile row; both are indexed by storage ID. The daily cleanup deletes any blob older
-than a day that holds no claim. The rebuild carries no backfills: dev was wiped and previews start
-fresh, so `backend-migrate.sh` runs an empty list.
+than a day that holds no claim. The rebuild assumed dev was wiped and previews start fresh, but dev
+kept a pre-trim profile row, so `backend-migrate.sh` lists the `stripProfilesCreatedAt` backfill
+until it reports zero remaining.
 
 ## Troubleshooting
 
