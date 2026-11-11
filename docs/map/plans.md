@@ -5,26 +5,27 @@ Product term: Plan. Defined in `GLOSSARY.md`.
 ## Routes
 
 Plans have no standalone route. `PlanSection` renders inside `src/routes/_app/groups.$groupId.tsx`
-for a group and inside `src/routes/_app/restaurants.$restaurantId.tsx` for a restaurant.
+for a group. The restaurant detail route has no plan section; restaurant-scoped plans are gone.
 
 ## UI (`src/features/plans/`)
 
-- `plans.tsx`: `PlanSection` proposes a dated outing with a title and a date, and marks plans done
-  or cancelled. Participant names render from the plan rows.
+- `plans.tsx`: `PlanSection` proposes an outing at one of the group's shared places with a date, and
+  the organizer or group owner cancels it. Organizer names render from the plan rows.
 
 ## Core (`src/core/`)
 
-- `plans.ts`: `useCreatePlan`, `usePlansForGroup`, `usePlansForRestaurant`, and
-  `useUpdatePlanStatus`.
+- `plans.ts`: `useCreatePlan`, `usePlansForGroup`, and `useCancelPlan`.
 
 ## Backend (`convex/`)
 
-- `plans.ts`: `createPlan`, `listPlansForGroup`, `listPlansForRestaurant`, and `updatePlanStatus`.
-  Status values live in the schema fragment.
+- `places.ts`: `forGroup`, `create`, and `cancel`, backed by `convex/model/plans/`. Members are the
+  participants; acceptance is membership plus a group-held place. Status values live in the schema
+  fragment.
 
 ## Data (`convex/model/plans/schema.ts`)
 
-Tables `plans` and `planParticipants`.
+Table `plans`: `groupId`, `placeId`, `createdBy`, `startsAt`, and `status` (`planned` or
+`cancelled`), indexed by group and start time.
 
 ## Decisions
 
@@ -33,10 +34,3 @@ Tables `plans` and `planParticipants`.
 ## Tests
 
 - `src/core/plans.integration.spec.ts`
-
-## State
-
-Shipped: propose a dated outing per group or restaurant, list plans, mark them done or cancelled.
-Partial: participant rules live in `convex/plans.ts`; read that file before changing them. Out of
-scope of the current code: plans do not reference shares, and nothing in the code derives a plan
-from group interest.

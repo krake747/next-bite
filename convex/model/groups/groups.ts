@@ -60,6 +60,14 @@ export async function leaveGroupRecord(
     return membership._id
 }
 
+export async function groupOwnerId(
+    db: GenericDatabaseReader<DataModel>,
+    groupId: Id<"groups">,
+): Promise<Id<"profiles"> | null> {
+    const group = await db.get("groups", groupId)
+    return group?.ownerId ?? null
+}
+
 export async function listGroups(db: GenericDatabaseReader<DataModel>, userId: Id<"profiles">, limit: number) {
     const groupIds = await memberGroupIds(db, userId, limit)
     const groups = await Promise.all(groupIds.map(async (groupId) => db.get("groups", groupId)))
