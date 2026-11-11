@@ -1,3 +1,4 @@
+// SYNC: docs page lives in src/routes/ds/-sections/card.tsx; keep the demo aligned with this file.
 import { cx } from "@ui/cva.config"
 
 export function Card({ className, children, ...props }: Readonly<React.ComponentProps<"div">>) {

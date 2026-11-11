@@ -1,3 +1,4 @@
+// SYNC: docs page lives in src/routes/ds/-sections/text-link.tsx; keep the demo aligned with this file.
 import { useRender } from "@base-ui/react/use-render"
 
 import { cx } from "@ui/cva.config"

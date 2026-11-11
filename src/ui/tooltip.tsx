@@ -1,3 +1,4 @@
+// SYNC: docs page lives in src/routes/ds/-sections/tooltip.tsx; keep the demo aligned with this file.
 import { Tooltip as BaseTooltip } from "@base-ui/react/tooltip"
 
 import { cx } from "@ui/cva.config"

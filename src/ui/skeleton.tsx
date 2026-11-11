@@ -1,3 +1,4 @@
+// SYNC: docs page lives in src/routes/ds/-sections/skeleton.tsx; keep the demo aligned with this file.
 import { cx } from "@ui/cva.config"
 
 export function Skeleton({ className, children, ...props }: Readonly<React.ComponentProps<"div">>) {

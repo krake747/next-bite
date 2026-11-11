@@ -1,7 +1,6 @@
-import { cx } from "@ui/cva.config"
-
 import { Demo } from "./demo-frame"
-import { TokenTable } from "./token-table"
+import { readThemeTokens } from "./theme-tokens"
+import { TokenTable, toTokenRows, type TokenDef, type TokenRow } from "./token-table"
 
 export const paletteMeta = {
     id: "palette",
@@ -9,83 +8,116 @@ export const paletteMeta = {
     title: "Colour palette",
     body: "Tomato and Butter, supported by Basil and Plum on warm Stone neutrals. Components use the semantic tokens; primitives stay reserved for brand graphics.",
     importPath: "src/index.css",
+    anatomy: [
+        {
+            element: "Scale ramps",
+            description: "Tomato, Stone, Mango and Basil steps read from the theme; product UI never picks raw steps.",
+        },
+        {
+            element: "Semantic tokens",
+            description: "Background, surface, foreground and action tokens that map ramps onto roles.",
+        },
+    ],
+    props: [
+        {
+            name: "var(--color-*)",
+            type: "oklch | var()",
+            description: "Raw ramp value from the theme; read through a semantic token.",
+        },
+        {
+            name: "bg-* / text-*",
+            type: "utility",
+            description:
+                "Tailwind utilities that resolve theme colors; swatches below use inline style so docs stay sourced.",
+        },
+    ],
+    variants: [
+        { name: "Tomato", description: "Brand action ramp." },
+        { name: "Stone", description: "Warm neutrals for surfaces and text." },
+        { name: "Mango", description: "Butter accent for highlights." },
+        { name: "Basil", description: "Success ramp." },
+        { name: "Semantic", description: "Product tokens that map ramps onto roles." },
+    ],
+    guidance: {
+        whenToUse:
+            "Use semantic tokens for every surface, text and action; let ramps serve brand graphics and swatches only.",
+        whenToAvoid:
+            "Do not hardcode ramp classes in product UI; if no semantic token fits, add one instead of reaching for bg-tomato-600.",
+        siblings: [
+            { id: "typography", reason: "Color and type form the surface together." },
+            { id: "shape", reason: "Color and radius form the surface together." },
+        ],
+    },
 } as const
 
-const palette: ReadonlyArray<{ name: string; swatches: ReadonlyArray<{ label: string; className: string }> }> = [
-    {
-        name: "Tomato",
-        swatches: [
-            { label: "50", className: "bg-tomato-50" },
-            { label: "100", className: "bg-tomato-100" },
-            { label: "200", className: "bg-tomato-200" },
-            { label: "300", className: "bg-tomato-300" },
-            { label: "400", className: "bg-tomato-400" },
-            { label: "500", className: "bg-tomato-500" },
-            { label: "600", className: "bg-tomato-600" },
-            { label: "700", className: "bg-tomato-700" },
-            { label: "800", className: "bg-tomato-800" },
-            { label: "900", className: "bg-tomato-900" },
-        ],
-    },
-    {
-        name: "Stone",
-        swatches: [
-            { label: "50", className: "bg-stone-50" },
-            { label: "100", className: "bg-stone-100" },
-            { label: "200", className: "bg-stone-200" },
-            { label: "300", className: "bg-stone-300" },
-            { label: "400", className: "bg-stone-400" },
-            { label: "500", className: "bg-stone-500" },
-            { label: "600", className: "bg-stone-600" },
-            { label: "700", className: "bg-stone-700" },
-            { label: "800", className: "bg-stone-800" },
-            { label: "900", className: "bg-stone-900" },
-        ],
-    },
-    {
-        name: "Mango",
-        swatches: [
-            { label: "50", className: "bg-mango-50" },
-            { label: "100", className: "bg-mango-100" },
-            { label: "200", className: "bg-mango-200" },
-            { label: "300", className: "bg-mango-300" },
-            { label: "400", className: "bg-mango-400" },
-            { label: "500", className: "bg-mango-500" },
-            { label: "600", className: "bg-mango-600" },
-        ],
-    },
-    {
-        name: "Basil",
-        swatches: [
-            { label: "50", className: "bg-basil-50" },
-            { label: "100", className: "bg-basil-100" },
-            { label: "200", className: "bg-basil-200" },
-            { label: "300", className: "bg-basil-300" },
-            { label: "400", className: "bg-basil-400" },
-            { label: "500", className: "bg-basil-500" },
-            { label: "600", className: "bg-basil-600" },
-        ],
-    },
+export type PaletteSwatch = {
+    readonly label: string
+    readonly value: string
+}
+
+export type PaletteFamily = {
+    readonly name: string
+    readonly swatches: ReadonlyArray<PaletteSwatch>
+}
+
+const familyOrder: ReadonlyArray<string> = ["tomato", "stone", "mango", "basil"]
+
+function capitalize(family: string): string {
+    return family.charAt(0).toUpperCase() + family.slice(1)
+}
+
+export function paletteSwatchFamilies(
+    tokens: ReadonlyMap<string, string> = readThemeTokens(),
+): ReadonlyArray<PaletteFamily> {
+    const grouped = new Map<string, { step: number; label: string; value: string }[]>()
+    for (const [name, value] of tokens) {
+        const match = /^color-([a-z]+)-(\d+)$/.exec(name)
+        if (match?.[1] === undefined || match?.[2] === undefined) {
+            continue
+        }
+        const family = match[1]
+        const label = match[2]
+        if (!familyOrder.includes(family)) {
+            continue
+        }
+        const list = grouped.get(family) ?? []
+        list.push({ step: Number(label), label, value })
+        grouped.set(family, list)
+    }
+    return familyOrder
+        .filter((family) => grouped.has(family))
+        .map((family) => ({
+            name: capitalize(family),
+            swatches: (grouped.get(family) ?? []).toSorted((a, b) => a.step - b.step),
+        }))
+}
+
+const themeTokens = readThemeTokens()
+
+const semanticTokens: ReadonlyArray<TokenDef> = [
+    { token: "background", name: "color-background", usage: "Page canvas" },
+    { token: "surface", name: "color-surface", usage: "Cards, popovers" },
+    { token: "surface-muted", name: "color-surface-muted", usage: "Quiet fills, skeletons" },
+    { token: "surface-accent", name: "color-surface-accent", usage: "Selected rows" },
+    { token: "foreground", name: "color-foreground", usage: "Headings, body" },
+    { token: "muted-foreground", name: "color-muted-foreground", usage: "Secondary text, meta" },
+    { token: "primary", name: "color-primary", usage: "Main action" },
+    { token: "success", name: "color-success", usage: "Been status" },
+    { token: "warning", name: "color-warning", usage: "Cautions" },
+    { token: "destructive", name: "color-destructive", usage: "Delete" },
+    { token: "plum", name: "color-plum", usage: "Second accent, sparing" },
 ]
 
-const semanticRows = [
-    { token: "background", value: "stone-100", usage: "Page canvas" },
-    { token: "surface", value: "white", usage: "Cards, popovers" },
-    { token: "surface-muted", value: "stone-200", usage: "Quiet fills, skeletons" },
-    { token: "surface-accent", value: "mango-100", usage: "Selected rows" },
-    { token: "foreground", value: "stone-900", usage: "Headings, body" },
-    { token: "muted-foreground", value: "stone-600", usage: "Secondary text, meta" },
-    { token: "primary", value: "tomato-600", usage: "Main action" },
-    { token: "success", value: "basil-600", usage: "Been status" },
-    { token: "warning", value: "mango-600", usage: "Cautions" },
-    { token: "destructive", value: "oklch red", usage: "Delete" },
-    { token: "plum", value: "oklch violet", usage: "Second accent, sparing" },
-]
+export function paletteTokenRows(tokens: ReadonlyMap<string, string> = themeTokens): ReadonlyArray<TokenRow> {
+    return toTokenRows(semanticTokens, tokens)
+}
 
 export function PaletteDemo() {
+    // Swatch fills use inline style from the theme reader. Dynamic bg-* classes would escape Tailwind
+    // scanning, so the docs stay sourced without a safelist.
     return (
         <Demo className="grid gap-4 sm:grid-cols-2">
-            {palette.map((family) => (
+            {paletteSwatchFamilies().map((family) => (
                 <div key={family.name}>
                     <p className="mb-2 text-sm font-medium text-foreground">{family.name}</p>
                     <div className="flex overflow-hidden rounded-lg border border-border">
@@ -93,7 +125,8 @@ export function PaletteDemo() {
                             <div
                                 key={swatch.label}
                                 title={`${family.name} ${swatch.label}`}
-                                className={cx("h-10 flex-1", swatch.className)}
+                                style={{ backgroundColor: swatch.value }}
+                                className="h-10 flex-1"
                             />
                         ))}
                     </div>
@@ -114,7 +147,7 @@ export function PaletteDemo() {
                 </div>
             </div>
             <div className="sm:col-span-2">
-                <TokenTable caption="Semantic token usage" rows={semanticRows} />
+                <TokenTable caption="Semantic token usage" rows={paletteTokenRows()} />
             </div>
         </Demo>
     )

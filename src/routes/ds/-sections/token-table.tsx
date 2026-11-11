@@ -1,7 +1,86 @@
+import { type PropRow, type VariantRow } from "./registry"
+
 export type TokenRow = {
     readonly token: string
     readonly value: string
     readonly usage: string
+}
+
+export type TokenDef = {
+    readonly token: string
+    readonly name: string
+    readonly usage: string
+}
+
+export function toTokenRows(
+    defs: ReadonlyArray<TokenDef>,
+    tokens: ReadonlyMap<string, string>,
+): ReadonlyArray<TokenRow> {
+    return defs.map(({ token, name, usage }) => ({ token, value: tokens.get(name) ?? "", usage }))
+}
+
+export function PropsTable({ rows, caption }: Readonly<{ rows: ReadonlyArray<PropRow>; caption: string }>) {
+    return (
+        <table data-slot="props-table" className="w-full text-left text-sm">
+            <caption className="sr-only">{caption}</caption>
+            <thead>
+                <tr className="text-xs text-muted-foreground">
+                    <th scope="col" className="py-2 pr-4 font-medium">
+                        Prop
+                    </th>
+                    <th scope="col" className="py-2 pr-4 font-medium">
+                        Type
+                    </th>
+                    <th scope="col" className="py-2 pr-4 font-medium">
+                        Default
+                    </th>
+                    <th scope="col" className="py-2 font-medium">
+                        Description
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+                {rows.map((row) => (
+                    <tr key={row.name} className="border-t border-border">
+                        <td className="py-2 pr-4 font-mono text-xs whitespace-nowrap text-foreground">{row.name}</td>
+                        <td className="py-2 pr-4 font-mono text-xs whitespace-nowrap text-muted-foreground tabular-nums">
+                            {row.type}
+                        </td>
+                        <td className="py-2 pr-4 font-mono text-xs whitespace-nowrap text-muted-foreground tabular-nums">
+                            {row.default ?? ""}
+                        </td>
+                        <td className="py-2 text-muted-foreground">{row.description}</td>
+                    </tr>
+                ))}
+            </tbody>
+        </table>
+    )
+}
+
+export function VariantTable({ rows, caption }: Readonly<{ rows: ReadonlyArray<VariantRow>; caption: string }>) {
+    return (
+        <table data-slot="variant-table" className="w-full text-left text-sm">
+            <caption className="sr-only">{caption}</caption>
+            <thead>
+                <tr className="text-xs text-muted-foreground">
+                    <th scope="col" className="py-2 pr-4 font-medium">
+                        Variant
+                    </th>
+                    <th scope="col" className="py-2 font-medium">
+                        Description
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+                {rows.map((row) => (
+                    <tr key={row.name} className="border-t border-border">
+                        <td className="py-2 pr-4 whitespace-nowrap text-foreground">{row.name}</td>
+                        <td className="py-2 text-muted-foreground">{row.description}</td>
+                    </tr>
+                ))}
+            </tbody>
+        </table>
+    )
 }
 
 export type AnatomyRow = {
