@@ -19,25 +19,130 @@
     "ignoreFindings": ["cloudflare.config.ts", "doctor.config.ts"],
     "boundaries": {
         "zones": [
-            { "name": "core", "patterns": ["src/core/**"] },
-            { "name": "api", "patterns": ["src/api/**"] },
-            { "name": "ui", "patterns": ["src/ui/**"] },
-            { "name": "pattern", "patterns": ["src/pattern/**"] },
-            { "name": "features", "patterns": ["src/features/**"] },
-            { "name": "routes", "patterns": ["src/routes/**"] },
-            { "name": "convex", "patterns": ["convex/**"] }
+            {
+                "name": "core",
+                "patterns": ["src/core/**"]
+            },
+            {
+                "name": "api",
+                "patterns": ["src/api/**"]
+            },
+            {
+                "name": "ui",
+                "patterns": ["src/ui/**"]
+            },
+            {
+                "name": "pattern",
+                "patterns": ["src/pattern/**"]
+            },
+            {
+                "name": "features",
+                "patterns": ["src/features/**"]
+            },
+            {
+                "name": "routes",
+                "patterns": ["src/routes/**"]
+            },
+            {
+                "name": "convex-shared",
+                "patterns": ["convex/_generated/**", "convex/validators.ts"]
+            },
+            {
+                "name": "model-identity",
+                "patterns": ["convex/model/identity/**"]
+            },
+            {
+                "name": "model-social",
+                "patterns": ["convex/model/social/**"]
+            },
+            {
+                "name": "model-groups",
+                "patterns": ["convex/model/groups/**"]
+            },
+            {
+                "name": "model-places",
+                "patterns": ["convex/model/places/**"]
+            },
+            {
+                "name": "model-plans",
+                "patterns": ["convex/model/plans/**"]
+            },
+            {
+                "name": "convex",
+                "patterns": ["convex/**"]
+            }
         ],
         "rules": [
-            { "from": "core", "allow": ["core", "api", "convex"] },
-            { "from": "api", "allow": ["api", "convex", "core"] },
-            { "from": "ui", "allow": ["ui"] },
-            { "from": "pattern", "allow": ["core", "ui", "pattern", "api"], "allowTypeOnly": ["convex"] },
-            { "from": "features", "allow": ["core", "ui", "pattern", "api"], "allowTypeOnly": ["convex"] },
+            {
+                "from": "core",
+                "allow": ["core", "api", "convex", "convex-shared"]
+            },
+            {
+                "from": "api",
+                "allow": ["api", "convex", "core", "convex-shared"]
+            },
+            {
+                "from": "ui",
+                "allow": ["ui"]
+            },
+            {
+                "from": "pattern",
+                "allow": ["core", "ui", "pattern", "api"],
+                "allowTypeOnly": ["convex", "convex-shared"]
+            },
+            {
+                "from": "features",
+                "allow": ["core", "ui", "pattern", "api"],
+                "allowTypeOnly": ["convex", "convex-shared"]
+            },
             {
                 "from": "routes",
-                "allow": ["core", "ui", "pattern", "features", "api", "convex", "routes"]
+                "allow": ["core", "ui", "pattern", "features", "api", "convex", "routes", "convex-shared"]
             },
-            { "from": "convex", "allow": ["convex", "core"] }
+            {
+                "from": "convex-shared",
+                "allow": ["convex-shared", "convex", "core"]
+            },
+            {
+                "from": "model-identity",
+                "allow": ["convex-shared", "model-identity"]
+            },
+            {
+                "from": "model-social",
+                "allow": ["convex-shared", "model-identity", "model-social"]
+            },
+            {
+                "from": "model-groups",
+                "allow": ["convex-shared", "model-identity", "model-social", "model-groups"]
+            },
+            {
+                "from": "model-places",
+                "allow": ["convex-shared", "model-identity", "model-social", "model-groups", "model-places"]
+            },
+            {
+                "from": "model-plans",
+                "allow": [
+                    "convex-shared",
+                    "model-identity",
+                    "model-social",
+                    "model-groups",
+                    "model-places",
+                    "model-plans"
+                ]
+            },
+            {
+                "from": "convex",
+                "allow": [
+                    "convex",
+                    "convex-shared",
+                    "core",
+                    "model-identity",
+                    "model-social",
+                    "model-groups",
+                    "model-places",
+                    "model-plans"
+                ]
+            }
         ]
     }
 }

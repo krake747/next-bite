@@ -1,8 +1,8 @@
 # Architecture
 
 How the app fits together today. Layers and import rules live in `.fallowrc.json`, summarized in
-`AGENTS.md`; stack and versions in `package.json`; data in `convex/schema.ts`; env names in
-`src/core/env.ts`.
+`AGENTS.md`; stack and versions in `package.json`; data in the `convex/model/*/schema.ts` fragments
+that `convex/schema.ts` composes; env names in `src/core/env.ts`.
 
 ## Owners
 
