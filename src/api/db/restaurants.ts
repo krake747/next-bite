@@ -10,7 +10,7 @@ import { assertRealId, isTempId, TEMP_ID_PREFIX } from "@core/temp.ids"
 
 const SYNC_RESOLVE_POLL_MS = 50
 
-export type RestaurantDoc = Doc<"restaurants">
+export type RestaurantDoc = Doc<"restaurants"> & { ownerName: string }
 
 export type SyncClient = Pick<ConvexReactClient, "watchQuery">
 
@@ -141,7 +141,7 @@ export function assertRealRestaurantId(id: Id<"restaurants">): void {
 }
 
 export type TempRestaurantInput = RestaurantAddArgs &
-    Readonly<{ ownerId: string; ownerName: string; clientMutationId: string }>
+    Readonly<{ ownerId: Id<"profiles">; ownerName: string; clientMutationId: string }>
 
 export function buildTempRestaurant(input: TempRestaurantInput): RestaurantDoc {
     const now = Date.now()
@@ -175,7 +175,6 @@ export function buildTempRestaurant(input: TempRestaurantInput): RestaurantDoc {
         images: copyStoredImages(input.images ?? []),
         visibility: "private",
         clientMutationId: input.clientMutationId,
-        createdAt: now,
     }
 }
 

@@ -45,13 +45,12 @@ function ownedRestaurant(name: string, owner: { id: string; name: string }, id: 
         address: { label: "Luxembourg City" },
         images: [],
         visibility: "shared",
-        createdAt: 1000,
     } as unknown as RestaurantDoc
 }
 
 async function renderHome(
     feed: ReadonlyArray<RestaurantDoc>,
-    friends: ReadonlyArray<{ authUserId: string; name: string }> = [],
+    friends: ReadonlyArray<{ profileId: string; name: string }> = [],
 ): Promise<void> {
     const seeds = new Map<string, unknown>([[seedKey("friendships:listFriends", undefined), friends]])
     const backend = createSeededClient({ seeds, liveRows: feed })
@@ -93,7 +92,7 @@ describe("home friends feed", () => {
     test("shows personal saves without friend pills", async () => {
         await renderHome(
             [ownedRestaurant("Trattoria Verde", { id: "user-1", name: "Alex" }, "r1")],
-            [{ authUserId: "user-2", name: "Ben" }],
+            [{ profileId: "user-2", name: "Ben" }],
         )
 
         const saved = screen.getByLabelText("Latest activity")
@@ -107,7 +106,7 @@ describe("home friends feed", () => {
                 ownedRestaurant("Sushi Bar", { id: "user-2", name: "Ben" }, "r2"),
                 ownedRestaurant("Trattoria Verde", { id: "user-1", name: "Alex" }, "r1"),
             ],
-            [{ authUserId: "user-2", name: "Ben" }],
+            [{ profileId: "user-2", name: "Ben" }],
         )
 
         const saved = screen.getByLabelText("Latest activity")

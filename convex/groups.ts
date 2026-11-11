@@ -1,24 +1,21 @@
 import { v } from "convex/values"
 
 import { mutation, query } from "./_generated/server"
-import { formatDisplayName, requireMembership, requireUserId } from "./helpers"
+import { requireMembership } from "./helpers"
+import { getProfiles, nameOf, requireProfile, signedInProfile } from "./model/identity/profiles"
 
 export const createGroup = mutation({
     args: {
         name: v.string(),
     },
     handler: async (ctx, args) => {
-        const userId = await requireUserId(ctx)
+        const userId = (await requireProfile(ctx))._id
         const name = args.name.trim()
         if (name === "" || name.length > 80) {
             throw new Error("Group name must be 1-80 characters")
         }
-        const groupId = await ctx.db.insert("groups", {
-            ownerId: userId,
-            name,
-            createdAt: Date.now(),
-        })
-        await ctx.db.insert("groupMembers", { groupId, userId, joinedAt: Date.now() })
+        const groupId = await ctx.db.insert("groups", { ownerId: userId, name })
+        await ctx.db.insert("groupMembers", { groupId, userId })
         return groupId
     },
 })
@@ -28,7 +25,7 @@ export const leaveGroup = mutation({
         groupId: v.id("groups"),
     },
     handler: async (ctx, args) => {
-        const userId = await requireUserId(ctx)
+        const userId = (await requireProfile(ctx))._id
         const group = await ctx.db.get(args.groupId)
         if (!group) {
             throw new Error("Group not found")
@@ -45,7 +42,11 @@ export const leaveGroup = mutation({
 export const listMyGroups = query({
     args: {},
     handler: async (ctx) => {
-        const userId = await requireUserId(ctx)
+        const me = await signedInProfile(ctx)
+        if (!me) {
+            return []
+        }
+        const userId = me._id
         const memberships = await ctx.db
             .query("groupMembers")
             .withIndex("by_user", (q) => q.eq("userId", userId))
@@ -60,8 +61,12 @@ export const getGroup = query({
         groupId: v.id("groups"),
     },
     handler: async (ctx, args) => {
-        const userId = await requireUserId(ctx)
+        const me = await signedInProfile(ctx)
         // See ADR-0004: null for missing or invisible.
+        if (!me) {
+            return null
+        }
+        const userId = me._id
         const group = await ctx.db.get(args.groupId)
         if (!group) {
             return null
@@ -77,20 +82,16 @@ export const getGroup = query({
             .query("groupMembers")
             .withIndex("by_group", (q) => q.eq("groupId", args.groupId))
             .collect()
-        const profiles = await Promise.all(
-            members.map(async (member) =>
-                ctx.db
-                    .query("profiles")
-                    .withIndex("by_auth_user", (q) => q.eq("authUserId", member.userId))
-                    .unique(),
-            ),
+        const names = await getProfiles(
+            ctx.db,
+            members.map((member) => member.userId),
         )
         return {
             group,
             isOwner: group.ownerId === userId,
-            members: members.map((member, index) => ({
+            members: members.map((member) => ({
                 userId: member.userId,
-                name: formatDisplayName(profiles[index]?.name),
+                name: nameOf(names, member.userId),
                 isOwner: member.userId === group.ownerId,
             })),
         }

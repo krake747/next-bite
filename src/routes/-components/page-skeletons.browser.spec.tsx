@@ -96,7 +96,6 @@ function restaurant(id: string, name: string, owner = testUser): RestaurantDoc {
         address: { label: "Luxembourg City" },
         images: [],
         visibility: "private",
-        createdAt: 1000,
     } as unknown as RestaurantDoc
 }
 
@@ -111,8 +110,8 @@ const seeds = new Map<string, unknown>([
     [
         seedKey("friendships:listFriends", undefined),
         [
-            { authUserId: "ben", name: "Ben" },
-            { authUserId: "cleo", name: "Cleo" },
+            { profileId: "ben", name: "Ben" },
+            { profileId: "cleo", name: "Cleo" },
         ],
     ],
     [seedKey("friendships:listFriendRequests", undefined), { incoming: [], outgoing: [] }],
@@ -127,7 +126,7 @@ const seeds = new Map<string, unknown>([
         seedKey("users:getMe", undefined),
         {
             status: "ready",
-            profile: { _id: "p1", authUserId: testUser.id, name: testUser.name, email: testUser.email, createdAt: 1 },
+            profile: { _id: "p1", authUserId: testUser.id, name: testUser.name, email: testUser.email },
         },
     ],
 ])

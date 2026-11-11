@@ -3,18 +3,16 @@ import { v } from "convex/values"
 
 export const socialTables = {
     friendships: defineTable({
-        ownerId: v.string(),
-        friendAuthUserId: v.string(),
+        ownerId: v.id("profiles"),
+        friendId: v.id("profiles"),
         status: v.union(v.literal("pending"), v.literal("accepted")),
-        createdAt: v.number(),
     })
         .index("by_owner", ["ownerId"])
-        .index("by_owner_friend", ["ownerId", "friendAuthUserId"])
-        .index("by_friend", ["friendAuthUserId"]),
+        .index("by_owner_friend", ["ownerId", "friendId"])
+        .index("by_friend", ["friendId"]),
     interests: defineTable({
         restaurantId: v.id("restaurants"),
-        userId: v.string(),
-        displayName: v.string(),
+        userId: v.id("profiles"),
         status: v.union(v.literal("want"), v.literal("been")),
         updatedAt: v.number(),
     })

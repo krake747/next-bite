@@ -3,12 +3,12 @@ import { useState } from "react"
 
 import { useSuspenseConvexQuery } from "@api/convex.context"
 import { convexQueryOptions, warmQueriesWithin } from "@api/convex.options"
-import { type Doc, type Id, toId } from "@api/data.model"
+import { type Id, toId } from "@api/data.model"
 import { api } from "@api/endpoints"
 import { useCreateInvite, useRevokeInvite, useShareWithGroup, useUnshare } from "@core/groups"
 import { clearError, errorFrom, type FormError } from "@core/outcome"
-import { useRestaurants } from "@core/restaurants"
-import { useAuth, useSessionStatus } from "@core/session"
+import { useRestaurants, type Restaurant } from "@core/restaurants"
+import { useAuth, useSessionStatus, isViewer, useViewer } from "@core/session"
 import { orderFeedByRecency, useSocialSummaries } from "@core/social"
 import { GroupMembers } from "@features/groups/group-members"
 import { PlanSection } from "@features/plans/plans"
@@ -123,7 +123,7 @@ function GroupRestaurantsSection({
     viewer,
 }: Readonly<{
     groupId: Id<"groups">
-    restaurants: ReadonlyArray<Doc<"restaurants">>
+    restaurants: ReadonlyArray<Restaurant>
     viewer: { readonly kind: "signed-in"; readonly id: string } | { readonly kind: "signed-out" }
 }>) {
     const summaries = useSocialSummaries(restaurants.map((r) => r._id))
@@ -158,7 +158,7 @@ function GroupRestaurantsSection({
                                 ? ` · ${social.wantCount} want · ${social.beenCount} been`
                                 : ""}
                         </p>
-                        {viewer.kind === "signed-in" && shared.ownerId === viewer.id && (
+                        {isViewer(viewer, shared.ownerId) && (
                             <div className="pt-3">
                                 <Button
                                     size="sm"
@@ -267,15 +267,13 @@ function GroupDetailView() {
     const auth = useAuth()
     const group = useSuspenseConvexQuery(api.groups.getGroup, { groupId: groupConvexId })
     const restaurants = useSuspenseConvexQuery(api.shares.listForGroup, { groupId: groupConvexId })
+    const viewer = useViewer()
 
     if (group === null) {
         return <GroupNotFound />
     }
 
     const sharedIds = new Set(restaurants.map((p) => p._id))
-    const userId = auth.user?.id
-    const viewer: { readonly kind: "signed-in"; readonly id: string } | { readonly kind: "signed-out" } =
-        userId !== undefined && userId !== "" ? { kind: "signed-in", id: userId } : { kind: "signed-out" }
 
     return (
         <PageContainer>

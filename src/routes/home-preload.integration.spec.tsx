@@ -47,14 +47,13 @@ function savedBy(user: TestUser, name: string, id: string): RestaurantDoc {
     return {
         _id: toId<"restaurants">(id),
         _creationTime: 1000,
-        ownerId: user.id,
+        ownerId: toId<"profiles">(user.id),
         ownerName: user.name,
         name,
         cuisine: "Italian",
         address: { label: "Luxembourg City" },
         images: [],
         visibility: "shared",
-        createdAt: 1000,
     }
 }
 

@@ -2,7 +2,7 @@ import { PlusIcon } from "@phosphor-icons/react"
 import { createFileRoute } from "@tanstack/react-router"
 
 import { preloadHomeCollections, useFeedRestaurants, useRestaurants, type Restaurant } from "@core/restaurants"
-import { useAuth, useSessionStatus } from "@core/session"
+import { useAuth, useSessionStatus, useViewer } from "@core/session"
 import { orderFeedByRecency } from "@core/social"
 import { RestaurantCard } from "@features/restaurants/restaurant-card"
 import { RestaurantList } from "@features/restaurants/restaurant-list"
@@ -44,8 +44,8 @@ function RiverFriendItem({ restaurant }: Readonly<{ restaurant: Restaurant }>) {
 }
 
 function HomeRiver({ mine, feed }: Readonly<{ mine: ReadonlyArray<Restaurant>; feed: ReadonlyArray<Restaurant> }>) {
-    const auth = useAuth()
-    const ownId = auth.user?.id
+    const viewer = useViewer()
+    const ownId = viewer.kind === "signed-in" ? viewer.id : undefined
     const mineIds = new Set(mine.map((restaurant) => restaurant._id))
     const feedOnly = feed.filter((restaurant) => !mineIds.has(restaurant._id))
     const items = [...mine, ...feedOnly].toSorted((a, b) => b._creationTime - a._creationTime)

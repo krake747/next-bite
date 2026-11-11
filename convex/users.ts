@@ -1,10 +1,19 @@
 import { v } from "convex/values"
 
 import { type Doc, type Id } from "./_generated/dataModel"
-import { mutation, query, type MutationCtx } from "./_generated/server"
+import { internalQuery, mutation, query, type MutationCtx } from "./_generated/server"
 import { authComponent } from "./auth"
-import { formatDisplayName, readAuthUser, requireUserId } from "./helpers"
+import { formatDisplayName, readAuthUser } from "./helpers"
+import { profileByAuthUser, signedInProfile, viewerProfile } from "./model/identity/profiles"
 import { imageObjectValidator } from "./validators"
+
+async function requireSubject(ctx: MutationCtx): Promise<string> {
+    const identity = await ctx.auth.getUserIdentity()
+    if (!identity) {
+        throw new Error("Unauthorized: authentication required")
+    }
+    return identity.subject
+}
 
 export const ensureProfile = mutation({
     args: {
@@ -12,21 +21,17 @@ export const ensureProfile = mutation({
         name: v.optional(v.string()),
     },
     handler: async (ctx, args) => {
-        const userId = await requireUserId(ctx)
-        const existing = await ctx.db
-            .query("profiles")
-            .withIndex("by_auth_user", (q) => q.eq("authUserId", userId))
-            .unique()
+        const subject = await requireSubject(ctx)
+        const existing = await profileByAuthUser(ctx.db, subject)
         if (existing) {
             return existing._id
         }
         const authUser = await readAuthUser(ctx)
         const name = formatDisplayName(args.name ?? authUser?.name ?? authUser?.email ?? args.email)
         return ctx.db.insert("profiles", {
-            authUserId: userId,
+            authUserId: subject,
             name,
             email: args.email.trim().toLowerCase(),
-            createdAt: Date.now(),
         })
     },
 })
@@ -45,16 +50,17 @@ export const getSessionUser = query({
 export const getMe = query({
     args: {},
     handler: async (ctx): Promise<{ status: "ready"; profile: Doc<"profiles"> } | { status: "onboarding" }> => {
-        const userId = await requireUserId(ctx)
-        const profile = await ctx.db
-            .query("profiles")
-            .withIndex("by_auth_user", (q) => q.eq("authUserId", userId))
-            .unique()
+        const profile = await signedInProfile(ctx)
         if (!profile) {
             return { status: "onboarding" }
         }
         return { status: "ready", profile }
     },
+})
+
+export const _viewerProfileId = internalQuery({
+    args: {},
+    handler: async (ctx): Promise<Id<"profiles"> | null> => (await viewerProfile(ctx))?._id ?? null,
 })
 
 type AvatarInput = {
@@ -66,15 +72,14 @@ type AvatarInput = {
 
 async function resolveAvatarUpload(
     ctx: MutationCtx,
-    userId: string,
-    displayName: string,
+    profileId: Id<"profiles">,
     avatar: AvatarInput,
 ): Promise<NonNullable<Doc<"profiles">["avatar"]>> {
     const record = await ctx.db
         .query("uploads")
         .withIndex("by_storage", (q) => q.eq("storageId", avatar.storageId))
         .unique()
-    if (!record || record.ownerId !== userId) {
+    if (!record || record.ownerId !== profileId) {
         throw new Error("Unauthorized: storage does not belong to you")
     }
     await ctx.db.patch(record._id, { purpose: "avatar", expiresAt: undefined })
@@ -82,13 +87,34 @@ async function resolveAvatarUpload(
     return {
         url,
         storageId: avatar.storageId,
-        ownerId: userId,
-        displayName,
+        ownerId: profileId,
         ...(record.mimeType !== undefined ? { mimeType: record.mimeType } : {}),
         ...(record.byteSize !== undefined ? { byteSize: record.byteSize } : {}),
         ...(avatar.width !== undefined ? { width: avatar.width } : {}),
         ...(avatar.height !== undefined ? { height: avatar.height } : {}),
     }
+}
+
+async function profileForUpdate(ctx: MutationCtx, name: string | undefined): Promise<Doc<"profiles">> {
+    const subject = await requireSubject(ctx)
+    const existing = await profileByAuthUser(ctx.db, subject)
+    if (existing) {
+        return existing
+    }
+    const authUser = await readAuthUser(ctx)
+    if (!authUser?.email) {
+        throw new Error("Profile not found: call ensureProfile first")
+    }
+    const profileId = await ctx.db.insert("profiles", {
+        authUserId: subject,
+        name: formatDisplayName(name ?? authUser.email),
+        email: authUser.email,
+    })
+    const created = await ctx.db.get("profiles", profileId)
+    if (!created) {
+        throw new Error("Profile not found: call ensureProfile first")
+    }
+    return created
 }
 
 export const updateMe = mutation({
@@ -98,30 +124,11 @@ export const updateMe = mutation({
         removeAvatar: v.optional(v.boolean()),
     },
     handler: async (ctx, args) => {
-        const userId = await requireUserId(ctx)
         if (args.name === undefined && args.avatar === undefined && args.removeAvatar !== true) {
             throw new Error("Nothing to update: provide name or avatar")
         }
-        const profile = await ctx.db
-            .query("profiles")
-            .withIndex("by_auth_user", (q) => q.eq("authUserId", userId))
-            .unique()
-        const displayName = profile?.name ?? formatDisplayName(args.name ?? (await readAuthUser(ctx))?.email ?? "")
-        const avatar =
-            args.avatar !== undefined ? await resolveAvatarUpload(ctx, userId, displayName, args.avatar) : undefined
-        if (!profile) {
-            const authUser = await readAuthUser(ctx)
-            if (!authUser?.email) {
-                throw new Error("Profile not found: call ensureProfile first")
-            }
-            return ctx.db.insert("profiles", {
-                authUserId: userId,
-                name: displayName,
-                email: authUser.email,
-                ...(avatar !== undefined ? { avatar } : {}),
-                createdAt: Date.now(),
-            })
-        }
+        const profile = await profileForUpdate(ctx, args.name)
+        const avatar = args.avatar !== undefined ? await resolveAvatarUpload(ctx, profile._id, args.avatar) : undefined
         await ctx.db.patch(profile._id, {
             ...(args.name !== undefined ? { name: formatDisplayName(args.name) } : {}),
             ...(avatar !== undefined ? { avatar } : {}),

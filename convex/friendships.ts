@@ -1,101 +1,101 @@
 import { type GenericDatabaseReader, type GenericDatabaseWriter } from "convex/server"
 import { v } from "convex/values"
 
-import { type DataModel } from "./_generated/dataModel"
-import { type Doc } from "./_generated/dataModel"
+import { type DataModel, type Doc, type Id } from "./_generated/dataModel"
 import { internalMutation, mutation, query } from "./_generated/server"
-import { formatDisplayName, requireUserId } from "./helpers"
+import { getProfiles, nameOf, profileByEmail, requireProfile, signedInProfile } from "./model/identity/profiles"
 
 type FriendshipRow = Doc<"friendships">
+type ProfileId = Id<"profiles">
 
 async function findRow(
     db: GenericDatabaseReader<DataModel>,
-    ownerId: string,
-    friendAuthUserId: string,
+    ownerId: ProfileId,
+    friendId: ProfileId,
 ): Promise<FriendshipRow | null> {
     return db
         .query("friendships")
-        .withIndex("by_owner_friend", (q) => q.eq("ownerId", ownerId).eq("friendAuthUserId", friendAuthUserId))
+        .withIndex("by_owner_friend", (q) => q.eq("ownerId", ownerId).eq("friendId", friendId))
         .unique()
 }
 
-async function acceptPair(db: GenericDatabaseWriter<DataModel>, a: string, b: string): Promise<void> {
+async function acceptPair(db: GenericDatabaseWriter<DataModel>, a: ProfileId, b: ProfileId): Promise<void> {
     const existing = await findRow(db, a, b)
     if (existing) {
-        await db.patch(existing._id, { status: "accepted" })
+        await db.patch("friendships", existing._id, { status: "accepted" })
     } else {
-        await db.insert("friendships", { ownerId: a, friendAuthUserId: b, status: "accepted", createdAt: Date.now() })
+        await db.insert("friendships", { ownerId: a, friendId: b, status: "accepted" })
     }
     const mirror = await findRow(db, b, a)
     if (mirror) {
-        await db.patch(mirror._id, { status: "accepted" })
+        await db.patch("friendships", mirror._id, { status: "accepted" })
     } else {
-        await db.insert("friendships", { ownerId: b, friendAuthUserId: a, status: "accepted", createdAt: Date.now() })
+        await db.insert("friendships", { ownerId: b, friendId: a, status: "accepted" })
     }
+}
+
+async function requestOrAccept(
+    db: GenericDatabaseWriter<DataModel>,
+    me: ProfileId,
+    friendId: ProfileId,
+): Promise<Id<"friendships">> {
+    if (friendId === me) {
+        throw new Error("You cannot befriend yourself")
+    }
+    const incoming = await findRow(db, friendId, me)
+    if (incoming && incoming.status === "pending") {
+        await acceptPair(db, friendId, me)
+        return incoming._id
+    }
+    const existing = await findRow(db, me, friendId)
+    if (existing) {
+        return existing._id
+    }
+    return db.insert("friendships", { ownerId: me, friendId, status: "pending" })
 }
 
 export const requestFriend = mutation({
     args: {
-        friendAuthUserId: v.string(),
+        friendId: v.id("profiles"),
     },
     handler: async (ctx, args) => {
-        const userId = await requireUserId(ctx)
-        if (args.friendAuthUserId === userId) {
-            throw new Error("You cannot befriend yourself")
-        }
-        const profile = await ctx.db
-            .query("profiles")
-            .withIndex("by_auth_user", (q) => q.eq("authUserId", args.friendAuthUserId))
-            .unique()
-        if (!profile) {
+        const me = await requireProfile(ctx)
+        const friend = await ctx.db.get("profiles", args.friendId)
+        if (!friend) {
             throw new Error("User not found")
         }
-        const incoming = await findRow(ctx.db, args.friendAuthUserId, userId)
-        if (incoming && incoming.status === "pending") {
-            await acceptPair(ctx.db, args.friendAuthUserId, userId)
-            return incoming._id
-        }
-        const existing = await findRow(ctx.db, userId, args.friendAuthUserId)
-        if (existing) {
-            return existing._id
-        }
-        return ctx.db.insert("friendships", {
-            ownerId: userId,
-            friendAuthUserId: args.friendAuthUserId,
-            status: "pending",
-            createdAt: Date.now(),
-        })
+        return requestOrAccept(ctx.db, me._id, friend._id)
     },
 })
 
 export const acceptFriend = mutation({
     args: {
-        friendAuthUserId: v.string(),
+        friendId: v.id("profiles"),
     },
     handler: async (ctx, args) => {
-        const userId = await requireUserId(ctx)
-        const incoming = await findRow(ctx.db, args.friendAuthUserId, userId)
+        const me = await requireProfile(ctx)
+        const incoming = await findRow(ctx.db, args.friendId, me._id)
         if (!incoming) {
             throw new Error("No pending friend request")
         }
-        await acceptPair(ctx.db, args.friendAuthUserId, userId)
+        await acceptPair(ctx.db, args.friendId, me._id)
         return incoming._id
     },
 })
 
 export const removeFriend = mutation({
     args: {
-        friendAuthUserId: v.string(),
+        friendId: v.id("profiles"),
     },
     handler: async (ctx, args) => {
-        const userId = await requireUserId(ctx)
-        const existing = await findRow(ctx.db, userId, args.friendAuthUserId)
+        const me = await requireProfile(ctx)
+        const existing = await findRow(ctx.db, me._id, args.friendId)
         if (existing) {
-            await ctx.db.delete(existing._id)
+            await ctx.db.delete("friendships", existing._id)
         }
-        const mirror = await findRow(ctx.db, args.friendAuthUserId, userId)
+        const mirror = await findRow(ctx.db, args.friendId, me._id)
         if (mirror) {
-            await ctx.db.delete(mirror._id)
+            await ctx.db.delete("friendships", mirror._id)
         }
     },
 })
@@ -105,108 +105,72 @@ export const requestFriendByEmail = mutation({
         email: v.string(),
     },
     handler: async (ctx, args) => {
-        const userId = await requireUserId(ctx)
-        const address = args.email.trim()
-        if (address === "") {
+        const me = await requireProfile(ctx)
+        if (args.email.trim() === "") {
             throw new Error("Email is required")
         }
-        const exact = await ctx.db
-            .query("profiles")
-            .withIndex("by_email", (q) => q.eq("email", address))
-            .unique()
-        const lowered =
-            exact === null
-                ? await ctx.db
-                      .query("profiles")
-                      .withIndex("by_email", (q) => q.eq("email", address.toLowerCase()))
-                      .unique()
-                : null
-        const profile = exact ?? lowered
-        if (!profile) {
+        const friend = await profileByEmail(ctx.db, args.email)
+        if (!friend) {
             throw new Error("Nobody joined with that email yet")
         }
-        if (profile.authUserId === userId) {
-            throw new Error("You cannot befriend yourself")
-        }
-        const incoming = await findRow(ctx.db, profile.authUserId, userId)
-        if (incoming && incoming.status === "pending") {
-            await acceptPair(ctx.db, profile.authUserId, userId)
-            return incoming._id
-        }
-        const existing = await findRow(ctx.db, userId, profile.authUserId)
-        if (existing) {
-            return existing._id
-        }
-        return ctx.db.insert("friendships", {
-            ownerId: userId,
-            friendAuthUserId: profile.authUserId,
-            status: "pending",
-            createdAt: Date.now(),
-        })
+        return requestOrAccept(ctx.db, me._id, friend._id)
     },
 })
 
 export const listFriendRequests = query({
     args: {},
     handler: async (ctx) => {
-        const userId = await requireUserId(ctx)
+        const me = await signedInProfile(ctx)
+        if (!me) {
+            return { incoming: [], outgoing: [] }
+        }
         const [outgoingRows, incomingRows] = await Promise.all([
             ctx.db
                 .query("friendships")
-                .withIndex("by_owner", (q) => q.eq("ownerId", userId))
+                .withIndex("by_owner", (q) => q.eq("ownerId", me._id))
                 .collect(),
             ctx.db
                 .query("friendships")
-                .withIndex("by_friend", (q) => q.eq("friendAuthUserId", userId))
+                .withIndex("by_friend", (q) => q.eq("friendId", me._id))
                 .collect(),
         ])
         const outgoing = outgoingRows.filter((row) => row.status === "pending")
-        const incoming = incomingRows.filter((row) => row.status === "pending" && row.ownerId !== userId)
-        const nameOf = async (authUserId: string): Promise<string> => {
-            const profile = await ctx.db
-                .query("profiles")
-                .withIndex("by_auth_user", (q) => q.eq("authUserId", authUserId))
-                .unique()
-            return formatDisplayName(profile?.name)
-        }
+        const incoming = incomingRows.filter((row) => row.status === "pending" && row.ownerId !== me._id)
+        const names = await getProfiles(ctx.db, [
+            ...incoming.map((row) => row.ownerId),
+            ...outgoing.map((row) => row.friendId),
+        ])
         return {
-            incoming: await Promise.all(
-                incoming.map(async (row) => ({ authUserId: row.ownerId, name: await nameOf(row.ownerId) })),
-            ),
-            outgoing: await Promise.all(
-                outgoing.map(async (row) => ({
-                    authUserId: row.friendAuthUserId,
-                    name: await nameOf(row.friendAuthUserId),
-                })),
-            ),
+            incoming: incoming.map((row) => ({ profileId: row.ownerId, name: nameOf(names, row.ownerId) })),
+            outgoing: outgoing.map((row) => ({ profileId: row.friendId, name: nameOf(names, row.friendId) })),
         }
     },
 })
+
 export const listFriends = query({
     args: {},
     handler: async (ctx) => {
-        const userId = await requireUserId(ctx)
+        const me = await signedInProfile(ctx)
+        if (!me) {
+            return []
+        }
         const rows = await ctx.db
             .query("friendships")
-            .withIndex("by_owner", (q) => q.eq("ownerId", userId))
+            .withIndex("by_owner", (q) => q.eq("ownerId", me._id))
             .collect()
         const accepted = rows.filter((row) => row.status === "accepted")
-        return Promise.all(
-            accepted.map(async (row) => {
-                const profile = await ctx.db
-                    .query("profiles")
-                    .withIndex("by_auth_user", (q) => q.eq("authUserId", row.friendAuthUserId))
-                    .unique()
-                return { authUserId: row.friendAuthUserId, name: formatDisplayName(profile?.name) }
-            }),
+        const names = await getProfiles(
+            ctx.db,
+            accepted.map((row) => row.friendId),
         )
+        return accepted.map((row) => ({ profileId: row.friendId, name: nameOf(names, row.friendId) }))
     },
 })
 
 export const _ensurePair = internalMutation({
     args: {
-        a: v.string(),
-        b: v.string(),
+        a: v.id("profiles"),
+        b: v.id("profiles"),
     },
     handler: async (ctx, args) => {
         if (args.a === args.b) {

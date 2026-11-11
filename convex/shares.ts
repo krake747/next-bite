@@ -2,7 +2,8 @@ import { v } from "convex/values"
 
 import { type Doc, type Id } from "./_generated/dataModel"
 import { mutation, query, type MutationCtx } from "./_generated/server"
-import { FALLBACK_GROUP_NAME, requireMembership, requireOwnedRestaurant, requireUserId } from "./helpers"
+import { FALLBACK_GROUP_NAME, requireMembership, requireOwnedRestaurant, withOwnerNames } from "./helpers"
+import { requireProfile, signedInProfile } from "./model/identity/profiles"
 import { shareTargetValidator } from "./validators"
 
 type GroupTarget = Doc<"restaurantShares">["target"]
@@ -10,7 +11,7 @@ type GroupTarget = Doc<"restaurantShares">["target"]
 async function upsertShare(
     ctx: MutationCtx,
     restaurantId: Id<"restaurants">,
-    sharedBy: string,
+    sharedBy: Id<"profiles">,
     target: GroupTarget,
 ): Promise<Id<"restaurantShares">> {
     const existing = await ctx.db
@@ -26,7 +27,6 @@ async function upsertShare(
         sharedBy,
         target,
         targetGroupId: target.groupId,
-        createdAt: Date.now(),
     })
 }
 
@@ -36,8 +36,8 @@ export const shareWithGroup = mutation({
         groupId: v.id("groups"),
     },
     handler: async (ctx, args) => {
-        const userId = await requireUserId(ctx)
-        const restaurant = await requireOwnedRestaurant(ctx, args.restaurantId)
+        const userId = (await requireProfile(ctx))._id
+        const restaurant = await requireOwnedRestaurant(ctx.db, args.restaurantId, userId)
         await requireMembership(ctx.db, args.groupId, userId)
         return upsertShare(ctx, args.restaurantId, restaurant.ownerId, { kind: "group", groupId: args.groupId })
     },
@@ -49,7 +49,7 @@ export const unshare = mutation({
         target: shareTargetValidator,
     },
     handler: async (ctx, args) => {
-        await requireOwnedRestaurant(ctx, args.restaurantId)
+        await requireOwnedRestaurant(ctx.db, args.restaurantId, (await requireProfile(ctx))._id)
         const existing = await ctx.db
             .query("restaurantShares")
             .withIndex("by_restaurant", (q) => q.eq("restaurantId", args.restaurantId))
@@ -68,7 +68,7 @@ export const listShares = query({
         restaurantId: v.id("restaurants"),
     },
     handler: async (ctx, args) => {
-        await requireOwnedRestaurant(ctx, args.restaurantId)
+        await requireOwnedRestaurant(ctx.db, args.restaurantId, (await requireProfile(ctx))._id)
         const shares = await ctx.db
             .query("restaurantShares")
             .withIndex("by_restaurant", (q) => q.eq("restaurantId", args.restaurantId))
@@ -87,13 +87,19 @@ export const listForGroup = query({
         groupId: v.id("groups"),
     },
     handler: async (ctx, args) => {
-        const userId = await requireUserId(ctx)
-        await requireMembership(ctx.db, args.groupId, userId)
+        const me = await signedInProfile(ctx)
+        if (!me) {
+            return []
+        }
+        await requireMembership(ctx.db, args.groupId, me._id)
         const shares = await ctx.db
             .query("restaurantShares")
             .withIndex("by_target_group", (q) => q.eq("targetGroupId", args.groupId))
             .collect()
         const restaurants = await Promise.all(shares.map(async (share) => ctx.db.get(share.restaurantId)))
-        return restaurants.filter((restaurant) => restaurant !== null)
+        return withOwnerNames(
+            ctx.db,
+            restaurants.filter((restaurant) => restaurant !== null),
+        )
     },
 })

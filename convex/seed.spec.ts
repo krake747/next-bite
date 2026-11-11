@@ -20,7 +20,7 @@ describe("preview seed", () => {
             "preview-owner@example.com",
             "preview-friend@example.com",
         ])
-        const [ownerId, friendId] = first.users.map((user) => user.authUserId)
+        const [ownerId, friendId] = first.users.map((user) => user.profileId)
         expect(ownerId).not.toBe(friendId)
 
         expect(first.restaurants.map((place) => place.slug)).toEqual([
@@ -30,8 +30,8 @@ describe("preview seed", () => {
         ])
 
         expect(first.group.name).toBe("Preview dinner club")
-        expect(first.group.memberAuthUserIds).toHaveLength(2)
-        expect(first.group.memberAuthUserIds).toEqual(expect.arrayContaining([ownerId, friendId]))
+        expect(first.group.memberProfileIds).toHaveLength(2)
+        expect(first.group.memberProfileIds).toEqual(expect.arrayContaining([ownerId, friendId]))
 
         const second = await t.mutation(internal.seed.previewBaseline, {})
         expect(second).toEqual(first)

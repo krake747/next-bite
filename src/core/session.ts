@@ -8,9 +8,11 @@ import {
     useConvexQuery,
     useSuspenseConvexQuery,
 } from "@api/convex.context"
+import { type Doc } from "@api/data.model"
 import { api } from "@api/endpoints"
 
 import { expireGate, gatePhase, openGate, settleGate, type ConvexGate, type GatePhase } from "./session.gate"
+import { type Viewer } from "./social.counts"
 
 const CONVEX_AUTH_TIMEOUT_MS = 10000
 
@@ -121,6 +123,21 @@ export const useAuth = useAuthContext
 export const useMyProfile = () => useSuspenseConvexQuery(api.users.getMe)
 
 export const useUpdateProfile = () => useConvexMutation(api.users.updateMe)
+
+export function useViewerProfile(): Doc<"profiles"> | undefined {
+    const status = useSessionStatus()
+    const me = useConvexQuery(api.users.getMe, undefined, { skip: status.kind !== "ready" })
+    return me?.status === "ready" ? me.profile : undefined
+}
+
+export function useViewer(): Viewer {
+    const profile = useViewerProfile()
+    return profile === undefined ? { kind: "signed-out" } : { kind: "signed-in", id: profile._id }
+}
+
+export function isViewer(viewer: Viewer, id: string): boolean {
+    return viewer.kind === "signed-in" && viewer.id === id
+}
 
 export function useEnsureProfile(): void {
     const auth = useAuthContext()

@@ -75,7 +75,17 @@
         "rules": [
             {
                 "from": "core",
-                "allow": ["core", "api", "convex", "convex-shared"]
+                "allow": [
+                    "core",
+                    "api",
+                    "convex",
+                    "convex-shared",
+                    "model-identity",
+                    "model-social",
+                    "model-groups",
+                    "model-places",
+                    "model-plans"
+                ]
             },
             {
                 "from": "api",
@@ -105,19 +115,19 @@
             },
             {
                 "from": "model-identity",
-                "allow": ["convex-shared", "model-identity"]
+                "allow": ["convex-shared", "model-identity", "core"]
             },
             {
                 "from": "model-social",
-                "allow": ["convex-shared", "model-identity", "model-social"]
+                "allow": ["convex-shared", "model-identity", "model-social", "core"]
             },
             {
                 "from": "model-groups",
-                "allow": ["convex-shared", "model-identity", "model-social", "model-groups"]
+                "allow": ["convex-shared", "model-identity", "model-social", "model-groups", "core"]
             },
             {
                 "from": "model-places",
-                "allow": ["convex-shared", "model-identity", "model-social", "model-groups", "model-places"]
+                "allow": ["convex-shared", "model-identity", "model-social", "model-groups", "model-places", "core"]
             },
             {
                 "from": "model-plans",
@@ -127,7 +137,8 @@
                     "model-social",
                     "model-groups",
                     "model-places",
-                    "model-plans"
+                    "model-plans",
+                    "core"
                 ]
             },
             {

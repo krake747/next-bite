@@ -3,7 +3,7 @@ import { useState } from "react"
 import { type Id } from "@api/data.model"
 import { clearError, errorFrom, type FormError } from "@core/outcome"
 import { useCreatePlan, usePlansForGroup, usePlansForRestaurant, useUpdatePlanStatus } from "@core/plans"
-import { useAuth } from "@core/session"
+import { useAuth, isViewer, useViewer } from "@core/session"
 import { LoadingPlaceholder } from "@pattern/loading"
 import { Button } from "@ui/button"
 
@@ -83,7 +83,7 @@ function PlanList({
                 <PlanCard
                     key={plan._id}
                     plan={plan}
-                    canUpdate={viewer.kind === "signed-in" && plan.createdBy === viewer.id}
+                    canUpdate={isViewer(viewer, plan.createdBy)}
                     onUpdateError={onUpdateError}
                 />
             ))}
@@ -104,9 +104,7 @@ export function PlanSection({
     const [error, setError] = useState<FormError>(clearError)
 
     const plans = groupId === undefined ? restaurantPlans : groupPlans
-    const userId = auth.user?.id
-    const viewer: { readonly kind: "signed-in"; readonly id: string } | { readonly kind: "signed-out" } =
-        userId !== undefined && userId !== "" ? { kind: "signed-in", id: userId } : { kind: "signed-out" }
+    const viewer = useViewer()
 
     if (!auth.isAuthenticated) {
         return null

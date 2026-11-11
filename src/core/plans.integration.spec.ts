@@ -22,6 +22,14 @@ async function registerUser(t: TestConvexForDataModel<DataModel>, subject: strin
     await asUser(t, subject).mutation(api.users.ensureProfile, { email, name: subject })
 }
 
+async function idOf(t: TestConvexForDataModel<DataModel>, subject: string): Promise<Id<"profiles">> {
+    const me = await asUser(t, subject).query(api.users.getMe, {})
+    if (me.status !== "ready") {
+        throw new Error(`No profile for ${subject}`)
+    }
+    return me.profile._id
+}
+
 async function befriend(t: TestConvexForDataModel<DataModel>, a: string, b: string): Promise<void> {
     const token = await asUser(t, a).mutation(api.invitations.createInvite, { target: { kind: "friend" } })
     await asUser(t, b).mutation(api.invitations.acceptInvite, { token })
@@ -50,14 +58,16 @@ describe("bounded meal planning", () => {
             groupId,
             title: "Friday dinner",
             date: Date.now() + 86400000,
-            participantIds: ["ben"],
+            participantIds: [await idOf(t, "ben")],
         })
         expect(planId).toBeDefined()
 
         const plans = await asUser(t, "ben").query(api.plans.listPlansForGroup, { groupId })
         expect(plans).toHaveLength(1)
         expect(plans[0]?.title).toBe("Friday dinner")
-        expect(plans[0]?.participants.map((p) => p.userId).toSorted()).toEqual(["anna", "ben"])
+        expect(plans[0]?.participants.map((p) => p.userId).toSorted()).toEqual(
+            [await idOf(t, "anna"), await idOf(t, "ben")].toSorted(),
+        )
     })
 
     test("non-members cannot create or read group plans", async () => {
@@ -100,7 +110,7 @@ describe("bounded meal planning", () => {
             restaurantId,
             title: "Catch-up dinner",
             date: Date.now() + 86400000,
-            participantIds: ["ben"],
+            participantIds: [await idOf(t, "ben")],
         })
         expect(planId).toBeDefined()
 
@@ -109,7 +119,7 @@ describe("bounded meal planning", () => {
                 restaurantId,
                 title: "Stranger dinner",
                 date: Date.now() + 86400000,
-                participantIds: ["cas"],
+                participantIds: [await idOf(t, "cas")],
             }),
         ).rejects.toThrow("friend")
 

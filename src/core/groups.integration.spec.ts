@@ -41,6 +41,6 @@ describe("leaving a group", () => {
         )
         const view = await asUser(t, "anna").query(api.groups.getGroup, { groupId })
         expect(view?.isOwner).toBe(true)
-        expect(view?.members.map((m) => m.userId)).toEqual(["anna"])
+        expect(view?.members.map((m) => m.name)).toEqual(["anna"])
     })
 })

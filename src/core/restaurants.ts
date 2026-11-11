@@ -5,7 +5,7 @@ import { useEffect, useRef, useState } from "react"
 
 import { getConvexSessionToken } from "@api/auth.sdk"
 import { useConvexClient, useConvexMutation, useConvexAction } from "@api/convex.context"
-import { type Doc, type Id } from "@api/data.model"
+import { type Id } from "@api/data.model"
 import {
     applyUpdateArgsToDraft,
     assertRealRestaurantId,
@@ -18,14 +18,14 @@ import {
     publishReadySession,
     resolveRestaurantIdByKey,
     type RestaurantAddArgs,
+    type RestaurantDoc,
     type RestaurantUpdateArgs,
 } from "@api/db/restaurants"
 import { api } from "@api/endpoints"
 
-import { FALLBACK_DISPLAY_NAME } from "./constants"
 import { env } from "./env"
 import { parseImageRecord, type ImageRecord } from "./schemas"
-import { retrySessionGate, useAuth, useSessionKey } from "./session"
+import { retrySessionGate, useSessionKey, useViewerProfile } from "./session"
 
 export class CollectionSyncError extends Error {
     constructor() {
@@ -61,7 +61,7 @@ function useSessionSyncRecovery(
     return exhausted
 }
 
-type Rows = ReadonlyArray<Doc<"restaurants">>
+type Rows = ReadonlyArray<RestaurantDoc>
 type SettledRows = { readonly sessionKey: string; readonly rows: Rows }
 type LiveRead = Readonly<{ status: string; isLoadingError: boolean; isSyncError: boolean }>
 
@@ -146,19 +146,20 @@ export const useFeedRestaurants = () => useOwnerOrFeed("feed")
 
 export function useAddRestaurantWithHours() {
     const client = useConvexClient()
-    const auth = useAuth()
+    const sessionKey = useSessionKey()
+    const profile = useViewerProfile()
     return useMutation(
         mutationOptions({
             mutationFn: async (args: RestaurantAddArgs): Promise<Id<"restaurants">> => {
-                if (client === null || !auth.isAuthenticated || auth.user === null) {
+                if (client === null || sessionKey === null || profile === undefined) {
                     throw new Error("Sign in to add restaurants")
                 }
-                const collections = getSessionCollections(client, persistCallerFor(client), auth.user.id)
+                const collections = getSessionCollections(client, persistCallerFor(client), sessionKey)
                 // See ADR-0002: persisted key makes retries idempotent.
                 const clientMutationId = args.clientMutationId ?? crypto.randomUUID()
                 const temp = buildTempRestaurant({
-                    ownerId: auth.user.id,
-                    ownerName: auth.user.name ?? FALLBACK_DISPLAY_NAME,
+                    ownerId: profile._id,
+                    ownerName: profile.name,
                     ...args,
                     clientMutationId,
                 })
@@ -251,4 +252,4 @@ export function useUploadImage() {
 
 export type { ImageRecord } from "./schemas"
 
-export type Restaurant = Doc<"restaurants">
+export type Restaurant = RestaurantDoc
