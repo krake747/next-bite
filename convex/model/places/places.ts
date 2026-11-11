@@ -131,6 +131,32 @@ export async function createPlaceRecord(
     return placeId
 }
 
+export async function isPlaceInGroup(
+    db: GenericDatabaseReader<DataModel>,
+    groupId: Id<"groups">,
+    placeId: Id<"places">,
+): Promise<boolean> {
+    const link = await db
+        .query("groupPlaces")
+        .withIndex("by_group_place", (q) => q.eq("groupId", groupId).eq("placeId", placeId))
+        .unique()
+    return link !== null
+}
+
+export async function placeNames(
+    db: GenericDatabaseReader<DataModel>,
+    ids: ReadonlyArray<Id<"places">>,
+): Promise<ReadonlyMap<Id<"places">, string>> {
+    const unique = [...new Set(ids)]
+    const places = await Promise.all(unique.map(async (id) => db.get("places", id)))
+    return new Map(
+        unique.flatMap((id, index) => {
+            const place = places[index]
+            return place === undefined || place === null ? [] : [[id, place.name] as const]
+        }),
+    )
+}
+
 export async function canViewPlace(
     db: GenericDatabaseReader<DataModel>,
     viewerId: ProfileId,

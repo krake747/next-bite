@@ -7,8 +7,8 @@ Product terms: Restaurant, Save, Cuisine, Location, Opening Hours. Defined in `G
 - `home.tsx`: river of own restaurants plus friends restaurants, composed from `RestaurantCard` and
   `ActivityPost`.
 - `add.tsx`: creation entry.
-- `restaurants.$restaurantId.tsx`: detail view with edit form, gallery, opening hours, interest
-  buttons, share dialog, and plans.
+- `restaurants.$restaurantId.tsx`: detail view with gallery, live opening hours, and interest
+  buttons.
 
 ## UI (`src/features/restaurants/`)
 

@@ -8,7 +8,6 @@ import { api } from "@api/endpoints"
 import { type Restaurant } from "@core/restaurants"
 import { useToggleWant } from "@core/saves"
 import { useAuth } from "@core/session"
-import { PlanSection } from "@features/plans/plans"
 import { OpeningHoursDialog } from "@features/restaurants/opening-hours-dialog"
 import { type OpeningHours } from "@features/restaurants/opening-hours-utils"
 import { RestaurantGallery } from "@features/restaurants/restaurant-gallery"
@@ -195,7 +194,6 @@ function RestaurantDetailView() {
             <div className="mx-auto max-w-3xl space-y-6 pt-4 lg:max-w-5xl">
                 <DetailHero restaurant={restaurant} />
                 <DetailPhotos photos={restaurant.photos} />
-                <PlanSection placeId={restaurant._id} />
             </div>
         </PageContainer>
     )
