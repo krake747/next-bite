@@ -33,8 +33,10 @@ export const inputMeta = {
         },
     ],
     guidance: {
-        whenToUse: "Collect a single line of text with a visible label next to it.",
-        whenToAvoid: "Do not use for long text, choices, or dates; those get their own controls.",
+        whenToUse:
+            "Collect a single line of text with a visible label next to it. The control style carries border, focus, and disabled states, so pass only layout classes.",
+        whenToAvoid:
+            "Do not use for long text, choices, or dates; those get their own controls. Never use the placeholder as the label; the label stays visible.",
     },
 } as const
 

@@ -42,7 +42,8 @@ export const collapsibleMeta = {
     ],
     guidance: {
         whenToUse: "Tuck secondary detail behind a toggle inside a page or card.",
-        whenToAvoid: "Do not use for navigation or for content the user must see; hidden content is skipped content.",
+        whenToAvoid:
+            "Do not use for navigation or for content the user must see; hidden content is skipped content. For peer views that switch in place, use Tabs.",
     },
 } as const
 

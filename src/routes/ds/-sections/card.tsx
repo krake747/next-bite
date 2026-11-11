@@ -27,8 +27,10 @@ export const cardMeta = {
         },
     ],
     guidance: {
-        whenToUse: "Group related content that belongs together on a page or in a list.",
-        whenToAvoid: "Do not nest cards; split the group instead of stacking surfaces.",
+        whenToUse:
+            "Group related content that belongs together on a page or in a list. One radius, one border, one soft shadow; padding comes from layout classes on the content.",
+        whenToAvoid:
+            "Do not nest cards; split the group instead of stacking surfaces. Do not rebuild the surface with custom borders or shadows; if Card cannot hold it, use a plain section.",
     },
 } as const
 

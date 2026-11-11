@@ -40,8 +40,10 @@ export const badgeMeta = {
         { name: "outline", description: "Quiet metadata on busy surfaces." },
     ],
     guidance: {
-        whenToUse: "Label status or category inline where a full row would be too much.",
-        whenToAvoid: "Do not use for actions or navigation; badges are read-only marks.",
+        whenToUse:
+            "Label status or category inline where a full row would be too much. Pick the tone by meaning: neutral for metadata, brand for the house pick, success for settled states, accent for highlights, outline on busy surfaces.",
+        whenToAvoid:
+            "Do not use for actions or navigation; badges are read-only marks, so buttons and links keep their own primitives. Never invent a color with className; if no tone fits, the design needs a new tone, not a one-off.",
     },
 } as const
 

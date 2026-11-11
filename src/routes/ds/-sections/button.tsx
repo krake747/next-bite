@@ -46,8 +46,10 @@ export const buttonMeta = {
         { name: "destructive", description: "An action that deletes or removes. Nothing else." },
     ],
     guidance: {
-        whenToUse: "Trigger an action the user chose, exactly one primary per view.",
-        whenToAvoid: "Do not use for navigation that looks like a link; pass render with a link instead.",
+        whenToUse:
+            "Trigger an action the user chose, exactly one primary per view. Step down the tone map with intent: primary starts the main flow, secondary supports it, outline and ghost recede, destructive deletes and nothing else.",
+        whenToAvoid:
+            "Do not use for navigation, even when the destination should look like a button; ButtonLink keeps link semantics with button styling, and TextLink serves links inside sentences. Never restyle a Button with custom classes to fake a new tone; pick the closest tone.",
     },
 } as const
 

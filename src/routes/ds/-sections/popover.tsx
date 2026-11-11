@@ -49,8 +49,10 @@ export const popoverMeta = {
         { name: "avatar", description: "A circular trigger for people." },
     ],
     guidance: {
-        whenToUse: "Preview detail the user asked for, such as hours or a mini profile.",
-        whenToAvoid: "Do not use for tasks with actions; that is a dialog. Keep panels short.",
+        whenToUse:
+            "Preview detail the user asked for, such as hours or a mini profile. Match the trigger tone to its context: plain for rows, tinted to invite a tap, card for full-width rows, avatar for people.",
+        whenToAvoid:
+            "Do not use for tasks with actions; that is a Dialog. Keep panels short and free of interactive content; anything needing buttons or inputs gets a Dialog or a page.",
     },
 } as const
 
