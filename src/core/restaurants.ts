@@ -5,7 +5,7 @@ import { useEffect, useRef, useState } from "react"
 
 import { getConvexSessionToken } from "@api/auth.sdk"
 import { useConvexClient, useConvexMutation, useConvexAction } from "@api/convex.context"
-import { type Id } from "@api/data.model"
+import { type Doc, type Id } from "@api/data.model"
 import {
     applyUpdateArgsToDraft,
     assertRealRestaurantId,
@@ -144,6 +144,17 @@ export function preloadHomeCollections(queryClient: QueryClient): void {
 export const useRestaurants = () => useOwnerOrFeed("owner")
 export const useFeedRestaurants = () => useOwnerOrFeed("feed")
 
+async function resolveOwnerProfile(
+    client: ConvexReactClient,
+    cached: Doc<"profiles"> | undefined,
+): Promise<Doc<"profiles"> | undefined> {
+    if (cached !== undefined) {
+        return cached
+    }
+    const me = await client.query(api.users.getMe, {})
+    return me.status === "ready" ? me.profile : undefined
+}
+
 export function useAddRestaurantWithHours() {
     const client = useConvexClient()
     const sessionKey = useSessionKey()
@@ -151,15 +162,19 @@ export function useAddRestaurantWithHours() {
     return useMutation(
         mutationOptions({
             mutationFn: async (args: RestaurantAddArgs): Promise<Id<"restaurants">> => {
-                if (client === null || sessionKey === null || profile === undefined) {
+                if (client === null || sessionKey === null) {
+                    throw new Error("Sign in to add restaurants")
+                }
+                const owner = await resolveOwnerProfile(client, profile)
+                if (owner === undefined) {
                     throw new Error("Sign in to add restaurants")
                 }
                 const collections = getSessionCollections(client, persistCallerFor(client), sessionKey)
                 // See ADR-0002: persisted key makes retries idempotent.
                 const clientMutationId = args.clientMutationId ?? crypto.randomUUID()
                 const temp = buildTempRestaurant({
-                    ownerId: profile._id,
-                    ownerName: profile.name,
+                    ownerId: owner._id,
+                    ownerName: owner.name,
                     ...args,
                     clientMutationId,
                 })
