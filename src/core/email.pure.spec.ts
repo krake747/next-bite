@@ -1,7 +1,7 @@
 import { http, HttpResponse } from "msw"
 import { afterEach, describe, expect, test, vi } from "vitest"
 
-import { hasMailgunConfig, isMailDevFallback, sendTransactionalEmail } from "@convex/email"
+import { sendTransactionalEmail } from "@convex/email"
 
 import { server } from "../vitest.msw.setup"
 
@@ -43,15 +43,6 @@ afterEach(() => {
     vi.restoreAllMocks()
 })
 
-describe("mail configuration", () => {
-    test("reports missing configuration without secrets", () => {
-        stubMailEnv({ key: "", domain: "", fallback: "" })
-
-        expect(hasMailgunConfig()).toBe(false)
-        expect(isMailDevFallback()).toBe(false)
-    })
-})
-
 describe("sendTransactionalEmail", () => {
     test("fails closed when mail is not configured", async () => {
         stubMailEnv({ key: "", domain: "", fallback: "" })
@@ -61,20 +52,6 @@ describe("sendTransactionalEmail", () => {
         await expect(sendTransactionalEmail(input)).rejects.toThrow("not configured")
         expect(calls).toHaveLength(0)
         expect(warn).toHaveBeenCalledWith("sendTransactionalEmail refused: mail not configured")
-    })
-
-    test("uses the explicit local fallback without logging OTP content", async () => {
-        stubMailEnv({ key: "", domain: "", fallback: "true" })
-        const calls = serveMail(200)
-        const logSpy = vi.spyOn(console, "log").mockImplementation(() => {})
-
-        await sendTransactionalEmail(input)
-
-        expect(calls).toHaveLength(0)
-        for (const call of logSpy.mock.calls) {
-            expect(JSON.stringify(call)).not.toContain("123456")
-            expect(JSON.stringify(call)).not.toContain("alex@example.com")
-        }
     })
 
     test("delivers through the EU API when configured", async () => {

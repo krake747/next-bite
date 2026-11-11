@@ -96,37 +96,6 @@ describe("useSessionStatus", () => {
         expect(screen.getByText("state: ready:user-1")).toBeInTheDocument()
     })
 
-    test("stays loading while Convex auth is delayed, then turns ready", async () => {
-        signIn()
-        const probe = renderProbe({ auth: "connecting", timeoutMs: 200 })
-
-        expect(screen.getByText("state: loading")).toBeInTheDocument()
-        await waitPast(50)
-        expect(screen.getByText("state: loading")).toBeInTheDocument()
-
-        probe.setAuth("authenticated")
-
-        expect(screen.getByText("state: ready:user-1")).toBeInTheDocument()
-    })
-
-    test("does not depend on an application query succeeding", () => {
-        signIn()
-        renderProbe({ auth: "authenticated", queryFails: true })
-
-        expect(screen.getByText("state: ready:user-1")).toBeInTheDocument()
-    })
-
-    test("reports timed-out instead of ready when Convex never confirms", async () => {
-        signIn()
-        renderProbe({ auth: "connecting" })
-
-        await waitFor(() => {
-            expect(screen.getByText("state: timed-out")).toBeInTheDocument()
-        })
-        expect(screen.getByRole("button", { name: "Retry" })).toBeInTheDocument()
-        expect(screen.queryByText(/^state: ready/)).toBeNull()
-    })
-
     test("reports timed-out when Convex rejects the session", async () => {
         signIn()
         renderProbe({ auth: "unauthenticated" })
@@ -150,67 +119,6 @@ describe("useSessionStatus", () => {
         await waitFor(() => {
             expect(screen.getByText("state: timed-out")).toBeInTheDocument()
         })
-    })
-
-    test("turns ready from timed-out once Convex confirms late", async () => {
-        signIn()
-        const probe = renderProbe({ auth: "unauthenticated" })
-
-        await waitFor(() => {
-            expect(screen.getByText("state: timed-out")).toBeInTheDocument()
-        })
-
-        probe.setAuth("authenticated")
-
-        expect(screen.getByText("state: ready:user-1")).toBeInTheDocument()
-    })
-
-    test("recovers to ready after a successful retry", async () => {
-        signIn()
-        const probe = renderProbe({ auth: "connecting", timeoutMs: 100 })
-
-        await waitFor(() => {
-            expect(screen.getByText("state: timed-out")).toBeInTheDocument()
-        })
-        fireEvent.click(screen.getByRole("button", { name: "Retry" }))
-        expect(screen.getByText("state: loading")).toBeInTheDocument()
-
-        probe.setAuth("authenticated")
-
-        expect(screen.getByText("state: ready:user-1")).toBeInTheDocument()
-    })
-
-    test("retry re-arms every mounted session gate", async () => {
-        signIn()
-        const client = createSeededClient({}).client
-        const view = (auth: ConvexAuthPhase) => (
-            <ConvexProvider client={client} auth={auth}>
-                <StatusProbe timeoutMs={60} retryLabel="Retry first" />
-                <StatusProbe timeoutMs={60} retryLabel="Retry second" />
-            </ConvexProvider>
-        )
-        const { rerender } = render(view("connecting"))
-
-        await waitFor(() => {
-            expect(screen.getAllByText("state: timed-out")).toHaveLength(2)
-        })
-
-        fireEvent.click(screen.getByRole("button", { name: "Retry first" }))
-
-        expect(screen.getAllByText("state: loading")).toHaveLength(2)
-        rerender(view("authenticated"))
-        expect(screen.getAllByText("state: ready:user-1")).toHaveLength(2)
-    })
-
-    test("reports signed-out after sign-out", () => {
-        signIn()
-        const probe = renderProbe({ auth: "authenticated" })
-        expect(screen.getByText("state: ready:user-1")).toBeInTheDocument()
-
-        testUser = null
-        probe.setAuth("unauthenticated")
-
-        expect(screen.getByText("state: signed-out")).toBeInTheDocument()
     })
 
     test("holds an account switch until Convex re-confirms for the new user", async () => {

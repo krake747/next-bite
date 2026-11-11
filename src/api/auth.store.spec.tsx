@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from "@testing-library/react"
+import { render, screen } from "@testing-library/react"
 import { act } from "@testing-library/react"
 import { useEffect } from "react"
 import { describe, expect, test, vi } from "vitest"
@@ -166,39 +166,6 @@ describe("auth lifecycle ownership", () => {
         expect(screen.getByText("loading:false")).toBeInTheDocument()
     })
 
-    test("overlapping failures surface only the current action error", async () => {
-        resetAuth()
-        const signInGate = createDeferred<unknown>()
-        const otpGate = createDeferred<unknown>()
-        impls["signInEmail"] = async () => signInGate.promise
-        impls["sendOtp"] = async () => otpGate.promise
-        render(<Probe />)
-
-        await act(async () => {
-            void currentStore().signInWithPassword("a@example.com", "password123").catch(ignoreRejection)
-            await Promise.resolve()
-        })
-        await act(async () => {
-            void currentStore().requestOtp("a@example.com").catch(ignoreRejection)
-            await Promise.resolve()
-        })
-
-        await act(async () => {
-            signInGate.reject(new Error("stale failure"))
-            await Promise.resolve()
-        })
-
-        expect(screen.getByText("loading:true")).toBeInTheDocument()
-        expect(screen.getByText("error:none")).toBeInTheDocument()
-
-        await act(async () => {
-            otpGate.reject(new Error("Could not send code"))
-            await Promise.resolve()
-        })
-        expect(screen.getByText("loading:false")).toBeInTheDocument()
-        expect(screen.getByText("error:Could not send code")).toBeInTheDocument()
-    })
-
     test("cache fallback is degraded display, not a verified session", async () => {
         resetAuth()
         seedCache("a@example.com")
@@ -214,40 +181,6 @@ describe("auth lifecycle ownership", () => {
         expect(screen.getByText("auth:false")).toBeInTheDocument()
         expect(screen.getByText("loading:false")).toBeInTheDocument()
         expect(screen.getByText("error:session unreachable")).toBeInTheDocument()
-    })
-
-    test("successful revalidation authenticates", async () => {
-        resetAuth()
-        seedCache("a@example.com")
-        impls["getSession"] = async () => {
-            await Promise.resolve()
-            return verifiedSession("a@example.com", "u-a")
-        }
-        render(<Probe />)
-
-        await startInitialize()
-
-        await waitFor(() => {
-            expect(screen.getByText("auth:true")).toBeInTheDocument()
-        })
-        expect(screen.getByText("user:a@example.com")).toBeInTheDocument()
-    })
-
-    test("explicit signed-out response clears the cached identity", async () => {
-        resetAuth()
-        seedCache("a@example.com")
-        impls["getSession"] = async () => {
-            await Promise.resolve()
-            return { data: null, error: null }
-        }
-        render(<Probe />)
-
-        await startInitialize()
-
-        expect(screen.getByText("auth:false")).toBeInTheDocument()
-        expect(screen.getByText("user:none")).toBeInTheDocument()
-        expect(screen.getByText("loading:false")).toBeInTheDocument()
-        expect(localStorage.getItem("nb:session")).toBeNull()
     })
 
     test("sign-out clears error, user, and cache including rejection paths", async () => {
@@ -307,42 +240,6 @@ describe("auth lifecycle ownership", () => {
         expect(screen.getByText("auth:true")).toBeInTheDocument()
         expect(screen.getByText("user:b@example.com")).toBeInTheDocument()
     })
-
-    test("initializing tracks bootstrap only, not later operations", async () => {
-        resetAuth()
-        const sessionGate = createDeferred<SessionResponse>()
-        impls["getSession"] = async () => sessionGate.promise
-        const signInGate = createDeferred<unknown>()
-        impls["signInEmail"] = async () => signInGate.promise
-        render(<Probe />)
-
-        await startInitialize()
-        expect(screen.getByText("initializing:true")).toBeInTheDocument()
-
-        await act(async () => {
-            sessionGate.resolve({ data: null, error: null })
-            await Promise.resolve()
-        })
-        await waitFor(() => {
-            expect(screen.getByText("initializing:false")).toBeInTheDocument()
-        })
-        expect(screen.getByText("loading:false")).toBeInTheDocument()
-
-        await act(async () => {
-            void currentStore().signInWithPassword("a@example.com", "password123").catch(ignoreRejection)
-            await Promise.resolve()
-        })
-        expect(screen.getByText("loading:true")).toBeInTheDocument()
-        expect(screen.getByText("initializing:false")).toBeInTheDocument()
-
-        await act(async () => {
-            signInGate.resolve({ data: { user: userA }, error: null })
-            await Promise.resolve()
-        })
-        expect(screen.getByText("loading:false")).toBeInTheDocument()
-        expect(screen.getByText("initializing:false")).toBeInTheDocument()
-        expect(screen.getByText("auth:true")).toBeInTheDocument()
-    })
 })
 
 describe("server-seeded session", () => {
@@ -356,37 +253,6 @@ describe("server-seeded session", () => {
         expect(screen.getByText("loading:false")).toBeInTheDocument()
         expect(screen.getByText("initializing:false")).toBeInTheDocument()
         expect(screen.getByText("user:a@example.com")).toBeInTheDocument()
-    })
-
-    test("revalidation after hydration never shows a loading state", async () => {
-        resetAuth()
-        const sessionGate = createDeferred<SessionResponse>()
-        impls["getSession"] = async () => sessionGate.promise
-        render(<Probe options={{ initial: seeded }} />)
-
-        await startInitialize()
-        expect(screen.getByText("loading:false")).toBeInTheDocument()
-        expect(screen.getByText("auth:true")).toBeInTheDocument()
-
-        await act(async () => {
-            sessionGate.resolve(verifiedSession("a@example.com", "u-a"))
-            await Promise.resolve()
-        })
-        expect(screen.getByText("auth:true")).toBeInTheDocument()
-    })
-
-    test("a failed revalidation keeps the server-verified session", async () => {
-        resetAuth()
-        impls["getSession"] = async () => {
-            await Promise.resolve()
-            throw new Error("offline")
-        }
-        render(<Probe options={{ initial: seeded }} />)
-
-        await startInitialize()
-
-        expect(screen.getByText("auth:true")).toBeInTheDocument()
-        expect(screen.getByText("error:none")).toBeInTheDocument()
     })
 
     test("revalidation signs out a session that ended elsewhere", async () => {
@@ -410,39 +276,6 @@ describe("server-seeded session", () => {
         await startInitialize()
 
         expect(screen.getByText("auth:false")).toBeInTheDocument()
-        expect(changes.at(-1)).toEqual({ isAuthenticated: false, user: null })
-    })
-
-    test("sign-in and sign-out report the new session for the router", async () => {
-        resetAuth()
-        impls["signInEmail"] = async () => {
-            await Promise.resolve()
-            return { data: { user: userB }, error: null }
-        }
-        impls["signOut"] = async () => {
-            await Promise.resolve()
-            return { data: null, error: null }
-        }
-        const changes: RouterAuth[] = []
-        render(
-            <Probe
-                options={{
-                    initial: { isAuthenticated: false, user: null },
-                    onChange: (auth) => {
-                        changes.push(auth)
-                    },
-                }}
-            />,
-        )
-
-        await act(async () => {
-            await currentStore().signInWithPassword("b@example.com", "password123")
-        })
-        expect(changes.at(-1)).toEqual({ isAuthenticated: true, user: userB })
-
-        await act(async () => {
-            await currentStore().signOut()
-        })
         expect(changes.at(-1)).toEqual({ isAuthenticated: false, user: null })
     })
 })

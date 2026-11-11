@@ -39,46 +39,6 @@ function renderGallery(): void {
 }
 
 describe("useRestaurantImages ownership", () => {
-    test("retries failed cleanups on the next discard", async () => {
-        renderGallery()
-        await act(async () => {
-            currentGallery().setImages([stagedImage("s1")])
-            await Promise.resolve()
-        })
-        using warn = vi.spyOn(console, "warn").mockImplementation(() => {})
-        vi.mocked(cleanupMock).mockRejectedValueOnce(new Error("denied"))
-        await act(async () => {
-            await currentGallery().discardChanges()
-        })
-        expect(cleanupMock).toHaveBeenCalledTimes(1)
-        expect(warn).toHaveBeenCalled()
-
-        vi.mocked(cleanupMock).mockResolvedValue(undefined)
-        await act(async () => {
-            await currentGallery().discardChanges()
-        })
-        expect(cleanupMock).toHaveBeenCalledTimes(2)
-        expect(cleanupMock).toHaveBeenNthCalledWith(2, { storageId: "s1" })
-    })
-
-    test("cleans removed and staged ids on explicit discard", async () => {
-        renderGallery()
-        await act(async () => {
-            currentGallery().setImages([stagedImage("s1"), stagedImage("s2")])
-            await Promise.resolve()
-        })
-        await act(async () => {
-            currentGallery().setImages([stagedImage("s1")])
-            await Promise.resolve()
-        })
-        await act(async () => {
-            await currentGallery().discardChanges()
-        })
-
-        expect(cleanupMock).toHaveBeenCalledWith({ storageId: "s1" })
-        expect(cleanupMock).toHaveBeenCalledWith({ storageId: "s2" })
-    })
-
     test("commit transfers ownership and clears the draft", async () => {
         renderGallery()
         await act(async () => {

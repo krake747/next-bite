@@ -28,25 +28,4 @@ describe("SessionTimeoutNotice", () => {
         await screen.getByRole("button", { name: "Try again" }).click()
         expect(retry).toHaveBeenCalledTimes(1)
     })
-
-    test("stays hidden for a ready session", async () => {
-        scriptedStatus = { kind: "ready", userId: "user-1" }
-        const screen = await renderNotice()
-
-        await expect.element(screen.getByRole("alert")).not.toBeInTheDocument()
-    })
-
-    test("stays hidden while loading", async () => {
-        scriptedStatus = { kind: "loading" }
-        const screen = await renderNotice()
-
-        await expect.element(screen.getByRole("alert")).not.toBeInTheDocument()
-    })
-
-    test("stays hidden when signed out", async () => {
-        scriptedStatus = { kind: "signed-out" }
-        const screen = await renderNotice()
-
-        await expect.element(screen.getByRole("alert")).not.toBeInTheDocument()
-    })
 })

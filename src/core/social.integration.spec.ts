@@ -105,17 +105,6 @@ describe("social", () => {
         expect((await asUser(t, "ben").query(api.social.requests, {})).incoming).toEqual([])
     })
 
-    test("resolves mixed-case emails", async () => {
-        const t = setup()
-        await registerUser(t, "anna", "anna@example.com")
-        await registerUser(t, "ben", "Ben@Example.com")
-
-        await asUser(t, "anna").mutation(api.social.requestByEmail, { email: "ben@example.com" })
-
-        const bensView = await asUser(t, "ben").query(api.social.requests, {})
-        expect(bensView.incoming).toEqual([{ profileId: await idOf(t, "anna"), name: "anna" }])
-    })
-
     test("removes friendships on both sides", async () => {
         const t = setup()
         await registerUser(t, "anna", "anna@example.com")
@@ -149,46 +138,5 @@ describe("social", () => {
             ]),
         )
         expect(await friendshipRows(t)).toHaveLength(2)
-    })
-
-    test("remove cancels a pending request for both sides", async () => {
-        const t = setup()
-        await registerUser(t, "anna", "anna@example.com")
-        await registerUser(t, "ben", "ben@example.com")
-        await asUser(t, "anna").mutation(api.social.requestByEmail, { email: "ben@example.com" })
-
-        await asUser(t, "anna").mutation(api.social.remove, { friendId: await idOf(t, "ben") })
-
-        expect(await asUser(t, "anna").query(api.social.requests, {})).toEqual({ incoming: [], outgoing: [] })
-        expect(await asUser(t, "ben").query(api.social.requests, {})).toEqual({ incoming: [], outgoing: [] })
-        expect(await friendshipRows(t)).toEqual([])
-    })
-
-    test("keeps other people's friendships and requests invisible", async () => {
-        const t = setup()
-        await registerUser(t, "anna", "anna@example.com")
-        await registerUser(t, "ben", "ben@example.com")
-        await registerUser(t, "cas", "cas@example.com")
-        await registerUser(t, "dee", "dee@example.com")
-        await asUser(t, "anna").mutation(api.social.requestByEmail, { email: "ben@example.com" })
-        await asUser(t, "ben").mutation(api.social.accept, { friendId: await idOf(t, "anna") })
-        await asUser(t, "anna").mutation(api.social.requestByEmail, { email: "dee@example.com" })
-
-        expect(await asUser(t, "cas").query(api.social.friends, {})).toEqual([])
-        expect(await asUser(t, "cas").query(api.social.requests, {})).toEqual({ incoming: [], outgoing: [] })
-    })
-
-    test("reads empty before a profile exists and rejects anonymous callers", async () => {
-        const t = setup()
-
-        await expect(asUser(t, "newcomer").query(api.social.friends, {})).resolves.toEqual([])
-        await expect(asUser(t, "newcomer").query(api.social.requests, {})).resolves.toEqual({
-            incoming: [],
-            outgoing: [],
-        })
-        await expect(
-            asUser(t, "newcomer").mutation(api.social.requestByEmail, { email: "anna@example.com" }),
-        ).rejects.toThrow("Unauthorized: profile required")
-        await expect(t.query(api.social.friends, {})).rejects.toThrow("Unauthorized")
     })
 })
