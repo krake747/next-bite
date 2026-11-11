@@ -16,6 +16,12 @@ export const loadingMeta = {
     title: "Loading",
     body: "Pick the smallest wait that fits. Skeletons stand in for content that is coming; spinners mark short waits with no known shape. Never show either when cached data can render.",
     importPath: "src/pattern/loading.tsx",
+    guidance: {
+        whenToUse:
+            "Match the wait to what the user already knows: page skeletons for first paint with no cached data, spinners for short waits inside a loaded page.",
+        whenToAvoid:
+            "Do not cover data that is already on screen; keep the cached list and refresh it quietly. Never use AppInitializing past launch.",
+    },
     anatomy: [
         {
             element: "AppInitializing",
