@@ -285,7 +285,7 @@ function GroupDetailView() {
                 <GroupMembers members={group.members.map((m) => ({ name: m.name }))} />
             </section>
             {auth.isAuthenticated && <GroupInviteSection groupId={groupConvexId} />}
-            <PlanSection groupId={groupConvexId} />
+            <PlanSection groupId={groupConvexId} isGroupOwner={group.isOwner} />
             <section aria-label="Shared restaurants" className="pt-8">
                 <h2 className="font-display text-2xl font-semibold text-balance text-foreground">Shared list</h2>
                 <GroupRestaurantsSection groupId={groupConvexId} restaurants={restaurants} viewer={viewer} />

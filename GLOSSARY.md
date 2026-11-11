@@ -37,8 +37,8 @@ friends, Send request); the noun is always invitation. _Avoid_: Invite, invite l
 
 **Save**: A restaurant on the user's own short list. Shown under Saved restaurants.
 
-**Plan**: A dated outing to a restaurant, optionally tied to a group. Participants join; a plan is
-planned, done, or cancelled. _Avoid_: Event, meal plan
+**Plan**: A dated outing to a group place. Members are the participants; a plan is planned or
+cancelled. _Avoid_: Event, meal plan
 
 **Want**: A friend saying they want to try a restaurant. Rendered as Want to try with a count.
 

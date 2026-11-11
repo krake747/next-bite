@@ -30,150 +30,141 @@ async function idOf(t: TestConvexForDataModel<DataModel>, subject: string): Prom
     return me.profile._id
 }
 
-async function befriend(t: TestConvexForDataModel<DataModel>, a: string, b: string): Promise<void> {
-    const token = await asUser(t, a).mutation(api.invites.create, { target: { kind: "friend" } })
-    await asUser(t, b).mutation(api.invites.accept, { token })
-}
-
-async function createPlace(t: TestConvexForDataModel<DataModel>, subject: string): Promise<Id<"places">> {
+async function createPlace(t: TestConvexForDataModel<DataModel>, subject: string, name: string): Promise<Id<"places">> {
     return asUser(t, subject).mutation(api.places.create, {
-        name: "Trattoria Verde",
-        cuisine: "Italian",
+        name,
         addressLabel: "Luxembourg City",
         photos: [],
     })
 }
 
-describe("bounded meal planning", () => {
-    test("group members can create and list plans with participants", async () => {
+async function createGroup(t: TestConvexForDataModel<DataModel>, subject: string): Promise<Id<"groups">> {
+    return asUser(t, subject).mutation(api.groups.create, { name: "Food Crew" })
+}
+
+async function joinGroup(
+    t: TestConvexForDataModel<DataModel>,
+    groupId: Id<"groups">,
+    owner: string,
+    subject: string,
+): Promise<void> {
+    const token = await asUser(t, owner).mutation(api.invites.create, { target: { kind: "group", groupId } })
+    await asUser(t, subject).mutation(api.invites.accept, { token })
+}
+
+async function addToGroup(
+    t: TestConvexForDataModel<DataModel>,
+    subject: string,
+    groupId: Id<"groups">,
+    placeId: Id<"places">,
+): Promise<void> {
+    await asUser(t, subject).mutation(api.places.addToGroup, { groupId, placeId })
+}
+
+function nextWeek(): number {
+    return Date.now() + 7 * 24 * 60 * 60 * 1000
+}
+
+describe("group plans", () => {
+    test("a member plans a meal at a group place and the group sees it", async () => {
         const t = setup()
         await registerUser(t, "anna", "anna@example.com")
         await registerUser(t, "ben", "ben@example.com")
-        const groupId = await asUser(t, "anna").mutation(api.groups.create, { name: "Food Crew" })
-        const token = await asUser(t, "anna").mutation(api.invites.create, {
-            target: { kind: "group", groupId },
-        })
-        await asUser(t, "ben").mutation(api.invites.accept, { token })
+        const groupId = await createGroup(t, "anna")
+        await joinGroup(t, groupId, "anna", "ben")
+        const placeId = await createPlace(t, "anna", "Trattoria Verde")
+        await addToGroup(t, "anna", groupId, placeId)
 
-        const planId = await asUser(t, "anna").mutation(api.plans.createPlan, {
+        const planId = await asUser(t, "ben").mutation(api.plans.create, {
             groupId,
-            title: "Friday dinner",
-            date: Date.now() + 86400000,
-            participantIds: [await idOf(t, "ben")],
+            placeId,
+            startsAt: nextWeek(),
         })
         expect(planId).toBeDefined()
 
-        const plans = await asUser(t, "ben").query(api.plans.listPlansForGroup, { groupId })
+        const plans = await asUser(t, "anna").query(api.plans.forGroup, { groupId })
         expect(plans).toHaveLength(1)
-        expect(plans[0]?.title).toBe("Friday dinner")
-        expect(plans[0]?.participants.map((p) => p.userId).toSorted()).toEqual(
-            [await idOf(t, "anna"), await idOf(t, "ben")].toSorted(),
-        )
+        expect(plans[0]).toMatchObject({
+            placeId,
+            placeName: "Trattoria Verde",
+            status: "planned",
+            createdBy: await idOf(t, "ben"),
+            organizerName: "ben",
+        })
     })
 
-    test("non-members cannot create or read group plans", async () => {
+    test("plans survive the organizer leaving while strangers see nothing", async () => {
+        const t = setup()
+        await registerUser(t, "anna", "anna@example.com")
+        await registerUser(t, "ben", "ben@example.com")
+        await registerUser(t, "cas", "cas@example.com")
+        const groupId = await createGroup(t, "anna")
+        await joinGroup(t, groupId, "anna", "ben")
+        const placeId = await createPlace(t, "anna", "Trattoria Verde")
+        await addToGroup(t, "anna", groupId, placeId)
+        await asUser(t, "ben").mutation(api.plans.create, { groupId, placeId, startsAt: nextWeek() })
+
+        await asUser(t, "ben").mutation(api.groups.leave, { groupId })
+        await expect(asUser(t, "ben").query(api.plans.forGroup, { groupId })).rejects.toThrow("membership")
+        await expect(asUser(t, "cas").query(api.plans.forGroup, { groupId })).rejects.toThrow("membership")
+
+        const plans = await asUser(t, "anna").query(api.plans.forGroup, { groupId })
+        expect(plans).toHaveLength(1)
+    })
+
+    test("creation needs membership and a group-held place", async () => {
         const t = setup()
         await registerUser(t, "anna", "anna@example.com")
         await registerUser(t, "cas", "cas@example.com")
-        const groupId = await asUser(t, "anna").mutation(api.groups.create, { name: "Food Crew" })
+        const groupId = await createGroup(t, "anna")
+        const placeId = await createPlace(t, "anna", "Trattoria Verde")
 
         await expect(
-            asUser(t, "cas").mutation(api.plans.createPlan, {
-                groupId,
-                title: "Sneaky dinner",
-                date: Date.now() + 86400000,
-            }),
+            asUser(t, "cas").mutation(api.plans.create, { groupId, placeId, startsAt: nextWeek() }),
         ).rejects.toThrow("membership")
-        await expect(asUser(t, "cas").query(api.plans.listPlansForGroup, { groupId })).rejects.toThrow("membership")
+        await expect(
+            asUser(t, "anna").mutation(api.plans.create, { groupId, placeId, startsAt: nextWeek() }),
+        ).rejects.toThrow("not in this group")
+        await expect(
+            asUser(t, "anna").mutation(api.plans.create, { groupId, placeId, startsAt: Number.NaN }),
+        ).rejects.toThrow("Plan time is required")
     })
 
-    test("place plans respect visibility and friendship", async () => {
+    test("organizer or group owner cancels, members cannot", async () => {
         const t = setup()
         await registerUser(t, "anna", "anna@example.com")
         await registerUser(t, "ben", "ben@example.com")
         await registerUser(t, "cas", "cas@example.com")
-        const placeId = await createPlace(t, "anna")
+        const groupId = await createGroup(t, "anna")
+        await joinGroup(t, groupId, "anna", "ben")
+        await joinGroup(t, groupId, "anna", "cas")
+        const placeId = await createPlace(t, "anna", "Trattoria Verde")
+        await addToGroup(t, "anna", groupId, placeId)
 
-        await expect(
-            asUser(t, "cas").mutation(api.plans.createPlan, {
-                placeId,
-                title: "Sneaky dinner",
-                date: Date.now() + 86400000,
-            }),
-        ).rejects.toThrow("not visible")
+        const planId = await asUser(t, "ben").mutation(api.plans.create, { groupId, placeId, startsAt: nextWeek() })
+        await expect(asUser(t, "cas").mutation(api.plans.cancel, { planId })).rejects.toThrow("Unauthorized")
 
-        const friendToken = await asUser(t, "anna").mutation(api.invites.create, {
-            target: { kind: "friend" },
-        })
-        await asUser(t, "ben").mutation(api.invites.accept, { token: friendToken })
+        await asUser(t, "anna").mutation(api.plans.cancel, { planId })
+        expect(await asUser(t, "anna").query(api.plans.forGroup, { groupId })).toMatchObject([{ status: "cancelled" }])
 
-        const planId = await asUser(t, "anna").mutation(api.plans.createPlan, {
-            placeId,
-            title: "Catch-up dinner",
-            date: Date.now() + 86400000,
-            participantIds: [await idOf(t, "ben")],
-        })
-        expect(planId).toBeDefined()
-
-        await expect(
-            asUser(t, "anna").mutation(api.plans.createPlan, {
-                placeId,
-                title: "Stranger dinner",
-                date: Date.now() + 86400000,
-                participantIds: [await idOf(t, "cas")],
-            }),
-        ).rejects.toThrow("friend")
-
-        await expect(asUser(t, "cas").query(api.plans.listPlansForRestaurant, { placeId })).rejects.toThrow(
-            "not visible",
-        )
+        const second = await asUser(t, "ben").mutation(api.plans.create, { groupId, placeId, startsAt: nextWeek() })
+        await expect(asUser(t, "ben").mutation(api.plans.cancel, { planId: second })).resolves.toBe(second)
+        expect(await asUser(t, "anna").query(api.plans.forGroup, { groupId })).toHaveLength(2)
     })
 
-    test("hides group-scoped plans from place viewers outside the group", async () => {
+    test("plans sort by start time", async () => {
         const t = setup()
         await registerUser(t, "anna", "anna@example.com")
-        await registerUser(t, "ben", "ben@example.com")
-        await registerUser(t, "cas", "cas@example.com")
-        const placeId = await createPlace(t, "anna")
-        await befriend(t, "anna", "cas")
-        const groupId = await asUser(t, "anna").mutation(api.groups.create, { name: "Food Crew" })
-        await asUser(t, "anna").mutation(api.plans.createPlan, {
-            groupId,
-            placeId,
-            title: "Crew dinner",
-            date: Date.now() + 86400000,
-        })
+        const groupId = await createGroup(t, "anna")
+        const first = await createPlace(t, "anna", "Earlier")
+        const second = await createPlace(t, "anna", "Later")
+        await addToGroup(t, "anna", groupId, first)
+        await addToGroup(t, "anna", groupId, second)
 
-        const visible = await asUser(t, "cas").query(api.plans.listPlansForRestaurant, { placeId })
-        expect(visible).toEqual([])
-    })
+        await asUser(t, "anna").mutation(api.plans.create, { groupId, placeId: second, startsAt: nextWeek() + 1000 })
+        await asUser(t, "anna").mutation(api.plans.create, { groupId, placeId: first, startsAt: nextWeek() })
 
-    test("only the organizer or a group admin can update status", async () => {
-        const t = setup()
-        await registerUser(t, "anna", "anna@example.com")
-        await registerUser(t, "ben", "ben@example.com")
-        await registerUser(t, "cas", "cas@example.com")
-        const groupId = await asUser(t, "anna").mutation(api.groups.create, { name: "Food Crew" })
-        const token = await asUser(t, "anna").mutation(api.invites.create, {
-            target: { kind: "group", groupId },
-        })
-        await asUser(t, "ben").mutation(api.invites.accept, { token })
-        await asUser(t, "cas").mutation(api.invites.accept, { token })
-
-        const planId = await asUser(t, "ben").mutation(api.plans.createPlan, {
-            groupId,
-            title: "Friday dinner",
-            date: Date.now() + 86400000,
-        })
-
-        await expect(asUser(t, "cas").mutation(api.plans.updatePlanStatus, { planId, status: "done" })).rejects.toThrow(
-            "Unauthorized",
-        )
-        await expect(asUser(t, "ben").mutation(api.plans.updatePlanStatus, { planId, status: "done" })).resolves.toBe(
-            planId,
-        )
-        await expect(
-            asUser(t, "anna").mutation(api.plans.updatePlanStatus, { planId, status: "cancelled" }),
-        ).resolves.toBe(planId)
+        const plans = await asUser(t, "anna").query(api.plans.forGroup, { groupId })
+        expect(plans.map((plan) => plan.placeName)).toEqual(["Earlier", "Later"])
     })
 })

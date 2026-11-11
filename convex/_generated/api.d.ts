@@ -24,6 +24,7 @@ import type * as model_identity_profiles from "../model/identity/profiles.js";
 import type * as model_places_hours from "../model/places/hours.js";
 import type * as model_places_photos from "../model/places/photos.js";
 import type * as model_places_places from "../model/places/places.js";
+import type * as model_plans_plans from "../model/plans/plans.js";
 import type * as model_social_friendships from "../model/social/friendships.js";
 import type * as places from "../places.js";
 import type * as plans from "../plans.js";
@@ -55,6 +56,7 @@ declare const fullApi: ApiFromModules<{
   "model/places/hours": typeof model_places_hours;
   "model/places/photos": typeof model_places_photos;
   "model/places/places": typeof model_places_places;
+  "model/plans/plans": typeof model_plans_plans;
   "model/social/friendships": typeof model_social_friendships;
   places: typeof places;
   plans: typeof plans;
