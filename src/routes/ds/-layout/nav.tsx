@@ -22,7 +22,10 @@ import {
     TagIcon,
     TextAaIcon,
     TextboxIcon,
+    TrayIcon,
     UserCircleIcon,
+    UsersIcon,
+    WarningCircleIcon,
 } from "@phosphor-icons/react"
 import { Link, useMatchRoute } from "@tanstack/react-router"
 
@@ -57,13 +60,16 @@ const sectionIcons: Record<string, typeof HouseIcon> = {
     collapsible: CaretDownIcon,
     dialog: AppWindowIcon,
     "dropdown-menu": ListIcon,
+    "empty-state": TrayIcon,
     "icon-button": CursorClickIcon,
     input: TextboxIcon,
     popover: ChatTextIcon,
+    "query-error": WarningCircleIcon,
     separator: MinusIcon,
     sheet: SidebarIcon,
     sidebar: ColumnsIcon,
     skeleton: CircleDashedIcon,
+    "social-metadata": UsersIcon,
     tabs: RowsIcon,
     "text-link": LinkIcon,
     tooltip: QuotesIcon,

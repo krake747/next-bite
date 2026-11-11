@@ -6,16 +6,19 @@ import { CardDemo, cardMeta } from "./card"
 import { CollapsibleDemo, collapsibleMeta } from "./collapsible"
 import { DialogDemo, dialogMeta } from "./dialog"
 import { DropdownMenuDemo, dropdownMenuMeta } from "./dropdown-menu"
+import { EmptyStateDemo, emptyStateMeta } from "./empty-state"
 import { IconButtonDemo, iconButtonMeta } from "./icon-button"
 import { InputDemo, inputMeta } from "./input"
 import { LoadingDemo, loadingMeta } from "./loading"
 import { PaletteDemo, paletteMeta } from "./palette"
 import { PopoverDemo, popoverMeta } from "./popover"
+import { QueryErrorDemo, queryErrorMeta } from "./query-error"
 import { SeparatorDemo, separatorMeta } from "./separator"
 import { ShapeDemo, shapeMeta } from "./shape"
 import { SheetDemo, sheetMeta } from "./sheet"
 import { SidebarDemo, sidebarMeta } from "./sidebar"
 import { SkeletonDemo, skeletonMeta } from "./skeleton"
+import { SocialMetadataDemo, socialMetadataMeta } from "./social-metadata"
 import { TabsDemo, tabsMeta } from "./tabs"
 import { TextLinkDemo, textLinkMeta } from "./text-link"
 import { TooltipDemo, tooltipMeta } from "./tooltip"
@@ -82,5 +85,8 @@ export const designSystemSections: Readonly<Record<string, SectionEntry>> = {
     [tabsMeta.id]: { meta: tabsMeta, Demo: TabsDemo },
     [textLinkMeta.id]: { meta: textLinkMeta, Demo: TextLinkDemo },
     [tooltipMeta.id]: { meta: tooltipMeta, Demo: TooltipDemo },
+    [emptyStateMeta.id]: { meta: emptyStateMeta, Demo: EmptyStateDemo },
     [loadingMeta.id]: { meta: loadingMeta, Demo: LoadingDemo },
+    [queryErrorMeta.id]: { meta: queryErrorMeta, Demo: QueryErrorDemo },
+    [socialMetadataMeta.id]: { meta: socialMetadataMeta, Demo: SocialMetadataDemo },
 }

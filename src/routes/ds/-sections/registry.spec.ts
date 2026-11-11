@@ -16,6 +16,10 @@ function componentEntries() {
     return Object.values(designSystemSections).filter((entry) => entry.meta.group === "Components")
 }
 
+function patternEntries() {
+    return Object.values(designSystemSections).filter((entry) => entry.meta.group === "Patterns")
+}
+
 describe("design-system registry", () => {
     test("covers every src/ui primitive with a Components section", () => {
         const expected = primitiveIds()
@@ -48,5 +52,30 @@ describe("design-system registry", () => {
 
     test("lists Components between Tokens and Patterns", () => {
         expect(sectionGroups).toStrictEqual(["Tokens", "Components", "Patterns"])
+    })
+
+    test("covers every documented pattern piece with a Patterns section", () => {
+        const covered = patternEntries()
+            .map((entry) => entry.meta.id)
+            .toSorted()
+        expect(covered).toStrictEqual(["empty-state", "loading", "query-error", "social-metadata"])
+    })
+
+    test("every Patterns entry points at its pattern file", () => {
+        const mismatched = patternEntries()
+            .map((entry) => entry.meta.importPath)
+            .filter((importPath) => !/^src\/pattern\/[^/]+\.tsx$/.test(importPath))
+        expect(mismatched).toStrictEqual([])
+    })
+
+    test("every Patterns entry documents do and dont guidance with a live demo", () => {
+        const patterns = patternEntries()
+        expect(patterns.map((entry) => typeof entry.meta.guidance?.whenToUse).every((type) => type === "string")).toBe(
+            true,
+        )
+        expect(
+            patterns.map((entry) => typeof entry.meta.guidance?.whenToAvoid).every((type) => type === "string"),
+        ).toBe(true)
+        expect(patterns.map((entry) => typeof entry.Demo)).toStrictEqual(patterns.map(() => "function"))
     })
 })
