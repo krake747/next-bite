@@ -1,3 +1,4 @@
+// SYNC: docs page lives in src/routes/ds/-sections/aspect-ratio.tsx; keep the demo aligned with this file.
 import { cssVars } from "@ui/css-vars"
 import { cx } from "@ui/cva.config"
 

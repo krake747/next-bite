@@ -1,3 +1,4 @@
+// SYNC: docs page lives in src/routes/ds/-sections/separator.tsx; keep the demo aligned with this file.
 import { Separator as BaseSeparator } from "@base-ui/react/separator"
 
 import { cx } from "@ui/cva.config"

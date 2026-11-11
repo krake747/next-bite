@@ -1,3 +1,4 @@
+// SYNC: docs page lives in src/routes/ds/-sections/sidebar.tsx; keep the demo aligned with this file.
 import { mergeProps } from "@base-ui/react/merge-props"
 import { useRender } from "@base-ui/react/use-render"
 import { SidebarSimpleIcon } from "@phosphor-icons/react"

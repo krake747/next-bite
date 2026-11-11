@@ -1,4 +1,29 @@
-import { CircleNotchIcon, ForkKnifeIcon, HouseIcon, PaletteIcon, ShapesIcon, TextAaIcon } from "@phosphor-icons/react"
+import {
+    AppWindowIcon,
+    CaretDownIcon,
+    CardsIcon,
+    ChatTextIcon,
+    CircleDashedIcon,
+    CircleNotchIcon,
+    ColumnsIcon,
+    CursorClickIcon,
+    ForkKnifeIcon,
+    HouseIcon,
+    ImageIcon,
+    LinkIcon,
+    ListIcon,
+    MinusIcon,
+    PaletteIcon,
+    QuotesIcon,
+    RectangleIcon,
+    RowsIcon,
+    ShapesIcon,
+    SidebarIcon,
+    TagIcon,
+    TextAaIcon,
+    TextboxIcon,
+    UserCircleIcon,
+} from "@phosphor-icons/react"
 import { Link, useMatchRoute } from "@tanstack/react-router"
 
 import { cva, cx } from "@ui/cva.config"
@@ -24,6 +49,24 @@ const sectionIcons: Record<string, typeof HouseIcon> = {
     typography: TextAaIcon,
     shape: ShapesIcon,
     loading: CircleNotchIcon,
+    "aspect-ratio": ImageIcon,
+    avatar: UserCircleIcon,
+    badge: TagIcon,
+    button: RectangleIcon,
+    card: CardsIcon,
+    collapsible: CaretDownIcon,
+    dialog: AppWindowIcon,
+    "dropdown-menu": ListIcon,
+    "icon-button": CursorClickIcon,
+    input: TextboxIcon,
+    popover: ChatTextIcon,
+    separator: MinusIcon,
+    sheet: SidebarIcon,
+    sidebar: ColumnsIcon,
+    skeleton: CircleDashedIcon,
+    tabs: RowsIcon,
+    "text-link": LinkIcon,
+    tooltip: QuotesIcon,
 }
 
 type SectionEntry = {

@@ -4,7 +4,7 @@ import { useSessionStatus } from "@core/session"
 import { SessionGate } from "@routes/-components/session-gate"
 
 import { designSystemSections } from "./-sections/registry"
-import { AnatomyTable } from "./-sections/token-table"
+import { AnatomyTable, PropsTable, VariantTable } from "./-sections/token-table"
 
 export const Route = createFileRoute("/ds/$sectionId")({
     head: () => ({ meta: [{ title: "Design System - Next Bite" }] }),
@@ -42,14 +42,46 @@ function DesignSystemSectionPage() {
                     <entry.Demo />
                 </div>
             </SessionGate>
-            <h2 className="pt-8 font-display text-xl font-semibold text-balance text-foreground">Usage</h2>
-            <p className="mt-1 text-muted-foreground">{entry.meta.body}</p>
+            {entry.meta.props !== undefined && (
+                <>
+                    <h2 className="pt-8 font-display text-xl font-semibold text-balance text-foreground">Props</h2>
+                    <div className="overflow-x-auto pt-2">
+                        <PropsTable caption={`${entry.meta.title} props`} rows={entry.meta.props} />
+                    </div>
+                </>
+            )}
+            {entry.meta.variants !== undefined && (
+                <>
+                    <h2 className="pt-8 font-display text-xl font-semibold text-balance text-foreground">Variants</h2>
+                    <div className="pt-2">
+                        <VariantTable caption={`${entry.meta.title} variants`} rows={entry.meta.variants} />
+                    </div>
+                </>
+            )}
             {entry.meta.anatomy !== undefined && (
                 <>
                     <h2 className="pt-8 font-display text-xl font-semibold text-balance text-foreground">Anatomy</h2>
                     <div className="pt-2">
                         <AnatomyTable caption={`${entry.meta.title} anatomy`} rows={entry.meta.anatomy} />
                     </div>
+                </>
+            )}
+            <h2 className="pt-8 font-display text-xl font-semibold text-balance text-foreground">Usage</h2>
+            <p className="mt-1 text-muted-foreground">{entry.meta.body}</p>
+            {entry.meta.guidance !== undefined && (
+                <>
+                    <h2 className="pt-8 font-display text-xl font-semibold text-balance text-foreground">
+                        When to use
+                    </h2>
+                    <p className="mt-1 text-muted-foreground">{entry.meta.guidance.whenToUse}</p>
+                    {entry.meta.guidance.whenToAvoid !== undefined && (
+                        <>
+                            <h2 className="pt-8 font-display text-xl font-semibold text-balance text-foreground">
+                                When not to use
+                            </h2>
+                            <p className="mt-1 text-muted-foreground">{entry.meta.guidance.whenToAvoid}</p>
+                        </>
+                    )}
                 </>
             )}
         </div>

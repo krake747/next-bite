@@ -1,3 +1,4 @@
+// SYNC: docs page lives in src/routes/ds/-sections/input.tsx; keep the demo aligned with this file.
 import { Input as BaseInput } from "@base-ui/react/input"
 
 import { cx } from "@ui/cva.config"
