@@ -1,7 +1,8 @@
 import { cx } from "@ui/cva.config"
 
 import { Demo } from "./demo-frame"
-import { TokenTable } from "./token-table"
+import { readThemeTokens } from "./theme-tokens"
+import { TokenTable, type TokenRow } from "./token-table"
 
 export const paletteMeta = {
     id: "palette",
@@ -68,19 +69,25 @@ const palette: ReadonlyArray<{ name: string; swatches: ReadonlyArray<{ label: st
     },
 ]
 
-const semanticRows = [
-    { token: "background", value: "stone-100", usage: "Page canvas" },
-    { token: "surface", value: "white", usage: "Cards, popovers" },
-    { token: "surface-muted", value: "stone-200", usage: "Quiet fills, skeletons" },
-    { token: "surface-accent", value: "mango-100", usage: "Selected rows" },
-    { token: "foreground", value: "stone-900", usage: "Headings, body" },
-    { token: "muted-foreground", value: "stone-600", usage: "Secondary text, meta" },
-    { token: "primary", value: "tomato-600", usage: "Main action" },
-    { token: "success", value: "basil-600", usage: "Been status" },
-    { token: "warning", value: "mango-600", usage: "Cautions" },
-    { token: "destructive", value: "oklch red", usage: "Delete" },
-    { token: "plum", value: "oklch violet", usage: "Second accent, sparing" },
+const themeTokens = readThemeTokens()
+
+const semanticTokens: ReadonlyArray<{ readonly token: string; readonly name: string; readonly usage: string }> = [
+    { token: "background", name: "color-background", usage: "Page canvas" },
+    { token: "surface", name: "color-surface", usage: "Cards, popovers" },
+    { token: "surface-muted", name: "color-surface-muted", usage: "Quiet fills, skeletons" },
+    { token: "surface-accent", name: "color-surface-accent", usage: "Selected rows" },
+    { token: "foreground", name: "color-foreground", usage: "Headings, body" },
+    { token: "muted-foreground", name: "color-muted-foreground", usage: "Secondary text, meta" },
+    { token: "primary", name: "color-primary", usage: "Main action" },
+    { token: "success", name: "color-success", usage: "Been status" },
+    { token: "warning", name: "color-warning", usage: "Cautions" },
+    { token: "destructive", name: "color-destructive", usage: "Delete" },
+    { token: "plum", name: "color-plum", usage: "Second accent, sparing" },
 ]
+
+export function paletteTokenRows(tokens: ReadonlyMap<string, string> = themeTokens): ReadonlyArray<TokenRow> {
+    return semanticTokens.map(({ token, name, usage }) => ({ token, value: tokens.get(name) ?? "", usage }))
+}
 
 export function PaletteDemo() {
     return (
@@ -114,7 +121,7 @@ export function PaletteDemo() {
                 </div>
             </div>
             <div className="sm:col-span-2">
-                <TokenTable caption="Semantic token usage" rows={semanticRows} />
+                <TokenTable caption="Semantic token usage" rows={paletteTokenRows()} />
             </div>
         </Demo>
     )

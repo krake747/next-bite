@@ -1,5 +1,6 @@
 import { Demo } from "./demo-frame"
-import { TokenTable } from "./token-table"
+import { readThemeTokens } from "./theme-tokens"
+import { TokenTable, type TokenRow } from "./token-table"
 
 export const shapeMeta = {
     id: "shape",
@@ -9,12 +10,18 @@ export const shapeMeta = {
     importPath: "src/index.css",
 } as const
 
-const shapeRows = [
-    { token: "rounded-control", value: "10px", usage: "Buttons, inputs, rows" },
-    { token: "rounded-panel", value: "14px", usage: "Panels, sheets" },
-    { token: "rounded-card", value: "16px", usage: "Cards" },
-    { token: "rounded-dialog", value: "20px", usage: "Dialogs" },
+const themeTokens = readThemeTokens()
+
+const radiusTokens: ReadonlyArray<{ readonly token: string; readonly name: string; readonly usage: string }> = [
+    { token: "rounded-control", name: "radius-control", usage: "Buttons, inputs, rows" },
+    { token: "rounded-panel", name: "radius-panel", usage: "Panels, sheets" },
+    { token: "rounded-card", name: "radius-card", usage: "Cards" },
+    { token: "rounded-dialog", name: "radius-dialog", usage: "Dialogs" },
 ]
+
+export function shapeTokenRows(tokens: ReadonlyMap<string, string> = themeTokens): ReadonlyArray<TokenRow> {
+    return radiusTokens.map(({ token, name, usage }) => ({ token, value: tokens.get(name) ?? "", usage }))
+}
 
 export function ShapeDemo() {
     return (
@@ -34,7 +41,7 @@ export function ShapeDemo() {
                     dialog shadow
                 </div>
             </div>
-            <TokenTable caption="Radius tokens" rows={shapeRows} />
+            <TokenTable caption="Radius tokens" rows={shapeTokenRows()} />
         </Demo>
     )
 }
