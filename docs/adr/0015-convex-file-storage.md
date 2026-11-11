@@ -2,6 +2,8 @@
 
 Date: 2026-11-05
 
+Amended: 2026-11-11
+
 Status: Accepted
 
 ## Context
@@ -12,18 +14,21 @@ prove the right to see or attach the file.
 
 ## Decision
 
-The client uploads the raw blob to an authenticated endpoint; the server stores it and records
-server-observed metadata (owner, type, size), and callers attach storage IDs by reference. Display
-URLs resolve at render time. Dimension hints are client-reported and untrusted: every trust decision
-(ownership, association, type, size) comes from the server record, never from client claims.
-Rejected: moving to object storage now (no need for transforms or independent scaling yet), and raw
-URLs as authorization. Deferred: signed upload URLs.
+A signed-in client asks the backend for a short-lived upload URL and sends the raw blob straight to
+Convex storage. Nothing is recorded at upload. Ownership is the first claim: the first signed-in
+caller to attach an unclaimed storage ID, as an avatar or a restaurant image, owns it, and every
+later claim of that ID is refused. Type and size come from the storage system record at claim time,
+and attribution comes from the claiming caller. Dimension hints are client-reported and untrusted.
+Display URLs resolve at render time. A daily job deletes blobs that nobody claimed within a day.
+Rejected: a browser-facing upload endpoint that records an owner at upload (it needed its own CORS
+allowlist and an ownership table that duplicated the claims), moving to object storage now (no need
+for transforms or independent scaling yet), and raw URLs as authorization.
 
 ## Consequences
 
-Ownership and associations live in documents, not in URL possession. Attribution metadata is
-denormalized onto entries at attach time from the server record; client-sent identity fields are
-overwritten. Upload, validation, and cleanup paths need integration tests before production. The
-browser-facing endpoint reflects only trusted origins; loopback stays trusted so local development
-works with zero config, and a missing production allowlist breaks uploads loudly rather than
-silently.
+Ownership and associations live in documents, not in URL possession. Each claim holder is indexed by
+storage ID so a claim check is one lookup per kind; restaurant images keep a separate claim record
+until photos get their own table. Uploading needs no origin allowlist, because Convex storage
+accepts the upload URL from any origin. An upload that is never attached costs storage for at most
+about a day. Releasing an image or replacing an avatar leaves the blob unclaimed for the daily job.
+Upload, claim, and cleanup paths need integration tests before production.

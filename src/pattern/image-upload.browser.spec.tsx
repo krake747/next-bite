@@ -36,13 +36,6 @@ let uploadImpl: (file: Readonly<File>) => Promise<ImageRecord> = async () => {
     throw new Error("uploadImpl not set")
 }
 
-vi.mock("@api/auth.sdk", () => ({
-    getConvexSessionToken: async () => {
-        await Promise.resolve()
-        return "test-token"
-    },
-}))
-
 vi.mock("@core/image.utils", async (importOriginal) => {
     const original = await importOriginal<typeof import("@core/image.utils")>()
     return {
@@ -160,7 +153,7 @@ describe("ImageUpload batch ownership", () => {
             })
 
         const fresh = await renderHarness()
-        await expect.element(fresh.getByRole("button", { name: /upload images/i })).toBeInTheDocument()
+        await expect.element(fresh.getByRole("button", { name: /drop to upload images/i })).toBeInTheDocument()
         expect(stagedImageCount()).toBe(0)
     })
 

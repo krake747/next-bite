@@ -18,31 +18,6 @@ export function getValidatedSiteUrl(): string {
     return url
 }
 
-export function optionalSiteUrl(): string | undefined {
-    const url = env.SITE_URL
-    return isPresent(url) ? url : undefined
-}
-
-export function appOrigins(): string[] {
-    const raw = env.APP_ORIGINS
-    if (!isPresent(raw)) {
-        return []
-    }
-    return raw
-        .split(",")
-        .map((origin) => origin.trim())
-        .filter((origin) => origin !== "")
-}
-
-export function isLoopbackOrigin(origin: string): boolean {
-    try {
-        const { hostname } = new URL(origin)
-        return hostname === "localhost" || hostname === "127.0.0.1" || hostname === "[::1]" || hostname === "::1"
-    } catch {
-        return false
-    }
-}
-
 export function googleMapsApiKey(): string | undefined {
     const key = env.GOOGLE_MAPS_API_KEY
     return isPresent(key) ? key : undefined

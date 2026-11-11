@@ -107,10 +107,6 @@ vi.mock("../auth.sdk", () => ({
             token: tokenMock,
         },
     },
-    getConvexSessionToken: async () => {
-        const { data } = await tokenMock()
-        return data?.token ?? null
-    },
 }))
 
 function restaurantFixture(overrides?: Partial<RestaurantDoc>): RestaurantDoc {

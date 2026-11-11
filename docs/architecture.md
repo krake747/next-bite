@@ -25,7 +25,7 @@ that `convex/schema.ts` composes; env names in `src/core/env.ts`.
 - Server and first client render must agree on auth state. Never gate `AuthProvider` children behind
   client-only placeholders: it breaks hydration on every page.
 - Server functions only for server boundaries such as the session, email, external APIs, and AI.
-  HTTP routes only for auth, uploads, AI streaming, and webhooks.
+  HTTP routes only for auth, AI streaming, and webhooks. Uploads go to Convex upload URLs.
 - `e2e/smoke.spec.ts` checks that the built Worker paints the landing page.
 
 ## Data flow

@@ -137,7 +137,7 @@ export function AvatarSection({
         }
         setError(clearError)
         try {
-            await setAvatar.mutateAsync({ avatar: { url: image.url, storageId: image.storageId } })
+            await setAvatar.mutateAsync({ storageId: image.storageId })
         } catch (err) {
             setError(errorFrom(err, "Could not save your photo"))
         }

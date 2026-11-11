@@ -9,7 +9,7 @@
  */
 
 import type * as auth from "../auth.js";
-import type * as cors from "../cors.js";
+import type * as crons from "../crons.js";
 import type * as email from "../email.js";
 import type * as env from "../env.js";
 import type * as groups from "../groups.js";
@@ -18,13 +18,12 @@ import type * as http from "../http.js";
 import type * as identity from "../identity.js";
 import type * as interests from "../interests.js";
 import type * as invitations from "../invitations.js";
-import type * as migrate from "../migrate.js";
 import type * as plans from "../plans.js";
 import type * as restaurants from "../restaurants.js";
 import type * as seed from "../seed.js";
 import type * as shares from "../shares.js";
 import type * as social from "../social.js";
-import type * as uploads from "../uploads.js";
+import type * as storage from "../storage.js";
 import type * as validators from "../validators.js";
 import type * as visibility from "../visibility.js";
 
@@ -36,7 +35,7 @@ import type {
 
 declare const fullApi: ApiFromModules<{
   auth: typeof auth;
-  cors: typeof cors;
+  crons: typeof crons;
   email: typeof email;
   env: typeof env;
   groups: typeof groups;
@@ -45,13 +44,12 @@ declare const fullApi: ApiFromModules<{
   identity: typeof identity;
   interests: typeof interests;
   invitations: typeof invitations;
-  migrate: typeof migrate;
   plans: typeof plans;
   restaurants: typeof restaurants;
   seed: typeof seed;
   shares: typeof shares;
   social: typeof social;
-  uploads: typeof uploads;
+  storage: typeof storage;
   validators: typeof validators;
   visibility: typeof visibility;
 }>;

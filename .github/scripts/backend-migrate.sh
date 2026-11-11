@@ -1,11 +1,10 @@
 #!/usr/bin/env bash
 # Run the Convex data migrations in order against the deployment that
-# CONVEX_DEPLOY_KEY targets. Extend the list as migrations land in
-# convex/migrate.ts.
+# CONVEX_DEPLOY_KEY targets. Every listed migration must be idempotent.
 set -euo pipefail
 
 MIGRATIONS=(
-    migrate:cleanupOrphanedStorage
+    storage:backfillImageClaims
 )
 
 main() {

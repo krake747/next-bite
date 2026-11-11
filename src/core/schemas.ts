@@ -28,6 +28,10 @@ const imageRecordSchema = v.object({
 
 export type ImageRecord = v.InferOutput<typeof imageRecordSchema>
 
-export function parseImageRecord(value: unknown): ImageRecord {
-    return v.parse(imageRecordSchema, value)
+const uploadResultSchema = v.object({
+    storageId: v.custom<Id<"_storage">>((value) => typeof value === "string" && value.length > 0),
+})
+
+export function parseUploadResult(value: unknown): v.InferOutput<typeof uploadResultSchema> {
+    return v.parse(uploadResultSchema, value)
 }
