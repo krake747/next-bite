@@ -1,3 +1,4 @@
+// SYNC: docs page lives in src/routes/ds/-sections/tabs.tsx; keep the demo aligned with this file.
 import { Tabs as BaseTabs } from "@base-ui/react/tabs"
 
 import { cx } from "@ui/cva.config"

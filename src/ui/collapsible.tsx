@@ -1,3 +1,4 @@
+// SYNC: docs page lives in src/routes/ds/-sections/collapsible.tsx; keep the demo aligned with this file.
 import { Collapsible as BaseCollapsible } from "@base-ui/react/collapsible"
 
 export function Collapsible({ children, ...props }: BaseCollapsible.Root.Props) {

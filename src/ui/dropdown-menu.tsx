@@ -1,3 +1,4 @@
+// SYNC: docs page lives in src/routes/ds/-sections/dropdown-menu.tsx; keep the demo aligned with this file.
 import { Menu as BaseMenu } from "@base-ui/react/menu"
 
 import { cva, cx, type VariantProps } from "@ui/cva.config"

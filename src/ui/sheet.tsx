@@ -1,3 +1,4 @@
+// SYNC: docs page lives in src/routes/ds/-sections/sheet.tsx; keep the demo aligned with this file.
 import { Dialog as BaseSheet } from "@base-ui/react/dialog"
 import { XIcon } from "@phosphor-icons/react"
 

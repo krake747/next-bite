@@ -1,3 +1,4 @@
+// SYNC: docs page lives in src/routes/ds/-sections/avatar.tsx; keep the demo aligned with this file.
 import { Avatar as BaseAvatar } from "@base-ui/react/avatar"
 import { createContext, use } from "react"
 

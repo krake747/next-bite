@@ -1,3 +1,4 @@
+// SYNC: docs page lives in src/routes/ds/-sections/icon-button.tsx; keep the demo aligned with this file.
 import { Button as BaseButton } from "@base-ui/react/button"
 
 import { type VariantProps } from "@ui/cva.config"

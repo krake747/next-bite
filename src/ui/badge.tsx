@@ -1,3 +1,4 @@
+// SYNC: docs page lives in src/routes/ds/-sections/badge.tsx; keep the demo aligned with this file.
 import { useRender } from "@base-ui/react/use-render"
 
 import { cx, type VariantProps } from "@ui/cva.config"

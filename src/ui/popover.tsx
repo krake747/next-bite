@@ -1,3 +1,4 @@
+// SYNC: docs page lives in src/routes/ds/-sections/popover.tsx; keep the demo aligned with this file.
 import { Popover as BasePopover } from "@base-ui/react/popover"
 
 import { cx, type VariantProps } from "@ui/cva.config"
