@@ -32,7 +32,9 @@ export const createAuth = (ctx: GenericCtx<DataModel>) => {
     const siteUrl = staticRegistration ? "http://localhost" : getValidatedSiteUrl()
     return betterAuth({
         baseURL: siteUrl,
-        trustedOrigins: [siteUrl],
+        // Until the cutover, localhost and production share this backend
+        // (docs/environments.md). Trust both so sign-in works in each place.
+        trustedOrigins: [siteUrl, "http://localhost:5173"],
         database: authComponent.adapter(ctx),
         emailAndPassword: {
             enabled: true,
