@@ -95,21 +95,6 @@ export const attach = internalMutation({
     },
 })
 
-export const setPurpose = internalMutation({
-    args: {
-        storageId: v.id("_storage"),
-        ownerId: v.string(),
-        purpose: v.union(v.literal("group"), v.literal("avatar")),
-    },
-    handler: async (ctx, args) => {
-        const existing = await findUploadByStorage(ctx.db, args.storageId)
-        if (!existing || existing.ownerId !== args.ownerId) {
-            throw new Error("Unauthorized: storage does not belong to you")
-        }
-        await ctx.db.patch(existing._id, { purpose: args.purpose, expiresAt: undefined })
-    },
-})
-
 export const detach = internalMutation({
     args: {
         storageId: v.id("_storage"),

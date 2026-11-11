@@ -17,7 +17,6 @@ import type * as groups from "../groups.js";
 import type * as helpers from "../helpers.js";
 import type * as http from "../http.js";
 import type * as invitations from "../invitations.js";
-import type * as landing from "../landing.js";
 import type * as migrate from "../migrate.js";
 import type * as plans from "../plans.js";
 import type * as restaurants from "../restaurants.js";
@@ -45,7 +44,6 @@ declare const fullApi: ApiFromModules<{
   helpers: typeof helpers;
   http: typeof http;
   invitations: typeof invitations;
-  landing: typeof landing;
   migrate: typeof migrate;
   plans: typeof plans;
   restaurants: typeof restaurants;

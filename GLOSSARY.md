@@ -25,8 +25,8 @@ copy says location or restaurant. _Avoid_: Address, venue, place in product copy
 Sourced from Google Maps Places API. Used for the "open now" filter and to display hours on
 restaurant cards. _Avoid_: Schedule, business hours, times
 
-**Group**: A named set of users who pool restaurant recommendations. Membership carries an admin or
-member role. _Avoid_: Circle, crew
+**Group**: A named set of users who pool restaurant recommendations. The creator owns it; everyone
+else is a member. _Avoid_: Circle, crew
 
 **Share**: A restaurant added to a group. Friends see every restaurant without one. Each share
 records who added it. _Avoid_: Forward

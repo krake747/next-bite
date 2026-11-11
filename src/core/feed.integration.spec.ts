@@ -44,6 +44,16 @@ async function feedNames(t: TestConvexForDataModel<DataModel>, subject: string):
     return feed.map((r) => r.name)
 }
 
+async function joinGroup(
+    t: TestConvexForDataModel<DataModel>,
+    groupId: Id<"groups">,
+    owner: string,
+    subject: string,
+): Promise<void> {
+    const token = await asUser(t, owner).mutation(api.invitations.createInvite, { target: { kind: "group", groupId } })
+    await asUser(t, subject).mutation(api.invitations.acceptInvite, { token })
+}
+
 describe("friends feed", () => {
     test("shows a friend's restaurant without a share", async () => {
         const t = setup()
@@ -83,8 +93,8 @@ describe("friends feed", () => {
         await registerUser(t, "dan")
         await befriend(t, "ben", "dan")
         const groupId = await asUser(t, "anna").mutation(api.groups.createGroup, { name: "Food Crew" })
-        await asUser(t, "anna").mutation(api.groups.addMember, { groupId, userId: "ben" })
-        await asUser(t, "anna").mutation(api.groups.addMember, { groupId, userId: "dan" })
+        await joinGroup(t, groupId, "anna", "ben")
+        await joinGroup(t, groupId, "anna", "dan")
         const restaurantId = await createRestaurant(t, "dan", "Dan's Deli")
         await asUser(t, "dan").mutation(api.shares.shareWithGroup, { restaurantId, groupId })
 

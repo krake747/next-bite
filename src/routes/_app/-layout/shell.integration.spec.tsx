@@ -37,13 +37,7 @@ vi.mock("@api/auth.provider", async (importOriginal) => {
 })
 
 async function renderAt(path: string, extraSeeds?: ReadonlyMap<string, unknown>): Promise<void> {
-    const seeds = new Map<string, unknown>([
-        [
-            seedKey("landing:getStats", undefined),
-            { totalRestaurants: 0, totalWants: 0, topCuisines: [], recentAdds: [] },
-        ],
-        ...(extraSeeds ?? []),
-    ])
+    const seeds = new Map<string, unknown>(extraSeeds ?? [])
     const backend = createSeededClient({ seeds })
     const router = createRouter({
         routeTree,

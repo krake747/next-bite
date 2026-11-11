@@ -116,7 +116,7 @@ function GroupsView() {
                 />
             ) : (
                 <ul className="mt-6 grid gap-4 md:grid-cols-2">
-                    {groups.map(({ group, role }) => (
+                    {groups.map(({ group, isOwner }) => (
                         <li key={group._id} className="rounded-card border border-border bg-surface p-5 shadow-card">
                             <Link
                                 to="/groups/$groupId"
@@ -125,9 +125,7 @@ function GroupsView() {
                             >
                                 {group.name}
                             </Link>
-                            <p className="mt-1 text-sm text-muted-foreground">
-                                {role === "admin" ? "Admin" : "Member"}
-                            </p>
+                            <p className="mt-1 text-sm text-muted-foreground">{isOwner ? "Owner" : "Member"}</p>
                         </li>
                     ))}
                 </ul>

@@ -104,8 +104,8 @@ const seeds = new Map<string, unknown>([
     [
         seedKey("groups:listMyGroups", undefined),
         [
-            { group: { _id: "g1", name: "Food Crew" }, role: "admin" },
-            { group: { _id: "g2", name: "Lunch Club" }, role: "member" },
+            { group: { _id: "g1", name: "Food Crew" }, isOwner: true },
+            { group: { _id: "g2", name: "Lunch Club" }, isOwner: false },
         ],
     ],
     [

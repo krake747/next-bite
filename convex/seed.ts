@@ -4,7 +4,7 @@ import { type Id } from "./_generated/dataModel"
 import { internalMutation, type MutationCtx } from "./_generated/server"
 import { createAuth } from "./auth"
 import { getValidatedSiteUrl } from "./env"
-import { adjustStatsCounters, formatDisplayName } from "./helpers"
+import { formatDisplayName } from "./helpers"
 
 export const SEED_OWNER_EMAIL = "preview-owner@example.com"
 export const SEED_FRIEND_EMAIL = "preview-friend@example.com"
@@ -119,22 +119,16 @@ async function ensureSeedRestaurant(
         clientMutationId: seedMarker(place.slug),
         createdAt: Date.now(),
     })
-    await adjustStatsCounters(ctx, { restaurants: 1, cuisines: { [place.cuisine]: 1 } })
     return restaurantId
 }
 
-async function ensureSeedMembership(
-    ctx: MutationCtx,
-    groupId: Id<"groups">,
-    userId: string,
-    role: "admin" | "member",
-): Promise<void> {
+async function ensureSeedMembership(ctx: MutationCtx, groupId: Id<"groups">, userId: string): Promise<void> {
     const membership = await ctx.db
         .query("groupMembers")
         .withIndex("by_group_user", (q) => q.eq("groupId", groupId).eq("userId", userId))
         .unique()
     if (!membership) {
-        await ctx.db.insert("groupMembers", { groupId, userId, role, joinedAt: Date.now() })
+        await ctx.db.insert("groupMembers", { groupId, userId, joinedAt: Date.now() })
     }
 }
 
@@ -152,8 +146,8 @@ async function ensureSeedGroup(ctx: MutationCtx, ownerId: string, friendId: stri
         match !== undefined
             ? match._id
             : await ctx.db.insert("groups", { ownerId, name: SEED_GROUP_NAME, createdAt: Date.now() })
-    await ensureSeedMembership(ctx, groupId, ownerId, "admin")
-    await ensureSeedMembership(ctx, groupId, friendId, "member")
+    await ensureSeedMembership(ctx, groupId, ownerId)
+    await ensureSeedMembership(ctx, groupId, friendId)
     return groupId
 }
 
