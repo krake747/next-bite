@@ -82,7 +82,7 @@ describe("groups list", () => {
     test("renders the caller's groups", async () => {
         testUser = { id: "user-1", email: "alex@example.com", name: "Alex" }
         querySeeds.clear()
-        seedQuery("groups:listMyGroups", undefined, [{ group: { _id: "g1", name: "Food Crew" }, role: "admin" }])
+        seedQuery("groups:listMyGroups", undefined, [{ group: { _id: "g1", name: "Food Crew" }, isOwner: true }])
         await renderAt("/groups")
 
         await waitFor(() => {
@@ -148,16 +148,16 @@ describe("group detail", () => {
     const groupId = "g1"
 
     function seedDetail(): void {
-        seedQuery("groups:listMyGroups", undefined, [{ group: { _id: groupId, name: "Food Crew" }, role: "admin" }])
+        seedQuery("groups:listMyGroups", undefined, [{ group: { _id: groupId, name: "Food Crew" }, isOwner: true }])
         seedQuery(
             "groups:getGroup",
             { groupId },
             {
                 group: { _id: groupId, name: "Food Crew" },
-                role: "admin",
+                isOwner: true,
                 members: [
-                    { userId: "user-1", name: "Alex", role: "admin" },
-                    { userId: "ben", name: "Ben", role: "member" },
+                    { userId: "user-1", name: "Alex", isOwner: true },
+                    { userId: "ben", name: "Ben", isOwner: false },
                 ],
             },
         )

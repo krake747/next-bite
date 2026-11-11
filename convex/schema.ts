@@ -98,7 +98,7 @@ export default defineSchema({
     groupMembers: defineTable({
         groupId: v.id("groups"),
         userId: v.string(),
-        role: v.union(v.literal("admin"), v.literal("member")),
+        role: v.optional(v.union(v.literal("admin"), v.literal("member"))),
         joinedAt: v.number(),
     })
         .index("by_group", ["groupId"])

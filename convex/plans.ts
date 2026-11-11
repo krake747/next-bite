@@ -224,9 +224,10 @@ export const updatePlanStatus = mutation({
             throw new Error("Plan not found")
         }
         if (plan.groupId !== undefined) {
-            const membership = await requireMembership(ctx.db, plan.groupId, userId)
-            if (plan.createdBy !== userId && membership.role !== "admin") {
-                throw new Error("Unauthorized: only the organizer or a group admin can update this plan")
+            await requireMembership(ctx.db, plan.groupId, userId)
+            const group = await ctx.db.get(plan.groupId)
+            if (plan.createdBy !== userId && group?.ownerId !== userId) {
+                throw new Error("Unauthorized: only the organizer or the group owner can update this plan")
             }
         } else if (plan.createdBy !== userId) {
             throw new Error("Unauthorized: only the organizer can update this plan")

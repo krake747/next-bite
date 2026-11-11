@@ -284,7 +284,7 @@ function GroupDetailView() {
                 <HeaderTitle>{group.group.name}</HeaderTitle>
                 <HeaderSubtitle>
                     {group.members.length} {group.members.length === 1 ? "member" : "members"} ·{" "}
-                    {group.role === "admin" ? "Admin" : "Member"}
+                    {group.isOwner ? "Owner" : "Member"}
                 </HeaderSubtitle>
             </Header>
             <section aria-label="Members" className="pt-6">

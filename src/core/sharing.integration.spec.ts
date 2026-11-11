@@ -30,6 +30,16 @@ async function createRestaurant(t: TestConvexForDataModel<DataModel>, subject: s
     })
 }
 
+async function joinGroup(
+    t: TestConvexForDataModel<DataModel>,
+    groupId: Id<"groups">,
+    owner: string,
+    subject: string,
+): Promise<void> {
+    const token = await asUser(t, owner).mutation(api.invitations.createInvite, { target: { kind: "group", groupId } })
+    await asUser(t, subject).mutation(api.invitations.acceptInvite, { token })
+}
+
 describe("sharing and social gating", () => {
     test("lets a shared user react and blocks strangers", async () => {
         const t = setup()
@@ -165,7 +175,7 @@ describe("sharing and social gating", () => {
         await registerUser(t, "ben", "ben@example.com")
         await registerUser(t, "cas", "cas@example.com")
         const groupId = await asUser(t, "anna").mutation(api.groups.createGroup, { name: "Food Crew" })
-        await asUser(t, "anna").mutation(api.groups.addMember, { groupId, userId: "ben" })
+        await joinGroup(t, groupId, "anna", "ben")
         const restaurantId = await createRestaurant(t, "anna")
         await createRestaurant(t, "anna")
         await asUser(t, "anna").mutation(api.shares.shareWithGroup, { restaurantId, groupId })
@@ -183,11 +193,11 @@ describe("sharing and social gating", () => {
         await registerUser(t, "ben", "ben@example.com")
         await registerUser(t, "cas", "cas@example.com")
         const groupId = await asUser(t, "anna").mutation(api.groups.createGroup, { name: "Food Crew" })
-        await asUser(t, "anna").mutation(api.groups.addMember, { groupId, userId: "ben" })
+        await joinGroup(t, groupId, "anna", "ben")
 
         const view = await asUser(t, "ben").query(api.groups.getGroup, { groupId })
         expect(view?.group.name).toBe("Food Crew")
-        expect(view?.role).toBe("member")
+        expect(view?.isOwner).toBe(false)
         expect(view?.members.map((m) => m.userId).toSorted()).toEqual(["anna", "ben"])
         expect(await asUser(t, "cas").query(api.groups.getGroup, { groupId })).toBeNull()
     })
@@ -197,12 +207,9 @@ describe("sharing and social gating", () => {
         await registerUser(t, "anna", "anna@example.com")
         await registerUser(t, "ben", "ben@example.com")
         const groupId = await asUser(t, "anna").mutation(api.groups.createGroup, { name: "Food Crew" })
-        await asUser(t, "anna").mutation(api.groups.addMember, { groupId, userId: "ben" })
+        await joinGroup(t, groupId, "anna", "ben")
         const restaurantId = await createRestaurant(t, "anna")
 
-        await expect(asUser(t, "ben").mutation(api.groups.addMember, { groupId, userId: "anna" })).rejects.toThrow(
-            "only admins",
-        )
         await expect(asUser(t, "ben").mutation(api.shares.shareWithGroup, { restaurantId, groupId })).rejects.toThrow(
             "only the owner",
         )
