@@ -3,34 +3,36 @@ import { v } from "convex/values"
 
 import { type DataModel, type Id } from "./_generated/dataModel"
 import { mutation, query } from "./_generated/server"
-import { requireMembership, requireUserId } from "./helpers"
+import { requireMembership } from "./helpers"
+import { getProfiles, nameOf, requireProfile, signedInProfile } from "./model/identity/profiles"
 import { isRestaurantVisibleTo } from "./visibility"
 
 const planStatusValidator = v.union(v.literal("planned"), v.literal("done"), v.literal("cancelled"))
 
 type PlanDb = { db: GenericDatabaseReader<DataModel> }
+type ProfileId = Id<"profiles">
 
-async function ensureAcceptedFriend(ctx: PlanDb, creator: string, candidate: string): Promise<boolean> {
+async function ensureAcceptedFriend(ctx: PlanDb, creator: ProfileId, candidate: ProfileId): Promise<boolean> {
     if (candidate === creator) {
         return true
     }
     const outgoing = await ctx.db
         .query("friendships")
-        .withIndex("by_owner_friend", (q) => q.eq("ownerId", creator).eq("friendAuthUserId", candidate))
+        .withIndex("by_owner_friend", (q) => q.eq("ownerId", creator).eq("friendId", candidate))
         .unique()
     if (outgoing?.status === "accepted") {
         return true
     }
     const backward = await ctx.db
         .query("friendships")
-        .withIndex("by_owner_friend", (q) => q.eq("ownerId", candidate).eq("friendAuthUserId", creator))
+        .withIndex("by_owner_friend", (q) => q.eq("ownerId", candidate).eq("friendId", creator))
         .unique()
     return backward?.status === "accepted"
 }
 
 async function validatePlanTarget(
     ctx: PlanDb,
-    userId: string,
+    userId: ProfileId,
     groupId: Id<"groups"> | undefined,
     restaurantId: Id<"restaurants"> | undefined,
 ): Promise<void> {
@@ -50,12 +52,12 @@ async function validatePlanTarget(
 
 async function validatePlanParticipants(
     ctx: PlanDb,
-    userId: string,
+    userId: ProfileId,
     groupId: Id<"groups"> | undefined,
-    participantIds: ReadonlyArray<string> | undefined,
-): Promise<string[]> {
+    participantIds: ReadonlyArray<ProfileId> | undefined,
+): Promise<ProfileId[]> {
     const requested = [...new Set(participantIds ?? [])].slice(0, 20)
-    const validated: string[] = []
+    const validated: ProfileId[] = []
     for (const candidate of requested) {
         if (candidate === userId || validated.includes(candidate)) {
             continue
@@ -82,10 +84,10 @@ export const createPlan = mutation({
         restaurantId: v.optional(v.id("restaurants")),
         title: v.string(),
         date: v.number(),
-        participantIds: v.optional(v.array(v.string())),
+        participantIds: v.optional(v.array(v.id("profiles"))),
     },
     handler: async (ctx, args) => {
-        const userId = await requireUserId(ctx)
+        const userId = (await requireProfile(ctx))._id
         if (args.groupId === undefined && args.restaurantId === undefined) {
             throw new Error("A plan needs a group, a restaurant, or both")
         }
@@ -105,11 +107,10 @@ export const createPlan = mutation({
             title,
             date: args.date,
             status: "planned",
-            createdAt: Date.now(),
         })
         const participants = [...new Set([userId, ...validated])]
         for (const participant of participants) {
-            await ctx.db.insert("planParticipants", { planId, userId: participant, joinedAt: Date.now() })
+            await ctx.db.insert("planParticipants", { planId, userId: participant })
         }
         return planId
     },
@@ -120,8 +121,11 @@ export const listPlansForGroup = query({
         groupId: v.id("groups"),
     },
     handler: async (ctx, args) => {
-        const userId = await requireUserId(ctx)
-        await requireMembership(ctx.db, args.groupId, userId)
+        const me = await signedInProfile(ctx)
+        if (!me) {
+            return []
+        }
+        await requireMembership(ctx.db, args.groupId, me._id)
         const plans = await ctx.db
             .query("plans")
             .withIndex("by_group", (q) => q.eq("groupId", args.groupId))
@@ -134,18 +138,14 @@ export const listPlansForGroup = query({
                         .query("planParticipants")
                         .withIndex("by_plan", (q) => q.eq("planId", plan._id))
                         .collect()
-                    const profiles = await Promise.all(
-                        rows.map(async (row) =>
-                            ctx.db
-                                .query("profiles")
-                                .withIndex("by_auth_user", (q) => q.eq("authUserId", row.userId))
-                                .unique(),
-                        ),
+                    const names = await getProfiles(
+                        ctx.db,
+                        rows.map((row) => row.userId),
                     )
                     return Object.assign({}, plan, {
-                        participants: rows.map((row, index) => ({
+                        participants: rows.map((row) => ({
                             userId: row.userId,
-                            name: profiles[index]?.name ?? "Someone",
+                            name: nameOf(names, row.userId),
                         })),
                     })
                 }),
@@ -158,7 +158,11 @@ export const listPlansForRestaurant = query({
         restaurantId: v.id("restaurants"),
     },
     handler: async (ctx, args) => {
-        const userId = await requireUserId(ctx)
+        const me = await signedInProfile(ctx)
+        if (!me) {
+            return []
+        }
+        const userId = me._id
         const restaurant = await ctx.db.get(args.restaurantId)
         if (!restaurant) {
             throw new Error("Restaurant not found")
@@ -193,18 +197,14 @@ export const listPlansForRestaurant = query({
                         .query("planParticipants")
                         .withIndex("by_plan", (q) => q.eq("planId", plan._id))
                         .collect()
-                    const profiles = await Promise.all(
-                        rows.map(async (row) =>
-                            ctx.db
-                                .query("profiles")
-                                .withIndex("by_auth_user", (q) => q.eq("authUserId", row.userId))
-                                .unique(),
-                        ),
+                    const names = await getProfiles(
+                        ctx.db,
+                        rows.map((row) => row.userId),
                     )
                     return Object.assign({}, plan, {
-                        participants: rows.map((row, index) => ({
+                        participants: rows.map((row) => ({
                             userId: row.userId,
-                            name: profiles[index]?.name ?? "Someone",
+                            name: nameOf(names, row.userId),
                         })),
                     })
                 }),
@@ -218,7 +218,7 @@ export const updatePlanStatus = mutation({
         status: planStatusValidator,
     },
     handler: async (ctx, args) => {
-        const userId = await requireUserId(ctx)
+        const userId = (await requireProfile(ctx))._id
         const plan = await ctx.db.get(args.planId)
         if (!plan) {
             throw new Error("Plan not found")

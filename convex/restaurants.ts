@@ -22,7 +22,8 @@ import {
     type MutationCtx,
 } from "./_generated/server"
 import { googleMapsApiKey } from "./env"
-import { requireOwnedRestaurant, formatDisplayName, requireUserId } from "./helpers"
+import { requireOwnedRestaurant, withOwnerNames } from "./helpers"
+import { requireProfile, signedInProfile, viewerProfile } from "./model/identity/profiles"
 import { coordsValidator, enrichmentValidator, openingHoursValidator, restaurantImageValidator } from "./validators"
 import { isRestaurantVisibleTo } from "./visibility"
 
@@ -34,21 +35,35 @@ function assertImageLimit(images: ReadonlyArray<unknown>): void {
     }
 }
 
+type ProfileId = Id<"profiles">
+
+async function requireActionProfile(ctx: ActionCtx): Promise<ProfileId> {
+    const identity = await ctx.auth.getUserIdentity()
+    if (!identity) {
+        throw new Error("Unauthorized: authentication required")
+    }
+    const profileId = await ctx.runQuery(internal.users._viewerProfileId, {})
+    if (profileId === null) {
+        throw new Error("Unauthorized: profile required")
+    }
+    return profileId
+}
+
 type UploadRecord = {
-    ownerId: string
+    ownerId: ProfileId
     restaurantId: Id<"restaurants"> | null
     mimeType: string | null
     byteSize: number | null
 } | null
 
 // See ADR-0015: ownership comes from the server record.
-function requireUploadOwner(record: UploadRecord, ownerId: string): asserts record {
+function requireUploadOwner(record: UploadRecord, ownerId: ProfileId): asserts record {
     if (!record || record.ownerId !== ownerId) {
         throw new Error("Unauthorized: storage does not belong to you")
     }
 }
 
-function assertAttachable(record: UploadRecord, ownerId: string, allowId: Id<"restaurants"> | null): asserts record {
+function assertAttachable(record: UploadRecord, ownerId: ProfileId, allowId: Id<"restaurants"> | null): asserts record {
     requireUploadOwner(record, ownerId)
     if (record.restaurantId !== null && record.restaurantId !== allowId) {
         throw new Error("Storage is already attached to another restaurant")
@@ -64,14 +79,13 @@ type ImageInput = {
 // See ADR-0015: attribution comes from the server record.
 function withServerMetadata(
     image: ImageInput,
-    owner: Readonly<{ ownerId: string; displayName: string }>,
+    ownerId: ProfileId,
     record: NonNullable<UploadRecord>,
     url: string,
 ): {
     url: string
     storageId: Id<"_storage">
-    ownerId: string
-    displayName: string
+    ownerId: ProfileId
     mimeType?: string
     byteSize?: number
     width?: number
@@ -82,8 +96,7 @@ function withServerMetadata(
         storageId: image.storageId,
         ...(image.width !== undefined ? { width: image.width } : {}),
         ...(image.height !== undefined ? { height: image.height } : {}),
-        ownerId: owner.ownerId,
-        displayName: owner.displayName,
+        ownerId,
         ...(record.mimeType !== null ? { mimeType: record.mimeType } : {}),
         ...(record.byteSize !== null ? { byteSize: record.byteSize } : {}),
     }
@@ -233,17 +246,6 @@ export const _getRestaurantById = internalQuery({
     handler: async (ctx, { id }) => ctx.db.get(id),
 })
 
-export const _profileNameByAuthUser = internalQuery({
-    args: { authUserId: v.string() },
-    handler: async (ctx, { authUserId }) => {
-        const profile = await ctx.db
-            .query("profiles")
-            .withIndex("by_auth_user", (q) => q.eq("authUserId", authUserId))
-            .unique()
-        return formatDisplayName(profile?.name)
-    },
-})
-
 export const _patchRestaurant = internalMutation({
     args: {
         id: v.id("restaurants"),
@@ -262,8 +264,7 @@ export const _patchRestaurant = internalMutation({
 
 export const _insertRestaurant = internalMutation({
     args: {
-        ownerId: v.string(),
-        ownerName: v.string(),
+        ownerId: v.id("profiles"),
         name: v.string(),
         cuisine: v.string(),
         address: v.object({
@@ -296,14 +297,12 @@ export const _insertRestaurant = internalMutation({
             ...doc,
             ...(mutationKey !== undefined ? { clientMutationId: mutationKey } : {}),
             visibility: "private",
-            createdAt: Date.now(),
         })
         if (mutationKey !== undefined) {
             await ctx.db.insert("clientMutations", {
                 key: mutationKey,
                 userId: args.ownerId,
                 restaurantId,
-                createdAt: Date.now(),
             })
         }
         return { restaurantId, duplicate: false }
@@ -407,11 +406,15 @@ function buildEnrichment(parts: {
 export const get = query({
     args: {},
     handler: async (ctx) => {
-        const userId = await requireUserId(ctx)
-        return ctx.db
+        const me = await signedInProfile(ctx)
+        if (!me) {
+            return []
+        }
+        const owned = await ctx.db
             .query("restaurants")
-            .withIndex("by_owner", (q) => q.eq("ownerId", userId))
+            .withIndex("by_owner", (q) => q.eq("ownerId", me._id))
             .collect()
+        return withOwnerNames(ctx.db, owned)
     },
 })
 
@@ -421,16 +424,16 @@ export const getById = query({
         id: v.id("restaurants"),
     },
     handler: async (ctx, args) => {
-        const identity = await ctx.auth.getUserIdentity()
-        if (!identity) {
+        const me = await viewerProfile(ctx)
+        if (!me) {
             return null
         }
         const restaurant = await ctx.db.get(args.id)
-        if (!restaurant) {
+        if (!restaurant || !(await isRestaurantVisibleTo(ctx.db, me._id, restaurant))) {
             return null
         }
-        const visible = await isRestaurantVisibleTo(ctx.db, identity.subject, restaurant)
-        return visible ? restaurant : null
+        const [view] = await withOwnerNames(ctx.db, [restaurant])
+        return view ?? null
     },
 })
 
@@ -441,15 +444,17 @@ const FEED_PER_OWNER_TAKE = 50
 export const feed = query({
     args: {},
     handler: async (ctx) => {
-        const userId = await requireUserId(ctx)
+        const me = await signedInProfile(ctx)
+        if (!me) {
+            return []
+        }
+        const userId = me._id
 
         const friendships = await ctx.db
             .query("friendships")
             .withIndex("by_owner", (q) => q.eq("ownerId", userId))
             .take(FEED_FRIEND_CAP * 2)
-        const candidateIds = new Set(
-            friendships.filter((row) => row.status === "accepted").map((row) => row.friendAuthUserId),
-        )
+        const candidateIds = new Set(friendships.filter((row) => row.status === "accepted").map((row) => row.friendId))
         candidateIds.delete(userId)
 
         const discoveries: Doc<"restaurants">[] = []
@@ -470,7 +475,10 @@ export const feed = query({
                 }
             }
         }
-        return discoveries.toSorted((a, b) => b._creationTime - a._creationTime).slice(0, FEED_LIMIT)
+        return withOwnerNames(
+            ctx.db,
+            discoveries.toSorted((a, b) => b._creationTime - a._creationTime).slice(0, FEED_LIMIT),
+        )
     },
 })
 
@@ -483,7 +491,7 @@ type SubmittedImage = Infer<typeof restaurantImageValidator>
 
 async function collectAttachableUploads(
     ctx: ActionCtx,
-    userId: string,
+    userId: ProfileId,
     images: ReadonlyArray<SubmittedImage>,
 ): Promise<AttachableUpload[]> {
     const attachable: AttachableUpload[] = []
@@ -528,8 +536,7 @@ async function enrichAttachedImages(
     ctx: ActionCtx,
     attachable: ReadonlyArray<AttachableUpload>,
     images: ReadonlyArray<SubmittedImage>,
-    userId: string,
-    ownerName: string,
+    userId: ProfileId,
 ): Promise<ReturnType<typeof withServerMetadata>[]> {
     return Promise.all(
         attachable.map(async ({ image, record }) => {
@@ -539,7 +546,7 @@ async function enrichAttachedImages(
             if (url === undefined) {
                 throw new Error("Uploaded image is missing its URL")
             }
-            return withServerMetadata(image, { ownerId: userId, displayName: ownerName }, record, url)
+            return withServerMetadata(image, userId, record, url)
         }),
     )
 }
@@ -547,7 +554,7 @@ async function enrichAttachedImages(
 async function attachInsertedImages(
     ctx: ActionCtx,
     enrichedImages: ReadonlyArray<ReturnType<typeof withServerMetadata>>,
-    userId: string,
+    userId: ProfileId,
     restaurantId: Id<"restaurants">,
 ): Promise<void> {
     for (const img of enrichedImages) {
@@ -572,7 +579,7 @@ export const addWithOpeningHours = action({
         clientMutationId: v.optional(v.string()),
     },
     handler: async (ctx, args): Promise<Id<"restaurants">> => {
-        const userId = await requireUserId(ctx)
+        const userId = await requireActionProfile(ctx)
         assertRestaurantText(args)
         const images = args.images ?? []
         assertImageLimit(images)
@@ -583,12 +590,10 @@ export const addWithOpeningHours = action({
         const openingHours = await resolveOpeningHours(google.placeId)
 
         const enrichment = buildEnrichment({ placeId: google.placeId, coords, openingHours })
-        const ownerName = await ctx.runQuery(internal.restaurants._profileNameByAuthUser, { authUserId: userId })
         const details = cleanDetails({ notes: args.notes, link: args.link })
-        const enrichedImages = await enrichAttachedImages(ctx, attachable, images, userId, ownerName)
+        const enrichedImages = await enrichAttachedImages(ctx, attachable, images, userId)
         const { restaurantId, duplicate } = await ctx.runMutation(internal.restaurants._insertRestaurant, {
             ownerId: userId,
-            ownerName,
             name: args.name,
             cuisine: args.cuisine,
             address: {
@@ -641,11 +646,8 @@ async function attachFreshUploads(
     if (fresh.length === 0) {
         return
     }
-    const ownerName = await ctx.runQuery(internal.restaurants._profileNameByAuthUser, {
-        authUserId: restaurant.ownerId,
-    })
     for (const { image, record, url } of fresh) {
-        const enriched = withServerMetadata(image, { ownerId: restaurant.ownerId, displayName: ownerName }, record, url)
+        const enriched = withServerMetadata(image, restaurant.ownerId, record, url)
         storedById.set(image.storageId, enriched)
         await ctx.runMutation(internal.uploads.attach, {
             storageId: image.storageId,
@@ -721,7 +723,7 @@ export const update = mutation({
         visibility: v.optional(v.union(v.literal("private"), v.literal("shared"))),
     },
     handler: async (ctx, args) => {
-        const restaurant = await requireOwnedRestaurant(ctx, args.id)
+        const restaurant = await requireOwnedRestaurant(ctx.db, args.id, (await requireProfile(ctx))._id)
 
         assertRestaurantText(args)
 
@@ -748,7 +750,7 @@ export const remove = mutation({
         id: v.id("restaurants"),
     },
     handler: async (ctx, args) => {
-        const restaurant = await requireOwnedRestaurant(ctx, args.id)
+        const restaurant = await requireOwnedRestaurant(ctx.db, args.id, (await requireProfile(ctx))._id)
 
         // See ADR-0015: delete only owned, never foreign blobs.
         for (const img of restaurant.images) {
@@ -780,7 +782,7 @@ export const deleteImage = mutation({
         storageId: v.id("_storage"),
     },
     handler: async (ctx, args) => {
-        const restaurant = await requireOwnedRestaurant(ctx, args.restaurantId)
+        const restaurant = await requireOwnedRestaurant(ctx.db, args.restaurantId, (await requireProfile(ctx))._id)
 
         const entry = restaurant.images.find((img) => img.storageId === args.storageId)
         if (!entry || entry.url !== args.imageUrl) {
@@ -800,14 +802,11 @@ export const cleanupStorage = mutation({
         storageId: v.id("_storage"),
     },
     handler: async (ctx, args) => {
-        const identity = await ctx.auth.getUserIdentity()
-        if (!identity) {
-            throw new Error("Unauthorized: authentication required")
-        }
+        const me = await requireProfile(ctx)
 
         if (args.restaurantId === undefined) {
             const record = await ctx.runQuery(internal.uploads.lookupByStorage, { storageId: args.storageId })
-            requireUploadOwner(record, identity.subject)
+            requireUploadOwner(record, me._id)
             if (record.restaurantId !== null) {
                 throw new Error("Storage is attached to a restaurant; remove it from the restaurant instead")
             }
@@ -820,7 +819,7 @@ export const cleanupStorage = mutation({
         if (!restaurant) {
             throw new Error("Restaurant not found")
         }
-        if (restaurant.ownerId !== identity.subject) {
+        if (restaurant.ownerId !== me._id) {
             throw new Error("Unauthorized: only the owner can change this restaurant")
         }
 
@@ -839,7 +838,7 @@ export const cleanupStorage = mutation({
 export const refreshOpeningHours = action({
     args: { restaurantId: v.id("restaurants") },
     handler: async (ctx, { restaurantId }) => {
-        const userId = await requireUserId(ctx)
+        const userId = await requireActionProfile(ctx)
         const restaurant = await ctx.runQuery(internal.restaurants._getRestaurantById, { id: restaurantId })
         if (!restaurant) {
             throw new Error("Restaurant not found")
@@ -864,7 +863,7 @@ export const refreshOpeningHours = action({
 export const lookupPlaceIdAndHours = action({
     args: { restaurantId: v.id("restaurants") },
     handler: async (ctx, { restaurantId }) => {
-        const userId = await requireUserId(ctx)
+        const userId = await requireActionProfile(ctx)
         const restaurant = await ctx.runQuery(internal.restaurants._getRestaurantById, { id: restaurantId })
         if (!restaurant) {
             throw new Error("Restaurant not found")

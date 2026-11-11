@@ -71,7 +71,6 @@ describe("users", () => {
                 name: "Eve",
                 email: "eve@example.com",
                 avatar: { url: "https://example.com/a.jpg", storageId },
-                createdAt: 1,
             })
         })
         await t.mutation(api.users.updateMe, { removeAvatar: true })

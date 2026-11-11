@@ -5,6 +5,7 @@ import { internalMutation, type MutationCtx } from "./_generated/server"
 import { createAuth } from "./auth"
 import { getValidatedSiteUrl } from "./env"
 import { formatDisplayName } from "./helpers"
+import { profileByEmail } from "./model/identity/profiles"
 
 export const SEED_OWNER_EMAIL = "preview-owner@example.com"
 export const SEED_FRIEND_EMAIL = "preview-friend@example.com"
@@ -38,28 +39,21 @@ function seedMarker(slug: string): string {
     return `seed:${slug}`
 }
 
-async function findProfileByEmail(ctx: MutationCtx, email: string): Promise<{ authUserId: string } | null> {
-    const profile = await ctx.db
-        .query("profiles")
-        .withIndex("by_email", (q) => q.eq("email", email))
-        .unique()
-    return profile ? { authUserId: profile.authUserId } : null
-}
+type ProfileId = Id<"profiles">
 
-async function insertSeedProfile(ctx: MutationCtx, authUserId: string, user: SeedUser): Promise<void> {
-    await ctx.db.insert("profiles", {
+async function insertSeedProfile(ctx: MutationCtx, authUserId: string, user: SeedUser): Promise<ProfileId> {
+    return ctx.db.insert("profiles", {
         authUserId,
         name: formatDisplayName(user.name),
         email: user.email,
-        createdAt: Date.now(),
     })
 }
 
 // See ADR-0005: users via auth API, profile row marks reruns.
-async function ensureSeedUser(ctx: MutationCtx, user: SeedUser): Promise<string> {
-    const existing = await findProfileByEmail(ctx, user.email)
+async function ensureSeedUser(ctx: MutationCtx, user: SeedUser): Promise<ProfileId> {
+    const existing = await profileByEmail(ctx.db, user.email)
     if (existing) {
-        return existing.authUserId
+        return existing._id
     }
     const auth = createAuth(ctx)
     const headers = new Headers({ origin: getValidatedSiteUrl() })
@@ -68,8 +62,7 @@ async function ensureSeedUser(ctx: MutationCtx, user: SeedUser): Promise<string>
             body: { name: user.name, email: user.email, password: SEED_PASSWORD },
             headers,
         })
-        await insertSeedProfile(ctx, signedUp.user.id, user)
-        return signedUp.user.id
+        return await insertSeedProfile(ctx, signedUp.user.id, user)
     } catch (error) {
         if (!(error instanceof APIError) || error.statusCode !== 422) {
             throw error
@@ -81,12 +74,11 @@ async function ensureSeedUser(ctx: MutationCtx, user: SeedUser): Promise<string>
             body: { email: user.email, password: SEED_PASSWORD },
             headers,
         })
-        const retry = await findProfileByEmail(ctx, user.email)
+        const retry = await profileByEmail(ctx.db, user.email)
         if (retry) {
-            return retry.authUserId
+            return retry._id
         }
-        await insertSeedProfile(ctx, signedIn.user.id, user)
-        return signedIn.user.id
+        return insertSeedProfile(ctx, signedIn.user.id, user)
     }
 }
 
@@ -94,8 +86,7 @@ async function ensureSeedUser(ctx: MutationCtx, user: SeedUser): Promise<string>
 // the UI do not duplicate them and reruns reuse the same rows.
 async function ensureSeedRestaurant(
     ctx: MutationCtx,
-    ownerId: string,
-    ownerName: string,
+    ownerId: ProfileId,
     place: SeedRestaurant,
 ): Promise<Id<"restaurants">> {
     // Single-owner scope; the seed needs at most a handful of rows. Take keeps
@@ -110,31 +101,29 @@ async function ensureSeedRestaurant(
     }
     const restaurantId = await ctx.db.insert("restaurants", {
         ownerId,
-        ownerName,
         name: place.name,
         cuisine: place.cuisine,
         address: { label: place.label },
         images: [],
         visibility: "shared",
         clientMutationId: seedMarker(place.slug),
-        createdAt: Date.now(),
     })
     return restaurantId
 }
 
-async function ensureSeedMembership(ctx: MutationCtx, groupId: Id<"groups">, userId: string): Promise<void> {
+async function ensureSeedMembership(ctx: MutationCtx, groupId: Id<"groups">, userId: ProfileId): Promise<void> {
     const membership = await ctx.db
         .query("groupMembers")
         .withIndex("by_group_user", (q) => q.eq("groupId", groupId).eq("userId", userId))
         .unique()
     if (!membership) {
-        await ctx.db.insert("groupMembers", { groupId, userId, joinedAt: Date.now() })
+        await ctx.db.insert("groupMembers", { groupId, userId })
     }
 }
 
 // The group is keyed by owner plus name. Reruns reuse it and repair missing
 // memberships instead of duplicating anything.
-async function ensureSeedGroup(ctx: MutationCtx, ownerId: string, friendId: string): Promise<Id<"groups">> {
+async function ensureSeedGroup(ctx: MutationCtx, ownerId: ProfileId, friendId: ProfileId): Promise<Id<"groups">> {
     // Single-owner scope; the seed needs at most one row. Take keeps the read
     // bounded so the scan cannot grow without limit as tables grow.
     const owned = await ctx.db
@@ -142,10 +131,7 @@ async function ensureSeedGroup(ctx: MutationCtx, ownerId: string, friendId: stri
         .withIndex("by_owner", (q) => q.eq("ownerId", ownerId))
         .take(1000)
     const match = owned.find((row) => row.name === SEED_GROUP_NAME)
-    const groupId =
-        match !== undefined
-            ? match._id
-            : await ctx.db.insert("groups", { ownerId, name: SEED_GROUP_NAME, createdAt: Date.now() })
+    const groupId = match !== undefined ? match._id : await ctx.db.insert("groups", { ownerId, name: SEED_GROUP_NAME })
     await ensureSeedMembership(ctx, groupId, ownerId)
     await ensureSeedMembership(ctx, groupId, friendId)
     return groupId
@@ -162,7 +148,7 @@ export const previewBaseline = internalMutation({
         for (const place of SEED_RESTAURANTS) {
             restaurants.push({
                 slug: place.slug,
-                restaurantId: await ensureSeedRestaurant(ctx, ownerId, SEED_OWNER.name, place),
+                restaurantId: await ensureSeedRestaurant(ctx, ownerId, place),
             })
         }
         const groupId = await ensureSeedGroup(ctx, ownerId, friendId)
@@ -174,14 +160,14 @@ export const previewBaseline = internalMutation({
             .take(1000)
         return {
             users: [
-                { email: SEED_OWNER_EMAIL, authUserId: ownerId },
-                { email: SEED_FRIEND_EMAIL, authUserId: friendId },
+                { email: SEED_OWNER_EMAIL, profileId: ownerId },
+                { email: SEED_FRIEND_EMAIL, profileId: friendId },
             ],
             restaurants,
             group: {
                 name: SEED_GROUP_NAME,
                 groupId,
-                memberAuthUserIds: members.map((member) => member.userId).toSorted(),
+                memberProfileIds: members.map((member) => member.userId).toSorted(),
             },
         }
     },

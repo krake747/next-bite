@@ -3,6 +3,7 @@ import { act, renderHook } from "@testing-library/react"
 import { type ConvexReactClient } from "convex/react"
 import { describe, expect, test, vi } from "vitest"
 
+import { toId } from "@api/data.model"
 import { type Id } from "@convex/_generated/dataModel"
 import { CollectionSyncError, useRestaurants } from "@core/restaurants"
 import { useAuth as useProbeAuth } from "@core/session"
@@ -117,14 +118,13 @@ function restaurantFixture(overrides?: Partial<RestaurantDoc>): RestaurantDoc {
     return {
         _id: "r1",
         _creationTime: 1000,
-        ownerId: "user-1",
+        ownerId: toId<"profiles">("user-1"),
         ownerName: "Alex",
         name: "Trattoria Verde",
         cuisine: "Italian",
         address: { label: "Luxembourg City" },
         images: [],
         visibility: "private",
-        createdAt: 1000,
         ...overrides,
     } as unknown as RestaurantDoc
 }
@@ -180,7 +180,7 @@ describe("restaurant shape translators", () => {
 
     test("builds temp rows carrying the client mutation key", () => {
         const temp = buildTempRestaurant({
-            ownerId: "user-1",
+            ownerId: toId<"profiles">("user-1"),
             ownerName: "Alex",
             name: "Trattoria Verde",
             cuisine: "Italian",
@@ -270,7 +270,7 @@ describe("restaurant collections", () => {
         await collections.owner.preload()
 
         const temp = buildTempRestaurant({
-            ownerId: "user-1",
+            ownerId: toId<"profiles">("user-1"),
             ownerName: "Alex",
             name: "Trattoria Verde",
             cuisine: "Italian",
@@ -318,7 +318,7 @@ describe("restaurant collections", () => {
 
         const first = collections.owner.insert(
             buildTempRestaurant({
-                ownerId: "user-1",
+                ownerId: toId<"profiles">("user-1"),
                 ownerName: "Alex",
                 name: "First",
                 cuisine: "Italian",
@@ -328,7 +328,7 @@ describe("restaurant collections", () => {
         )
         const second = collections.owner.insert(
             buildTempRestaurant({
-                ownerId: "user-1",
+                ownerId: toId<"profiles">("user-1"),
                 ownerName: "Alex",
                 name: "Second",
                 cuisine: "Japanese",
@@ -371,7 +371,7 @@ describe("restaurant collections", () => {
 
         const tx = collections.owner.insert(
             buildTempRestaurant({
-                ownerId: "user-1",
+                ownerId: toId<"profiles">("user-1"),
                 ownerName: "Alex",
                 name: "Trattoria Verde",
                 cuisine: "Italian",
@@ -462,7 +462,7 @@ describe("restaurant collections", () => {
             error: null,
         })
         const annasBackend = createSeededClient({
-            liveRows: [restaurantFixture({ ownerId: "anna", ownerName: "Anna" })],
+            liveRows: [restaurantFixture({ ownerId: toId<"profiles">("anna"), ownerName: "Anna" })],
         })
         injectSyncClient(annasBackend.client)
         const queryClient = new QueryClient()
@@ -481,7 +481,7 @@ describe("restaurant collections", () => {
             error: null,
         })
         const bensBackend = createSeededClient({
-            liveRows: [restaurantFixture({ ownerId: "ben", ownerName: "Ben", name: "Sushi Bar" })],
+            liveRows: [restaurantFixture({ ownerId: toId<"profiles">("ben"), ownerName: "Ben", name: "Sushi Bar" })],
         })
         injectSyncClient(bensBackend.client)
 
@@ -750,7 +750,7 @@ describe("restaurant collections", () => {
             const draft = getSessionCollections(backend.client, mockPersist(), SESSION)
             const pending = draft.owner.insert(
                 buildTempRestaurant({
-                    ownerId: "user-1",
+                    ownerId: toId<"profiles">("user-1"),
                     ownerName: "Alex",
                     name: "Sushi Bar",
                     cuisine: "Japanese",

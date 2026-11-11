@@ -160,7 +160,6 @@ describe("app shell", () => {
                             authUserId: "user-1",
                             name: "Alexander",
                             email: "alex@example.com",
-                            createdAt: 1,
                         },
                     },
                 ],

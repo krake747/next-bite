@@ -43,10 +43,10 @@ function seedQuery(fn: string, args: unknown, value: unknown): void {
 }
 
 function seedFriends(): void {
-    seedQuery("friendships:listFriends", undefined, [{ authUserId: "ben", name: "Ben" }])
+    seedQuery("friendships:listFriends", undefined, [{ profileId: "ben", name: "Ben" }])
     seedQuery("friendships:listFriendRequests", undefined, {
-        incoming: [{ authUserId: "cas", name: "Cas" }],
-        outgoing: [{ authUserId: "dan", name: "Dan" }],
+        incoming: [{ profileId: "cas", name: "Cas" }],
+        outgoing: [{ profileId: "dan", name: "Dan" }],
     })
     seedQuery("restaurants:feed", undefined, [])
     seedQuery("restaurants:get", undefined, [])
@@ -109,7 +109,7 @@ describe("friends screen", () => {
         fireEvent.click(screen.getByRole("button", { name: "Accept" }))
 
         await waitFor(() => {
-            expect(mutationCalls).toContainEqual({ fn: "friendships:acceptFriend", args: { friendAuthUserId: "cas" } })
+            expect(mutationCalls).toContainEqual({ fn: "friendships:acceptFriend", args: { friendId: "cas" } })
         })
     })
 
@@ -126,7 +126,7 @@ describe("friends screen", () => {
         fireEvent.click(screen.getByRole("button", { name: "Remove" }))
 
         await waitFor(() => {
-            expect(mutationCalls).toContainEqual({ fn: "friendships:removeFriend", args: { friendAuthUserId: "ben" } })
+            expect(mutationCalls).toContainEqual({ fn: "friendships:removeFriend", args: { friendId: "ben" } })
         })
     })
 

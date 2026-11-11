@@ -3,6 +3,7 @@ import { useState } from "react"
 
 import { useSuspenseConvexQuery } from "@api/convex.context"
 import { convexQueryOptions, warmQueriesWithin } from "@api/convex.options"
+import { type Id } from "@api/data.model"
 import { api } from "@api/endpoints"
 import { clearError, errorFrom, type FormError } from "@core/outcome"
 import { useRestaurants } from "@core/restaurants"
@@ -125,10 +126,10 @@ function RequestsSection() {
         return null
     }
 
-    const handleAccept = (friendAuthUserId: string) => {
+    const handleAccept = (friendId: Id<"profiles">) => {
         setError(clearError)
         acceptFriend.mutate(
-            { friendAuthUserId },
+            { friendId },
             {
                 onError: (err) => {
                     setError(errorFrom(err, "Could not accept the request"))
@@ -148,7 +149,7 @@ function RequestsSection() {
             <ul className="grid gap-3 pt-4 md:grid-cols-2">
                 {requests.incoming.map((request) => (
                     <li
-                        key={request.authUserId}
+                        key={request.profileId}
                         className="flex items-center justify-between gap-3 rounded-card border border-border bg-surface p-5 shadow-card"
                     >
                         <div className="min-w-0">
@@ -159,7 +160,7 @@ function RequestsSection() {
                             size="sm"
                             disabled={acceptFriend.isPending}
                             onClick={() => {
-                                handleAccept(request.authUserId)
+                                handleAccept(request.profileId)
                             }}
                         >
                             Accept
@@ -168,7 +169,7 @@ function RequestsSection() {
                 ))}
                 {requests.outgoing.map((request) => (
                     <li
-                        key={request.authUserId}
+                        key={request.profileId}
                         className="flex items-center justify-between gap-3 rounded-card border border-border bg-surface p-5 shadow-card"
                     >
                         <div className="min-w-0">
@@ -214,10 +215,10 @@ function FriendsList() {
         )
     }
 
-    const handleRemove = (friendAuthUserId: string) => {
+    const handleRemove = (friendId: Id<"profiles">) => {
         setError(clearError)
         removeFriend.mutate(
-            { friendAuthUserId },
+            { friendId },
             {
                 onError: (err) => {
                     setError(errorFrom(err, "Could not remove that friend"))
@@ -236,10 +237,7 @@ function FriendsList() {
             <OwnListNudge />
             <ul className="grid gap-4 pt-6 md:grid-cols-2">
                 {friends.map((friend) => (
-                    <li
-                        key={friend.authUserId}
-                        className="rounded-card border border-border bg-surface p-5 shadow-card"
-                    >
+                    <li key={friend.profileId} className="rounded-card border border-border bg-surface p-5 shadow-card">
                         <div className="flex items-center justify-between gap-3">
                             <p className="truncate font-display text-lg font-semibold text-balance text-foreground">
                                 {friend.name}
@@ -249,7 +247,7 @@ function FriendsList() {
                                 tone="secondary"
                                 disabled={removeFriend.isPending}
                                 onClick={() => {
-                                    handleRemove(friend.authUserId)
+                                    handleRemove(friend.profileId)
                                 }}
                             >
                                 Remove

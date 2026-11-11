@@ -73,7 +73,6 @@ function ownerRestaurant(overrides?: Partial<Omit<RestaurantDoc, "_id">> & { _id
         address: { label: "Luxembourg City" },
         images: [],
         visibility: "private",
-        createdAt: 1000,
         ...overrides,
     } as unknown as RestaurantDoc
 }
@@ -148,6 +147,10 @@ describe("group detail", () => {
     const groupId = "g1"
 
     function seedDetail(): void {
+        seedQuery("users:getMe", undefined, {
+            status: "ready",
+            profile: { _id: "user-1", authUserId: "user-1", name: "Alex", email: "alex@example.com" },
+        })
         seedQuery("groups:listMyGroups", undefined, [{ group: { _id: groupId, name: "Food Crew" }, isOwner: true }])
         seedQuery(
             "groups:getGroup",

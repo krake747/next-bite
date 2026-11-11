@@ -39,7 +39,7 @@ const TRANSIENT_TTL_MS = 24 * 60 * 60 * 1000
 export const record = internalMutation({
     args: {
         storageId: v.id("_storage"),
-        ownerId: v.string(),
+        ownerId: v.id("profiles"),
     },
     handler: async (ctx, args) => {
         const existing = await findUploadByStorage(ctx.db, args.storageId)
@@ -56,7 +56,6 @@ export const record = internalMutation({
             expiresAt: Date.now() + TRANSIENT_TTL_MS,
             ...(mimeType !== undefined ? { mimeType } : {}),
             ...(byteSize !== undefined ? { byteSize } : {}),
-            createdAt: Date.now(),
         })
     },
 })
@@ -76,7 +75,7 @@ export const removeRecord = internalMutation({
 export const attach = internalMutation({
     args: {
         storageId: v.id("_storage"),
-        ownerId: v.string(),
+        ownerId: v.id("profiles"),
         restaurantId: v.id("restaurants"),
     },
     handler: async (ctx, args) => {
@@ -98,7 +97,7 @@ export const attach = internalMutation({
 export const detach = internalMutation({
     args: {
         storageId: v.id("_storage"),
-        ownerId: v.string(),
+        ownerId: v.id("profiles"),
     },
     handler: async (ctx, args) => {
         const existing = await findUploadByStorage(ctx.db, args.storageId)

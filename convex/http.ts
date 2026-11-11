@@ -54,8 +54,8 @@ http.route({
     method: "POST",
     handler: httpAction(async (ctx, request) => {
         try {
-            const identity = await ctx.auth.getUserIdentity()
-            if (!identity) {
+            const ownerId = await ctx.runQuery(internal.users._viewerProfileId, {})
+            if (ownerId === null) {
                 return jsonResponse(request, 401, { error: "Sign in to upload photos" })
             }
 
@@ -68,7 +68,7 @@ http.route({
 
             const storageId = await ctx.storage.store(blob)
             const url = await ctx.storage.getUrl(storageId)
-            await ctx.runMutation(internal.uploads.record, { storageId, ownerId: identity.subject })
+            await ctx.runMutation(internal.uploads.record, { storageId, ownerId })
             const stored = await ctx.runQuery(internal.uploads.lookupByStorage, { storageId })
 
             return jsonResponse(request, 200, {

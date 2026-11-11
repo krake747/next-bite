@@ -5,14 +5,12 @@ import { inviteTargetValidator } from "../../validators"
 
 export const groupsTables = {
     groups: defineTable({
-        ownerId: v.string(),
+        ownerId: v.id("profiles"),
         name: v.string(),
-        createdAt: v.number(),
     }).index("by_owner", ["ownerId"]),
     groupMembers: defineTable({
         groupId: v.id("groups"),
-        userId: v.string(),
-        joinedAt: v.number(),
+        userId: v.id("profiles"),
     })
         .index("by_group", ["groupId"])
         .index("by_user", ["userId"])
@@ -21,9 +19,8 @@ export const groupsTables = {
         token: v.string(),
         target: inviteTargetValidator,
         invitedEmail: v.optional(v.string()),
-        invitedBy: v.string(),
+        invitedBy: v.id("profiles"),
         status: v.union(v.literal("pending"), v.literal("accepted"), v.literal("expired"), v.literal("revoked")),
         expiresAt: v.number(),
-        createdAt: v.number(),
     }).index("by_token", ["token"]),
 }

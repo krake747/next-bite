@@ -3,7 +3,8 @@ import { v } from "convex/values"
 import { internal } from "./_generated/api"
 import { type Doc, type Id } from "./_generated/dataModel"
 import { mutation, type MutationCtx, query } from "./_generated/server"
-import { FALLBACK_GROUP_NAME, formatDisplayName, requireMembership, requireUserId } from "./helpers"
+import { FALLBACK_GROUP_NAME, requireMembership } from "./helpers"
+import { getProfiles, nameOf, requireProfile } from "./model/identity/profiles"
 import { inviteTargetValidator } from "./validators"
 
 const INVITE_TTL_MS = 7 * 24 * 60 * 60 * 1000
@@ -14,7 +15,7 @@ export const createInvite = mutation({
         invitedEmail: v.optional(v.string()),
     },
     handler: async (ctx, args) => {
-        const userId = await requireUserId(ctx)
+        const userId = (await requireProfile(ctx))._id
         if (args.target.kind === "group") {
             await requireMembership(ctx.db, args.target.groupId, userId)
         }
@@ -31,7 +32,6 @@ export const createInvite = mutation({
             invitedBy: userId,
             status: "pending",
             expiresAt: Date.now() + INVITE_TTL_MS,
-            createdAt: Date.now(),
         })
         return token
     },
@@ -63,17 +63,14 @@ export const getInvite = query({
                 throw new Error("Group no longer exists")
             }
         }
-        const inviter = await ctx.db
-            .query("profiles")
-            .withIndex("by_auth_user", (q) => q.eq("authUserId", invite.invitedBy))
-            .unique()
+        const inviter = await getProfiles(ctx.db, [invite.invitedBy])
         const groupName =
             invite.target.kind === "group"
                 ? ((await ctx.db.get(invite.target.groupId))?.name ?? FALLBACK_GROUP_NAME)
                 : undefined
         return {
             target: invite.target,
-            invitedByName: formatDisplayName(inviter?.name),
+            invitedByName: nameOf(inviter, invite.invitedBy),
             ...(groupName !== undefined ? { groupName } : {}),
             status: invite.status,
             expiresAt: invite.expiresAt,
@@ -105,7 +102,7 @@ async function acceptGroupInvite(
     ctx: MutationCtx,
     invite: Doc<"invitations">,
     groupId: Id<"groups">,
-    userId: string,
+    userId: Id<"profiles">,
 ): Promise<{ readonly result: "alreadyMember" | "accepted"; readonly groupId: Id<"groups"> }> {
     const group = await ctx.db.get(groupId)
     if (!group) {
@@ -125,21 +122,21 @@ async function acceptGroupInvite(
     if (existing) {
         return { result: "alreadyMember", groupId }
     }
-    await ctx.db.insert("groupMembers", { groupId, userId, joinedAt: Date.now() })
+    await ctx.db.insert("groupMembers", { groupId, userId })
     return { result: "accepted", groupId }
 }
 
 async function acceptFriendInvite(
     ctx: MutationCtx,
     invite: Doc<"invitations">,
-    userId: string,
-): Promise<{ readonly result: "alreadyMember" | "accepted"; readonly friendId: string }> {
+    userId: Id<"profiles">,
+): Promise<{ readonly result: "alreadyMember" | "accepted"; readonly friendId: Id<"profiles"> }> {
     if (invite.invitedBy === userId) {
         throw new Error("You cannot accept your own invitation")
     }
     const pair = await ctx.db
         .query("friendships")
-        .withIndex("by_owner_friend", (q) => q.eq("ownerId", invite.invitedBy).eq("friendAuthUserId", userId))
+        .withIndex("by_owner_friend", (q) => q.eq("ownerId", invite.invitedBy).eq("friendId", userId))
         .unique()
     if (pair?.status === "accepted") {
         if (invite.status !== "accepted") {
@@ -157,7 +154,7 @@ export const acceptInvite = mutation({
         token: v.string(),
     },
     handler: async (ctx, args) => {
-        const userId = await requireUserId(ctx)
+        const userId = (await requireProfile(ctx))._id
         const invite = await loadUsableInviteForAccept(ctx, args.token)
         if (invite.target.kind === "group") {
             return acceptGroupInvite(ctx, invite, invite.target.groupId, userId)
@@ -171,7 +168,7 @@ export const revokeInvite = mutation({
         token: v.string(),
     },
     handler: async (ctx, args) => {
-        const userId = await requireUserId(ctx)
+        const userId = (await requireProfile(ctx))._id
         const invite = await ctx.db
             .query("invitations")
             .withIndex("by_token", (q) => q.eq("token", args.token))

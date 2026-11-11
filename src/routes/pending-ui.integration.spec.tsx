@@ -41,14 +41,13 @@ const restaurantId = toId<"restaurants">("r1")
 const verde: RestaurantDoc = {
     _id: restaurantId,
     _creationTime: 1000,
-    ownerId: alex.id,
+    ownerId: toId<"profiles">(alex.id),
     ownerName: alex.name,
     name: "Trattoria Verde",
     cuisine: "Italian",
     address: { label: "Luxembourg City" },
     images: [],
     visibility: "shared",
-    createdAt: 1000,
 }
 
 type Gate = { promise: Promise<void>; open: () => void }

@@ -22,6 +22,14 @@ async function registerUser(t: TestConvexForDataModel<DataModel>, subject: strin
     await asUser(t, subject).mutation(api.users.ensureProfile, { email, name: subject })
 }
 
+async function idOf(t: TestConvexForDataModel<DataModel>, subject: string): Promise<Id<"profiles">> {
+    const me = await asUser(t, subject).query(api.users.getMe, {})
+    if (me.status !== "ready") {
+        throw new Error(`No profile for ${subject}`)
+    }
+    return me.profile._id
+}
+
 async function befriend(t: TestConvexForDataModel<DataModel>, a: string, b: string): Promise<void> {
     const token = await asUser(t, a).mutation(api.invitations.createInvite, { target: { kind: "friend" } })
     await asUser(t, b).mutation(api.invitations.acceptInvite, { token })
@@ -44,6 +52,32 @@ async function joinGroup(
     const token = await asUser(t, owner).mutation(api.invitations.createInvite, { target: { kind: "group", groupId } })
     await asUser(t, subject).mutation(api.invitations.acceptInvite, { token })
 }
+
+describe("profile references", () => {
+    test("stores the owner as a profile id and resolves the name at read time", async () => {
+        const t = setup()
+        await registerUser(t, "anna", "anna@example.com")
+        const restaurantId = await createRestaurant(t, "anna")
+
+        const [before] = await asUser(t, "anna").query(api.restaurants.get, {})
+        expect(before?.ownerId).toBe(await idOf(t, "anna"))
+        expect(before?.ownerName).toBe("anna")
+
+        await asUser(t, "anna").mutation(api.users.updateMe, { name: "Anna B" })
+        const after = await asUser(t, "anna").query(api.restaurants.getById, { id: restaurantId })
+        expect(after?.ownerName).toBe("Anna B")
+    })
+
+    test("rejects writes until the caller has a profile and reads empty meanwhile", async () => {
+        const t = setup()
+
+        await expect(asUser(t, "newcomer").mutation(api.groups.createGroup, { name: "Food Crew" })).rejects.toThrow(
+            "Unauthorized: profile required",
+        )
+        await expect(asUser(t, "newcomer").query(api.groups.listMyGroups, {})).resolves.toEqual([])
+        await expect(asUser(t, "newcomer").query(api.restaurants.feed, {})).resolves.toEqual([])
+    })
+})
 
 describe("sharing and social gating", () => {
     test("lets a friend react and blocks strangers", async () => {
@@ -114,7 +148,7 @@ describe("sharing and social gating", () => {
 
         await befriend(t, "anna", "ben")
         await asUser(t, "ben").mutation(api.social.toggleInterest, { restaurantId, status: "want" })
-        await asUser(t, "anna").mutation(api.friendships.removeFriend, { friendAuthUserId: "ben" })
+        await asUser(t, "anna").mutation(api.friendships.removeFriend, { friendId: await idOf(t, "ben") })
         await expect(
             asUser(t, "ben").mutation(api.social.toggleInterest, { restaurantId, status: "been" }),
         ).rejects.toThrow("not shared with you")
@@ -158,14 +192,14 @@ describe("sharing and social gating", () => {
 
         const token = await asUser(t, "anna").mutation(api.invitations.createInvite, { target: { kind: "friend" } })
         const first = await asUser(t, "ben").mutation(api.invitations.acceptInvite, { token })
-        expect(first).toEqual({ result: "accepted", friendId: "anna" })
+        expect(first).toEqual({ result: "accepted", friendId: await idOf(t, "anna") })
         const second = await asUser(t, "ben").mutation(api.invitations.acceptInvite, { token })
-        expect(second).toEqual({ result: "alreadyMember", friendId: "anna" })
+        expect(second).toEqual({ result: "alreadyMember", friendId: await idOf(t, "anna") })
 
         const annaFriends = await asUser(t, "anna").query(api.friendships.listFriends, {})
         const benFriends = await asUser(t, "ben").query(api.friendships.listFriends, {})
-        expect(annaFriends).toEqual([{ authUserId: "ben", name: "ben" }])
-        expect(benFriends).toEqual([{ authUserId: "anna", name: "anna" }])
+        expect(annaFriends).toEqual([{ profileId: await idOf(t, "ben"), name: "ben" }])
+        expect(benFriends).toEqual([{ profileId: await idOf(t, "anna"), name: "anna" }])
     })
 
     test("lists a group's shared restaurants for members only", async () => {
@@ -197,7 +231,9 @@ describe("sharing and social gating", () => {
         const view = await asUser(t, "ben").query(api.groups.getGroup, { groupId })
         expect(view?.group.name).toBe("Food Crew")
         expect(view?.isOwner).toBe(false)
-        expect(view?.members.map((m) => m.userId).toSorted()).toEqual(["anna", "ben"])
+        expect(view?.members.map((m) => m.userId).toSorted()).toEqual(
+            [await idOf(t, "anna"), await idOf(t, "ben")].toSorted(),
+        )
         expect(await asUser(t, "cas").query(api.groups.getGroup, { groupId })).toBeNull()
     })
 
@@ -230,18 +266,18 @@ describe("sharing and social gating", () => {
 
         const annasView = await asUser(t, "anna").query(api.friendships.listFriendRequests, {})
         expect(annasView.incoming).toEqual([])
-        expect(annasView.outgoing).toEqual([{ authUserId: "ben", name: "ben" }])
+        expect(annasView.outgoing).toEqual([{ profileId: await idOf(t, "ben"), name: "ben" }])
         const bensView = await asUser(t, "ben").query(api.friendships.listFriendRequests, {})
-        expect(bensView.incoming).toEqual([{ authUserId: "anna", name: "anna" }])
+        expect(bensView.incoming).toEqual([{ profileId: await idOf(t, "anna"), name: "anna" }])
         expect(bensView.outgoing).toEqual([])
 
-        await asUser(t, "ben").mutation(api.friendships.acceptFriend, { friendAuthUserId: "anna" })
+        await asUser(t, "ben").mutation(api.friendships.acceptFriend, { friendId: await idOf(t, "anna") })
 
         expect(await asUser(t, "anna").query(api.friendships.listFriends, {})).toEqual([
-            { authUserId: "ben", name: "ben" },
+            { profileId: await idOf(t, "ben"), name: "ben" },
         ])
         expect(await asUser(t, "ben").query(api.friendships.listFriends, {})).toEqual([
-            { authUserId: "anna", name: "anna" },
+            { profileId: await idOf(t, "anna"), name: "anna" },
         ])
         expect((await asUser(t, "anna").query(api.friendships.listFriendRequests, {})).outgoing).toEqual([])
     })
@@ -267,10 +303,19 @@ describe("sharing and social gating", () => {
     test("rejects friend requests to unknown users", async () => {
         const t = setup()
         await registerUser(t, "anna", "anna@example.com")
+        const ghost = await t.run(async (ctx) => {
+            const id = await ctx.db.insert("profiles", {
+                authUserId: "ghost",
+                name: "ghost",
+                email: "ghost@example.com",
+            })
+            await ctx.db.delete("profiles", id)
+            return id
+        })
 
-        await expect(
-            asUser(t, "anna").mutation(api.friendships.requestFriend, { friendAuthUserId: "ghost" }),
-        ).rejects.toThrow("User not found")
+        await expect(asUser(t, "anna").mutation(api.friendships.requestFriend, { friendId: ghost })).rejects.toThrow(
+            "User not found",
+        )
     })
 
     test("rejects accepting without a pending request", async () => {
@@ -279,7 +324,7 @@ describe("sharing and social gating", () => {
         await registerUser(t, "cas", "cas@example.com")
 
         await expect(
-            asUser(t, "cas").mutation(api.friendships.acceptFriend, { friendAuthUserId: "anna" }),
+            asUser(t, "cas").mutation(api.friendships.acceptFriend, { friendId: await idOf(t, "anna") }),
         ).rejects.toThrow("No pending friend request")
     })
 
@@ -291,7 +336,7 @@ describe("sharing and social gating", () => {
         await asUser(t, "ben").mutation(api.friendships.requestFriendByEmail, { email: "anna@example.com" })
 
         expect(await asUser(t, "anna").query(api.friendships.listFriends, {})).toEqual([
-            { authUserId: "ben", name: "ben" },
+            { profileId: await idOf(t, "ben"), name: "ben" },
         ])
         expect((await asUser(t, "anna").query(api.friendships.listFriendRequests, {})).outgoing).toEqual([])
         expect((await asUser(t, "ben").query(api.friendships.listFriendRequests, {})).incoming).toEqual([])
@@ -305,7 +350,7 @@ describe("sharing and social gating", () => {
         await asUser(t, "anna").mutation(api.friendships.requestFriendByEmail, { email: "ben@example.com" })
 
         const bensView = await asUser(t, "ben").query(api.friendships.listFriendRequests, {})
-        expect(bensView.incoming).toEqual([{ authUserId: "anna", name: "anna" }])
+        expect(bensView.incoming).toEqual([{ profileId: await idOf(t, "anna"), name: "anna" }])
     })
 
     test("shows places to accepted friends, not pending ones", async () => {
@@ -314,7 +359,7 @@ describe("sharing and social gating", () => {
         await registerUser(t, "ben", "ben@example.com")
         await registerUser(t, "cas", "cas@example.com")
         await asUser(t, "anna").mutation(api.friendships.requestFriendByEmail, { email: "ben@example.com" })
-        await asUser(t, "ben").mutation(api.friendships.acceptFriend, { friendAuthUserId: "anna" })
+        await asUser(t, "ben").mutation(api.friendships.acceptFriend, { friendId: await idOf(t, "anna") })
         await asUser(t, "anna").mutation(api.friendships.requestFriendByEmail, { email: "cas@example.com" })
         const restaurantId = await createRestaurant(t, "anna")
 
@@ -327,9 +372,9 @@ describe("sharing and social gating", () => {
         await registerUser(t, "anna", "anna@example.com")
         await registerUser(t, "ben", "ben@example.com")
         await asUser(t, "anna").mutation(api.friendships.requestFriendByEmail, { email: "ben@example.com" })
-        await asUser(t, "ben").mutation(api.friendships.acceptFriend, { friendAuthUserId: "anna" })
+        await asUser(t, "ben").mutation(api.friendships.acceptFriend, { friendId: await idOf(t, "anna") })
 
-        await asUser(t, "anna").mutation(api.friendships.removeFriend, { friendAuthUserId: "ben" })
+        await asUser(t, "anna").mutation(api.friendships.removeFriend, { friendId: await idOf(t, "ben") })
 
         expect(await asUser(t, "anna").query(api.friendships.listFriends, {})).toEqual([])
         expect(await asUser(t, "ben").query(api.friendships.listFriends, {})).toEqual([])

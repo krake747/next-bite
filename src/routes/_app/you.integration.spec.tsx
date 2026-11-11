@@ -55,7 +55,6 @@ function savedRestaurant(overrides?: Partial<Omit<RestaurantDoc, "_id">> & { _id
         address: { label: "Luxembourg City" },
         images: [],
         visibility: "private",
-        createdAt: 1000,
         ...overrides,
     } as unknown as RestaurantDoc
 }

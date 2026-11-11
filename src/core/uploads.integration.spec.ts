@@ -40,12 +40,20 @@ async function createRestaurant(t: TestConvexForDataModel<DataModel>, subject: s
     })
 }
 
+async function idOf(t: TestConvexForDataModel<DataModel>, subject: string): Promise<Id<"profiles">> {
+    const me = await asUser(t, subject).query(api.users.getMe, {})
+    if (me.status !== "ready") {
+        throw new Error(`No profile for ${subject}`)
+    }
+    return me.profile._id
+}
+
 async function recordUpload(
     t: TestConvexForDataModel<DataModel>,
     storageId: Id<"_storage">,
-    ownerId: string,
+    subject: string,
 ): Promise<void> {
-    await t.mutation(internal.uploads.record, { storageId, ownerId })
+    await t.mutation(internal.uploads.record, { storageId, ownerId: await idOf(t, subject) })
 }
 
 async function insertRestaurantWithImages(
@@ -54,8 +62,7 @@ async function insertRestaurantWithImages(
     images: { url: string; storageId: Id<"_storage"> }[],
 ): Promise<Id<"restaurants">> {
     const { restaurantId } = await t.mutation(internal.restaurants._insertRestaurant, {
-        ownerId: subject,
-        ownerName: subject,
+        ownerId: await idOf(t, subject),
         name: "Trattoria Verde",
         cuisine: "Italian",
         address: { label: "Luxembourg City" },
@@ -242,7 +249,7 @@ describe("upload ownership", () => {
         const owned = await asUser(t, "anna").query(api.restaurants.get, {})
         expect(owned.find((r) => r._id === restaurantId)).toBeUndefined()
         await expect(t.query(internal.uploads.lookupByStorage, { storageId: bensFile })).resolves.toMatchObject({
-            ownerId: "ben",
+            ownerId: await idOf(t, "ben"),
         })
     })
 
@@ -251,7 +258,7 @@ describe("upload ownership", () => {
         await registerUser(t, "anna")
         await registerUser(t, "ben")
         const orphanId = await storeBlob(t)
-        await t.mutation(internal.uploads.record, { storageId: orphanId, ownerId: "anna" })
+        await t.mutation(internal.uploads.record, { storageId: orphanId, ownerId: await idOf(t, "anna") })
 
         await expect(
             asUser(t, "ben").mutation(api.restaurants.cleanupStorage, { storageId: orphanId }),
@@ -262,7 +269,7 @@ describe("upload ownership", () => {
         const t = setup()
         await registerUser(t, "anna")
         const orphanId = await storeBlob(t)
-        await t.mutation(internal.uploads.record, { storageId: orphanId, ownerId: "anna" })
+        await t.mutation(internal.uploads.record, { storageId: orphanId, ownerId: await idOf(t, "anna") })
 
         await asUser(t, "anna").mutation(api.restaurants.cleanupStorage, { storageId: orphanId })
 
@@ -384,8 +391,7 @@ describe("avatar ownership", () => {
             profile: {
                 avatar: {
                     storageId: bensFile,
-                    ownerId: "ben",
-                    displayName: "ben",
+                    ownerId: await idOf(t, "ben"),
                     mimeType: "image/jpeg",
                     byteSize: 6,
                 },
@@ -402,7 +408,7 @@ describe("upload metadata", () => {
         await recordUpload(t, storedId, "anna")
 
         await expect(t.query(internal.uploads.lookupByStorage, { storageId: storedId })).resolves.toMatchObject({
-            ownerId: "anna",
+            ownerId: await idOf(t, "anna"),
             restaurantId: null,
             mimeType: "image/jpeg",
             byteSize: 6,
@@ -422,8 +428,7 @@ describe("upload metadata", () => {
             [
                 expect.objectContaining({
                     storageId: storedId,
-                    ownerId: "anna",
-                    displayName: "anna",
+                    ownerId: await idOf(t, "anna"),
                     mimeType: "image/jpeg",
                     byteSize: 6,
                 }),

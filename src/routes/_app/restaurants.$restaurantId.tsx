@@ -6,9 +6,8 @@ import { convexQueryOptions, warmQueriesWithin } from "@api/convex.options"
 import { toId } from "@api/data.model"
 import { api } from "@api/endpoints"
 import { type Restaurant } from "@core/restaurants"
-import { useAuth } from "@core/session"
+import { useAuth, isViewer, useViewer } from "@core/session"
 import { emptySocial, useSocialForRestaurant, useToggleInterest, type RestaurantSocial } from "@core/social"
-import { type Viewer } from "@core/social.counts"
 import { ShareToGroupDialog } from "@features/groups/share-to-group-dialog"
 import { PlanSection } from "@features/plans/plans"
 import { OpeningHoursDialog } from "@features/restaurants/opening-hours-dialog"
@@ -69,10 +68,11 @@ function DetailHero({
 }>) {
     const navigate = useNavigate()
     const auth = useAuth()
+    const viewer = useViewer()
     const toggleInterest = useToggleInterest()
     const [showHours, setShowHours] = useState(false)
     const [editing, setEditing] = useState(false)
-    const isOwner = auth.isAuthenticated && auth.user !== null && restaurant.ownerId === auth.user.id
+    const isOwner = isViewer(viewer, restaurant.ownerId)
 
     const goToLogin = () => {
         void navigate({ to: "/login" })
@@ -222,9 +222,9 @@ function DetailNotFound() {
 }
 
 function DetailShare({ restaurant }: Readonly<{ restaurant: Restaurant }>) {
-    const auth = useAuth()
+    const viewer = useViewer()
     const [showShare, setShowShare] = useState(false)
-    if (!auth.isAuthenticated || auth.user === null || restaurant.ownerId !== auth.user.id) {
+    if (!isViewer(viewer, restaurant.ownerId)) {
         return null
     }
     return (
@@ -249,12 +249,9 @@ function DetailShare({ restaurant }: Readonly<{ restaurant: Restaurant }>) {
 
 function RestaurantDetailView() {
     const { restaurantId } = Route.useParams()
-    const auth = useAuth()
     const restaurantConvexId = toId<"restaurants">(restaurantId)
     const restaurant = useSuspenseConvexQuery(api.restaurants.getById, { id: restaurantConvexId })
-    const signedInUserId = auth.user?.id
-    const viewer: Viewer =
-        signedInUserId === undefined ? { kind: "signed-out" } : { kind: "signed-in", id: signedInUserId }
+    const viewer = useViewer()
     const restaurantSocial = useSocialForRestaurant(restaurantConvexId, viewer)
 
     if (restaurant === null) {
@@ -262,7 +259,7 @@ function RestaurantDetailView() {
     }
 
     const social = restaurantSocial ?? emptySocial
-    const photos = restaurant.images.map((img) => ({ url: img.url, author: img.displayName ?? restaurant.ownerName }))
+    const photos = restaurant.images.map((img) => ({ url: img.url, author: restaurant.ownerName }))
 
     return (
         <PageContainer>

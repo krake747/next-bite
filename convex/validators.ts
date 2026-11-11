@@ -3,8 +3,7 @@ import { v } from "convex/values"
 export const restaurantImageValidator = v.object({
     url: v.string(),
     storageId: v.id("_storage"),
-    ownerId: v.optional(v.string()),
-    displayName: v.optional(v.string()),
+    ownerId: v.optional(v.id("profiles")),
     mimeType: v.optional(v.string()),
     byteSize: v.optional(v.number()),
     width: v.optional(v.number()),

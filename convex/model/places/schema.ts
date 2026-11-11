@@ -5,8 +5,7 @@ import { enrichmentValidator, restaurantImageValidator, shareTargetValidator } f
 
 export const placesTables = {
     restaurants: defineTable({
-        ownerId: v.string(),
-        ownerName: v.string(),
+        ownerId: v.id("profiles"),
         name: v.string(),
         cuisine: v.string(),
         address: v.object({
@@ -22,20 +21,17 @@ export const placesTables = {
         images: v.array(restaurantImageValidator),
         visibility: v.union(v.literal("private"), v.literal("shared")),
         clientMutationId: v.optional(v.string()),
-        createdAt: v.number(),
     }).index("by_owner", ["ownerId"]),
     clientMutations: defineTable({
         key: v.string(),
-        userId: v.string(),
+        userId: v.id("profiles"),
         restaurantId: v.id("restaurants"),
-        createdAt: v.number(),
     }).index("by_user_key", ["userId", "key"]),
     restaurantShares: defineTable({
         restaurantId: v.id("restaurants"),
-        sharedBy: v.string(),
+        sharedBy: v.id("profiles"),
         target: shareTargetValidator,
         targetGroupId: v.optional(v.id("groups")),
-        createdAt: v.number(),
     })
         .index("by_restaurant", ["restaurantId"])
         .index("by_sharer", ["sharedBy"])

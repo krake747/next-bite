@@ -3,6 +3,7 @@ import { type GenericDatabaseReader } from "convex/server"
 import { FALLBACK_DISPLAY_NAME } from "../src/core/constants"
 import { type DataModel, type Doc, type Id } from "./_generated/dataModel"
 import { authComponent } from "./auth"
+import { getProfiles, nameOf } from "./model/identity/profiles"
 
 export { FALLBACK_DISPLAY_NAME } from "../src/core/constants"
 
@@ -11,16 +12,6 @@ export const FALLBACK_GROUP_NAME = "Unknown group"
 export function formatDisplayName(raw: string | null | undefined, fallbackEmail?: string): string {
     const trimmed = (raw ?? fallbackEmail ?? "").trim().slice(0, 60)
     return trimmed === "" ? FALLBACK_DISPLAY_NAME : trimmed
-}
-
-export async function requireUserId(ctx: {
-    auth: { getUserIdentity: () => Promise<{ subject: string } | null> }
-}): Promise<string> {
-    const identity = await ctx.auth.getUserIdentity()
-    if (!identity) {
-        throw new Error("Unauthorized: authentication required")
-    }
-    return identity.subject
 }
 
 export type AuthUserRecord = {
@@ -41,7 +32,7 @@ export async function readAuthUser(
 export async function requireMembership(
     db: GenericDatabaseReader<DataModel>,
     groupId: Id<"groups">,
-    userId: string,
+    userId: Id<"profiles">,
 ): Promise<Doc<"groupMembers">> {
     const group = await db.get(groupId)
     if (!group) {
@@ -57,25 +48,30 @@ export async function requireMembership(
     return membership
 }
 
-type DbGet = {
-    get: (id: Id<"restaurants">) => Promise<Doc<"restaurants"> | null>
-}
-
-type AuthCtx = {
-    auth: { getUserIdentity: () => Promise<{ subject: string } | null> }
-}
-
 export async function requireOwnedRestaurant(
-    ctx: AuthCtx & { db: DbGet },
+    db: GenericDatabaseReader<DataModel>,
     id: Id<"restaurants">,
+    profileId: Id<"profiles">,
 ): Promise<Doc<"restaurants">> {
-    const userId = await requireUserId(ctx)
-    const restaurant = await ctx.db.get(id)
+    const restaurant = await db.get(id)
     if (!restaurant) {
         throw new Error("Restaurant not found")
     }
-    if (restaurant.ownerId !== userId) {
+    if (restaurant.ownerId !== profileId) {
         throw new Error("Unauthorized: only the owner can change this restaurant")
     }
     return restaurant
+}
+
+export type RestaurantView = Doc<"restaurants"> & { ownerName: string }
+
+export async function withOwnerNames(
+    db: GenericDatabaseReader<DataModel>,
+    restaurants: ReadonlyArray<Doc<"restaurants">>,
+): Promise<RestaurantView[]> {
+    const names = await getProfiles(
+        db,
+        restaurants.map((restaurant) => restaurant.ownerId),
+    )
+    return restaurants.map((restaurant) => ({ ...restaurant, ownerName: nameOf(names, restaurant.ownerId) }))
 }

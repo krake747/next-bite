@@ -18,14 +18,14 @@ import {
     publishReadySession,
     resolveRestaurantIdByKey,
     type RestaurantAddArgs,
+    type RestaurantDoc,
     type RestaurantUpdateArgs,
 } from "@api/db/restaurants"
 import { api } from "@api/endpoints"
 
-import { FALLBACK_DISPLAY_NAME } from "./constants"
 import { env } from "./env"
 import { parseImageRecord, type ImageRecord } from "./schemas"
-import { retrySessionGate, useAuth, useSessionKey } from "./session"
+import { retrySessionGate, useSessionKey, useViewerProfile } from "./session"
 
 export class CollectionSyncError extends Error {
     constructor() {
@@ -61,7 +61,7 @@ function useSessionSyncRecovery(
     return exhausted
 }
 
-type Rows = ReadonlyArray<Doc<"restaurants">>
+type Rows = ReadonlyArray<RestaurantDoc>
 type SettledRows = { readonly sessionKey: string; readonly rows: Rows }
 type LiveRead = Readonly<{ status: string; isLoadingError: boolean; isSyncError: boolean }>
 
@@ -144,21 +144,37 @@ export function preloadHomeCollections(queryClient: QueryClient): void {
 export const useRestaurants = () => useOwnerOrFeed("owner")
 export const useFeedRestaurants = () => useOwnerOrFeed("feed")
 
+async function resolveOwnerProfile(
+    client: ConvexReactClient,
+    cached: Doc<"profiles"> | undefined,
+): Promise<Doc<"profiles"> | undefined> {
+    if (cached !== undefined) {
+        return cached
+    }
+    const me = await client.query(api.users.getMe, {})
+    return me.status === "ready" ? me.profile : undefined
+}
+
 export function useAddRestaurantWithHours() {
     const client = useConvexClient()
-    const auth = useAuth()
+    const sessionKey = useSessionKey()
+    const profile = useViewerProfile()
     return useMutation(
         mutationOptions({
             mutationFn: async (args: RestaurantAddArgs): Promise<Id<"restaurants">> => {
-                if (client === null || !auth.isAuthenticated || auth.user === null) {
+                if (client === null || sessionKey === null) {
                     throw new Error("Sign in to add restaurants")
                 }
-                const collections = getSessionCollections(client, persistCallerFor(client), auth.user.id)
+                const owner = await resolveOwnerProfile(client, profile)
+                if (owner === undefined) {
+                    throw new Error("Sign in to add restaurants")
+                }
+                const collections = getSessionCollections(client, persistCallerFor(client), sessionKey)
                 // See ADR-0002: persisted key makes retries idempotent.
                 const clientMutationId = args.clientMutationId ?? crypto.randomUUID()
                 const temp = buildTempRestaurant({
-                    ownerId: auth.user.id,
-                    ownerName: auth.user.name ?? FALLBACK_DISPLAY_NAME,
+                    ownerId: owner._id,
+                    ownerName: owner.name,
                     ...args,
                     clientMutationId,
                 })
@@ -251,4 +267,4 @@ export function useUploadImage() {
 
 export type { ImageRecord } from "./schemas"
 
-export type Restaurant = Doc<"restaurants">
+export type Restaurant = RestaurantDoc

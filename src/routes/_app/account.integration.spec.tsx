@@ -45,7 +45,7 @@ function seedQuery(fn: string, args: unknown, value: unknown): void {
 function seedReadyProfile(): void {
     seedQuery("users:getMe", undefined, {
         status: "ready",
-        profile: { _id: "p1", authUserId: "user-1", name: "Alex", email: "alex@example.com", createdAt: 1 },
+        profile: { _id: "p1", authUserId: "user-1", name: "Alex", email: "alex@example.com" },
     })
 }
 
