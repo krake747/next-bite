@@ -18,12 +18,7 @@ export const coordsValidator = v.object({
     lng: v.number(),
 })
 
-export const shareTargetValidator = v.union(
-    v.object({ kind: v.literal("user"), userId: v.string() }),
-    v.object({ kind: v.literal("group"), groupId: v.id("groups") }),
-)
-
-export const groupShareTargetValidator = v.object({ kind: v.literal("group"), groupId: v.id("groups") })
+export const shareTargetValidator = v.object({ kind: v.literal("group"), groupId: v.id("groups") })
 
 export const inviteTargetValidator = v.union(
     v.object({ kind: v.literal("friend") }),

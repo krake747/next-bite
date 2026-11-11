@@ -3,13 +3,9 @@ import { v } from "convex/values"
 import { type Doc, type Id } from "./_generated/dataModel"
 import { mutation, query, type MutationCtx } from "./_generated/server"
 import { FALLBACK_GROUP_NAME, requireMembership, requireOwnedRestaurant, requireUserId } from "./helpers"
-import { groupShareTargetValidator } from "./validators"
+import { shareTargetValidator } from "./validators"
 
-type GroupTarget = { kind: "group"; groupId: Id<"groups"> }
-
-function isGroupTarget(target: Doc<"restaurantShares">["target"], groupId: Id<"groups">): boolean {
-    return target.kind === "group" && target.groupId === groupId
-}
+type GroupTarget = Doc<"restaurantShares">["target"]
 
 async function upsertShare(
     ctx: MutationCtx,
@@ -21,7 +17,7 @@ async function upsertShare(
         .query("restaurantShares")
         .withIndex("by_restaurant", (q) => q.eq("restaurantId", restaurantId))
         .collect()
-    const match = existing.find((share) => isGroupTarget(share.target, target.groupId))
+    const match = existing.find((share) => share.target.groupId === target.groupId)
     if (match) {
         return match._id
     }
@@ -50,7 +46,7 @@ export const shareWithGroup = mutation({
 export const unshare = mutation({
     args: {
         restaurantId: v.id("restaurants"),
-        target: groupShareTargetValidator,
+        target: shareTargetValidator,
     },
     handler: async (ctx, args) => {
         await requireOwnedRestaurant(ctx, args.restaurantId)
@@ -58,7 +54,7 @@ export const unshare = mutation({
             .query("restaurantShares")
             .withIndex("by_restaurant", (q) => q.eq("restaurantId", args.restaurantId))
             .collect()
-        const match = existing.find((share) => isGroupTarget(share.target, args.target.groupId))
+        const match = existing.find((share) => share.target.groupId === args.target.groupId)
         if (!match) {
             throw new Error("Share not found")
         }
@@ -78,18 +74,9 @@ export const listShares = query({
             .withIndex("by_restaurant", (q) => q.eq("restaurantId", args.restaurantId))
             .collect()
         return Promise.all(
-            shares.flatMap((share) => {
-                const target = share.target
-                if (target.kind !== "group") {
-                    return []
-                }
-                return [
-                    ctx.db.get(target.groupId).then((group) => ({
-                        _id: share._id,
-                        target,
-                        displayName: group?.name ?? FALLBACK_GROUP_NAME,
-                    })),
-                ]
+            shares.map(async (share) => {
+                const group = await ctx.db.get(share.target.groupId)
+                return { _id: share._id, target: share.target, displayName: group?.name ?? FALLBACK_GROUP_NAME }
             }),
         )
     },
