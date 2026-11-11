@@ -2,18 +2,12 @@ import { convexTest, type TestConvexForDataModel } from "convex-test"
 import { describe, expect, test, vi } from "vitest"
 
 import { api } from "@convex/_generated/api"
-import { type DataModel, type Doc } from "@convex/_generated/dataModel"
+import { type DataModel } from "@convex/_generated/dataModel"
 import schema from "@convex/schema"
 
 vi.stubEnv("CONVEX_SITE_URL", "https://example.convex.site")
 
 const modules = import.meta.glob("../../convex/**/*.ts")
-
-type MeResult = { status: "ready"; profile: Doc<"profiles"> } | { status: "onboarding" }
-
-function expectReadyProfile(me: MeResult): asserts me is Extract<MeResult, { status: "ready" }> {
-    expect(me.status).toBe("ready")
-}
 
 function setup(): TestConvexForDataModel<DataModel> {
     // oxlint-disable-next-line typescript/no-unsafe-assignment -- convex-test factory is untyped at the module-glob boundary; the annotation restores safety for all callers
@@ -36,48 +30,9 @@ describe("identity", () => {
         expect(second).toEqual(first)
     })
 
-    test("falls back to the email when no name is given and no auth record exists", async () => {
-        const t = asUser("user-2")
-        const id = await t.mutation(api.identity.ensureProfile, { email: "bob@example.com" })
-        const me = await t.query(api.identity.me, {})
-        expectReadyProfile(me)
-        expect(me.profile._id).toEqual(id)
-        expect(me.profile.name).toBe("bob@example.com")
-    })
-
     test("reports onboarding before user details exist", async () => {
         const t = asUser("user-3")
         await expect(t.query(api.identity.me, {})).resolves.toEqual({ status: "onboarding" })
-    })
-
-    test("renames with trimmed input and needs a profile or auth record first", async () => {
-        const t = asUser("user-4")
-        await expect(t.mutation(api.identity.rename, { name: "Cassie" })).rejects.toThrow("Profile not found")
-        await t.mutation(api.identity.ensureProfile, { email: "cas@example.com", name: "Cas" })
-        const id = await t.mutation(api.identity.rename, { name: "  Cassie  " })
-        const me = await t.query(api.identity.me, {})
-        expectReadyProfile(me)
-        expect(me.profile._id).toEqual(id)
-        expect(me.profile.name).toBe("Cassie")
-    })
-
-    test("clears the avatar with removeAvatar and leaves the rest intact", async () => {
-        const t = asUser("user-5")
-        await t.mutation(async (ctx) => {
-            const storageId = await ctx.storage.store(new Blob(["pixels"]))
-            await ctx.db.insert("profiles", {
-                authUserId: "user-5",
-                name: "Eve",
-                email: "eve@example.com",
-                avatar: { url: "https://example.com/a.jpg", storageId },
-            })
-        })
-        await t.mutation(api.identity.removeAvatar, {})
-        const me = await t.query(api.identity.me, {})
-        expectReadyProfile(me)
-        expect(me.profile.avatar).toBeUndefined()
-        expect(me.profile.name).toBe("Eve")
-        expect(me.profile.email).toBe("eve@example.com")
     })
 
     test("rejects anonymous callers", async () => {

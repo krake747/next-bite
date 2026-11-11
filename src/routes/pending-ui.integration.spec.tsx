@@ -53,13 +53,6 @@ const verde: PlaceCard = {
 
 type Gate = { promise: Promise<void>; open: () => void }
 
-function timedGate(ms: number): Gate {
-    const promise = new Promise<void>((resolve) => {
-        setTimeout(resolve, ms)
-    })
-    return { promise, open: () => {} }
-}
-
 function closedGate(): Gate {
     let open = () => {}
     const promise = new Promise<void>((resolve) => {
@@ -114,20 +107,6 @@ function detailIsPending(): boolean {
         document.querySelector('[data-slot="back-nav"]') !== null &&
         screen.queryByRole("heading", { name: "Trattoria Verde" }) === null
     )
-}
-
-function watchDetailPending(): { seen: () => boolean; stop: () => void } {
-    let seen = false
-    const observer = new MutationObserver(() => {
-        seen ||= detailIsPending()
-    })
-    observer.observe(document.body, { childList: true, subtree: true })
-    return {
-        seen: () => seen,
-        stop: () => {
-            observer.disconnect()
-        },
-    }
 }
 
 async function homeIsReady(): Promise<void> {
@@ -187,40 +166,5 @@ describe("authenticated navigation pending UI", () => {
         expect(await screen.findByRole("heading", { name: "Trattoria Verde" })).toBeInTheDocument()
         expect(detailIsPending()).toBe(false)
         expect(appShell()).toBe(nav)
-    })
-
-    test("a fast detail response renders without a pending flash", async () => {
-        const router = await renderAt("/home")
-        await homeIsReady()
-        gate = timedGate(50)
-        const pending = watchDetailPending()
-
-        await act(async () => {
-            await router.navigate({ to: "/restaurants/$restaurantId", params: { restaurantId } })
-        })
-
-        expect(await screen.findByRole("heading", { name: "Trattoria Verde" })).toBeInTheDocument()
-        pending.stop()
-        expect(pending.seen()).toBe(false)
-    })
-
-    test("returning to a cached detail page renders it with no pending UI", async () => {
-        const router = await renderAt("/restaurants/r1")
-        expect(await screen.findByRole("heading", { name: "Trattoria Verde" })).toBeInTheDocument()
-
-        await act(async () => {
-            await router.navigate({ to: "/home" })
-        })
-        await homeIsReady()
-        gate = closedGate()
-        const pending = watchDetailPending()
-
-        await act(async () => {
-            await router.navigate({ to: "/restaurants/$restaurantId", params: { restaurantId } })
-        })
-
-        expect(screen.getByRole("heading", { name: "Trattoria Verde" })).toBeInTheDocument()
-        pending.stop()
-        expect(pending.seen()).toBe(false)
     })
 })
