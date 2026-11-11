@@ -27,11 +27,12 @@ async function befriend(t: TestConvexForDataModel<DataModel>, a: string, b: stri
     await asUser(t, b).mutation(api.invites.accept, { token })
 }
 
-async function createRestaurant(t: TestConvexForDataModel<DataModel>, subject: string): Promise<Id<"restaurants">> {
-    return asUser(t, subject).action(api.restaurants.addWithOpeningHours, {
+async function createPlace(t: TestConvexForDataModel<DataModel>, subject: string): Promise<Id<"places">> {
+    return asUser(t, subject).mutation(api.places.create, {
         name: "Trattoria Verde",
         cuisine: "Italian",
         addressLabel: "Luxembourg City",
+        photos: [],
     })
 }
 
@@ -66,21 +67,20 @@ describe("personal user details and statuses", () => {
         })
     })
 
-    test("lists only the caller's want and been statuses", async () => {
+    test("lists only the caller's own places with their saves", async () => {
         const t = setup()
         await registerUser(t, "anna", "anna@example.com")
         await registerUser(t, "ben", "ben@example.com")
-        const restaurantId = await createRestaurant(t, "anna")
+        const placeId = await createPlace(t, "anna")
         await befriend(t, "anna", "ben")
 
-        await asUser(t, "anna").mutation(api.interests.toggleInterest, { restaurantId, status: "want" })
-        await asUser(t, "ben").mutation(api.interests.toggleInterest, { restaurantId, status: "been" })
+        await asUser(t, "anna").mutation(api.places.setSave, { placeId, status: "want" })
+        await asUser(t, "ben").mutation(api.places.setSave, { placeId, status: "been" })
 
-        expect(await asUser(t, "anna").query(api.interests.listMyStatuses, {})).toEqual([
-            { restaurantId, status: "want" },
-        ])
-        expect(await asUser(t, "ben").query(api.interests.listMyStatuses, {})).toEqual([
-            { restaurantId, status: "been" },
-        ])
+        const annas = await asUser(t, "anna").query(api.places.mine, {})
+        expect(annas.map((card) => [card.name, card.mySave])).toEqual([["Trattoria Verde", "want"]])
+        const bens = await asUser(t, "ben").query(api.places.mine, {})
+        expect(bens).toEqual([])
+        expect(await asUser(t, "ben").query(api.places.get, { id: placeId })).toMatchObject({ mySave: "been" })
     })
 })

@@ -5,11 +5,12 @@ import { useSuspenseConvexQuery } from "@api/convex.context"
 import { convexQueryOptions, warmQueriesWithin } from "@api/convex.options"
 import { type Id, toId } from "@api/data.model"
 import { api } from "@api/endpoints"
-import { useCreateInvite, useRevokeInvite, useShareWithGroup, useUnshare } from "@core/groups"
+import { useCreateInvite, useRevokeInvite } from "@core/groups"
+import { useAddToGroup, useRemoveFromGroup } from "@core/groups"
 import { isViewer, useViewer } from "@core/identity"
-import { orderFeedByRecency, useSocialSummaries } from "@core/interests"
 import { clearError, errorFrom, type FormError } from "@core/outcome"
 import { useRestaurants, type Restaurant } from "@core/restaurants"
+import { orderFeedByRecency } from "@core/saves"
 import { useAuth, useSessionStatus } from "@core/session"
 import { GroupMembers } from "@features/groups/group-members"
 import { PlanSection } from "@features/plans/plans"
@@ -34,7 +35,7 @@ export const Route = createFileRoute("/_app/groups/$groupId")({
         const groupId = toId<"groups">(params.groupId)
         await warmQueriesWithin(
             context.queryClient,
-            [convexQueryOptions(api.groups.get, { groupId }), convexQueryOptions(api.shares.listForGroup, { groupId })],
+            [convexQueryOptions(api.groups.get, { groupId }), convexQueryOptions(api.places.forGroup, { groupId })],
             LOADER_WARM_BUDGET_MS,
         )
         return null
@@ -68,7 +69,7 @@ function GroupNotFound() {
 
 function AddFromMyList({ groupId, sharedIds }: Readonly<{ groupId: Id<"groups">; sharedIds: ReadonlySet<string> }>) {
     const restaurants = useRestaurants()
-    const shareWithGroup = useShareWithGroup()
+    const addToGroup = useAddToGroup()
 
     if (restaurants === undefined) {
         return (
@@ -102,9 +103,9 @@ function AddFromMyList({ groupId, sharedIds }: Readonly<{ groupId: Id<"groups">;
                     </div>
                     <Button
                         size="sm"
-                        disabled={shareWithGroup.isPending}
+                        disabled={addToGroup.isPending}
                         onClick={() => {
-                            shareWithGroup.mutate({ restaurantId: restaurant._id, groupId })
+                            addToGroup.mutate({ placeId: restaurant._id, groupId })
                         }}
                     >
                         Add to group
@@ -124,8 +125,7 @@ function GroupRestaurantsSection({
     restaurants: ReadonlyArray<Restaurant>
     viewer: { readonly kind: "signed-in"; readonly id: string } | { readonly kind: "signed-out" }
 }>) {
-    const summaries = useSocialSummaries(restaurants.map((r) => r._id))
-    const unshare = useUnshare()
+    const removeFromGroup = useRemoveFromGroup()
 
     const feed = orderFeedByRecency(restaurants)
     if (feed.length === 0) {
@@ -140,7 +140,6 @@ function GroupRestaurantsSection({
     return (
         <ul className="grid gap-4 pt-4 md:grid-cols-2">
             {feed.map((shared) => {
-                const social = summaries?.get(shared._id)
                 return (
                     <li key={shared._id} className="rounded-card border border-border bg-surface p-5 shadow-card">
                         <Link
@@ -151,21 +150,20 @@ function GroupRestaurantsSection({
                             {shared.name}
                         </Link>
                         <p className="mt-1 text-sm text-muted-foreground">
-                            {shared.cuisine} · {shared.ownerName}
-                            {social !== undefined && (social.wantCount > 0 || social.beenCount > 0)
-                                ? ` · ${social.wantCount} want · ${social.beenCount} been`
-                                : ""}
+                            {shared.cuisine !== undefined && shared.cuisine !== "" ? `${shared.cuisine} · ` : ""}
+                            {shared.ownerName}
+                            {shared.wantCount !== 0 ? ` · ${shared.wantCount} want` : ""}
                         </p>
                         {isViewer(viewer, shared.ownerId) && (
                             <div className="pt-3">
                                 <Button
                                     size="sm"
                                     tone="secondary"
-                                    disabled={unshare.isPending}
+                                    disabled={removeFromGroup.isPending}
                                     onClick={() => {
-                                        unshare.mutate({
-                                            restaurantId: shared._id,
-                                            target: { kind: "group", groupId },
+                                        removeFromGroup.mutate({
+                                            placeId: shared._id,
+                                            groupId,
                                         })
                                     }}
                                 >
@@ -264,7 +262,7 @@ function GroupDetailView() {
     const groupConvexId = toId<"groups">(groupId)
     const auth = useAuth()
     const group = useSuspenseConvexQuery(api.groups.get, { groupId: groupConvexId })
-    const restaurants = useSuspenseConvexQuery(api.shares.listForGroup, { groupId: groupConvexId })
+    const restaurants = useSuspenseConvexQuery(api.places.forGroup, { groupId: groupConvexId })
     const viewer = useViewer()
 
     if (group === null) {

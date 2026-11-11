@@ -1,17 +1,15 @@
 import { type GenericDatabaseReader } from "convex/server"
 import { v } from "convex/values"
 
+import { ALLOWED_IMAGE_TYPES, MAX_UPLOAD_BYTES } from "../src/core/constants"
 import { internal } from "./_generated/api"
 import { type DataModel, type Id } from "./_generated/dataModel"
 import { internalMutation, internalQuery, mutation, type QueryCtx } from "./_generated/server"
 import { avatarHolder, requireProfile } from "./model/identity/profiles"
-import { claimLegacyImages, imageClaim } from "./model/places/images"
+import { photoClaim } from "./model/places/photos"
 
-const MAX_UPLOAD_BYTES = 20 * 1024 * 1024
-const ALLOWED_CONTENT_TYPES = new Set(["image/jpeg", "image/png", "image/webp", "image/gif"])
 const UNCLAIMED_TTL_MS = 24 * 60 * 60 * 1000
 const CLEANUP_PAGE_SIZE = 100
-const BACKFILL_PAGE_SIZE = 100
 
 export type StoredImage = {
     readonly mimeType: string
@@ -28,8 +26,8 @@ export async function storedImage(ctx: StorageCtx, storageId: Id<"_storage">): P
         throw new Error("Upload not found")
     }
     const mimeType = file.contentType ?? ""
-    if (!ALLOWED_CONTENT_TYPES.has(mimeType)) {
-        throw new Error(`Invalid content type. Must be one of: ${[...ALLOWED_CONTENT_TYPES].join(", ")}`)
+    if (!ALLOWED_IMAGE_TYPES.has(mimeType)) {
+        throw new Error(`Invalid content type. Must be one of: ${[...ALLOWED_IMAGE_TYPES].join(", ")}`)
     }
     if (file.size > MAX_UPLOAD_BYTES) {
         throw new Error(`File too large. Maximum size is ${MAX_UPLOAD_BYTES / 1024 / 1024}MB`)
@@ -41,7 +39,10 @@ export async function isClaimed(db: GenericDatabaseReader<DataModel>, storageId:
     if ((await avatarHolder(db, storageId)) !== null) {
         return true
     }
-    return (await imageClaim(db, storageId)) !== null
+    if ((await photoClaim(db, storageId)) !== null) {
+        return true
+    }
+    return false
 }
 
 export async function claimableImage(ctx: StorageCtx, storageId: Id<"_storage">): Promise<StoredImage> {
@@ -51,6 +52,21 @@ export async function claimableImage(ctx: StorageCtx, storageId: Id<"_storage">)
     }
     return image
 }
+
+export const deleteUpload = mutation({
+    args: { storageId: v.id("_storage") },
+    returns: v.null(),
+    handler: async (ctx, args) => {
+        await requireProfile(ctx)
+        if (await isClaimed(ctx.db, args.storageId)) {
+            throw new Error("Storage is already claimed")
+        }
+        if ((await ctx.db.system.get("_storage", args.storageId)) !== null) {
+            await ctx.storage.delete(args.storageId)
+        }
+        return null
+    },
+})
 
 export const generateUploadUrl = mutation({
     args: {},
@@ -87,23 +103,5 @@ export const cleanupUnclaimed = internalMutation({
             await ctx.scheduler.runAfter(0, internal.storage.cleanupUnclaimed, { cursor: page.continueCursor })
         }
         return { checked: page.page.length, deleted }
-    },
-})
-
-export const backfillImageClaims = internalMutation({
-    args: { cursor: v.optional(v.string()) },
-    returns: v.object({ checked: v.number(), claimed: v.number() }),
-    handler: async (ctx, args) => {
-        const page = await ctx.db
-            .query("restaurants")
-            .paginate({ numItems: BACKFILL_PAGE_SIZE, cursor: args.cursor ?? null })
-        let claimed = 0
-        for (const restaurant of page.page) {
-            claimed += await claimLegacyImages(ctx.db, restaurant)
-        }
-        if (!page.isDone) {
-            await ctx.scheduler.runAfter(0, internal.storage.backfillImageClaims, { cursor: page.continueCursor })
-        }
-        return { checked: page.page.length, claimed }
     },
 })

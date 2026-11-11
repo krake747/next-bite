@@ -1,14 +1,13 @@
 import { useNavigate } from "@tanstack/react-router"
 import { createContext, use } from "react"
 
-import { emptySocial, feedTextFor, useSocialSummaries, useToggleInterest, type RestaurantSocial } from "@core/interests"
 import { type Restaurant } from "@core/restaurants"
+import { feedTextFor, useSetSave } from "@core/saves"
 import { useAuth } from "@core/session"
 import { type RestaurantCard } from "@features/restaurants/restaurant-card"
 import { type ActivityPost } from "@features/social/activity-post"
 
 export type SocialActions = {
-    readonly socialFor: (restaurant: Restaurant) => RestaurantSocial
     readonly toggleWantFor: (restaurant: Restaurant) => () => void
     readonly goToDetail: (restaurant: Restaurant) => void
     readonly goToLogin: () => void
@@ -26,15 +25,11 @@ export function useSocialActions(): SocialActions {
     return value
 }
 
-export function SocialActionsProvider({
-    restaurants,
-    children,
-}: Readonly<{ restaurants: ReadonlyArray<Restaurant>; children: React.ReactNode }>) {
+export function SocialActionsProvider({ children }: Readonly<{ children: React.ReactNode }>) {
     const navigate = useNavigate()
     const auth = useAuth()
     const isAuthenticated = auth.isAuthenticated
-    const summaries = useSocialSummaries(restaurants.map((r) => r._id))
-    const toggleInterest = useToggleInterest()
+    const setSave = useSetSave()
 
     const goToLogin = () => {
         void navigate({ to: "/login" })
@@ -47,41 +42,35 @@ export function SocialActionsProvider({
         })
     }
 
-    const socialFor = (restaurant: Restaurant): RestaurantSocial => summaries?.get(restaurant._id) ?? emptySocial
-
     const toggleWantFor = (restaurant: Restaurant) => () => {
         if (!isAuthenticated) {
             goToLogin()
             return
         }
-        toggleInterest.mutate({ restaurantId: restaurant._id, status: "want" })
+        setSave.mutate({ placeId: restaurant._id, status: restaurant.mySave === "want" ? null : "want" })
     }
 
-    const activityFor: SocialActions["activityFor"] = (restaurant) => {
-        const social = socialFor(restaurant)
-        return {
-            author: { name: restaurant.ownerName },
-            time: new Date(restaurant._creationTime).toLocaleDateString(),
-            text: feedTextFor(restaurant.name, restaurant.details?.notes),
-            social: { ...social, ownerName: restaurant.ownerName },
-            reactions: {
-                wanted: social.wanted,
-                wantCount: social.wantCount,
-                onToggleWant: toggleWantFor(restaurant),
-            },
-        }
-    }
+    const activityFor: SocialActions["activityFor"] = (restaurant) => ({
+        author: { name: restaurant.ownerName },
+        time: new Date(restaurant._creationTime).toLocaleDateString(),
+        text: feedTextFor(restaurant.name, restaurant.note),
+        restaurant: { name: restaurant.name, cuisine: restaurant.cuisine, images: restaurant.photos },
+        ownerName: restaurant.ownerName,
+        wantCount: restaurant.wantCount,
+        reactions: {
+            wanted: restaurant.mySave === "want",
+            wantCount: restaurant.wantCount,
+            onToggleWant: toggleWantFor(restaurant),
+        },
+    })
 
     const cardFor: SocialActions["cardFor"] = (restaurant) => ({
-        social: socialFor(restaurant),
         onToggleWant: toggleWantFor(restaurant),
         detailsHref: `/restaurants/${restaurant._id}`,
     })
 
     return (
-        <SocialActionsContext.Provider
-            value={{ socialFor, toggleWantFor, goToDetail, goToLogin, activityFor, cardFor }}
-        >
+        <SocialActionsContext.Provider value={{ toggleWantFor, goToDetail, goToLogin, activityFor, cardFor }}>
             {children}
         </SocialActionsContext.Provider>
     )

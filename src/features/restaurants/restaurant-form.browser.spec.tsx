@@ -5,7 +5,7 @@ import { page } from "vitest/browser"
 
 import { ConvexProvider } from "@api/convex.context"
 import { toId, type Id } from "@api/data.model"
-import { SyncTimeoutError, type RestaurantAddArgs } from "@api/db/restaurants"
+import { SyncTimeoutError, type PlaceCreateArgs } from "@api/db/restaurants"
 import { createSeededClient, type MutationCall } from "@api/db/seeded.client"
 import { type ImageRecord } from "@core/restaurants"
 
@@ -30,7 +30,7 @@ function createDeferred<T>(): Deferred<T> {
 // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- test-only storage id
 const storageId = (value: string): Id<"_storage"> => value as unknown as Id<"_storage">
 
-const createdId = toId<"restaurants">("restaurants-test-1")
+const createdId = toId<"places">("places-test-1")
 
 const uploadGates: Deferred<ImageRecord>[] = []
 let uploadCalls = 0
@@ -62,7 +62,7 @@ vi.mock("@core/restaurants", async (importOriginal) => {
     return {
         ...original,
         useUploadImage: () => uploadImpl,
-        useAddRestaurantWithHours: () => ({ mutateAsync: addMutate }),
+        useAddPlace: () => ({ mutateAsync: addMutate }),
     }
 })
 
@@ -90,17 +90,13 @@ vi.mock("@api/auth.provider", async (importOriginal) => {
 })
 
 const mutationCalls: MutationCall[] = []
-const addMutate = vi.fn<(args: RestaurantAddArgs) => Promise<Id<"restaurants">>>()
+const addMutate = vi.fn<(args: PlaceCreateArgs) => Promise<Id<"places">>>()
 let submitGate: Deferred<unknown> | null = null
 
-function AddHarness({
-    onSuccess,
-    onCancel,
-}: Readonly<{ onSuccess: (id: Id<"restaurants">) => void; onCancel: () => void }>) {
+function AddHarness({ onSuccess, onCancel }: Readonly<{ onSuccess: (id: string) => void; onCancel: () => void }>) {
     const { registerDiscard, discard } = useFormDiscard()
     return (
         <RestaurantForm
-            mode="add"
             onSuccess={(id) => {
                 onSuccess(id)
             }}
@@ -112,7 +108,7 @@ function AddHarness({
     )
 }
 
-async function renderForm(onSuccess: (id: Id<"restaurants">) => void, onCancel: () => void) {
+async function renderForm(onSuccess: (id: string) => void, onCancel: () => void) {
     const backend = createSeededClient({ calls: mutationCalls })
     return render(
         <QueryClientProvider client={backend.queryClient}>
@@ -204,7 +200,7 @@ describe("RestaurantForm close ownership", () => {
         await expect
             .poll(() => mutationCalls)
             .toContainEqual({
-                fn: "restaurants:cleanupStorage",
+                fn: "storage:deleteUpload",
                 args: { storageId: "s1" },
             })
         await expect.poll(() => onCancel).toHaveBeenCalledTimes(1)
@@ -212,7 +208,7 @@ describe("RestaurantForm close ownership", () => {
 
     test("submit hands attached images to persisted ownership without cleanup", async () => {
         resetUploads()
-        const onSuccess = vi.fn<(id: Id<"restaurants">) => void>()
+        const onSuccess = vi.fn<(id: string) => void>()
         const screen = await renderForm(onSuccess, () => {})
         await stageOneImage()
 
@@ -226,12 +222,12 @@ describe("RestaurantForm close ownership", () => {
 
         await expect.poll(() => onSuccess).toHaveBeenCalledWith(createdId)
         expect(addMutate).toHaveBeenCalledTimes(1)
-        expect(mutationCalls.filter((call) => call.fn === "restaurants:cleanupStorage")).toHaveLength(0)
+        expect(mutationCalls.filter((call) => call.fn === "storage:deleteUpload")).toHaveLength(0)
     })
 
     test("retries a timed-out submit on the same key without duplicating", async () => {
         resetUploads()
-        const onSuccess = vi.fn<(id: Id<"restaurants">) => void>()
+        const onSuccess = vi.fn<(id: string) => void>()
         const screen = await renderForm(onSuccess, () => {})
         await fillRequiredFields(screen)
         submitGate = createDeferred<unknown>()
@@ -253,12 +249,12 @@ describe("RestaurantForm close ownership", () => {
         retrySubmit.resolve(undefined)
 
         await expect.poll(() => onSuccess).toHaveBeenCalledWith(createdId)
-        expect(mutationCalls.filter((call) => call.fn === "restaurants:cleanupStorage")).toHaveLength(0)
+        expect(mutationCalls.filter((call) => call.fn === "storage:deleteUpload")).toHaveLength(0)
     })
 
     test("rotates the key after a committed submit", async () => {
         resetUploads()
-        const onSuccess = vi.fn<(id: Id<"restaurants">) => void>()
+        const onSuccess = vi.fn<(id: string) => void>()
         const screen = await renderForm(onSuccess, () => {})
         await fillRequiredFields(screen)
         submitGate = createDeferred<unknown>()

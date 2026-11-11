@@ -17,6 +17,12 @@ export const coordsValidator = v.object({
     lng: v.number(),
 })
 
+export const placeGoogleValidator = v.object({
+    placeId: v.optional(v.string()),
+    lat: v.optional(v.number()),
+    lng: v.optional(v.number()),
+})
+
 export const shareTargetValidator = v.object({ kind: v.literal("group"), groupId: v.id("groups") })
 
 export const inviteTargetValidator = v.union(

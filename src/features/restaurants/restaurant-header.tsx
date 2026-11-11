@@ -5,30 +5,21 @@ import { SocialMetadata } from "@pattern/social-metadata"
 import { cx } from "@ui/cva.config"
 import { focusRing } from "@ui/variants"
 
-import { OpeningHours as OpeningHoursSummary } from "./opening-hours"
-import { type OpeningHours } from "./opening-hours-utils"
-
 export function RestaurantHeader({
     name,
     link,
     ownerName,
     wantCount,
-    beenCount,
     location,
     hasLocation,
-    openingHours,
-    onShowHours,
     detailsHref,
 }: Readonly<{
     name: string
     link?: string | undefined
     ownerName?: string | undefined
-    wantCount?: number | undefined
-    beenCount?: number | undefined
+    wantCount?: number | string | undefined
     location?: string | undefined
     hasLocation: boolean
-    openingHours?: OpeningHours | undefined
-    onShowHours?: (() => void) | undefined
     detailsHref?: string | undefined
 }>) {
     const heading = (
@@ -61,36 +52,31 @@ export function RestaurantHeader({
                         </a>
                     )}
                 </div>
-                <SocialMetadata ownerName={ownerName} wantCount={wantCount} beenCount={beenCount} />
+                <SocialMetadata ownerName={ownerName} wantCount={wantCount} />
             </div>
 
-            {(location !== undefined || openingHours !== undefined) && (
+            {location !== undefined && location !== "" && (
                 <div className="flex flex-col gap-2.5 rounded-xl bg-surface-muted/60 p-3">
-                    {location !== undefined && location !== "" && (
-                        <div className="flex items-center gap-2.5 text-sm text-muted-foreground">
-                            <div className="flex size-6 items-center justify-center rounded-full bg-surface-muted">
-                                <MapPinIcon className="size-3.5 text-muted-foreground" />
-                            </div>
-                            {hasLocation ? (
-                                <a
-                                    href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(location)}`}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    title={location}
-                                    className="truncate hover:text-primary"
-                                >
-                                    {location}
-                                </a>
-                            ) : (
-                                <span className="truncate" title={location}>
-                                    {location}
-                                </span>
-                            )}
+                    <div className="flex items-center gap-2.5 text-sm text-muted-foreground">
+                        <div className="flex size-6 items-center justify-center rounded-full bg-surface-muted">
+                            <MapPinIcon className="size-3.5 text-muted-foreground" />
                         </div>
-                    )}
-                    {openingHours !== undefined && onShowHours !== undefined && (
-                        <OpeningHoursSummary openingHours={openingHours} onClick={onShowHours} />
-                    )}
+                        {hasLocation ? (
+                            <a
+                                href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(location)}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                title={location}
+                                className="truncate hover:text-primary"
+                            >
+                                {location}
+                            </a>
+                        ) : (
+                            <span className="truncate" title={location}>
+                                {location}
+                            </span>
+                        )}
+                    </div>
                 </div>
             )}
         </div>

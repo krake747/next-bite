@@ -48,8 +48,8 @@ function seedFriends(): void {
         incoming: [{ profileId: "cas", name: "Cas" }],
         outgoing: [{ profileId: "dan", name: "Dan" }],
     })
-    seedQuery("restaurants:feed", undefined, [])
-    seedQuery("restaurants:get", undefined, [])
+    seedQuery("places:feed", undefined, [])
+    seedQuery("places:mine", undefined, [])
 }
 
 async function renderAt(path: string): Promise<void> {
@@ -156,8 +156,8 @@ describe("friends screen", () => {
         querySeeds.clear()
         seedQuery("social:friends", undefined, [])
         seedQuery("social:requests", undefined, { incoming: [], outgoing: [] })
-        seedQuery("restaurants:feed", undefined, [])
-        seedQuery("restaurants:get", undefined, [])
+        seedQuery("places:feed", undefined, [])
+        seedQuery("places:mine", undefined, [])
         await renderAt("/friends")
 
         await waitFor(() => {

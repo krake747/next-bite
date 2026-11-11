@@ -13,7 +13,7 @@ import {
     IMAGE_TYPE_LABEL,
 } from "@core/image.utils"
 import { clearError, errorFrom, type FormError } from "@core/outcome"
-import { useCleanupStorage, useDeleteImage, useUploadImage, type ImageRecord } from "@core/restaurants"
+import { useDeleteUpload, useUploadImage, type ImageRecord } from "@core/restaurants"
 import { cx } from "@ui/cva.config"
 
 type FileListLike = Readonly<{
@@ -41,7 +41,6 @@ type ImageUploadProps = {
     readonly onImagesChange: (images: ReadonlyArray<Readonly<ImageRecord>>) => void
     readonly disabled?: boolean | undefined
     readonly maxFiles?: number | undefined
-    readonly restaurantId?: Id<"restaurants"> | undefined
     readonly onRemove?: ((storageId: Id<"_storage">) => void) | undefined
     readonly variant?: "gallery" | "avatar" | undefined
     readonly ctaLabel?: string | undefined
@@ -82,7 +81,8 @@ async function processAndUpload(file: File, uploadImage: (file: File) => Promise
     const extension = extensionForMime(processed.blob.type)
     const baseName = file.name.replace(/\.[^.]+$/, "")
     const processedFile = new File([processed.blob], baseName + extension, { type: processed.blob.type })
-    return uploadImage(processedFile)
+    const uploaded = await uploadImage(processedFile)
+    return { ...uploaded, width: processed.width, height: processed.height }
 }
 
 type UploadBatchDeps = {
@@ -156,7 +156,7 @@ async function runUploadBatch(deps: UploadBatchDeps): Promise<void> {
 
 export function ImageUpload(props: Readonly<ImageUploadProps>) {
     const uploadImage = useUploadImage()
-    const cleanupStorage = useCleanupStorage()
+    const deleteUpload = useDeleteUpload()
     const [isUploading, setIsUploading] = useState(false)
     const [uploadError, setUploadError] = useState<FormError>(clearError)
     const batchRef = useRef(0)
@@ -189,7 +189,7 @@ export function ImageUpload(props: Readonly<ImageUploadProps>) {
             isMounted: () => mountedRef.current,
             getLatestImages: () => latestImagesRef.current,
             cleanup: async (args) => {
-                await cleanupStorage.mutateAsync(args)
+                await deleteUpload.mutateAsync(args)
             },
             onImagesChange: props.onImagesChange,
             setUploading: setIsUploading,
@@ -204,7 +204,6 @@ export function ImageUpload(props: Readonly<ImageUploadProps>) {
             <ImageGrid
                 images={props.images}
                 onImagesChange={props.onImagesChange}
-                restaurantId={props.restaurantId}
                 onRemove={props.onRemove}
                 disabled={props.disabled ?? false}
             />
@@ -265,35 +264,16 @@ function UploadStatus({
 function ImageGrid({
     images,
     onImagesChange,
-    restaurantId,
     onRemove,
     disabled,
 }: Readonly<{
     images: ReadonlyArray<Readonly<ImageRecord>>
     onImagesChange: (images: ReadonlyArray<Readonly<ImageRecord>>) => void
-    restaurantId: Id<"restaurants"> | undefined
     onRemove: ((storageId: Id<"_storage">) => void) | undefined
     disabled: boolean
 }>) {
-    const deleteImage = useDeleteImage()
-
-    const handleRemove = async (index: number, image: Readonly<ImageRecord>) => {
-        const originalImages = [...images]
+    const handleRemove = (index: number, image: Readonly<ImageRecord>) => {
         onImagesChange(images.filter((_, i) => i !== index))
-
-        if (restaurantId !== undefined) {
-            try {
-                await deleteImage.mutateAsync({
-                    restaurantId,
-                    imageUrl: image.url,
-                    storageId: image.storageId,
-                })
-            } catch (error) {
-                onImagesChange(originalImages)
-                console.error("Failed to delete image:", error)
-            }
-            return
-        }
         onRemove?.(image.storageId)
     }
 
@@ -307,7 +287,7 @@ function ImageGrid({
                     key={image.storageId}
                     imageUrl={image.url}
                     onRemove={() => {
-                        void handleRemove(index, image)
+                        handleRemove(index, image)
                     }}
                     disabled={disabled}
                 />

@@ -35,11 +35,12 @@ async function befriend(t: TestConvexForDataModel<DataModel>, a: string, b: stri
     await asUser(t, b).mutation(api.invites.accept, { token })
 }
 
-async function createRestaurant(t: TestConvexForDataModel<DataModel>, subject: string): Promise<Id<"restaurants">> {
-    return asUser(t, subject).action(api.restaurants.addWithOpeningHours, {
+async function createPlace(t: TestConvexForDataModel<DataModel>, subject: string): Promise<Id<"places">> {
+    return asUser(t, subject).mutation(api.places.create, {
         name: "Trattoria Verde",
         cuisine: "Italian",
         addressLabel: "Luxembourg City",
+        photos: [],
     })
 }
 
@@ -86,20 +87,20 @@ describe("bounded meal planning", () => {
         await expect(asUser(t, "cas").query(api.plans.listPlansForGroup, { groupId })).rejects.toThrow("membership")
     })
 
-    test("restaurant plans respect visibility and friendship", async () => {
+    test("place plans respect visibility and friendship", async () => {
         const t = setup()
         await registerUser(t, "anna", "anna@example.com")
         await registerUser(t, "ben", "ben@example.com")
         await registerUser(t, "cas", "cas@example.com")
-        const restaurantId = await createRestaurant(t, "anna")
+        const placeId = await createPlace(t, "anna")
 
         await expect(
             asUser(t, "cas").mutation(api.plans.createPlan, {
-                restaurantId,
+                placeId,
                 title: "Sneaky dinner",
                 date: Date.now() + 86400000,
             }),
-        ).rejects.toThrow("not shared")
+        ).rejects.toThrow("not visible")
 
         const friendToken = await asUser(t, "anna").mutation(api.invites.create, {
             target: { kind: "friend" },
@@ -107,7 +108,7 @@ describe("bounded meal planning", () => {
         await asUser(t, "ben").mutation(api.invites.accept, { token: friendToken })
 
         const planId = await asUser(t, "anna").mutation(api.plans.createPlan, {
-            restaurantId,
+            placeId,
             title: "Catch-up dinner",
             date: Date.now() + 86400000,
             participantIds: [await idOf(t, "ben")],
@@ -116,34 +117,34 @@ describe("bounded meal planning", () => {
 
         await expect(
             asUser(t, "anna").mutation(api.plans.createPlan, {
-                restaurantId,
+                placeId,
                 title: "Stranger dinner",
                 date: Date.now() + 86400000,
                 participantIds: [await idOf(t, "cas")],
             }),
         ).rejects.toThrow("friend")
 
-        await expect(asUser(t, "cas").query(api.plans.listPlansForRestaurant, { restaurantId })).rejects.toThrow(
-            "not shared",
+        await expect(asUser(t, "cas").query(api.plans.listPlansForRestaurant, { placeId })).rejects.toThrow(
+            "not visible",
         )
     })
 
-    test("hides group-scoped plans from restaurant viewers outside the group", async () => {
+    test("hides group-scoped plans from place viewers outside the group", async () => {
         const t = setup()
         await registerUser(t, "anna", "anna@example.com")
         await registerUser(t, "ben", "ben@example.com")
         await registerUser(t, "cas", "cas@example.com")
-        const restaurantId = await createRestaurant(t, "anna")
+        const placeId = await createPlace(t, "anna")
         await befriend(t, "anna", "cas")
         const groupId = await asUser(t, "anna").mutation(api.groups.create, { name: "Food Crew" })
         await asUser(t, "anna").mutation(api.plans.createPlan, {
             groupId,
-            restaurantId,
+            placeId,
             title: "Crew dinner",
             date: Date.now() + 86400000,
         })
 
-        const visible = await asUser(t, "cas").query(api.plans.listPlansForRestaurant, { restaurantId })
+        const visible = await asUser(t, "cas").query(api.plans.listPlansForRestaurant, { placeId })
         expect(visible).toEqual([])
     })
 

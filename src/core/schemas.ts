@@ -4,13 +4,12 @@ import { type Id } from "../../convex/_generated/dataModel"
 
 export const RestaurantSchema = v.object({
     name: v.pipe(v.string(), v.minLength(1, "Name is required")),
-    cuisine: v.pipe(v.string(), v.minLength(1, "Cuisine is required")),
+    cuisine: v.optional(v.string()),
     location: v.pipe(v.string(), v.minLength(1, "Location is required")),
     lat: v.optional(v.number()),
     lng: v.optional(v.number()),
     notes: v.optional(v.string()),
     link: v.optional(v.string()),
-    images: v.optional(v.array(v.string())),
     placeId: v.optional(v.string()),
 })
 

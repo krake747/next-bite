@@ -18,11 +18,10 @@ backend deploy (see `environments.md`), so every listed migration must be idempo
 
 ## Image claims
 
-Upload ownership is the first claim (ADR-0015). Restaurant images stored before claim records
-existed get one from `storage:backfillImageClaims`, which claims each embedded image for the
-restaurant that holds it. Avatars need no backfill because profiles are indexed by avatar storage
-ID. The daily cleanup deletes any blob older than a day that holds no claim, so the backfill must
-run before the first cleanup on a deployment with legacy images.
+Upload ownership is the first claim (ADR-0015). A place photo is claimed by its `photos` row and an
+avatar by its profile row; both are indexed by storage ID. The daily cleanup deletes any blob older
+than a day that holds no claim. The rebuild carries no backfills: dev was wiped and previews start
+fresh, so `backend-migrate.sh` runs an empty list.
 
 ## Troubleshooting
 
