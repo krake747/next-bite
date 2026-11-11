@@ -3,8 +3,8 @@
 # CONVEX_DEPLOY_KEY targets. Every listed migration must be idempotent.
 set -euo pipefail
 
-# The profiles legacy-key backfill below runs first; keep entries idempotent.
-MIGRATIONS=("model/identity/profiles:stripProfilesCreatedAt")
+# No pending migrations. Each entry must stay idempotent; see docs/migrations.md.
+MIGRATIONS=()
 
 main() {
     : "${CONVEX_DEPLOY_KEY:?CONVEX_DEPLOY_KEY is not set}"
