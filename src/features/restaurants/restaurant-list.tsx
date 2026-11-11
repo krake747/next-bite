@@ -1,12 +1,12 @@
 import { type Restaurant } from "@core/restaurants"
-import { type RestaurantSocial, type RestaurantSocialSummary } from "@core/social"
+import { type RestaurantSocial } from "@core/social"
 
 import { EmptyRestaurantsState } from "./empty-restaurants-state"
 import { RestaurantCard } from "./restaurant-card"
 
 type RestaurantListProps = {
     restaurants: ReadonlyArray<Restaurant>
-    socialFor?: ((restaurant: Restaurant) => RestaurantSocial | RestaurantSocialSummary) | undefined
+    socialFor?: ((restaurant: Restaurant) => RestaurantSocial) | undefined
     onToggleWant?: ((restaurant: Restaurant) => void) | undefined
     detailsHrefFor?: ((restaurant: Restaurant) => string) | undefined
 }

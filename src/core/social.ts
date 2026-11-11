@@ -13,78 +13,27 @@ export type InterestInput = {
     readonly status: "want" | "been"
 }
 
-export type LikeInput = {
-    readonly restaurantId: string
-    readonly userId: string
-    readonly displayName: string
-}
-
-export type CommentInput = {
-    readonly _id: string
-    readonly restaurantId: string
-    readonly userId: string
-    readonly displayName: string
-    readonly text: string
-    readonly createdAt: number
-}
-
 export type SocialSnapshot = {
     readonly interests: ReadonlyArray<InterestInput>
-    readonly likes: ReadonlyArray<LikeInput>
-    readonly comments: ReadonlyArray<CommentInput>
 }
 
 export type RestaurantSocial = {
     readonly wantCount: number
     readonly beenCount: number
     readonly wanted: boolean
-    readonly likeCount: number
-    readonly liked: boolean
-    readonly comments: ReadonlyArray<CommentInput>
     readonly interestedNames: ReadonlyArray<string>
-}
-
-export type RestaurantSocialSummary = {
-    readonly wantCount: number
-    readonly beenCount: number
-    readonly wanted: boolean
-    readonly likeCount: number
-    readonly liked: boolean
-    readonly commentCount: number
-    readonly interestedNames: ReadonlyArray<string>
-}
-
-const baseCounts = {
-    wantCount: 0,
-    beenCount: 0,
-    wanted: false,
-    likeCount: 0,
-    liked: false,
-    interestedNames: [],
-} as const
-
-export const emptySocialSummary: RestaurantSocialSummary = {
-    ...baseCounts,
-    interestedNames: [...baseCounts.interestedNames],
-    commentCount: 0,
 }
 
 export const emptySocial: RestaurantSocial = {
-    ...baseCounts,
-    interestedNames: [...baseCounts.interestedNames],
-    comments: [],
+    wantCount: 0,
+    beenCount: 0,
+    wanted: false,
+    interestedNames: [],
 }
 
 export function summarizeSocial(restaurantId: string, snapshot: SocialSnapshot, viewer: Viewer): RestaurantSocial {
     const interests = snapshot.interests.filter((interest) => interest.restaurantId === restaurantId)
-    const likes = snapshot.likes.filter((like) => like.restaurantId === restaurantId)
-    const comments = snapshot.comments
-        .filter((comment) => comment.restaurantId === restaurantId)
-        .toSorted((a, b) => a.createdAt - b.createdAt)
-    return {
-        ...countReactions(interests, likes, viewer),
-        comments,
-    }
+    return countReactions(interests, viewer)
 }
 
 export function orderFeedByRecency<Restaurant extends { readonly _creationTime: number }>(
@@ -104,7 +53,7 @@ export function withoutTempIds(ids: ReadonlyArray<Id<"restaurants">>): Id<"resta
 
 export function useSocialSummaries(
     restaurantIds: ReadonlyArray<Id<"restaurants">>,
-): ReadonlyMap<string, RestaurantSocialSummary> | undefined {
+): ReadonlyMap<string, RestaurantSocial> | undefined {
     const status = useSessionStatus()
     const stableIds = withoutTempIds(restaurantIds)
     const summaries = useConvexQuery(
@@ -128,9 +77,6 @@ export function useSocialForRestaurant(restaurantId: Id<"restaurants">, viewer: 
 }
 
 export const useToggleInterest = () => useConvexMutation(api.social.toggleInterest)
-export const useToggleLike = () => useConvexMutation(api.social.toggleLike)
-export const useAddComment = () => useConvexMutation(api.social.addComment)
-export const useDeleteComment = () => useConvexMutation(api.social.deleteComment)
 
 export const useFriends = () => {
     const status = useSessionStatus()

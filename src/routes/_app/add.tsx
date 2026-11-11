@@ -141,7 +141,7 @@ function AddPage() {
                         Add a restaurant
                     </h1>
                     <p className="mt-1 text-muted-foreground">
-                        Find it on Google Maps and confirm the details. Only your notes, rating, and photos are manual.
+                        Find it on Google Maps and confirm the details. Only your notes and photos are manual.
                     </p>
                 </div>
 

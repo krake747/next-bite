@@ -1,5 +1,5 @@
-import { createFileRoute, Link } from "@tanstack/react-router"
-import { Suspense, useState } from "react"
+import { createFileRoute } from "@tanstack/react-router"
+import { useState } from "react"
 
 import { useSuspenseConvexQuery } from "@api/convex.context"
 import { convexQueryOptions, warmQueriesWithin } from "@api/convex.options"
@@ -18,7 +18,6 @@ import { SessionGate } from "@routes/-components/session-gate"
 import { PageContainer } from "@routes/-layouts/page-container"
 import { Button } from "@ui/button"
 import { cx } from "@ui/cva.config"
-import { Skeleton } from "@ui/skeleton"
 import { control, fieldLabel } from "@ui/variants"
 
 export const Route = createFileRoute("/_app/friends")({
@@ -183,34 +182,6 @@ function RequestsSection() {
     )
 }
 
-function FriendDiscoveries({ ownerId, ownerName }: Readonly<{ ownerId: string; ownerName: string }>) {
-    const discoveries = useSuspenseConvexQuery(api.friendships.listDiscoveries, { friendAuthUserId: ownerId })
-    if (discoveries.length === 0) {
-        return (
-            <p className="pt-2 text-sm text-muted-foreground">
-                When {ownerName} adds restaurants, the latest 5 show up here and in your Home feed.
-            </p>
-        )
-    }
-    return (
-        <ul className="space-y-1 pt-2">
-            {discoveries.map((restaurant) => (
-                <li key={restaurant._id}>
-                    <Link
-                        to="/restaurants/$restaurantId"
-                        params={{ restaurantId: restaurant._id }}
-                        className="flex min-h-11 items-center gap-1.5 rounded-lg px-2 text-sm hover:bg-surface-muted focus-visible:bg-surface-muted"
-                    >
-                        <span className="truncate font-medium text-primary">{restaurant.name}</span>
-                        <span className="shrink-0 text-muted-foreground">· {restaurant.cuisine}</span>
-                        <span className="sr-only"> by {ownerName}</span>
-                    </Link>
-                </li>
-            ))}
-        </ul>
-    )
-}
-
 function OwnListNudge() {
     const restaurants = useRestaurants()
     if (restaurants === undefined || restaurants.length > 0) {
@@ -284,26 +255,10 @@ function FriendsList() {
                                 Remove
                             </Button>
                         </div>
-                        <FriendDiscoveriesBoundary ownerId={friend.authUserId} ownerName={friend.name} />
                     </li>
                 ))}
             </ul>
         </>
-    )
-}
-
-function FriendDiscoveriesBoundary({ ownerId, ownerName }: Readonly<{ ownerId: string; ownerName: string }>) {
-    return (
-        <Suspense
-            fallback={
-                <div className="space-y-1.5 pt-2" aria-hidden="true">
-                    <Skeleton className="h-4 w-3/4" />
-                    <Skeleton className="h-4 w-1/2" />
-                </div>
-            }
-        >
-            <FriendDiscoveries ownerId={ownerId} ownerName={ownerName} />
-        </Suspense>
     )
 }
 

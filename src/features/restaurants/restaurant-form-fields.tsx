@@ -1,10 +1,8 @@
-import { Field, setInput, type FormStore } from "@formisch/react"
+import { Field, type FormStore } from "@formisch/react"
 
 import { RestaurantSchema } from "@core/schemas"
-import { EmojiRating } from "@pattern/emoji-rating"
 import { FieldErrors, FieldWrapper, Input, Textarea } from "@pattern/field"
 import { PlacesAutocomplete, type PlaceSelection } from "@pattern/places-autocomplete"
-import { fieldLabel } from "@ui/variants"
 
 type RestaurantFormStore = FormStore<typeof RestaurantSchema>
 
@@ -91,35 +89,6 @@ export function LinkField({ form }: Readonly<{ form: RestaurantFormStore }>) {
                     {...linkField.props}
                 />
             )}
-        </Field>
-    )
-}
-
-export function RatingSection({ form }: Readonly<{ form: RestaurantFormStore }>) {
-    return (
-        <Field of={form} path={["rating"]}>
-            {(ratingField) => {
-                const value =
-                    typeof ratingField.input === "number" && ratingField.input >= 1 && ratingField.input <= 7
-                        ? ratingField.input - 1
-                        : undefined
-                return (
-                    <FieldWrapper>
-                        <fieldset>
-                            <legend className={fieldLabel()}>Rating</legend>
-                            <div className="mt-2">
-                                <EmojiRating
-                                    rating={value}
-                                    onRate={(index) => {
-                                        setInput(form, { path: ["rating"], input: index + 1 })
-                                    }}
-                                />
-                            </div>
-                        </fieldset>
-                        <FieldErrors errors={ratingField.errors} />
-                    </FieldWrapper>
-                )
-            }}
         </Field>
     )
 }

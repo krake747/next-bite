@@ -10,15 +10,19 @@ export async function isRestaurantVisibleTo(
     if (restaurant.ownerId === userId) {
         return true
     }
+    const friendship = await db
+        .query("friendships")
+        .withIndex("by_owner_friend", (q) => q.eq("ownerId", restaurant.ownerId).eq("friendAuthUserId", userId))
+        .unique()
+    if (friendship?.status === "accepted") {
+        return true
+    }
     const shares = await db
         .query("restaurantShares")
         .withIndex("by_restaurant", (q) => q.eq("restaurantId", restaurant._id))
         .collect()
     for (const share of shares) {
         const target = share.target
-        if (target.kind === "user" && target.userId === userId) {
-            return true
-        }
         if (target.kind === "group") {
             const membership = await db
                 .query("groupMembers")

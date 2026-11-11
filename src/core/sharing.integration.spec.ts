@@ -22,6 +22,11 @@ async function registerUser(t: TestConvexForDataModel<DataModel>, subject: strin
     await asUser(t, subject).mutation(api.users.ensureProfile, { email, name: subject })
 }
 
+async function befriend(t: TestConvexForDataModel<DataModel>, a: string, b: string): Promise<void> {
+    const token = await asUser(t, a).mutation(api.invitations.createInvite, { target: { kind: "friend" } })
+    await asUser(t, b).mutation(api.invitations.acceptInvite, { token })
+}
+
 async function createRestaurant(t: TestConvexForDataModel<DataModel>, subject: string): Promise<Id<"restaurants">> {
     return asUser(t, subject).action(api.restaurants.addWithOpeningHours, {
         name: "Trattoria Verde",
@@ -41,18 +46,18 @@ async function joinGroup(
 }
 
 describe("sharing and social gating", () => {
-    test("lets a shared user react and blocks strangers", async () => {
+    test("lets a friend react and blocks strangers", async () => {
         const t = setup()
         await registerUser(t, "anna", "anna@example.com")
         await registerUser(t, "ben", "ben@example.com")
         await registerUser(t, "cas", "cas@example.com")
         const restaurantId = await createRestaurant(t, "anna")
 
-        await asUser(t, "anna").mutation(api.shares.shareWithUser, { restaurantId, userId: "ben" })
-        await asUser(t, "ben").mutation(api.social.toggleLike, { restaurantId })
-        await expect(asUser(t, "cas").mutation(api.social.toggleLike, { restaurantId })).rejects.toThrow(
-            "not shared with you",
-        )
+        await befriend(t, "anna", "ben")
+        await asUser(t, "ben").mutation(api.social.toggleInterest, { restaurantId, status: "want" })
+        await expect(
+            asUser(t, "cas").mutation(api.social.toggleInterest, { restaurantId, status: "want" }),
+        ).rejects.toThrow("not shared with you")
     })
 
     test("hides social rows from strangers", async () => {
@@ -65,7 +70,7 @@ describe("sharing and social gating", () => {
         await expect(asUser(t, "cas").query(api.social.getForRestaurant, { restaurantId })).resolves.toBeNull()
         await expect(t.query(api.social.getForRestaurant, { restaurantId })).resolves.toBeNull()
 
-        await asUser(t, "anna").mutation(api.shares.shareWithUser, { restaurantId, userId: "ben" })
+        await befriend(t, "anna", "ben")
         await expect(asUser(t, "ben").query(api.social.getForRestaurant, { restaurantId })).resolves.not.toBeNull()
         await expect(asUser(t, "anna").query(api.social.getForRestaurant, { restaurantId })).resolves.not.toBeNull()
     })
@@ -82,7 +87,7 @@ describe("sharing and social gating", () => {
         ).resolves.toEqual([null])
         await expect(t.query(api.social.getSummaries, { restaurantIds: [restaurantId] })).resolves.toEqual([null])
 
-        await asUser(t, "anna").mutation(api.shares.shareWithUser, { restaurantId, userId: "ben" })
+        await befriend(t, "anna", "ben")
         const [summary] = await asUser(t, "ben").query(api.social.getSummaries, { restaurantIds: [restaurantId] })
         expect(summary).toMatchObject({ restaurantId, wantCount: 0 })
     })
@@ -99,26 +104,20 @@ describe("sharing and social gating", () => {
         await expect(asUser(t, "ben").mutation(api.restaurants.remove, { id: restaurantId })).rejects.toThrow(
             "only the owner",
         )
-        await expect(
-            asUser(t, "ben").mutation(api.shares.shareWithUser, { restaurantId, userId: "ben" }),
-        ).rejects.toThrow("only the owner")
     })
 
-    test("revokes reactions after unshare", async () => {
+    test("revokes reactions after unfriending", async () => {
         const t = setup()
         await registerUser(t, "anna", "anna@example.com")
         await registerUser(t, "ben", "ben@example.com")
         const restaurantId = await createRestaurant(t, "anna")
 
-        await asUser(t, "anna").mutation(api.shares.shareWithUser, { restaurantId, userId: "ben" })
-        await asUser(t, "ben").mutation(api.social.toggleLike, { restaurantId })
-        await asUser(t, "anna").mutation(api.shares.unshare, { restaurantId, target: { kind: "user", userId: "ben" } })
-        await expect(asUser(t, "ben").mutation(api.social.toggleLike, { restaurantId })).rejects.toThrow(
-            "not shared with you",
-        )
-        await expect(asUser(t, "ben").mutation(api.social.addComment, { restaurantId, text: "hello" })).rejects.toThrow(
-            "not shared with you",
-        )
+        await befriend(t, "anna", "ben")
+        await asUser(t, "ben").mutation(api.social.toggleInterest, { restaurantId, status: "want" })
+        await asUser(t, "anna").mutation(api.friendships.removeFriend, { friendAuthUserId: "ben" })
+        await expect(
+            asUser(t, "ben").mutation(api.social.toggleInterest, { restaurantId, status: "been" }),
+        ).rejects.toThrow("not shared with you")
     })
 
     test("rejects anonymous and non-owner enrichment actions", async () => {
@@ -309,24 +308,18 @@ describe("sharing and social gating", () => {
         expect(bensView.incoming).toEqual([{ authUserId: "anna", name: "anna" }])
     })
 
-    test("lists only visible discoveries per friend", async () => {
+    test("shows places to accepted friends, not pending ones", async () => {
         const t = setup()
         await registerUser(t, "anna", "anna@example.com")
         await registerUser(t, "ben", "ben@example.com")
         await registerUser(t, "cas", "cas@example.com")
         await asUser(t, "anna").mutation(api.friendships.requestFriendByEmail, { email: "ben@example.com" })
         await asUser(t, "ben").mutation(api.friendships.acceptFriend, { friendAuthUserId: "anna" })
-        const sharedId = await createRestaurant(t, "ben")
-        await asUser(t, "ben").mutation(api.shares.shareWithUser, { restaurantId: sharedId, userId: "anna" })
-        await createRestaurant(t, "ben")
+        await asUser(t, "anna").mutation(api.friendships.requestFriendByEmail, { email: "cas@example.com" })
+        const restaurantId = await createRestaurant(t, "anna")
 
-        const discoveries = await asUser(t, "anna").query(api.friendships.listDiscoveries, {
-            friendAuthUserId: "ben",
-        })
-        expect(discoveries.map((r) => r._id)).toEqual([sharedId])
-        await expect(
-            asUser(t, "anna").query(api.friendships.listDiscoveries, { friendAuthUserId: "cas" }),
-        ).rejects.toThrow("friends only")
+        expect(await asUser(t, "ben").query(api.restaurants.getById, { id: restaurantId })).not.toBeNull()
+        expect(await asUser(t, "cas").query(api.restaurants.getById, { id: restaurantId })).toBeNull()
     })
 
     test("removes friendships on both sides", async () => {

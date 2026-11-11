@@ -45,11 +45,6 @@ function ActivityRestaurant({
 }
 
 const idleReactions: Reactions = {
-    liked: false,
-    likeCount: 0,
-    onToggleLike: () => {},
-    commentCount: 0,
-    onComment: () => {},
     wanted: false,
     wantCount: 0,
     onToggleWant: () => {},

@@ -32,7 +32,6 @@ export type RestaurantUpdateArgs = {
     readonly coords?: RestaurantCoords
     readonly notes?: string
     readonly link?: string
-    readonly rating?: number
     readonly images?: RestaurantImageInput[]
     readonly visibility?: "private" | "shared"
 }
@@ -96,9 +95,6 @@ export function applyUpdateArgsToDraft(draft: RestaurantDoc, args: RestaurantUpd
             draft.details = details
         }
     }
-    if (args.rating !== undefined) {
-        draft.rating = args.rating
-    }
     if (args.images !== undefined) {
         draft.images = copyStoredImages(args.images)
     }
@@ -116,7 +112,6 @@ export function toUpdateArgs(row: RestaurantDoc): RestaurantUpdateArgs {
         ...coordsArg(row.address.enrichment?.coords),
         ...(row.details?.notes !== undefined ? { notes: row.details.notes } : {}),
         ...(row.details?.link !== undefined ? { link: row.details.link } : {}),
-        ...(row.rating !== undefined ? { rating: row.rating } : {}),
         images: copyStoredImages(row.images),
         visibility: row.visibility,
     }

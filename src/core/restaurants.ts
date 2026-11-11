@@ -4,7 +4,7 @@ import { type ConvexReactClient } from "convex/react"
 import { useEffect, useRef, useState } from "react"
 
 import { getConvexSessionToken } from "@api/auth.sdk"
-import { useConvexClient, useConvexQuery, useConvexMutation, useConvexAction } from "@api/convex.context"
+import { useConvexClient, useConvexMutation, useConvexAction } from "@api/convex.context"
 import { type Doc, type Id } from "@api/data.model"
 import {
     applyUpdateArgsToDraft,
@@ -25,7 +25,7 @@ import { api } from "@api/endpoints"
 import { FALLBACK_DISPLAY_NAME } from "./constants"
 import { env } from "./env"
 import { parseImageRecord, type ImageRecord } from "./schemas"
-import { gateId, retrySessionGate, useAuth, useSessionKey, useSessionStatus } from "./session"
+import { retrySessionGate, useAuth, useSessionKey } from "./session"
 
 export class CollectionSyncError extends Error {
     constructor() {
@@ -143,16 +143,6 @@ export function preloadHomeCollections(queryClient: QueryClient): void {
 
 export const useRestaurants = () => useOwnerOrFeed("owner")
 export const useFeedRestaurants = () => useOwnerOrFeed("feed")
-
-export const useVisitMemories = (restaurantId: Id<"restaurants"> | undefined) => {
-    const status = useSessionStatus()
-    const gated = gateId(status, restaurantId)
-    return useConvexQuery(api.restaurants.listVisitMemories, gated.skip ? undefined : { restaurantId: gated.id }, {
-        skip: gated.skip,
-    })
-}
-
-export const useAddVisitMemory = () => useConvexMutation(api.restaurants.addVisitMemory)
 
 export function useAddRestaurantWithHours() {
     const client = useConvexClient()

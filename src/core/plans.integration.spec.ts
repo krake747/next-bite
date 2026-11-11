@@ -22,6 +22,11 @@ async function registerUser(t: TestConvexForDataModel<DataModel>, subject: strin
     await asUser(t, subject).mutation(api.users.ensureProfile, { email, name: subject })
 }
 
+async function befriend(t: TestConvexForDataModel<DataModel>, a: string, b: string): Promise<void> {
+    const token = await asUser(t, a).mutation(api.invitations.createInvite, { target: { kind: "friend" } })
+    await asUser(t, b).mutation(api.invitations.acceptInvite, { token })
+}
+
 async function createRestaurant(t: TestConvexForDataModel<DataModel>, subject: string): Promise<Id<"restaurants">> {
     return asUser(t, subject).action(api.restaurants.addWithOpeningHours, {
         name: "Trattoria Verde",
@@ -119,7 +124,7 @@ describe("bounded meal planning", () => {
         await registerUser(t, "ben", "ben@example.com")
         await registerUser(t, "cas", "cas@example.com")
         const restaurantId = await createRestaurant(t, "anna")
-        await asUser(t, "anna").mutation(api.shares.shareWithUser, { restaurantId, userId: "cas" })
+        await befriend(t, "anna", "cas")
         const groupId = await asUser(t, "anna").mutation(api.groups.createGroup, { name: "Food Crew" })
         await asUser(t, "anna").mutation(api.plans.createPlan, {
             groupId,

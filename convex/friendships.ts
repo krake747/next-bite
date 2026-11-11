@@ -5,7 +5,6 @@ import { type DataModel } from "./_generated/dataModel"
 import { type Doc } from "./_generated/dataModel"
 import { internalMutation, mutation, query } from "./_generated/server"
 import { formatDisplayName, requireUserId } from "./helpers"
-import { isRestaurantVisibleTo } from "./visibility"
 
 type FriendshipRow = Doc<"friendships">
 
@@ -147,30 +146,6 @@ export const requestFriendByEmail = mutation({
     },
 })
 
-export const listDiscoveries = query({
-    args: {
-        friendAuthUserId: v.string(),
-    },
-    handler: async (ctx, args) => {
-        const userId = await requireUserId(ctx)
-        const row = await findRow(ctx.db, userId, args.friendAuthUserId)
-        if (!row || row.status !== "accepted") {
-            throw new Error("Unauthorized: friends only")
-        }
-        const owned = await ctx.db
-            .query("restaurants")
-            .withIndex("by_owner", (q) => q.eq("ownerId", args.friendAuthUserId))
-            .order("desc")
-            .take(20)
-        const visible: Doc<"restaurants">[] = []
-        for (const restaurant of owned) {
-            if (await isRestaurantVisibleTo(ctx.db, userId, restaurant)) {
-                visible.push(restaurant)
-            }
-        }
-        return visible.toSorted((a, b) => b._creationTime - a._creationTime).slice(0, 5)
-    },
-})
 export const listFriendRequests = query({
     args: {},
     handler: async (ctx) => {

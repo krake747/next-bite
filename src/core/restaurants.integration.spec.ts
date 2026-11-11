@@ -22,6 +22,11 @@ async function registerUser(t: TestConvexForDataModel<DataModel>, subject: strin
     await asUser(t, subject).mutation(api.users.ensureProfile, { email: `${subject}@example.com`, name: subject })
 }
 
+async function befriend(t: TestConvexForDataModel<DataModel>, a: string, b: string): Promise<void> {
+    const token = await asUser(t, a).mutation(api.invitations.createInvite, { target: { kind: "friend" } })
+    await asUser(t, b).mutation(api.invitations.acceptInvite, { token })
+}
+
 async function createRestaurant(t: TestConvexForDataModel<DataModel>, subject: string): Promise<Id<"restaurants">> {
     return asUser(t, subject).action(api.restaurants.addWithOpeningHours, {
         name: "Trattoria Verde",
@@ -51,12 +56,12 @@ describe("restaurant getById", () => {
         expect(found?.name).toBe("Trattoria Verde")
     })
 
-    test("returns the record to a shared user", async () => {
+    test("returns the record to a friend", async () => {
         const t = setup()
         await registerUser(t, "anna")
         await registerUser(t, "ben")
         const restaurantId = await createRestaurant(t, "anna")
-        await asUser(t, "anna").mutation(api.shares.shareWithUser, { restaurantId, userId: "ben" })
+        await befriend(t, "anna", "ben")
 
         const found = await asUser(t, "ben").query(api.restaurants.getById, { id: restaurantId })
 
@@ -96,34 +101,5 @@ describe("restaurant getById", () => {
         const found = await t.query(api.restaurants.getById, { id: restaurantId })
 
         expect(found).toBeNull()
-    })
-})
-
-describe("restaurant update", () => {
-    test("accepts ratings within the emoji scale", async () => {
-        const t = setup()
-        await registerUser(t, "anna")
-        const restaurantId = await createRestaurant(t, "anna")
-
-        await asUser(t, "anna").mutation(api.restaurants.update, { id: restaurantId, rating: 7 })
-
-        const found = await asUser(t, "anna").query(api.restaurants.getById, { id: restaurantId })
-        expect(found?.rating).toBe(7)
-    })
-
-    test("rejects ratings outside the emoji scale", async () => {
-        const t = setup()
-        await registerUser(t, "anna")
-        const restaurantId = await createRestaurant(t, "anna")
-
-        await expect(
-            asUser(t, "anna").mutation(api.restaurants.update, { id: restaurantId, rating: 0 }),
-        ).rejects.toThrow("whole number between 1 and 7")
-        await expect(
-            asUser(t, "anna").mutation(api.restaurants.update, { id: restaurantId, rating: 8 }),
-        ).rejects.toThrow("whole number between 1 and 7")
-        await expect(
-            asUser(t, "anna").mutation(api.restaurants.update, { id: restaurantId, rating: 4.5 }),
-        ).rejects.toThrow("whole number between 1 and 7")
     })
 })

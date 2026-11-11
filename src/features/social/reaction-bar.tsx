@@ -1,4 +1,4 @@
-import { BookmarkIcon, ChatCircleIcon, HeartIcon } from "@phosphor-icons/react"
+import { BookmarkIcon } from "@phosphor-icons/react"
 
 import { cx } from "@ui/cva.config"
 import { focusRing } from "@ui/variants"
@@ -31,26 +31,15 @@ function ReactionButton({ pressed, count, label, onToggle, children }: ReactionB
 }
 
 export type Reactions = {
-    readonly liked: boolean
-    readonly likeCount: number
-    readonly onToggleLike: () => void
-    readonly commentCount: number
-    readonly onComment: () => void
     readonly wanted: boolean
     readonly wantCount: number
     readonly onToggleWant: () => void
 }
 
 export function ReactionBar({ reactions }: Readonly<{ reactions: Reactions }>) {
-    const { liked, likeCount, onToggleLike, commentCount, onComment, wanted, wantCount, onToggleWant } = reactions
+    const { wanted, wantCount, onToggleWant } = reactions
     return (
         <div className="flex items-center gap-1" role="group" aria-label="Reactions">
-            <ReactionButton pressed={liked} count={likeCount} label="Like" onToggle={onToggleLike}>
-                <HeartIcon className="size-4" weight={liked ? "fill" : "regular"} aria-hidden="true" />
-            </ReactionButton>
-            <ReactionButton pressed={false} count={commentCount} label="Comments" onToggle={onComment}>
-                <ChatCircleIcon className="size-4" aria-hidden="true" />
-            </ReactionButton>
             <ReactionButton pressed={wanted} count={wantCount} label="Want to try" onToggle={onToggleWant}>
                 <BookmarkIcon className="size-4" weight={wanted ? "fill" : "regular"} aria-hidden="true" />
             </ReactionButton>

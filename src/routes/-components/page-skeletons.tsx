@@ -87,8 +87,6 @@ export function FriendsSkeleton() {
                                 <TextSkeleton className="flex-1 font-display text-lg font-semibold" width="w-1/2" />
                                 <ButtonSkeleton width="w-20" />
                             </div>
-                            <TextSkeleton className="pt-2 text-sm" width="w-3/4" />
-                            <TextSkeleton className="text-sm sm:hidden" width="w-1/2" />
                         </li>
                     ))}
                 </ul>

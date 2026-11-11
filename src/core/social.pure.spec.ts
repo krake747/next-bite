@@ -9,11 +9,6 @@ const snapshot: SocialSnapshot = {
         { restaurantId: "aaa", userId: "u1", displayName: "Alex", status: "want" },
         { restaurantId: "aaa", userId: "u2", displayName: "Priya", status: "been" },
     ],
-    likes: [{ restaurantId: "aaa", userId: "u1", displayName: "Alex" }],
-    comments: [
-        { _id: "c2", restaurantId: "aaa", userId: "u2", displayName: "Priya", text: "Second", createdAt: 5 },
-        { _id: "c1", restaurantId: "aaa", userId: "u1", displayName: "Alex", text: "First", createdAt: 4 },
-    ],
 }
 
 describe("withoutTempIds", () => {
@@ -29,14 +24,11 @@ describe("withoutTempIds", () => {
 })
 
 describe("summarizeSocial", () => {
-    test("aggregates counts, personal state, and chronological comments", () => {
+    test("aggregates counts and personal state", () => {
         const summary = summarizeSocial("aaa", snapshot, { kind: "signed-in", id: "u1" })
         expect(summary.wantCount).toBe(1)
         expect(summary.beenCount).toBe(1)
         expect(summary.wanted).toBe(true)
-        expect(summary.likeCount).toBe(1)
-        expect(summary.liked).toBe(true)
-        expect(summary.comments.map((comment) => comment.text)).toEqual(["First", "Second"])
         expect(summary.interestedNames).toEqual(["Alex", "Priya"])
     })
 
@@ -45,9 +37,6 @@ describe("summarizeSocial", () => {
             wantCount: 0,
             beenCount: 0,
             wanted: false,
-            likeCount: 0,
-            liked: false,
-            comments: [],
             interestedNames: [],
         })
     })
@@ -55,7 +44,6 @@ describe("summarizeSocial", () => {
     test("marks others as non-participants", () => {
         const summary = summarizeSocial("aaa", snapshot, { kind: "signed-in", id: "u9" })
         expect(summary.wanted).toBe(false)
-        expect(summary.liked).toBe(false)
         expect(summary.wantCount).toBe(1)
     })
 })

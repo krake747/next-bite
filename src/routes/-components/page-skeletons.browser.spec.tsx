@@ -116,8 +116,6 @@ const seeds = new Map<string, unknown>([
         ],
     ],
     [seedKey("friendships:listFriendRequests", undefined), { incoming: [], outgoing: [] }],
-    [seedKey("friendships:listDiscoveries", { friendAuthUserId: "ben" }), []],
-    [seedKey("friendships:listDiscoveries", { friendAuthUserId: "cleo" }), []],
     [
         seedKey("social:listMyStatuses", undefined),
         [

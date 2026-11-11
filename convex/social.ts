@@ -42,29 +42,17 @@ async function requireVisibleRestaurant(
 
 type SocialRows = {
     interests: Doc<"interests">[]
-    likes: Doc<"likes">[]
-    comments: Doc<"comments">[]
 }
 
 async function collectSocialFor(
     db: GenericDatabaseReader<DataModel>,
     restaurantId: Id<"restaurants">,
 ): Promise<SocialRows> {
-    const [interests, likes, comments] = await Promise.all([
-        db
-            .query("interests")
-            .withIndex("by_restaurant", (q) => q.eq("restaurantId", restaurantId))
-            .collect(),
-        db
-            .query("likes")
-            .withIndex("by_restaurant", (q) => q.eq("restaurantId", restaurantId))
-            .collect(),
-        db
-            .query("comments")
-            .withIndex("by_restaurant", (q) => q.eq("restaurantId", restaurantId))
-            .collect(),
-    ])
-    return { interests, likes, comments }
+    const interests = await db
+        .query("interests")
+        .withIndex("by_restaurant", (q) => q.eq("restaurantId", restaurantId))
+        .collect()
+    return { interests }
 }
 
 export const getForRestaurant = query({
@@ -121,20 +109,16 @@ export const getSummaries = query({
                 if (userId === null || !(await isRestaurantVisibleTo(ctx.db, userId, restaurant))) {
                     return null
                 }
-                const { interests, likes, comments } = await collectSocialFor(ctx.db, restaurantId)
+                const { interests } = await collectSocialFor(ctx.db, restaurantId)
                 const counts = countReactions(
                     interests,
-                    likes,
                     userId === null ? { kind: "signed-out" } : { kind: "signed-in", id: userId },
                 )
                 return {
                     restaurantId,
                     wantCount: counts.wantCount,
                     beenCount: counts.beenCount,
-                    likeCount: counts.likeCount,
-                    commentCount: comments.length,
                     wanted: counts.wanted,
-                    liked: counts.liked,
                     interestedNames: counts.interestedNames.slice(0, 5),
                 }
             }),
@@ -169,64 +153,5 @@ export const toggleInterest = mutation({
             updatedAt: Date.now(),
         })
         return interestId
-    },
-})
-
-export const toggleLike = mutation({
-    args: {
-        restaurantId: v.id("restaurants"),
-    },
-    handler: async (ctx, args) => {
-        const { userId, name } = await requireVisibleRestaurant(ctx, args.restaurantId)
-        const existing = await ctx.db
-            .query("likes")
-            .withIndex("by_user_restaurant", (q) => q.eq("userId", userId).eq("restaurantId", args.restaurantId))
-            .unique()
-        if (existing) {
-            await ctx.db.delete(existing._id)
-            return null
-        }
-        return ctx.db.insert("likes", {
-            restaurantId: args.restaurantId,
-            userId,
-            displayName: name,
-            createdAt: Date.now(),
-        })
-    },
-})
-
-export const addComment = mutation({
-    args: {
-        restaurantId: v.id("restaurants"),
-        text: v.string(),
-    },
-    handler: async (ctx, args) => {
-        const { userId, name } = await requireVisibleRestaurant(ctx, args.restaurantId)
-        const text = args.text.trim().slice(0, 500)
-        if (text === "") {
-            throw new Error("Comment text is required")
-        }
-        return ctx.db.insert("comments", {
-            restaurantId: args.restaurantId,
-            userId,
-            displayName: name,
-            text,
-            createdAt: Date.now(),
-        })
-    },
-})
-
-export const deleteComment = mutation({
-    args: { id: v.id("comments") },
-    handler: async (ctx, args) => {
-        const userId = await requireUserId(ctx)
-        const comment = await ctx.db.get(args.id)
-        if (!comment) {
-            throw new Error("Comment not found")
-        }
-        if (comment.userId !== userId) {
-            throw new Error("Unauthorized: only the author can delete this comment")
-        }
-        await ctx.db.delete(args.id)
     },
 })

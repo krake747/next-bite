@@ -362,7 +362,6 @@ type UpdateArgs = {
     coords?: Coords | undefined
     notes?: string | undefined
     link?: string | undefined
-    rating?: number | undefined
     images?: { url: string; storageId: Id<"_storage"> }[] | undefined
     visibility?: "private" | "shared" | undefined
 }
@@ -385,7 +384,6 @@ function buildRestaurantPatch(
               }
             : {}),
         ...(details !== undefined ? { details } : {}),
-        ...(args.rating !== undefined ? { rating: args.rating } : {}),
         ...(args.images !== undefined ? { images: args.images } : {}),
         ...(args.visibility !== undefined ? { visibility: args.visibility } : {}),
     }
@@ -719,16 +717,12 @@ export const update = mutation({
         coords: v.optional(coordsValidator),
         notes: v.optional(v.string()),
         link: v.optional(v.string()),
-        rating: v.optional(v.number()),
         images: v.optional(v.array(restaurantImageValidator)),
         visibility: v.optional(v.union(v.literal("private"), v.literal("shared"))),
     },
     handler: async (ctx, args) => {
         const restaurant = await requireOwnedRestaurant(ctx, args.id)
 
-        if (args.rating !== undefined && (!Number.isInteger(args.rating) || args.rating < 1 || args.rating > 7)) {
-            throw new Error("Rating must be a whole number between 1 and 7")
-        }
         assertRestaurantText(args)
 
         const details = mergeDetails(restaurant.details, { notes: args.notes, link: args.link })
@@ -903,71 +897,5 @@ export const lookupPlaceIdAndHours = action({
                 openingHours,
             },
         })
-    },
-})
-
-export const addVisitMemory = mutation({
-    args: {
-        restaurantId: v.id("restaurants"),
-        images: v.array(restaurantImageValidator),
-    },
-    handler: async (ctx, args): Promise<Id<"visitMemories">> => {
-        const userId = await requireUserId(ctx)
-        const restaurant = await ctx.db.get(args.restaurantId)
-        if (!restaurant) {
-            throw new Error("Restaurant not found")
-        }
-        if (!(await isRestaurantVisibleTo(ctx.db, userId, restaurant))) {
-            throw new Error("Restaurant is not visible to you")
-        }
-        assertImageLimit(args.images)
-        if (args.images.length === 0) {
-            throw new Error("Add at least one photo")
-        }
-        const displayName = await ctx.runQuery(internal.restaurants._profileNameByAuthUser, { authUserId: userId })
-        const enrichedImages = []
-        for (const img of args.images) {
-            const record = await ctx.runQuery(internal.uploads.lookupByStorage, { storageId: img.storageId })
-            assertAttachable(record, userId, args.restaurantId)
-            const url = (await ctx.storage.getUrl(img.storageId)) ?? img.url
-            enrichedImages.push(withServerMetadata(img, { ownerId: userId, displayName }, record, url))
-        }
-        const memoryId = await ctx.db.insert("visitMemories", {
-            restaurantId: args.restaurantId,
-            userId,
-            displayName,
-            images: enrichedImages,
-            createdAt: Date.now(),
-        })
-        for (const img of enrichedImages) {
-            await ctx.runMutation(internal.uploads.attach, {
-                storageId: img.storageId,
-                ownerId: userId,
-                restaurantId: args.restaurantId,
-            })
-        }
-        return memoryId
-    },
-})
-
-export const listVisitMemories = query({
-    args: { restaurantId: v.id("restaurants") },
-    handler: async (ctx, args) => {
-        const identity = await ctx.auth.getUserIdentity()
-        if (!identity) {
-            return []
-        }
-        const restaurant = await ctx.db.get(args.restaurantId)
-        if (!restaurant) {
-            return []
-        }
-        if (!(await isRestaurantVisibleTo(ctx.db, identity.subject, restaurant))) {
-            return []
-        }
-        return ctx.db
-            .query("visitMemories")
-            .withIndex("by_restaurant", (q) => q.eq("restaurantId", args.restaurantId))
-            .order("desc")
-            .take(30)
     },
 })

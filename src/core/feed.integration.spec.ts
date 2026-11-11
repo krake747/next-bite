@@ -55,13 +55,12 @@ async function joinGroup(
 }
 
 describe("friends feed", () => {
-    test("shows a friend's shared restaurant", async () => {
+    test("shows a friend's restaurant without a share", async () => {
         const t = setup()
         await registerUser(t, "anna")
         await registerUser(t, "ben")
         await befriend(t, "anna", "ben")
-        const restaurantId = await createRestaurant(t, "anna", "Trattoria Verde")
-        await asUser(t, "anna").mutation(api.shares.shareWithUser, { restaurantId, userId: "ben" })
+        await createRestaurant(t, "anna", "Trattoria Verde")
 
         expect(await feedNames(t, "ben")).toContain("Trattoria Verde")
     })
