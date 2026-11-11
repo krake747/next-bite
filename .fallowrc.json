@@ -111,7 +111,8 @@
             },
             {
                 "from": "convex-shared",
-                "allow": ["convex-shared", "convex", "core"]
+                "allow": ["convex-shared", "convex", "core"],
+                "allowTypeOnly": ["model-identity", "model-social", "model-groups", "model-places", "model-plans"]
             },
             {
                 "from": "model-identity",

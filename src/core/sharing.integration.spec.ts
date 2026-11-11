@@ -31,8 +31,8 @@ async function idOf(t: TestConvexForDataModel<DataModel>, subject: string): Prom
 }
 
 async function befriend(t: TestConvexForDataModel<DataModel>, a: string, b: string): Promise<void> {
-    const token = await asUser(t, a).mutation(api.invitations.createInvite, { target: { kind: "friend" } })
-    await asUser(t, b).mutation(api.invitations.acceptInvite, { token })
+    const token = await asUser(t, a).mutation(api.invites.create, { target: { kind: "friend" } })
+    await asUser(t, b).mutation(api.invites.accept, { token })
 }
 
 async function createRestaurant(t: TestConvexForDataModel<DataModel>, subject: string): Promise<Id<"restaurants">> {
@@ -49,8 +49,8 @@ async function joinGroup(
     owner: string,
     subject: string,
 ): Promise<void> {
-    const token = await asUser(t, owner).mutation(api.invitations.createInvite, { target: { kind: "group", groupId } })
-    await asUser(t, subject).mutation(api.invitations.acceptInvite, { token })
+    const token = await asUser(t, owner).mutation(api.invites.create, { target: { kind: "group", groupId } })
+    await asUser(t, subject).mutation(api.invites.accept, { token })
 }
 
 describe("profile references", () => {
@@ -71,10 +71,10 @@ describe("profile references", () => {
     test("rejects writes until the caller has a profile and reads empty meanwhile", async () => {
         const t = setup()
 
-        await expect(asUser(t, "newcomer").mutation(api.groups.createGroup, { name: "Food Crew" })).rejects.toThrow(
+        await expect(asUser(t, "newcomer").mutation(api.groups.create, { name: "Food Crew" })).rejects.toThrow(
             "Unauthorized: profile required",
         )
-        await expect(asUser(t, "newcomer").query(api.groups.listMyGroups, {})).resolves.toEqual([])
+        await expect(asUser(t, "newcomer").query(api.groups.list, {})).resolves.toEqual([])
         await expect(asUser(t, "newcomer").query(api.restaurants.feed, {})).resolves.toEqual([])
     })
 })
@@ -171,17 +171,17 @@ describe("sharing and social gating", () => {
         const t = setup()
         await registerUser(t, "anna", "anna@example.com")
         await registerUser(t, "ben", "ben@example.com")
-        const groupId = await asUser(t, "anna").mutation(api.groups.createGroup, { name: "Food Crew" })
+        const groupId = await asUser(t, "anna").mutation(api.groups.create, { name: "Food Crew" })
 
-        const token = await asUser(t, "anna").mutation(api.invitations.createInvite, {
+        const token = await asUser(t, "anna").mutation(api.invites.create, {
             target: { kind: "group", groupId },
         })
-        const first = await asUser(t, "ben").mutation(api.invitations.acceptInvite, { token })
+        const first = await asUser(t, "ben").mutation(api.invites.accept, { token })
         expect(first).toEqual({ result: "accepted", groupId })
-        const second = await asUser(t, "ben").mutation(api.invitations.acceptInvite, { token })
+        const second = await asUser(t, "ben").mutation(api.invites.accept, { token })
         expect(second).toEqual({ result: "alreadyMember", groupId })
 
-        const groups = await asUser(t, "ben").query(api.groups.listMyGroups, {})
+        const groups = await asUser(t, "ben").query(api.groups.list, {})
         expect(groups).toHaveLength(1)
     })
 
@@ -190,10 +190,10 @@ describe("sharing and social gating", () => {
         await registerUser(t, "anna", "anna@example.com")
         await registerUser(t, "ben", "ben@example.com")
 
-        const token = await asUser(t, "anna").mutation(api.invitations.createInvite, { target: { kind: "friend" } })
-        const first = await asUser(t, "ben").mutation(api.invitations.acceptInvite, { token })
+        const token = await asUser(t, "anna").mutation(api.invites.create, { target: { kind: "friend" } })
+        const first = await asUser(t, "ben").mutation(api.invites.accept, { token })
         expect(first).toEqual({ result: "accepted", friendId: await idOf(t, "anna") })
-        const second = await asUser(t, "ben").mutation(api.invitations.acceptInvite, { token })
+        const second = await asUser(t, "ben").mutation(api.invites.accept, { token })
         expect(second).toEqual({ result: "alreadyMember", friendId: await idOf(t, "anna") })
 
         const annaFriends = await asUser(t, "anna").query(api.social.friends, {})
@@ -207,7 +207,7 @@ describe("sharing and social gating", () => {
         await registerUser(t, "anna", "anna@example.com")
         await registerUser(t, "ben", "ben@example.com")
         await registerUser(t, "cas", "cas@example.com")
-        const groupId = await asUser(t, "anna").mutation(api.groups.createGroup, { name: "Food Crew" })
+        const groupId = await asUser(t, "anna").mutation(api.groups.create, { name: "Food Crew" })
         await joinGroup(t, groupId, "anna", "ben")
         const restaurantId = await createRestaurant(t, "anna")
         await createRestaurant(t, "anna")
@@ -225,23 +225,23 @@ describe("sharing and social gating", () => {
         await registerUser(t, "anna", "anna@example.com")
         await registerUser(t, "ben", "ben@example.com")
         await registerUser(t, "cas", "cas@example.com")
-        const groupId = await asUser(t, "anna").mutation(api.groups.createGroup, { name: "Food Crew" })
+        const groupId = await asUser(t, "anna").mutation(api.groups.create, { name: "Food Crew" })
         await joinGroup(t, groupId, "anna", "ben")
 
-        const view = await asUser(t, "ben").query(api.groups.getGroup, { groupId })
+        const view = await asUser(t, "ben").query(api.groups.get, { groupId })
         expect(view?.group.name).toBe("Food Crew")
         expect(view?.isOwner).toBe(false)
         expect(view?.members.map((m) => m.userId).toSorted()).toEqual(
             [await idOf(t, "anna"), await idOf(t, "ben")].toSorted(),
         )
-        expect(await asUser(t, "cas").query(api.groups.getGroup, { groupId })).toBeNull()
+        expect(await asUser(t, "cas").query(api.groups.get, { groupId })).toBeNull()
     })
 
     test("rejects group writes without permission", async () => {
         const t = setup()
         await registerUser(t, "anna", "anna@example.com")
         await registerUser(t, "ben", "ben@example.com")
-        const groupId = await asUser(t, "anna").mutation(api.groups.createGroup, { name: "Food Crew" })
+        const groupId = await asUser(t, "anna").mutation(api.groups.create, { name: "Food Crew" })
         await joinGroup(t, groupId, "anna", "ben")
         const restaurantId = await createRestaurant(t, "anna")
 

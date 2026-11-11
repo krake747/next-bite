@@ -15,12 +15,10 @@ export const groupsTables = {
         .index("by_group", ["groupId"])
         .index("by_user", ["userId"])
         .index("by_group_user", ["groupId", "userId"]),
-    invitations: defineTable({
+    invites: defineTable({
         token: v.string(),
         target: inviteTargetValidator,
-        invitedEmail: v.optional(v.string()),
-        invitedBy: v.id("profiles"),
-        status: v.union(v.literal("pending"), v.literal("accepted"), v.literal("expired"), v.literal("revoked")),
+        createdBy: v.id("profiles"),
         expiresAt: v.number(),
     }).index("by_token", ["token"]),
 }

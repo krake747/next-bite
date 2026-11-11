@@ -23,8 +23,8 @@ async function registerUser(t: TestConvexForDataModel<DataModel>, subject: strin
 }
 
 async function befriend(t: TestConvexForDataModel<DataModel>, a: string, b: string): Promise<void> {
-    const token = await asUser(t, a).mutation(api.invitations.createInvite, { target: { kind: "friend" } })
-    await asUser(t, b).mutation(api.invitations.acceptInvite, { token })
+    const token = await asUser(t, a).mutation(api.invites.create, { target: { kind: "friend" } })
+    await asUser(t, b).mutation(api.invites.accept, { token })
 }
 
 async function createRestaurant(t: TestConvexForDataModel<DataModel>, subject: string): Promise<Id<"restaurants">> {
@@ -41,8 +41,8 @@ async function joinGroup(
     owner: string,
     subject: string,
 ): Promise<void> {
-    const token = await asUser(t, owner).mutation(api.invitations.createInvite, { target: { kind: "group", groupId } })
-    await asUser(t, subject).mutation(api.invitations.acceptInvite, { token })
+    const token = await asUser(t, owner).mutation(api.invites.create, { target: { kind: "group", groupId } })
+    await asUser(t, subject).mutation(api.invites.accept, { token })
 }
 
 describe("restaurant getById", () => {
@@ -72,7 +72,7 @@ describe("restaurant getById", () => {
         const t = setup()
         await registerUser(t, "anna")
         await registerUser(t, "ben")
-        const groupId = await asUser(t, "anna").mutation(api.groups.createGroup, { name: "Food Crew" })
+        const groupId = await asUser(t, "anna").mutation(api.groups.create, { name: "Food Crew" })
         await joinGroup(t, groupId, "anna", "ben")
         const restaurantId = await createRestaurant(t, "anna")
         await asUser(t, "anna").mutation(api.shares.shareWithGroup, { restaurantId, groupId })

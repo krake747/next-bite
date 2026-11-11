@@ -70,9 +70,7 @@ describe("share to group dialog", () => {
     test("shares with a group through Add to group", async () => {
         querySeeds.clear()
         mutationCalls.length = 0
-        querySeeds.set(seedKey("groups:listMyGroups", undefined), [
-            { group: { _id: "g1", name: "Food Crew" }, isOwner: true },
-        ])
+        querySeeds.set(seedKey("groups:list", undefined), [{ group: { _id: "g1", name: "Food Crew" }, isOwner: true }])
         querySeeds.set(seedKey("shares:listShares", { restaurantId: "r1" }), [])
         const screen = await renderDialog()
 
@@ -90,9 +88,7 @@ describe("share to group dialog", () => {
     test("removes an existing group share", async () => {
         querySeeds.clear()
         mutationCalls.length = 0
-        querySeeds.set(seedKey("groups:listMyGroups", undefined), [
-            { group: { _id: "g1", name: "Food Crew" }, isOwner: true },
-        ])
+        querySeeds.set(seedKey("groups:list", undefined), [{ group: { _id: "g1", name: "Food Crew" }, isOwner: true }])
         querySeeds.set(seedKey("shares:listShares", { restaurantId: "r1" }), [
             { _id: "s1", target: { kind: "group", groupId: "g1" }, displayName: "Food Crew" },
         ])

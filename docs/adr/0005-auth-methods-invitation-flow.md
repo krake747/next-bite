@@ -2,7 +2,9 @@
 
 Date: 2026-11-05
 
-Status: Superseded in part by ADR-0027
+Status: Superseded in part by ADR-0027. Amended by #196: invites are `invites` rows with token,
+createdBy, target and expiresAt; revoke deletes the row and expiry is a read-time comparison, so a
+revoked or missing link reads as not found. Acceptance stays a single atomic mutation.
 
 ## Context
 

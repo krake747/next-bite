@@ -34,10 +34,7 @@ export const Route = createFileRoute("/_app/groups/$groupId")({
         const groupId = toId<"groups">(params.groupId)
         await warmQueriesWithin(
             context.queryClient,
-            [
-                convexQueryOptions(api.groups.getGroup, { groupId }),
-                convexQueryOptions(api.shares.listForGroup, { groupId }),
-            ],
+            [convexQueryOptions(api.groups.get, { groupId }), convexQueryOptions(api.shares.listForGroup, { groupId })],
             LOADER_WARM_BUDGET_MS,
         )
         return null
@@ -266,7 +263,7 @@ function GroupDetailView() {
     const { groupId } = Route.useParams()
     const groupConvexId = toId<"groups">(groupId)
     const auth = useAuth()
-    const group = useSuspenseConvexQuery(api.groups.getGroup, { groupId: groupConvexId })
+    const group = useSuspenseConvexQuery(api.groups.get, { groupId: groupConvexId })
     const restaurants = useSuspenseConvexQuery(api.shares.listForGroup, { groupId: groupConvexId })
     const viewer = useViewer()
 

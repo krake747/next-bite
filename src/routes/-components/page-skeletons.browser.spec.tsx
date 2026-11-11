@@ -90,7 +90,7 @@ function restaurant(id: string, name: string, owner = testUser): RestaurantDoc {
 
 const seeds = new Map<string, unknown>([
     [
-        seedKey("groups:listMyGroups", undefined),
+        seedKey("groups:list", undefined),
         [
             { group: { _id: "g1", name: "Food Crew" }, isOwner: true },
             { group: { _id: "g2", name: "Lunch Club" }, isOwner: false },
@@ -285,7 +285,7 @@ describe("cached data", () => {
         sessionKind = "ready"
         const stop = watchForSkeleton()
         const screen = await renderPage(pageOf(GroupsRoute.options.component), async (backend) =>
-            backend.queryClient.query({ ...convexQueryOptions(api.groups.listMyGroups), staleTime: "static" }),
+            backend.queryClient.query({ ...convexQueryOptions(api.groups.list), staleTime: "static" }),
         )
         await expect.element(screen.getByRole("link", { name: "Food Crew" })).toBeInTheDocument()
         expect(stop()).toBe(false)

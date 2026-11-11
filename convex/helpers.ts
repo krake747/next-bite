@@ -5,6 +5,7 @@ import { authComponent } from "./auth"
 import { getProfiles, nameOf } from "./model/identity/profiles"
 
 export { FALLBACK_DISPLAY_NAME } from "../src/core/constants"
+export { requireMember as requireMembership } from "./model/groups/memberships"
 
 export const FALLBACK_GROUP_NAME = "Unknown group"
 
@@ -21,25 +22,6 @@ export async function readAuthUser(
     } catch {
         return undefined
     }
-}
-
-export async function requireMembership(
-    db: GenericDatabaseReader<DataModel>,
-    groupId: Id<"groups">,
-    userId: Id<"profiles">,
-): Promise<Doc<"groupMembers">> {
-    const group = await db.get(groupId)
-    if (!group) {
-        throw new Error("Group not found")
-    }
-    const membership = await db
-        .query("groupMembers")
-        .withIndex("by_group_user", (q) => q.eq("groupId", groupId).eq("userId", userId))
-        .unique()
-    if (!membership) {
-        throw new Error("Unauthorized: group membership required")
-    }
-    return membership
 }
 
 export async function requireOwnedRestaurant(

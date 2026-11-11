@@ -6,7 +6,7 @@ import { useSessionStatus } from "./session"
 
 export const useMyGroups = () => {
     const status = useSessionStatus()
-    return useConvexQuery(api.groups.listMyGroups, undefined, { skip: status.kind !== "ready" })
+    return useConvexQuery(api.groups.list, undefined, { skip: status.kind !== "ready" })
 }
 
 export const useRestaurantShares = (restaurantId: Id<"restaurants">) => {
@@ -16,11 +16,11 @@ export const useRestaurantShares = (restaurantId: Id<"restaurants">) => {
 
 export const useShareWithGroup = () => useConvexMutation(api.shares.shareWithGroup)
 export const useUnshare = () => useConvexMutation(api.shares.unshare)
-export const useCreateGroup = () => useConvexMutation(api.groups.createGroup)
+export const useCreateGroup = () => useConvexMutation(api.groups.create)
 
-export const useCreateInvite = () => useConvexMutation(api.invitations.createInvite)
-export const useAcceptInvite = () => useConvexMutation(api.invitations.acceptInvite)
-export const useRevokeInvite = () => useConvexMutation(api.invitations.revokeInvite)
+export const useCreateInvite = () => useConvexMutation(api.invites.create)
+export const useAcceptInvite = () => useConvexMutation(api.invites.accept)
+export const useRevokeInvite = () => useConvexMutation(api.invites.revoke)
 
 export function isSafeRedirectPath(value: string | null | undefined): value is string {
     if (typeof value !== "string" || !value.startsWith("/") || value.startsWith("//")) {

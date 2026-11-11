@@ -23,8 +23,8 @@ async function registerUser(t: TestConvexForDataModel<DataModel>, subject: strin
 }
 
 async function befriend(t: TestConvexForDataModel<DataModel>, a: string, b: string): Promise<void> {
-    const token = await asUser(t, a).mutation(api.invitations.createInvite, { target: { kind: "friend" } })
-    await asUser(t, b).mutation(api.invitations.acceptInvite, { token })
+    const token = await asUser(t, a).mutation(api.invites.create, { target: { kind: "friend" } })
+    await asUser(t, b).mutation(api.invites.accept, { token })
 }
 
 async function createRestaurant(t: TestConvexForDataModel<DataModel>, subject: string): Promise<Id<"restaurants">> {

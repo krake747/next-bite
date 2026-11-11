@@ -27,19 +27,17 @@ describe("leaving a group", () => {
         const t = setup()
         await registerUser(t, "anna")
         await registerUser(t, "ben")
-        const groupId = await asUser(t, "anna").mutation(api.groups.createGroup, { name: "Food Crew" })
-        const token = await asUser(t, "anna").mutation(api.invitations.createInvite, {
+        const groupId = await asUser(t, "anna").mutation(api.groups.create, { name: "Food Crew" })
+        const token = await asUser(t, "anna").mutation(api.invites.create, {
             target: { kind: "group", groupId },
         })
-        await asUser(t, "ben").mutation(api.invitations.acceptInvite, { token })
+        await asUser(t, "ben").mutation(api.invites.accept, { token })
 
-        await asUser(t, "ben").mutation(api.groups.leaveGroup, { groupId })
+        await asUser(t, "ben").mutation(api.groups.leave, { groupId })
 
-        expect(await asUser(t, "ben").query(api.groups.getGroup, { groupId })).toBeNull()
-        await expect(asUser(t, "anna").mutation(api.groups.leaveGroup, { groupId })).rejects.toThrow(
-            "owner cannot leave",
-        )
-        const view = await asUser(t, "anna").query(api.groups.getGroup, { groupId })
+        expect(await asUser(t, "ben").query(api.groups.get, { groupId })).toBeNull()
+        await expect(asUser(t, "anna").mutation(api.groups.leave, { groupId })).rejects.toThrow("owner cannot leave")
+        const view = await asUser(t, "anna").query(api.groups.get, { groupId })
         expect(view?.isOwner).toBe(true)
         expect(view?.members.map((m) => m.name)).toEqual(["anna"])
     })
