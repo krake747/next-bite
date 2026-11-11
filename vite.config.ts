@@ -162,6 +162,7 @@ export default defineConfig({
             "nextbite/no-button-as-link": "error",
             "nextbite/jsx-spread-last": "error",
             "nextbite/phosphor-icon-suffix": "error",
+            "nextbite/convex-table-owner": "error",
             "shadcn/no-restyle": [
                 "error",
                 {
@@ -358,6 +359,12 @@ export default defineConfig({
                 },
             },
             {
+                files: ["convex/model/**"],
+                rules: {
+                    "convex/explicit-table-ids": "error",
+                },
+            },
+            {
                 files: ["src/core/env.ts"],
                 rules: {
                     "nextbite/no-direct-env-read": "allow",
@@ -395,6 +402,10 @@ export default defineConfig({
             {
                 name: "nextbite",
                 specifier: "./lint/nextbite.js",
+            },
+            {
+                name: "convex",
+                specifier: "@convex-dev/eslint-plugin",
             },
         ],
     },

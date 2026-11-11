@@ -1,3 +1,5 @@
+import { fileURLToPath } from "node:url"
+
 import { definePlugin, defineRule } from "vite-plus/lint/plugins"
 
 import {
@@ -9,6 +11,7 @@ import {
     reportPhosphorSpecifiers,
     reportReactTypeImports,
 } from "./rule-helpers.js"
+import { moduleOfFile, ownershipProblem, readTableOwners, tableAccess } from "./table-owners.js"
 
 const noReactTypeImports = defineRule({
     meta: {
@@ -217,6 +220,46 @@ const noButtonAsLink = defineRule({
     },
 })
 
+const tableOwners = readTableOwners(fileURLToPath(new URL("../convex/model/", import.meta.url)))
+
+const convexTableOwner = defineRule({
+    meta: {
+        type: "problem",
+        docs: {
+            description: "A Convex model reads and writes only the tables its module's schema fragment defines.",
+        },
+        messages: {
+            foreign:
+                "Table {{table}} belongs to the {{owner}} module, not {{module}}. Call a {{owner}} model helper instead.",
+            unowned: "Table {{table}} is not defined in any convex/model/*/schema.ts fragment.",
+            dynamic: "db.{{method}} needs a string-literal table name so table ownership can be checked.",
+        },
+    },
+    create(context) {
+        const module = moduleOfFile(context.filename)
+        if (module === null) {
+            return {}
+        }
+        return {
+            CallExpression(node) {
+                const access = tableAccess(node)
+                if (access === null) {
+                    return
+                }
+                if (access.table === null) {
+                    context.report({ node: access.node, messageId: "dynamic", data: { method: access.method } })
+                    return
+                }
+                const owner = tableOwners.get(access.table)
+                const messageId = ownershipProblem(owner, module)
+                if (messageId !== null) {
+                    context.report({ node: access.node, messageId, data: { table: access.table, owner, module } })
+                }
+            },
+        }
+    },
+})
+
 export default definePlugin({
     meta: { name: "nextbite" },
     rules: {
@@ -229,5 +272,6 @@ export default definePlugin({
         "no-button-as-link": noButtonAsLink,
         "jsx-spread-last": jsxSpreadLast,
         "phosphor-icon-suffix": phosphorIconSuffix,
+        "convex-table-owner": convexTableOwner,
     },
 })

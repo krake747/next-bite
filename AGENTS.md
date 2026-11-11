@@ -37,7 +37,9 @@ overview is `docs/architecture.md`.
 - `src/pattern`: reusable composed UI, no product logic.
 - `src/features`: product behavior, one directory per domain.
 - `src/routes`: thin route definitions that compose features.
-- `convex/`: data, logic, and authorization, one root module per domain.
+- `convex/`: data, logic, and authorization. Public function files compose; each
+  `convex/model/<module>` owns its schema fragment and tables and imports only models to its left
+  (ADR-0029).
 
 ## Read on demand
 
@@ -68,6 +70,7 @@ change.
 | Semantic Tailwind tokens only; no raw hex; light-only, no `.dark` styles            | Judgment; ADR-0019                                        |
 | Base UI primitives; CVA variants; wrappers own styling, call sites pass layout only | `shadcn/no-restyle` lint                                  |
 | Layer imports stay inside `.fallowrc.json` zones                                    | `pnpm check:arch`                                         |
+| A Convex model touches only the tables its module's fragment defines                | `nextbite/convex-table-owner` lint; ADR-0029              |
 | Commit shape                                                                        | lefthook `commit-msg` (commitlint)                        |
 | `export` on declarations, no trailing export lists; `use()` for context             | `nextbite/no-export-list`, `nextbite/no-use-context` lint |
 | Types over interfaces; never cast, fix at the source                                | `pnpm lint:ts` plus review                                |
