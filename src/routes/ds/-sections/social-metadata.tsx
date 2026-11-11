@@ -25,6 +25,7 @@ export const socialMetadataMeta = {
             "Use under a restaurant name or card to show provenance and demand. The pattern renders nothing when both are missing.",
         whenToAvoid:
             "Do not invent context when there is none; an empty render beats a generic line. No database words in the copy.",
+        siblings: [{ id: "avatar", reason: "Show who with Avatar, show provenance with SocialMetadata." }],
     },
 } as const
 

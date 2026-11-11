@@ -20,6 +20,10 @@ export const queryErrorMeta = {
             "Use when a route query fails and nothing on the page can render. Keep the user on the page with a single retry.",
         whenToAvoid:
             "Do not use for form validation or a single item that fails; the error stays next to the field or item that failed.",
+        siblings: [
+            { id: "empty-state", reason: "Empty results use EmptyState, failed requests use QueryError." },
+            { id: "loading", reason: "Pending waits use Loading, failed waits use QueryError." },
+        ],
     },
 } as const
 

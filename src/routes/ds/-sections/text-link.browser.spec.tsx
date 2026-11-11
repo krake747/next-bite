@@ -1,13 +1,16 @@
 import { describe, expect, test } from "vitest"
 import { render } from "vitest-browser-react"
 
+import { expectSectionMeta } from "./section-spec"
 import { TextLinkDemo, textLinkMeta } from "./text-link"
 
 describe("Text link design-system section", () => {
     test("points at the primitive with props and guidance", () => {
-        expect(textLinkMeta.importPath).toBe("src/ui/text-link.tsx")
-        expect(textLinkMeta.props.map((prop) => prop.name)).toStrictEqual(["href", "render", "className"])
-        expect(textLinkMeta.guidance.whenToUse.length).toBeGreaterThan(0)
+        expectSectionMeta(textLinkMeta, {
+            importPath: "src/ui/text-link.tsx",
+            props: ["href", "render", "className"],
+        })
+        expect(textLinkMeta.id).toBe("text-link")
     })
 
     test("renders a link inside the sentence", async () => {

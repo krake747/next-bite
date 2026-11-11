@@ -51,6 +51,7 @@ export const iconButtonMeta = {
             "Repeat an obvious action in tight space, such as close, add, or search. Match the tone to the surface: neutral floats over content, plain sits inline in headers and rows, destructive removes, inverse rides on dark media.",
         whenToAvoid:
             "Do not use when the action needs explaining; use a Button with a visible label instead, and never pair the icon with visible text. The accessible name comes from label, never from the icon alone.",
+        siblings: [{ id: "button", reason: "Explained actions use Button with a visible label." }],
     },
 } as const
 

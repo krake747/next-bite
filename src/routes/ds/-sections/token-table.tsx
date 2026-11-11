@@ -6,6 +6,19 @@ export type TokenRow = {
     readonly usage: string
 }
 
+export type TokenDef = {
+    readonly token: string
+    readonly name: string
+    readonly usage: string
+}
+
+export function toTokenRows(
+    defs: ReadonlyArray<TokenDef>,
+    tokens: ReadonlyMap<string, string>,
+): ReadonlyArray<TokenRow> {
+    return defs.map(({ token, name, usage }) => ({ token, value: tokens.get(name) ?? "", usage }))
+}
+
 export function PropsTable({ rows, caption }: Readonly<{ rows: ReadonlyArray<PropRow>; caption: string }>) {
     return (
         <table data-slot="props-table" className="w-full text-left text-sm">

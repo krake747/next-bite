@@ -12,6 +12,7 @@ export function AspectRatio({ ratio, children, className, ...props }: AspectRati
     return (
         <div
             data-slot="aspect-ratio"
+            data-ratio={String(ratio)}
             style={cssVars({
                 "--ratio": ratio,
             })}

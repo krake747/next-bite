@@ -68,6 +68,7 @@ export const sheetMeta = {
             "Handle a supporting task without losing the page behind it. Right fits detail and edit panels, bottom fits thumb-reach pickers, left holds small-screen navigation.",
         whenToAvoid:
             "Do not use for the main flow or for alerts; those get a page or a Dialog. One panel at a time; never stack a Sheet over a Dialog.",
+        siblings: [{ id: "dialog", reason: "Choices needing full attention use Dialog, supporting tasks use Sheet." }],
     },
 } as const
 

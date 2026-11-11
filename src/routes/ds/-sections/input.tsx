@@ -37,6 +37,7 @@ export const inputMeta = {
             "Collect a single line of text with a visible label next to it. The control style carries border, focus, and disabled states, so pass only layout classes.",
         whenToAvoid:
             "Do not use for long text, choices, or dates; those get their own controls. Never use the placeholder as the label; the label stays visible.",
+        siblings: [{ id: "button", reason: "Submit the collected value with Button." }],
     },
 } as const
 

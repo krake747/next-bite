@@ -79,6 +79,9 @@ export const sidebarMeta = {
             "Navigate between top-level areas of the app from a persistent shell. Mark the current destination with isActive and name every destination with a tooltip for the collapsed rail.",
         whenToAvoid:
             "Do not use inside pages or dialogs; navigation lives in the shell only. For in-page peer views, use Tabs; for overflow actions, use a DropdownMenu.",
+        siblings: [
+            { id: "dropdown-menu", reason: "Secondary actions live in DropdownMenu, navigation lives in Sidebar." },
+        ],
     },
 } as const
 

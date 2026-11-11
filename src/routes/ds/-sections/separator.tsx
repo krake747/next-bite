@@ -31,6 +31,7 @@ export const separatorMeta = {
             "Divide stacked or side-by-side groups that share a surface. Horizontal stacks rows, vertical stands between columns in a flex row.",
         whenToAvoid:
             "Do not use for spacing alone; space comes from layout, not lines. Do not draw the line with borders or custom divs; Separator owns the 1px line and stays out of the tab order.",
+        siblings: [{ id: "card", reason: "Group content in Card, divide it with Separator." }],
     },
 } as const
 

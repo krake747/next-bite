@@ -2,12 +2,15 @@ import { describe, expect, test } from "vitest"
 import { render } from "vitest-browser-react"
 
 import { PopoverDemo, popoverMeta } from "./popover"
+import { expectSectionMeta } from "./section-spec"
 
 describe("Popover design-system section", () => {
     test("points at the primitive with props and guidance", () => {
-        expect(popoverMeta.importPath).toBe("src/ui/popover.tsx")
-        expect(popoverMeta.props.map((prop) => prop.name)).toStrictEqual(["tone", "sideOffset", "open"])
-        expect(popoverMeta.guidance.whenToUse.length).toBeGreaterThan(0)
+        expectSectionMeta(popoverMeta, {
+            importPath: "src/ui/popover.tsx",
+            props: ["tone", "sideOffset", "open"],
+        })
+        expect(popoverMeta.id).toBe("popover")
     })
 
     test("opens the panel from the trigger", async () => {

@@ -53,6 +53,7 @@ export const popoverMeta = {
             "Preview detail the user asked for, such as hours or a mini profile. Match the trigger tone to its context: plain for rows, tinted to invite a tap, card for full-width rows, avatar for people.",
         whenToAvoid:
             "Do not use for tasks with actions; that is a Dialog. Keep panels short and free of interactive content; anything needing buttons or inputs gets a Dialog or a page.",
+        siblings: [{ id: "dialog", reason: "Tasks with actions use Dialog, previews use Popover." }],
     },
 } as const
 

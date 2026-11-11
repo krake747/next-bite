@@ -29,6 +29,10 @@ export const emptyStateMeta = {
         whenToUse: "Use when a list or collection loads fine but holds zero items, and the user can add the first one.",
         whenToAvoid:
             "Do not use for loading waits or failed requests; those get a skeleton or the query error pattern instead.",
+        siblings: [
+            { id: "loading", reason: "Waits with no shape use Loading, empty results use EmptyState." },
+            { id: "query-error", reason: "Failed requests use QueryError, empty results use EmptyState." },
+        ],
     },
 } as const
 

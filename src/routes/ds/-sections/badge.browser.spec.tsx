@@ -2,12 +2,15 @@ import { describe, expect, test } from "vitest"
 import { render } from "vitest-browser-react"
 
 import { BadgeDemo, badgeMeta } from "./badge"
+import { expectSectionMeta } from "./section-spec"
 
 describe("Badge design-system section", () => {
     test("points at the primitive with props and guidance", () => {
-        expect(badgeMeta.importPath).toBe("src/ui/badge.tsx")
-        expect(badgeMeta.props.map((prop) => prop.name)).toStrictEqual(["tone", "children", "className"])
-        expect(badgeMeta.guidance.whenToUse.length).toBeGreaterThan(0)
+        expectSectionMeta(badgeMeta, {
+            importPath: "src/ui/badge.tsx",
+            props: ["tone", "children", "className"],
+        })
+        expect(badgeMeta.id).toBe("badge")
     })
 
     test("renders every tone", async () => {

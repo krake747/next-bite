@@ -2,12 +2,15 @@ import { describe, expect, test } from "vitest"
 import { render } from "vitest-browser-react"
 
 import { ButtonDemo, buttonMeta } from "./button"
+import { expectSectionMeta } from "./section-spec"
 
 describe("Button design-system section", () => {
     test("points at the primitive with props and guidance", () => {
-        expect(buttonMeta.importPath).toBe("src/ui/button.tsx")
-        expect(buttonMeta.props.map((prop) => prop.name)).toStrictEqual(["tone", "size", "disabled", "render"])
-        expect(buttonMeta.guidance.whenToUse.length).toBeGreaterThan(0)
+        expectSectionMeta(buttonMeta, {
+            importPath: "src/ui/button.tsx",
+            props: ["tone", "size", "disabled", "render"],
+        })
+        expect(buttonMeta.id).toBe("button")
     })
 
     test("renders every tone and size", async () => {

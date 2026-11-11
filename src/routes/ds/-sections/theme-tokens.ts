@@ -8,17 +8,20 @@ export type ThemeToken = {
 export const themeCss: string = rawThemeCss
 
 export function parseThemeTokens(css: string): ReadonlyArray<ThemeToken> {
-    const block = /@theme[^{]*\{([\s\S]*?)\n\}/.exec(css)?.[1] ?? ""
+    const blocks = css.matchAll(/@theme[^{]*\{([\s\S]*?)\n\}/g)
     const tokens: ThemeToken[] = []
-    const pattern = /--([\w-]+)\s*:\s*([^;]+);/g
-    let match = pattern.exec(block)
-    while (match !== null) {
-        const name = match[1]
-        const raw = match[2]
-        if (name !== undefined && raw !== undefined) {
-            tokens.push({ name, value: raw.replaceAll(/\s+/g, " ").trim() })
+    for (const block of blocks) {
+        const body = block[1] ?? ""
+        const pattern = /--([\w-]+)\s*:\s*([^;]+);/g
+        let match = pattern.exec(body)
+        while (match !== null) {
+            const name = match[1]
+            const raw = match[2]
+            if (name !== undefined && raw !== undefined) {
+                tokens.push({ name, value: raw.replaceAll(/\s+/g, " ").trim() })
+            }
+            match = pattern.exec(body)
         }
-        match = pattern.exec(block)
     }
     return tokens
 }

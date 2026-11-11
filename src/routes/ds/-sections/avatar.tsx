@@ -54,6 +54,7 @@ export const avatarMeta = {
             "Show who did something or who is present, next to a name or an action. Size from xs to xl with the surrounding text, and add the surface ring only over busy media.",
         whenToAvoid:
             "Do not use for places or groups; those get a photo or an icon without initials. Never restyle the circle; size and ring are the only styling API.",
+        siblings: [{ id: "social-metadata", reason: "Pair avatars with social metadata when provenance matters." }],
     },
 } as const
 

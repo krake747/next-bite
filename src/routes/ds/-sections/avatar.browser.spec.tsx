@@ -2,12 +2,15 @@ import { describe, expect, test } from "vitest"
 import { render } from "vitest-browser-react"
 
 import { AvatarDemo, avatarMeta } from "./avatar"
+import { expectSectionMeta } from "./section-spec"
 
 describe("Avatar design-system section", () => {
     test("points at the primitive with props and guidance", () => {
-        expect(avatarMeta.importPath).toBe("src/ui/avatar.tsx")
-        expect(avatarMeta.props.map((prop) => prop.name)).toStrictEqual(["size", "ring", "children"])
-        expect(avatarMeta.guidance.whenToUse.length).toBeGreaterThan(0)
+        expectSectionMeta(avatarMeta, {
+            importPath: "src/ui/avatar.tsx",
+            props: ["size", "ring", "children"],
+        })
+        expect(avatarMeta.id).toBe("avatar")
     })
 
     test("renders every size with fallback initials", async () => {

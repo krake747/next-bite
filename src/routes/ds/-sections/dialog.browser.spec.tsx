@@ -2,12 +2,15 @@ import { describe, expect, test } from "vitest"
 import { render } from "vitest-browser-react"
 
 import { DialogDemo, dialogMeta } from "./dialog"
+import { expectSectionMeta } from "./section-spec"
 
 describe("Dialog design-system section", () => {
     test("points at the primitive with props and guidance", () => {
-        expect(dialogMeta.importPath).toBe("src/ui/dialog.tsx")
-        expect(dialogMeta.props.map((prop) => prop.name)).toStrictEqual(["open", "size", "padding", "showCloseButton"])
-        expect(dialogMeta.guidance.whenToUse.length).toBeGreaterThan(0)
+        expectSectionMeta(dialogMeta, {
+            importPath: "src/ui/dialog.tsx",
+            props: ["open", "size", "padding", "showCloseButton"],
+        })
+        expect(dialogMeta.id).toBe("dialog")
     })
 
     test("opens the task from the trigger", async () => {

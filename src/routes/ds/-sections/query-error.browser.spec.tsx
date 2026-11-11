@@ -2,13 +2,15 @@ import { describe, expect, test } from "vitest"
 import { render } from "vitest-browser-react"
 
 import { QueryErrorDemo, queryErrorMeta } from "./query-error"
+import { expectSectionMeta } from "./section-spec"
 
 describe("QueryError design-system section", () => {
-    test("points at the pattern with props and guidance", () => {
-        expect(queryErrorMeta.importPath).toBe("src/pattern/query-error.tsx")
-        expect(queryErrorMeta.props.map((prop) => prop.name)).toStrictEqual(["reset"])
-        expect(queryErrorMeta.guidance.whenToUse.length).toBeGreaterThan(0)
-        expect(queryErrorMeta.guidance.whenToAvoid.length).toBeGreaterThan(0)
+    test("points at the primitive with props and guidance", () => {
+        expectSectionMeta(queryErrorMeta, {
+            importPath: "src/pattern/query-error.tsx",
+            props: ["reset"],
+        })
+        expect(queryErrorMeta.guidance.whenToAvoid?.length).toBeGreaterThan(0)
     })
 
     test("renders the failure with one way back", async () => {

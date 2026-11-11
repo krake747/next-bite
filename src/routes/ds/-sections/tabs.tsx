@@ -53,6 +53,7 @@ export const tabsMeta = {
             "Switch between two to four peer views that live at the same level. Exactly one panel shows; name each tab with a stable value.",
         whenToAvoid:
             "Do not use for wizards or sequential steps; those need explicit progress, not tabs. For show-and-hide detail inside one view, use a Collapsible.",
+        siblings: [{ id: "collapsible", reason: "Tucked detail uses Collapsible, peer views use Tabs." }],
     },
 } as const
 

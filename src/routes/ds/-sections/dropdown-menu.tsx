@@ -56,6 +56,7 @@ export const dropdownMenuMeta = {
             "Offer secondary actions that would clutter the page as buttons. Everyday items use the default variant; removal is always last and destructive.",
         whenToAvoid:
             "Do not use for primary actions or for navigation with more than a few items; those stay visible or move to the Sidebar. Never fake a menu with a Popover full of buttons; menu items own keyboard and active state.",
+        siblings: [{ id: "sidebar", reason: "Persistent navigation lives in Sidebar, secondary actions in the menu." }],
     },
 } as const
 

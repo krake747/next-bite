@@ -1,13 +1,16 @@
 import { describe, expect, test } from "vitest"
 import { render } from "vitest-browser-react"
 
+import { expectSectionMeta } from "./section-spec"
 import { SheetDemo, sheetMeta } from "./sheet"
 
 describe("Sheet design-system section", () => {
     test("points at the primitive with props and guidance", () => {
-        expect(sheetMeta.importPath).toBe("src/ui/sheet.tsx")
-        expect(sheetMeta.props.map((prop) => prop.name)).toStrictEqual(["side", "showCloseButton", "open"])
-        expect(sheetMeta.guidance.whenToUse.length).toBeGreaterThan(0)
+        expectSectionMeta(sheetMeta, {
+            importPath: "src/ui/sheet.tsx",
+            props: ["side", "showCloseButton", "open"],
+        })
+        expect(sheetMeta.id).toBe("sheet")
     })
 
     test("slides the panel in from the trigger", async () => {

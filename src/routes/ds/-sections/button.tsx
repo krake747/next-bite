@@ -50,6 +50,10 @@ export const buttonMeta = {
             "Trigger an action the user chose, exactly one primary per view. Step down the tone map with intent: primary starts the main flow, secondary supports it, outline and ghost recede, destructive deletes and nothing else.",
         whenToAvoid:
             "Do not use for navigation, even when the destination should look like a button; ButtonLink keeps link semantics with button styling, and TextLink serves links inside sentences. Never restyle a Button with custom classes to fake a new tone; pick the closest tone.",
+        siblings: [
+            { id: "text-link", reason: "Navigation that looks like a button keeps link semantics elsewhere." },
+            { id: "icon-button", reason: "Tight repeated actions use IconButton, labelled actions use Button." },
+        ],
     },
 } as const
 

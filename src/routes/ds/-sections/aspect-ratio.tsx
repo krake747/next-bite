@@ -40,6 +40,7 @@ export const aspectRatioMeta = {
             "Reserve space for media with known proportions before it loads, so the layout never jumps. Pick the ratio from the media itself, such as 16 / 9 for video stills.",
         whenToAvoid:
             "Do not wrap plain text or cards; the frame clips anything that needs natural height. Text and cards size themselves.",
+        siblings: [{ id: "skeleton", reason: "Skeleton holds the shape while the framed media loads." }],
     },
 } as const
 

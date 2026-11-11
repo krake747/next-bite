@@ -2,12 +2,15 @@ import { describe, expect, test } from "vitest"
 import { render } from "vitest-browser-react"
 
 import { IconButtonDemo, iconButtonMeta } from "./icon-button"
+import { expectSectionMeta } from "./section-spec"
 
 describe("Icon button design-system section", () => {
     test("points at the primitive with props and guidance", () => {
-        expect(iconButtonMeta.importPath).toBe("src/ui/icon-button.tsx")
-        expect(iconButtonMeta.props.map((prop) => prop.name)).toStrictEqual(["label", "title", "tone", "size"])
-        expect(iconButtonMeta.guidance.whenToUse.length).toBeGreaterThan(0)
+        expectSectionMeta(iconButtonMeta, {
+            importPath: "src/ui/icon-button.tsx",
+            props: ["label", "title", "tone", "size"],
+        })
+        expect(iconButtonMeta.id).toBe("icon-button")
     })
 
     test("names every button from its label", async () => {

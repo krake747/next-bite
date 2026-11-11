@@ -49,6 +49,21 @@ function DesignSystemSectionPage() {
                             <p className="mt-1 text-muted-foreground">{entry.meta.guidance.whenToAvoid}</p>
                         </>
                     )}
+                    {entry.meta.guidance.siblings !== undefined && entry.meta.guidance.siblings.length > 0 && (
+                        <>
+                            <h2 className="pt-4 font-display text-xl font-semibold text-balance text-foreground">
+                                Related
+                            </h2>
+                            <ul className="mt-1 space-y-1 text-muted-foreground">
+                                {entry.meta.guidance.siblings.map((sibling) => (
+                                    <li key={sibling.id}>
+                                        <span className="font-mono text-xs text-foreground">{sibling.id}</span>
+                                        <span> {sibling.reason}</span>
+                                    </li>
+                                ))}
+                            </ul>
+                        </>
+                    )}
                 </section>
             )}
             <SessionGate status={status} context="the design system">

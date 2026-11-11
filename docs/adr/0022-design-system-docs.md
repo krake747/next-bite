@@ -19,5 +19,11 @@ describes source that is stable and proven here, not a release).
 ## Consequences
 
 Interactive elements in the gallery stay live. The route stays dev-only and redirects in production.
-No automated test asserts on the docs page itself; verification is a manual visual read plus the
-full gate.
+Docs pages render real components, so browser specs and registry sync specs may assert on them;
+manual visual read remains the release check alongside the full gate.
+
+## Amendment 2026-11-11
+
+The original ban on docs page tests blocked sync specs that keep the gallery honest. Browser specs
+and registry checks for /ds are allowed because docs point at code and pages render real components.
+Unit snapshots of docs copy stay out; behavior and sync stay in.

@@ -1,13 +1,16 @@
 import { describe, expect, test } from "vitest"
 import { render } from "vitest-browser-react"
 
+import { expectSectionMeta } from "./section-spec"
 import { TooltipDemo, tooltipMeta } from "./tooltip"
 
 describe("Tooltip design-system section", () => {
     test("points at the primitive with props and guidance", () => {
-        expect(tooltipMeta.importPath).toBe("src/ui/tooltip.tsx")
-        expect(tooltipMeta.props.map((prop) => prop.name)).toStrictEqual(["delay", "side", "sideOffset"])
-        expect(tooltipMeta.guidance.whenToUse.length).toBeGreaterThan(0)
+        expectSectionMeta(tooltipMeta, {
+            importPath: "src/ui/tooltip.tsx",
+            props: ["delay", "side", "sideOffset"],
+        })
+        expect(tooltipMeta.id).toBe("tooltip")
     })
 
     test("shows the tip on hover", async () => {

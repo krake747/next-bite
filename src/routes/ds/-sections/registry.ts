@@ -24,6 +24,9 @@ import { TextLinkDemo, textLinkMeta } from "./text-link"
 import { TooltipDemo, tooltipMeta } from "./tooltip"
 import { TypographyDemo, typographyMeta } from "./typography"
 
+// Add a primitive: section file with meta and Demo, browser spec via section-spec helper,
+// registry entry below, nav icon in -layout/nav, SYNC comment in the ui file.
+
 export type SectionGroup = "Tokens" | "Components" | "Patterns"
 
 export type PropRow = {
@@ -38,9 +41,15 @@ export type VariantRow = {
     readonly description: string
 }
 
+export type GuidanceSibling = {
+    readonly id: string
+    readonly reason: string
+}
+
 export type Guidance = {
     readonly whenToUse: string
     readonly whenToAvoid?: string | undefined
+    readonly siblings?: ReadonlyArray<GuidanceSibling> | undefined
 }
 
 export type SectionMeta = {

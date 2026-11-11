@@ -52,6 +52,7 @@ export const tooltipMeta = {
             "Name an icon-only control or explain a label that cannot grow. One line on hover or focus; mount one provider near the shell to set the delay.",
         whenToAvoid:
             "Do not use for paragraphs or actions; tips disappear and never hold interactive content. For previews with rich content, use a Popover.",
+        siblings: [{ id: "popover", reason: "Previews with content use Popover, short tips use Tooltip." }],
     },
 } as const
 

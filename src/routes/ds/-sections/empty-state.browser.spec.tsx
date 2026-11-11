@@ -2,13 +2,15 @@ import { describe, expect, test } from "vitest"
 import { render } from "vitest-browser-react"
 
 import { EmptyStateDemo, emptyStateMeta } from "./empty-state"
+import { expectSectionMeta } from "./section-spec"
 
 describe("EmptyState design-system section", () => {
-    test("points at the pattern with props and guidance", () => {
-        expect(emptyStateMeta.importPath).toBe("src/pattern/empty-state.tsx")
-        expect(emptyStateMeta.props.map((prop) => prop.name)).toStrictEqual(["title", "body", "className"])
-        expect(emptyStateMeta.guidance.whenToUse.length).toBeGreaterThan(0)
-        expect(emptyStateMeta.guidance.whenToAvoid.length).toBeGreaterThan(0)
+    test("points at the primitive with props and guidance", () => {
+        expectSectionMeta(emptyStateMeta, {
+            importPath: "src/pattern/empty-state.tsx",
+            props: ["title", "body", "className"],
+        })
+        expect(emptyStateMeta.guidance.whenToAvoid?.length).toBeGreaterThan(0)
     })
 
     test("renders an inviting list and a title-only state", async () => {

@@ -38,6 +38,22 @@ describe("parseThemeTokens", () => {
         expect(names).not.toContain("hit-area-t")
     })
 
+    test("merges tokens across split theme blocks", () => {
+        const split = `
+@theme inline {
+    --color-primary: var(--color-tomato-600);
+}
+
+@theme inline {
+    --radius-card: 1rem;
+}
+`
+        expect(parseThemeTokens(split)).toStrictEqual([
+            { name: "color-primary", value: "var(--color-tomato-600)" },
+            { name: "radius-card", value: "1rem" },
+        ])
+    })
+
     test("stylesheet on disk exposes the documented token groups", () => {
         const tokens = readThemeTokens(themeFile)
         for (const name of ["color-primary", "font-display", "radius-card"]) {
