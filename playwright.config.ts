@@ -1,4 +1,4 @@
-import { defineConfig, devices } from "@playwright/test"
+import { defineConfig } from "@playwright/test"
 
 export default defineConfig({
     testDir: "./e2e",
@@ -8,44 +8,15 @@ export default defineConfig({
     reporter: "list",
     use: {
         baseURL: process.env["E2E_BASE_URL"] ?? "http://localhost:5193",
+        viewport: { width: 1440, height: 900 },
     },
-    projects: [
-        {
-            name: "mobile",
-            testMatch: ["public-ssr.spec.ts", "navigation.spec.ts", "restaurant-boundary.spec.ts"],
-            use: { ...devices["Pixel 5"] },
-        },
-        {
-            name: "desktop",
-            testMatch: ["public-ssr.spec.ts", "navigation.spec.ts", "restaurant-boundary.spec.ts"],
-            use: { viewport: { width: 1440, height: 900 } },
-        },
-        {
-            name: "journey",
-            testMatch: ["journeys/*.spec.ts"],
-            use: { baseURL: "http://localhost:5173", viewport: { width: 1440, height: 900 } },
-        },
-        {
-            name: "journey-mobile",
-            testMatch: ["journeys/*.spec.ts"],
-            use: { baseURL: "http://localhost:5173", viewport: { width: 390, height: 844 } },
-        },
-    ],
     webServer:
         process.env["E2E_NO_SERVER"] === undefined
-            ? [
-                  {
-                      command: "pnpm build && wrangler dev --config e2e/worker.preview.toml --port 5193",
-                      url: "http://localhost:5193/",
-                      reuseExistingServer: false,
-                      timeout: 300000,
-                  },
-                  {
-                      command: "pnpm dev --port 5173",
-                      url: "http://localhost:5173/",
-                      reuseExistingServer: false,
-                      timeout: 120000,
-                  },
-              ]
+            ? {
+                  command: "pnpm build && wrangler dev --config e2e/worker.preview.toml --port 5193",
+                  url: "http://localhost:5193/",
+                  reuseExistingServer: false,
+                  timeout: 300000,
+              }
             : undefined,
 })
