@@ -5,6 +5,7 @@ import { type DataModel, type Id } from "./_generated/dataModel"
 import { mutation, query } from "./_generated/server"
 import { requireMembership } from "./helpers"
 import { getProfiles, nameOf, requireProfile, signedInProfile } from "./model/identity/profiles"
+import { areFriends } from "./model/social/friendships"
 import { isRestaurantVisibleTo } from "./visibility"
 
 const planStatusValidator = v.union(v.literal("planned"), v.literal("done"), v.literal("cancelled"))
@@ -16,18 +17,7 @@ async function ensureAcceptedFriend(ctx: PlanDb, creator: ProfileId, candidate: 
     if (candidate === creator) {
         return true
     }
-    const outgoing = await ctx.db
-        .query("friendships")
-        .withIndex("by_owner_friend", (q) => q.eq("ownerId", creator).eq("friendId", candidate))
-        .unique()
-    if (outgoing?.status === "accepted") {
-        return true
-    }
-    const backward = await ctx.db
-        .query("friendships")
-        .withIndex("by_owner_friend", (q) => q.eq("ownerId", candidate).eq("friendId", creator))
-        .unique()
-    return backward?.status === "accepted"
+    return areFriends(ctx.db, creator, candidate)
 }
 
 async function validatePlanTarget(

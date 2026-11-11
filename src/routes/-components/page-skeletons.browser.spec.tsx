@@ -108,22 +108,22 @@ const seeds = new Map<string, unknown>([
         ],
     ],
     [
-        seedKey("friendships:listFriends", undefined),
+        seedKey("social:friends", undefined),
         [
             { profileId: "ben", name: "Ben" },
             { profileId: "cleo", name: "Cleo" },
         ],
     ],
-    [seedKey("friendships:listFriendRequests", undefined), { incoming: [], outgoing: [] }],
+    [seedKey("social:requests", undefined), { incoming: [], outgoing: [] }],
     [
-        seedKey("social:listMyStatuses", undefined),
+        seedKey("interests:listMyStatuses", undefined),
         [
             { restaurantId: "r1", status: "want" },
             { restaurantId: "r2", status: "want" },
         ],
     ],
     [
-        seedKey("users:getMe", undefined),
+        seedKey("identity:me", undefined),
         {
             status: "ready",
             profile: { _id: "p1", authUserId: testUser.id, name: testUser.name, email: testUser.email },

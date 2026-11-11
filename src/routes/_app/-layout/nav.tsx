@@ -93,7 +93,7 @@ function profileIdentity(
 function useUserCardIdentity(): CardIdentity {
     const auth = useAuth()
     const status = useSessionStatus()
-    const profile = useConvexQuery(api.users.getMe, undefined, { skip: status.kind !== "ready" })
+    const profile = useConvexQuery(api.identity.me, undefined, { skip: status.kind !== "ready" })
     if (profile?.status === "ready") {
         return profileIdentity(profile.profile, auth.user)
     }

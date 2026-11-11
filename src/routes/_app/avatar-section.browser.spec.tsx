@@ -13,6 +13,7 @@ import { AvatarSection } from "../../features/account/profile-card"
 const storageId = (value: string): Id<"_storage"> => value as unknown as Id<"_storage">
 
 const updateMutate = vi.fn<() => Promise<unknown>>()
+const removeMutate = vi.fn<() => Promise<unknown>>()
 
 vi.mock("@api/auth.sdk", () => ({
     getConvexSessionToken: async () => {
@@ -39,11 +40,12 @@ vi.mock("@core/image.utils", async (importOriginal) => {
     }
 })
 
-vi.mock("@core/session", async (importOriginal) => {
-    const original = await importOriginal<typeof import("@core/session")>()
+vi.mock("@core/identity", async (importOriginal) => {
+    const original = await importOriginal<typeof import("@core/identity")>()
     return {
         ...original,
-        useUpdateProfile: () => ({ mutateAsync: updateMutate, isPending: false }),
+        useSetAvatar: () => ({ mutateAsync: updateMutate, isPending: false }),
+        useRemoveAvatar: () => ({ mutateAsync: removeMutate, isPending: false }),
     }
 })
 
@@ -80,6 +82,8 @@ async function selectFiles(files: File[]): Promise<void> {
 function resetAvatar(): void {
     updateMutate.mockReset()
     updateMutate.mockResolvedValue(undefined)
+    removeMutate.mockReset()
+    removeMutate.mockResolvedValue(undefined)
 }
 
 describe("AvatarSection", () => {
@@ -90,7 +94,7 @@ describe("AvatarSection", () => {
         await expect.element(screen.getByRole("img", { name: "Your photo" })).toBeInTheDocument()
     })
 
-    test("uploads a new photo through the user details update", async () => {
+    test("uploads a new photo through setAvatar", async () => {
         resetAvatar()
         await renderAvatar(undefined)
 
@@ -136,13 +140,13 @@ describe("AvatarSection", () => {
         await expect.element(screen.getByRole("button", { name: "Upload photo" })).toBeInTheDocument()
     })
 
-    test("removes the photo through the profile update", async () => {
+    test("removes the photo through removeAvatar", async () => {
         resetAvatar()
         const screen = await renderAvatar("https://example.com/a.jpg")
 
         await screen.getByRole("button", { name: "Remove photo" }).click()
 
-        await expect.poll(() => updateMutate).toHaveBeenCalledTimes(1)
-        expect(updateMutate).toHaveBeenCalledWith({ removeAvatar: true })
+        await expect.poll(() => removeMutate).toHaveBeenCalledTimes(1)
+        expect(removeMutate).toHaveBeenCalledWith({})
     })
 })

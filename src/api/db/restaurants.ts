@@ -291,9 +291,9 @@ export function preloadReadySessionCollections(owner: object): void {
 
 const USER_SCOPED_QUERY_PREFIXES = [
     "restaurants:",
-    "friendships:",
+    "identity:",
     "social:",
-    "users:",
+    "interests:",
     "groups:",
     "shares:",
     "plans:",

@@ -1,7 +1,7 @@
 import { lazy, Suspense, useState } from "react"
 
+import { emptySocial, type RestaurantSocial } from "@core/interests"
 import { useDeleteRestaurant, type Restaurant } from "@core/restaurants"
-import { emptySocial, type RestaurantSocial } from "@core/social"
 import { Card } from "@ui/card"
 
 import { DeleteConfirmDialog } from "./delete-confirm-dialog"

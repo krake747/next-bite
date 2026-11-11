@@ -1,10 +1,10 @@
 import { v } from "convex/values"
 
-import { internal } from "./_generated/api"
 import { type Doc, type Id } from "./_generated/dataModel"
 import { mutation, type MutationCtx, query } from "./_generated/server"
 import { FALLBACK_GROUP_NAME, requireMembership } from "./helpers"
 import { getProfiles, nameOf, requireProfile } from "./model/identity/profiles"
+import { areFriends, befriend } from "./model/social/friendships"
 import { inviteTargetValidator } from "./validators"
 
 const INVITE_TTL_MS = 7 * 24 * 60 * 60 * 1000
@@ -134,17 +134,13 @@ async function acceptFriendInvite(
     if (invite.invitedBy === userId) {
         throw new Error("You cannot accept your own invitation")
     }
-    const pair = await ctx.db
-        .query("friendships")
-        .withIndex("by_owner_friend", (q) => q.eq("ownerId", invite.invitedBy).eq("friendId", userId))
-        .unique()
-    if (pair?.status === "accepted") {
+    if (await areFriends(ctx.db, invite.invitedBy, userId)) {
         if (invite.status !== "accepted") {
             await ctx.db.patch(invite._id, { status: "accepted" })
         }
         return { result: "alreadyMember", friendId: invite.invitedBy }
     }
-    await ctx.runMutation(internal.friendships._ensurePair, { a: invite.invitedBy, b: userId })
+    await befriend(ctx.db, invite.invitedBy, userId)
     await ctx.db.patch(invite._id, { status: "accepted" })
     return { result: "accepted", friendId: invite.invitedBy }
 }

@@ -1,9 +1,10 @@
 import { PlusIcon } from "@phosphor-icons/react"
 import { createFileRoute } from "@tanstack/react-router"
 
+import { useViewer } from "@core/identity"
+import { orderFeedByRecency } from "@core/interests"
 import { preloadHomeCollections, useFeedRestaurants, useRestaurants, type Restaurant } from "@core/restaurants"
-import { useAuth, useSessionStatus, useViewer } from "@core/session"
-import { orderFeedByRecency } from "@core/social"
+import { useAuth, useSessionStatus } from "@core/session"
 import { RestaurantCard } from "@features/restaurants/restaurant-card"
 import { RestaurantList } from "@features/restaurants/restaurant-list"
 import { ActivityPost } from "@features/social/activity-post"

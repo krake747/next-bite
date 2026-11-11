@@ -1,14 +1,13 @@
 import { createFileRoute } from "@tanstack/react-router"
 import { useState } from "react"
 
-import { useSuspenseConvexQuery } from "@api/convex.context"
 import { convexQueryOptions, warmQueriesWithin } from "@api/convex.options"
 import { type Id } from "@api/data.model"
 import { api } from "@api/endpoints"
 import { clearError, errorFrom, type FormError } from "@core/outcome"
 import { useRestaurants } from "@core/restaurants"
 import { useSessionStatus } from "@core/session"
-import { useAcceptFriend, useRemoveFriend, useRequestFriendByEmail } from "@core/social"
+import { useAcceptFriend, useFriendRequests, useFriends, useRemoveFriend, useRequestFriendByEmail } from "@core/social"
 import { ButtonLink } from "@pattern/button-link"
 import { EmptyState } from "@pattern/empty-state"
 import { Header, HeaderSubtitle, HeaderTitle } from "@pattern/header"
@@ -31,7 +30,7 @@ export const Route = createFileRoute("/_app/friends")({
         }
         await warmQueriesWithin(
             context.queryClient,
-            [convexQueryOptions(api.friendships.listFriends), convexQueryOptions(api.friendships.listFriendRequests)],
+            [convexQueryOptions(api.social.friends), convexQueryOptions(api.social.requests)],
             LOADER_WARM_BUDGET_MS,
         )
         return null
@@ -118,7 +117,7 @@ function InviteByEmailForm() {
 }
 
 function RequestsSection() {
-    const requests = useSuspenseConvexQuery(api.friendships.listFriendRequests)
+    const requests = useFriendRequests()
     const acceptFriend = useAcceptFriend()
     const [error, setError] = useState<FormError>(clearError)
 
@@ -201,7 +200,7 @@ function OwnListNudge() {
 }
 
 function FriendsList() {
-    const friends = useSuspenseConvexQuery(api.friendships.listFriends)
+    const friends = useFriends()
     const removeFriend = useRemoveFriend()
     const [error, setError] = useState<FormError>(clearError)
 

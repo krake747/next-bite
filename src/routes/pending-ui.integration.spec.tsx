@@ -72,9 +72,9 @@ let gate: Gate | undefined
 async function renderAt(path: string) {
     const seeds = new Map<string, unknown>([
         [seedKey("restaurants:getById", { id: restaurantId }), verde],
-        [seedKey("social:getForRestaurant", { restaurantId }), null],
-        [seedKey("friendships:listFriends", undefined), []],
-        [seedKey("friendships:listFriendRequests", undefined), { incoming: [], outgoing: [] }],
+        [seedKey("interests:getForRestaurant", { restaurantId }), null],
+        [seedKey("social:friends", undefined), []],
+        [seedKey("social:requests", undefined), { incoming: [], outgoing: [] }],
     ])
     const backend = createSeededClient({
         seeds,

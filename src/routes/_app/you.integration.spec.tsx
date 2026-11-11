@@ -64,7 +64,7 @@ function seedYou(): void {
         savedRestaurant(),
         savedRestaurant({ _id: "r2", name: "Sushi Bar", cuisine: "Japanese" }),
     ])
-    seedQuery("social:listMyStatuses", undefined, [{ restaurantId: "r2", status: "want" }])
+    seedQuery("interests:listMyStatuses", undefined, [{ restaurantId: "r2", status: "want" }])
 }
 
 async function renderAt(path: string): Promise<void> {
@@ -105,7 +105,7 @@ describe("you screen", () => {
         testUser = { id: "user-1", email: "alex@example.com", name: "Alex" }
         querySeeds.clear()
         seedQuery("restaurants:get", undefined, [])
-        seedQuery("social:listMyStatuses", undefined, [])
+        seedQuery("interests:listMyStatuses", undefined, [])
         await renderAt("/you")
 
         await waitFor(() => {

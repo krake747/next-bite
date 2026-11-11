@@ -19,7 +19,7 @@ function asUser(t: TestConvexForDataModel<DataModel>, subject: string): TestConv
 }
 
 async function registerUser(t: TestConvexForDataModel<DataModel>, subject: string): Promise<void> {
-    await asUser(t, subject).mutation(api.users.ensureProfile, { email: `${subject}@example.com`, name: subject })
+    await asUser(t, subject).mutation(api.identity.ensureProfile, { email: `${subject}@example.com`, name: subject })
 }
 
 describe("leaving a group", () => {

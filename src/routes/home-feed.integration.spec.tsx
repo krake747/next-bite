@@ -52,7 +52,7 @@ async function renderHome(
     feed: ReadonlyArray<RestaurantDoc>,
     friends: ReadonlyArray<{ profileId: string; name: string }> = [],
 ): Promise<void> {
-    const seeds = new Map<string, unknown>([[seedKey("friendships:listFriends", undefined), friends]])
+    const seeds = new Map<string, unknown>([[seedKey("social:friends", undefined), friends]])
     const backend = createSeededClient({ seeds, liveRows: feed })
     const router = createRouter({
         routeTree,

@@ -1,9 +1,9 @@
 import { useNavigate } from "@tanstack/react-router"
 import { createContext, use } from "react"
 
+import { emptySocial, feedTextFor, useSocialSummaries, useToggleInterest, type RestaurantSocial } from "@core/interests"
 import { type Restaurant } from "@core/restaurants"
 import { useAuth } from "@core/session"
-import { emptySocial, feedTextFor, useSocialSummaries, useToggleInterest, type RestaurantSocial } from "@core/social"
 import { type RestaurantCard } from "@features/restaurants/restaurant-card"
 import { type ActivityPost } from "@features/social/activity-post"
 

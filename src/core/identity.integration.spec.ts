@@ -24,22 +24,22 @@ function asUser(subject: string): TestConvexForDataModel<DataModel> {
     return setup().withIdentity({ subject })
 }
 
-describe("users", () => {
+describe("identity", () => {
     test("reports no session user for a signed-out request", async () => {
-        await expect(setup().query(api.users.getSessionUser, {})).resolves.toBeNull()
+        await expect(setup().query(api.identity.sessionUser, {})).resolves.toBeNull()
     })
 
     test("creates user details on first ensure and returns the same id on retry", async () => {
         const t = asUser("user-1")
-        const first = await t.mutation(api.users.ensureProfile, { email: "ada@example.com", name: "Ada" })
-        const second = await t.mutation(api.users.ensureProfile, { email: "ada@example.com", name: "Ada" })
+        const first = await t.mutation(api.identity.ensureProfile, { email: "ada@example.com", name: "Ada" })
+        const second = await t.mutation(api.identity.ensureProfile, { email: "ada@example.com", name: "Ada" })
         expect(second).toEqual(first)
     })
 
     test("falls back to the email when no name is given and no auth record exists", async () => {
         const t = asUser("user-2")
-        const id = await t.mutation(api.users.ensureProfile, { email: "bob@example.com" })
-        const me = await t.query(api.users.getMe, {})
+        const id = await t.mutation(api.identity.ensureProfile, { email: "bob@example.com" })
+        const me = await t.query(api.identity.me, {})
         expectReadyProfile(me)
         expect(me.profile._id).toEqual(id)
         expect(me.profile.name).toBe("bob@example.com")
@@ -47,16 +47,15 @@ describe("users", () => {
 
     test("reports onboarding before user details exist", async () => {
         const t = asUser("user-3")
-        await expect(t.query(api.users.getMe, {})).resolves.toEqual({ status: "onboarding" })
+        await expect(t.query(api.identity.me, {})).resolves.toEqual({ status: "onboarding" })
     })
 
-    test("updates the name and rejects empty updates", async () => {
+    test("renames with trimmed input and needs a profile or auth record first", async () => {
         const t = asUser("user-4")
-        await expect(t.mutation(api.users.updateMe, {})).rejects.toThrow("Nothing to update")
-        await t.mutation(api.users.ensureProfile, { email: "cas@example.com", name: "Cas" })
-        await expect(t.mutation(api.users.updateMe, {})).rejects.toThrow("Nothing to update")
-        const id = await t.mutation(api.users.updateMe, { name: "  Cassie  " })
-        const me = await t.query(api.users.getMe, {})
+        await expect(t.mutation(api.identity.rename, { name: "Cassie" })).rejects.toThrow("Profile not found")
+        await t.mutation(api.identity.ensureProfile, { email: "cas@example.com", name: "Cas" })
+        const id = await t.mutation(api.identity.rename, { name: "  Cassie  " })
+        const me = await t.query(api.identity.me, {})
         expectReadyProfile(me)
         expect(me.profile._id).toEqual(id)
         expect(me.profile.name).toBe("Cassie")
@@ -73,8 +72,8 @@ describe("users", () => {
                 avatar: { url: "https://example.com/a.jpg", storageId },
             })
         })
-        await t.mutation(api.users.updateMe, { removeAvatar: true })
-        const me = await t.query(api.users.getMe, {})
+        await t.mutation(api.identity.removeAvatar, {})
+        const me = await t.query(api.identity.me, {})
         expectReadyProfile(me)
         expect(me.profile.avatar).toBeUndefined()
         expect(me.profile.name).toBe("Eve")
@@ -83,7 +82,9 @@ describe("users", () => {
 
     test("rejects anonymous callers", async () => {
         const t = setup()
-        await expect(t.mutation(api.users.ensureProfile, { email: "anon@example.com" })).rejects.toThrow("Unauthorized")
-        await expect(t.query(api.users.getMe, {})).rejects.toThrow("Unauthorized")
+        await expect(t.mutation(api.identity.ensureProfile, { email: "anon@example.com" })).rejects.toThrow(
+            "Unauthorized",
+        )
+        await expect(t.query(api.identity.me, {})).rejects.toThrow("Unauthorized")
     })
 })

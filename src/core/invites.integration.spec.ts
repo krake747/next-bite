@@ -19,7 +19,7 @@ function asUser(t: TestConvexForDataModel<DataModel>, subject: string): TestConv
 }
 
 async function registerUser(t: TestConvexForDataModel<DataModel>, subject: string, email: string): Promise<void> {
-    await asUser(t, subject).mutation(api.users.ensureProfile, { email, name: subject })
+    await asUser(t, subject).mutation(api.identity.ensureProfile, { email, name: subject })
 }
 
 describe("reusable group invitation links", () => {

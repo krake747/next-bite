@@ -4,9 +4,9 @@ import { useSuspenseConvexQuery } from "@api/convex.context"
 import { convexQueryOptions, warmQueriesWithin } from "@api/convex.options"
 import { type Doc } from "@api/data.model"
 import { api } from "@api/endpoints"
+import { orderFeedByRecency } from "@core/interests"
 import { useRestaurants } from "@core/restaurants"
 import { useSessionStatus } from "@core/session"
-import { orderFeedByRecency } from "@core/social"
 import { Header, HeaderSubtitle, HeaderTitle } from "@pattern/header"
 import { QueryErrorState } from "@pattern/query-error"
 import { RestaurantListsSkeleton } from "@routes/-components/page-skeletons"
@@ -24,7 +24,7 @@ export const Route = createFileRoute("/_app/you")({
         }
         await warmQueriesWithin(
             context.queryClient,
-            [convexQueryOptions(api.social.listMyStatuses)],
+            [convexQueryOptions(api.interests.listMyStatuses)],
             LOADER_WARM_BUDGET_MS,
         )
         return null
@@ -84,7 +84,7 @@ function RestaurantsSection({
 
 function YouContent() {
     const restaurants = useRestaurants()
-    const statuses = useSuspenseConvexQuery(api.social.listMyStatuses)
+    const statuses = useSuspenseConvexQuery(api.interests.listMyStatuses)
 
     if (restaurants === undefined) {
         return <RestaurantListsSkeleton />

@@ -1,9 +1,10 @@
 import { CircleNotchIcon, UploadIcon } from "@phosphor-icons/react"
 import { useState } from "react"
 
+import { useMe, useRemoveAvatar, useRename, useSetAvatar } from "@core/identity"
 import { clearError, errorFrom, type FormError } from "@core/outcome"
 import { type ImageRecord } from "@core/restaurants"
-import { useMyProfile, useUpdateProfile, useAuth } from "@core/session"
+import { useAuth } from "@core/session"
 import { ImageUpload } from "@pattern/image-upload"
 import { LazyImage } from "@pattern/lazy-image"
 import { SettingsRow } from "@pattern/settings-row"
@@ -12,7 +13,7 @@ import { cx } from "@ui/cva.config"
 import { control, focusRing } from "@ui/variants"
 
 function DisplayNameRow({ initialName }: Readonly<{ initialName: string }>) {
-    const updateProfile = useUpdateProfile()
+    const rename = useRename()
     const [baseline, setBaseline] = useState(initialName)
     const [name, setName] = useState(initialName)
     const [error, setError] = useState<FormError>(clearError)
@@ -29,7 +30,7 @@ function DisplayNameRow({ initialName }: Readonly<{ initialName: string }>) {
         }
         setError(clearError)
         try {
-            await updateProfile.mutateAsync({ name: trimmed })
+            await rename.mutateAsync({ name: trimmed })
             setBaseline(trimmed)
         } catch (err) {
             setError(errorFrom(err, "Could not save your details"))
@@ -42,7 +43,7 @@ function DisplayNameRow({ initialName }: Readonly<{ initialName: string }>) {
                 <input
                     value={name}
                     aria-label="Display name"
-                    disabled={updateProfile.isPending}
+                    disabled={rename.isPending}
                     onChange={(event) => {
                         setName(event.target.value)
                     }}
@@ -94,7 +95,7 @@ function ProfileCard({
 
 export function UserDetailsSection() {
     const auth = useAuth()
-    const profile = useMyProfile()
+    const profile = useMe()
 
     if (profile.status === "onboarding") {
         return (
@@ -124,29 +125,31 @@ export function AvatarSection({
     avatarUrl,
     name,
 }: Readonly<{ avatarUrl: string | undefined; name?: string | undefined }>) {
-    const updateProfile = useUpdateProfile()
+    const setAvatar = useSetAvatar()
+    const removeAvatar = useRemoveAvatar()
+    const saving = setAvatar.isPending || removeAvatar.isPending
     const [error, setError] = useState<FormError>(clearError)
 
     const handleAvatar = async (images: ReadonlyArray<ImageRecord>) => {
         const image = images[0]
-        if (image === undefined || updateProfile.isPending) {
+        if (image === undefined || saving) {
             return
         }
         setError(clearError)
         try {
-            await updateProfile.mutateAsync({ avatar: { url: image.url, storageId: image.storageId } })
+            await setAvatar.mutateAsync({ avatar: { url: image.url, storageId: image.storageId } })
         } catch (err) {
             setError(errorFrom(err, "Could not save your photo"))
         }
     }
 
     const handleRemove = async () => {
-        if (updateProfile.isPending) {
+        if (saving) {
             return
         }
         setError(clearError)
         try {
-            await updateProfile.mutateAsync({ removeAvatar: true })
+            await removeAvatar.mutateAsync({})
         } catch (err) {
             setError(errorFrom(err, "Could not remove your photo"))
         }
@@ -165,7 +168,7 @@ export function AvatarSection({
                 trigger={({ openPicker, isUploading }) => {
                     const trimmed = name?.trim() ?? ""
                     const initial = trimmed === "" ? undefined : trimmed.charAt(0).toUpperCase()
-                    const busy = isUploading || updateProfile.isPending
+                    const busy = isUploading || saving
                     return (
                         <button
                             type="button"
@@ -224,7 +227,7 @@ export function AvatarSection({
                         type="button"
                         tone="ghost"
                         size="sm"
-                        disabled={updateProfile.isPending}
+                        disabled={saving}
                         onClick={() => {
                             void handleRemove()
                         }}

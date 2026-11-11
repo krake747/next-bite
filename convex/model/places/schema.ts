@@ -36,4 +36,13 @@ export const placesTables = {
         .index("by_restaurant", ["restaurantId"])
         .index("by_sharer", ["sharedBy"])
         .index("by_target_group", ["targetGroupId"]),
+    interests: defineTable({
+        restaurantId: v.id("restaurants"),
+        userId: v.id("profiles"),
+        status: v.union(v.literal("want"), v.literal("been")),
+        updatedAt: v.number(),
+    })
+        .index("by_restaurant", ["restaurantId"])
+        .index("by_user", ["userId"])
+        .index("by_user_restaurant", ["userId", "restaurantId"]),
 }

@@ -42,6 +42,8 @@ is a reactive view, not a second database.
   accepts idempotently.
 - Derive the user from authenticated context in every backend function; never trust client user IDs.
   Only a ready session authorizes (ADR-0025).
+- `convex/identity.ts` and `convex/social.ts` are the public API for profiles and friendships. A
+  friendship is one row per direction, and accepting writes both rows in one mutation.
 
 ## Storage, email, AI
 

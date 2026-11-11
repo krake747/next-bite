@@ -59,8 +59,8 @@ function savedBy(user: TestUser, name: string, id: string): RestaurantDoc {
 
 async function renderAt(path: string, rows: ReadonlyArray<RestaurantDoc>) {
     const seeds = new Map<string, unknown>([
-        [seedKey("friendships:listFriends", undefined), []],
-        [seedKey("friendships:listFriendRequests", undefined), { incoming: [], outgoing: [] }],
+        [seedKey("social:friends", undefined), []],
+        [seedKey("social:requests", undefined), { incoming: [], outgoing: [] }],
     ])
     const backend = createSeededClient({ seeds, liveRows: rows })
     const router = createRouter({

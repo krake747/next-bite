@@ -28,7 +28,7 @@ describe("warmQueries", () => {
         const client = new QueryClient()
         const query = vi.spyOn(client, "query")
 
-        warmQueries(client, [convexQueryOptions(api.users.getMe)])
+        warmQueries(client, [convexQueryOptions(api.identity.me)])
 
         expect(query).not.toHaveBeenCalled()
     })
@@ -38,7 +38,7 @@ describe("warmQueries", () => {
         const client = new QueryClient({ defaultOptions: { queries: { queryFn: async () => "warm" } } })
         const query = vi.spyOn(client, "query")
 
-        warmQueries(client, [convexQueryOptions(api.users.getMe)])
+        warmQueries(client, [convexQueryOptions(api.identity.me)])
 
         expect(query).toHaveBeenCalledTimes(1)
     })
@@ -48,7 +48,7 @@ describe("warmQueriesWithin", () => {
     test("resolves with the data cached when the query settles inside the budget", async () => {
         // oxlint-disable-next-line typescript/require-await -- test resolver intentionally performs no async work
         const client = new QueryClient({ defaultOptions: { queries: { queryFn: async () => "warm" } } })
-        const me = convexQueryOptions(api.users.getMe)
+        const me = convexQueryOptions(api.identity.me)
 
         await warmQueriesWithin(client, [me], 1000)
 
@@ -58,7 +58,7 @@ describe("warmQueriesWithin", () => {
     test("stops waiting at the budget when the query is slow", async () => {
         const never = new Promise<string>(() => {})
         const client = new QueryClient({ defaultOptions: { queries: { queryFn: async () => never } } })
-        const me = convexQueryOptions(api.users.getMe)
+        const me = convexQueryOptions(api.identity.me)
         const started = Date.now()
 
         await warmQueriesWithin(client, [me], 50)
