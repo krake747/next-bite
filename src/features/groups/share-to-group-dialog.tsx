@@ -20,9 +20,7 @@ export function ShareToGroupDialog({
     const shareWithGroup = useShareWithGroup()
     const unshare = useUnshare()
 
-    const sharedGroupIds = new Set(
-        (shares ?? []).flatMap((share) => (share.target.kind === "group" ? [share.target.groupId] : [])),
-    )
+    const sharedGroupIds = new Set((shares ?? []).map((share) => share.target.groupId))
 
     return (
         <Dialog open={show} onOpenChange={onOpenChange}>

@@ -9,12 +9,6 @@ import {
     shareTargetValidator,
 } from "./validators"
 
-const socialFields = {
-    restaurantId: v.id("restaurants"),
-    userId: v.string(),
-    displayName: v.string(),
-}
-
 export default defineSchema({
     restaurants: defineTable({
         ownerId: v.string(),
@@ -31,46 +25,27 @@ export default defineSchema({
                 link: v.optional(v.string()),
             }),
         ),
-        rating: v.optional(v.number()),
         images: v.array(restaurantImageValidator),
         visibility: v.union(v.literal("private"), v.literal("shared")),
         clientMutationId: v.optional(v.string()),
         createdAt: v.number(),
-    })
-        .index("by_owner", ["ownerId"])
-        .index("by_created", ["createdAt"]),
+    }).index("by_owner", ["ownerId"]),
     clientMutations: defineTable({
         key: v.string(),
         userId: v.string(),
         restaurantId: v.id("restaurants"),
         createdAt: v.number(),
     }).index("by_user_key", ["userId", "key"]),
-    visitMemories: defineTable({
+    interests: defineTable({
         restaurantId: v.id("restaurants"),
         userId: v.string(),
         displayName: v.string(),
-        images: v.array(restaurantImageValidator),
-        createdAt: v.number(),
-    }).index("by_restaurant", ["restaurantId"]),
-    interests: defineTable({
-        ...socialFields,
         status: v.union(v.literal("want"), v.literal("been")),
         updatedAt: v.number(),
     })
         .index("by_restaurant", ["restaurantId"])
         .index("by_user", ["userId"])
         .index("by_user_restaurant", ["userId", "restaurantId"]),
-    likes: defineTable({
-        ...socialFields,
-        createdAt: v.number(),
-    })
-        .index("by_restaurant", ["restaurantId"])
-        .index("by_user_restaurant", ["userId", "restaurantId"]),
-    comments: defineTable({
-        ...socialFields,
-        text: v.string(),
-        createdAt: v.number(),
-    }).index("by_restaurant", ["restaurantId"]),
     profiles: defineTable({
         authUserId: v.string(),
         name: v.string(),
@@ -92,13 +67,11 @@ export default defineSchema({
     groups: defineTable({
         ownerId: v.string(),
         name: v.string(),
-        image: v.optional(imageObjectValidator),
         createdAt: v.number(),
     }).index("by_owner", ["ownerId"]),
     groupMembers: defineTable({
         groupId: v.id("groups"),
         userId: v.string(),
-        role: v.optional(v.union(v.literal("admin"), v.literal("member"))),
         joinedAt: v.number(),
     })
         .index("by_group", ["groupId"])
@@ -147,9 +120,7 @@ export default defineSchema({
         storageId: v.id("_storage"),
         ownerId: v.string(),
         restaurantId: v.optional(v.id("restaurants")),
-        purpose: v.optional(
-            v.union(v.literal("restaurant"), v.literal("group"), v.literal("avatar"), v.literal("transient")),
-        ),
+        purpose: v.optional(v.union(v.literal("restaurant"), v.literal("avatar"), v.literal("transient"))),
         expiresAt: v.optional(v.number()),
         mimeType: v.optional(v.string()),
         byteSize: v.optional(v.number()),
@@ -157,11 +128,5 @@ export default defineSchema({
     })
         .index("by_storage", ["storageId"])
         .index("by_expires", ["expiresAt"]),
-    statsCounters: defineTable({
-        key: v.string(),
-        restaurantCount: v.number(),
-        wantCount: v.number(),
-        cuisineCounts: v.record(v.string(), v.number()),
-    }).index("by_key", ["key"]),
     // Better Auth tables will be added by the convex component
 })
