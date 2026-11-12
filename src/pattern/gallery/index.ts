@@ -1,2 +1,2 @@
-export { keyForPhotoUrl, photoUrls, type GalleryPhoto } from "./photos"
+export { keysForPhotoUrls, photoUrls, type GalleryPhoto } from "./photos"
 export { Lightbox, useLightbox } from "./lightbox"

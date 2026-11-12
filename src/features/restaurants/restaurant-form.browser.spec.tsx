@@ -7,7 +7,7 @@ import { ConvexProvider } from "@api/convex.context"
 import { toId, type Id } from "@api/data.model"
 import { SyncTimeoutError, type PlaceCreateArgs } from "@api/db/restaurants"
 import { createSeededClient, type MutationCall } from "@api/db/seeded.client"
-import { type ImageRecord } from "@core/restaurants"
+import { type ImageRecord } from "@core/schemas"
 
 import { RestaurantForm, useFormDiscard } from "./restaurant-form"
 

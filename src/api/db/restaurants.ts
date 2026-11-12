@@ -4,10 +4,16 @@ import { type ConvexReactClient } from "convex/react"
 
 import { type Doc, type Id, toId } from "@api/data.model"
 import { api } from "@api/endpoints"
-import { sleep } from "@core/async"
-import { assertRealId, isTempId, TEMP_ID_PREFIX } from "@core/temp.ids"
+
+import { assertRealId, isTempId, TEMP_ID_PREFIX } from "./temp.ids"
 
 const SYNC_RESOLVE_POLL_MS = 50
+
+async function sleep(ms: number): Promise<void> {
+    await new Promise<void>((resolve) => {
+        setTimeout(resolve, ms)
+    })
+}
 
 export type PlacePhoto = {
     readonly url: string
@@ -259,7 +265,7 @@ function isUserScopedQueryKey(queryKey: ReadonlyArray<unknown>): boolean {
     return typeof fn === "string" && USER_SCOPED_QUERY_PREFIXES.some((prefix) => fn.startsWith(prefix))
 }
 
-export function clearUserScopedQueries(
+function clearUserScopedQueries(
     removeQueries: (filters: { predicate: (query: { queryKey: ReadonlyArray<unknown> }) => boolean }) => void,
 ): void {
     removeQueries({ predicate: (query) => isUserScopedQueryKey(query.queryKey) })

@@ -1,7 +1,7 @@
 import { useRef, useState } from "react"
 
 import { type Id } from "@api/data.model"
-import { type ImageRecord } from "@core/restaurants"
+import { type ImageRecord } from "@core/schemas"
 
 export type GalleryCleanup = (args: { storageId: Id<"_storage"> }) => Promise<unknown>
 

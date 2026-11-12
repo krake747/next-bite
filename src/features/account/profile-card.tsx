@@ -3,7 +3,8 @@ import { useState } from "react"
 
 import { useMe, useRemoveAvatar, useRename, useSetAvatar } from "@core/identity"
 import { clearError, errorFrom, type FormError } from "@core/outcome"
-import { type ImageRecord } from "@core/restaurants"
+import { useDeleteUpload, useUploadImage } from "@core/restaurants"
+import { type ImageRecord } from "@core/schemas"
 import { useAuth } from "@core/session"
 import { ImageUpload } from "@pattern/image-upload"
 import { LazyImage } from "@pattern/lazy-image"
@@ -127,6 +128,8 @@ export function AvatarSection({
 }: Readonly<{ avatarUrl: string | undefined; name?: string | undefined }>) {
     const setAvatar = useSetAvatar()
     const removeAvatar = useRemoveAvatar()
+    const uploadImage = useUploadImage()
+    const deleteUpload = useDeleteUpload()
     const saving = setAvatar.isPending || removeAvatar.isPending
     const [error, setError] = useState<FormError>(clearError)
 
@@ -162,6 +165,8 @@ export function AvatarSection({
                 onImagesChange={(updated) => {
                     void handleAvatar(updated)
                 }}
+                uploadImage={uploadImage}
+                deleteUpload={async (args) => deleteUpload.mutateAsync(args)}
                 maxFiles={1}
                 disabled={false}
                 variant="avatar"

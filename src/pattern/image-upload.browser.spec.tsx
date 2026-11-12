@@ -7,7 +7,7 @@ import { page } from "vitest/browser"
 import { ConvexProvider } from "@api/convex.context"
 import { type Id } from "@api/data.model"
 import { createSeededClient, type MutationCall } from "@api/db/seeded.client"
-import { type ImageRecord } from "@core/restaurants"
+import { type ImageRecord } from "@core/schemas"
 import { ImageUpload } from "@pattern/image-upload"
 
 type Deferred<T> = {
@@ -54,14 +54,6 @@ vi.mock("@core/image.utils", async (importOriginal) => {
     }
 })
 
-vi.mock("@core/restaurants", async (importOriginal) => {
-    const original = await importOriginal<typeof import("@core/restaurants")>()
-    return {
-        ...original,
-        useUploadImage: () => uploadImpl,
-    }
-})
-
 const mutationCalls: MutationCall[] = []
 
 function Harness() {
@@ -71,6 +63,11 @@ function Harness() {
             images={images}
             onImagesChange={(updated) => {
                 setImages([...updated])
+            }}
+            uploadImage={uploadImpl}
+            deleteUpload={async (args) => {
+                mutationCalls.push({ fn: "storage:deleteUpload", args })
+                await Promise.resolve()
             }}
         />
     )

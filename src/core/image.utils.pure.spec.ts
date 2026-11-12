@@ -1,6 +1,7 @@
 import { describe, test, expect } from "vitest"
 
-import { validateImageFile, formatFileSize, MAX_FILE_SIZE } from "./image.utils"
+import { MAX_UPLOAD_BYTES } from "./constants"
+import { validateImageFile, formatFileSize } from "./image.utils"
 
 describe("validateImageFile", () => {
     test.each(["image/jpeg", "image/png", "image/webp", "image/gif"])("accepts %s", (type) => {
@@ -18,8 +19,8 @@ describe("validateImageFile", () => {
     })
 
     test("rejects files exceeding max size", () => {
-        const large = new File([new ArrayBuffer(MAX_FILE_SIZE + 1)], "huge.jpg", { type: "image/jpeg" })
-        Object.defineProperty(large, "size", { value: MAX_FILE_SIZE + 1 })
+        const large = new File([new ArrayBuffer(MAX_UPLOAD_BYTES + 1)], "huge.jpg", { type: "image/jpeg" })
+        Object.defineProperty(large, "size", { value: MAX_UPLOAD_BYTES + 1 })
         expect(() => {
             validateImageFile(large)
         }).toThrow("File too large")
