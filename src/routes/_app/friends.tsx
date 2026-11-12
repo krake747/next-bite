@@ -1,13 +1,18 @@
 import { createFileRoute } from "@tanstack/react-router"
 import { useState } from "react"
 
-import { convexQueryOptions, warmQueriesWithin } from "@api/convex.options"
 import { type Id } from "@api/data.model"
-import { api } from "@api/endpoints"
 import { clearError, errorFrom, type FormError } from "@core/outcome"
 import { useRestaurants } from "@core/restaurants"
-import { useSessionStatus } from "@core/session"
-import { useAcceptFriend, useFriendRequests, useFriends, useRemoveFriend, useRequestFriendByEmail } from "@core/social"
+import { useSessionStatus, warmAuthenticatedQueries } from "@core/session"
+import {
+    socialWarmups,
+    useAcceptFriend,
+    useFriendRequests,
+    useFriends,
+    useRemoveFriend,
+    useRequestFriendByEmail,
+} from "@core/social"
 import { ButtonLink } from "@pattern/button-link"
 import { EmptyState } from "@pattern/empty-state"
 import { Header, HeaderSubtitle, HeaderTitle } from "@pattern/header"
@@ -25,15 +30,7 @@ export const Route = createFileRoute("/_app/friends")({
     component: FriendsPage,
     errorComponent: FriendsError,
     loader: async ({ context }) => {
-        if (context.auth?.isAuthenticated !== true) {
-            return null
-        }
-        await warmQueriesWithin(
-            context.queryClient,
-            [convexQueryOptions(api.social.friends), convexQueryOptions(api.social.requests)],
-            LOADER_WARM_BUDGET_MS,
-        )
-        return null
+        return warmAuthenticatedQueries(context.queryClient, context.auth, socialWarmups(), LOADER_WARM_BUDGET_MS)
     },
 })
 

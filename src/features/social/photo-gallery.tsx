@@ -1,4 +1,5 @@
 import { Lightbox, useLightbox, type GalleryPhoto } from "@pattern/gallery"
+import { keyForPhotoUrl } from "@pattern/gallery/photos"
 import { LazyImage } from "@pattern/lazy-image"
 
 export function PhotoGallery({
@@ -13,11 +14,7 @@ export function PhotoGallery({
     }
 
     const seen = new Map<string, number>()
-    const keyFor = (url: string): string => {
-        const occurrence = seen.get(url) ?? 0
-        seen.set(url, occurrence + 1)
-        return occurrence === 0 ? url : `${url}__${occurrence}`
-    }
+    const keyFor = (url: string): string => keyForPhotoUrl(seen, url)
 
     return (
         <div>

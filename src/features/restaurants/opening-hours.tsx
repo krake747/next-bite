@@ -36,15 +36,15 @@ export function OpeningHours({
                 "hit-area-y-1 flex w-full cursor-pointer items-center gap-2 rounded-control text-left transition-opacity duration-150 hover:opacity-80",
             )}
         >
-            <div className="flex size-6 items-center justify-center rounded-full bg-stone-100">
+            <div className="flex size-6 items-center justify-center rounded-full bg-background">
                 <ClockIcon className="size-3.5 text-stone-400" />
             </div>
             <div className="flex items-center gap-2 text-sm">
-                <span className={cx("font-medium", openNow ? "text-tomato-600" : "text-stone-600")}>
+                <span className={cx("font-medium", openNow ? "text-tomato-600" : "text-muted-foreground")}>
                     {openStatusLabel(openingHours)}
                 </span>
                 <span className="text-stone-300">·</span>
-                <span className="text-stone-600">
+                <span className="text-muted-foreground">
                     {todayDayName} {todayHours}
                 </span>
             </div>

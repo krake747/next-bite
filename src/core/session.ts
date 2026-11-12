@@ -1,7 +1,10 @@
+import { type QueryClient } from "@tanstack/react-query"
 import { useEffect, useState, useSyncExternalStore } from "react"
 
+import { type RouterAuth } from "@api/auth.identity"
 import { useAuthContext } from "@api/auth.provider"
 import { useConvexAuthPhase, useConvexClient, useConvexQuery } from "@api/convex.context"
+import { warmQueriesWithin } from "@api/convex.options"
 import { api } from "@api/endpoints"
 
 import { expireGate, gatePhase, openGate, settleGate, type ConvexGate, type GatePhase } from "./session.gate"
@@ -108,6 +111,19 @@ export function gateId<T>(status: SessionStatus, id: T | undefined): GatedId<T> 
         return { skip: true, id: undefined }
     }
     return { skip: false, id }
+}
+
+export async function warmAuthenticatedQueries(
+    queryClient: QueryClient,
+    auth: RouterAuth | null | undefined,
+    options: ReadonlyArray<object>,
+    budgetMs: number,
+): Promise<null> {
+    if (auth?.isAuthenticated !== true) {
+        return null
+    }
+    await warmQueriesWithin(queryClient, options, budgetMs)
+    return null
 }
 
 export const useAuth = useAuthContext

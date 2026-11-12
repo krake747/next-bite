@@ -1,12 +1,10 @@
+import { useSuspenseQuery } from "@tanstack/react-query"
 import { createFileRoute, Link } from "@tanstack/react-router"
 import { useState } from "react"
 
-import { useSuspenseConvexQuery } from "@api/convex.context"
-import { convexQueryOptions, warmQueriesWithin } from "@api/convex.options"
-import { api } from "@api/endpoints"
-import { useCreateGroup } from "@core/groups"
+import { groupsListOptions, groupsListWarmups, useCreateGroup } from "@core/groups"
 import { clearError, errorFrom, type FormError } from "@core/outcome"
-import { useSessionStatus } from "@core/session"
+import { useSessionStatus, warmAuthenticatedQueries } from "@core/session"
 import { EmptyState } from "@pattern/empty-state"
 import { Header, HeaderSubtitle, HeaderTitle } from "@pattern/header"
 import { QueryErrorState } from "@pattern/query-error"
@@ -22,11 +20,7 @@ export const Route = createFileRoute("/_app/groups/")({
     component: GroupsPage,
     errorComponent: GroupsError,
     loader: async ({ context }) => {
-        if (context.auth?.isAuthenticated !== true) {
-            return null
-        }
-        await warmQueriesWithin(context.queryClient, [convexQueryOptions(api.groups.list)], LOADER_WARM_BUDGET_MS)
-        return null
+        return warmAuthenticatedQueries(context.queryClient, context.auth, groupsListWarmups(), LOADER_WARM_BUDGET_MS)
     },
 })
 
@@ -99,7 +93,7 @@ function CreateGroupForm() {
 }
 
 function GroupsView() {
-    const groups = useSuspenseConvexQuery(api.groups.list)
+    const { data: groups } = useSuspenseQuery(groupsListOptions())
 
     return (
         <>

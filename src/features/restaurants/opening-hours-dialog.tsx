@@ -34,7 +34,7 @@ export function OpeningHoursDialog({
                     </span>
                 </DialogTitle>
 
-                <p className="mb-4 text-sm text-stone-600">{restaurantName}</p>
+                <p className="mb-4 text-sm text-muted-foreground">{restaurantName}</p>
 
                 <div className="mb-5 flex items-center gap-2">
                     <Badge tone={openNow ? "success" : "neutral"}>{openStatusLabel(openingHours)}</Badge>
@@ -52,10 +52,10 @@ export function OpeningHoursDialog({
                                     isToday && "font-medium",
                                 )}
                             >
-                                <span className={isToday ? "text-stone-900" : "text-stone-600"}>
+                                <span className={isToday ? "text-foreground" : "text-muted-foreground"}>
                                     {isToday ? "Today" : day}
                                 </span>
-                                <span className="text-stone-600">{hours}</span>
+                                <span className="text-muted-foreground">{hours}</span>
                             </div>
                         )
                     })}

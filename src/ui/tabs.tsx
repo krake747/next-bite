@@ -30,7 +30,7 @@ export function TabsList({ className, children, ...props }: Readonly<React.Compo
     return (
         <BaseTabs.List
             data-slot="tabs-list"
-            className={cx("inline-flex items-center gap-1 rounded-control bg-stone-100 p-1", className)}
+            className={cx("inline-flex items-center gap-1 rounded-control bg-background p-1", className)}
             {...props}
         >
             {children}
@@ -56,9 +56,9 @@ export function TabsTab({
             data-slot="tabs-tab"
             className={cx(
                 focusRing(),
-                "hit-area-y-2 cursor-pointer rounded-md px-3 py-1.5 text-sm font-medium text-stone-600 transition-colors duration-150",
-                "hover:text-stone-900",
-                "data-active:bg-surface data-active:text-stone-900 data-active:shadow-xs",
+                "hit-area-y-2 cursor-pointer rounded-md px-3 py-1.5 text-sm font-medium text-muted-foreground transition-colors duration-150",
+                "hover:text-foreground",
+                "data-active:bg-surface data-active:text-foreground data-active:shadow-xs",
                 "disabled:cursor-not-allowed disabled:bg-transparent disabled:text-muted-foreground",
                 className,
             )}

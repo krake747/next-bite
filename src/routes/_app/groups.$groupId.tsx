@@ -1,17 +1,22 @@
+import { useSuspenseQuery } from "@tanstack/react-query"
 import { createFileRoute, Link } from "@tanstack/react-router"
 import { useState } from "react"
 
-import { useSuspenseConvexQuery } from "@api/convex.context"
-import { convexQueryOptions, warmQueriesWithin } from "@api/convex.options"
 import { type Id, toId } from "@api/data.model"
-import { api } from "@api/endpoints"
-import { useCreateInvite, useRevokeInvite } from "@core/groups"
-import { useAddToGroup, useRemoveFromGroup } from "@core/groups"
+import {
+    groupDetailWarmups,
+    groupOptions,
+    groupPlacesOptions,
+    useAddToGroup,
+    useCreateInvite,
+    useRemoveFromGroup,
+    useRevokeInvite,
+} from "@core/groups"
 import { isViewer, useViewer } from "@core/identity"
 import { clearError, errorFrom, type FormError } from "@core/outcome"
 import { useRestaurants, type Restaurant } from "@core/restaurants"
 import { orderFeedByRecency } from "@core/saves"
-import { useAuth, useSessionStatus } from "@core/session"
+import { useAuth, useSessionStatus, warmAuthenticatedQueries } from "@core/session"
 import { GroupMembers } from "@features/groups/group-members"
 import { PlanSection } from "@features/plans/plans"
 import { EmptyState } from "@pattern/empty-state"
@@ -22,6 +27,7 @@ import { LOADER_WARM_BUDGET_MS } from "@routes/-components/route-pending"
 import { BackNav } from "@routes/-layouts/back-nav"
 import { PageContainer } from "@routes/-layouts/page-container"
 import { Button } from "@ui/button"
+import { TextLink } from "@ui/text-link"
 
 export const Route = createFileRoute("/_app/groups/$groupId")({
     head: () => ({ meta: [{ title: "Group details" }] }),
@@ -29,16 +35,13 @@ export const Route = createFileRoute("/_app/groups/$groupId")({
     pendingComponent: GroupDetailLoading,
     errorComponent: GroupDetailError,
     loader: async ({ context, params }) => {
-        if (context.auth?.isAuthenticated !== true) {
-            return null
-        }
         const groupId = toId<"groups">(params.groupId)
-        await warmQueriesWithin(
+        return warmAuthenticatedQueries(
             context.queryClient,
-            [convexQueryOptions(api.groups.get, { groupId }), convexQueryOptions(api.places.forGroup, { groupId })],
+            context.auth,
+            groupDetailWarmups(groupId),
             LOADER_WARM_BUDGET_MS,
         )
-        return null
     },
 })
 
@@ -83,10 +86,7 @@ function AddFromMyList({ groupId, sharedIds }: Readonly<{ groupId: Id<"groups">;
         return (
             <p className="pt-4 text-sm text-muted-foreground">
                 Every restaurant you saved is already on this list.{" "}
-                <Link to="/home" className="font-medium text-primary hover:underline">
-                    Save another one
-                </Link>{" "}
-                to add it here.
+                <TextLink render={<Link to="/home" />}>Save another one</TextLink> to add it here.
             </p>
         )
     }
@@ -261,8 +261,8 @@ function GroupDetailView() {
     const { groupId } = Route.useParams()
     const groupConvexId = toId<"groups">(groupId)
     const auth = useAuth()
-    const group = useSuspenseConvexQuery(api.groups.get, { groupId: groupConvexId })
-    const restaurants = useSuspenseConvexQuery(api.places.forGroup, { groupId: groupConvexId })
+    const { data: group } = useSuspenseQuery(groupOptions(groupConvexId))
+    const { data: restaurants } = useSuspenseQuery(groupPlacesOptions(groupConvexId))
     const viewer = useViewer()
 
     if (group === null) {

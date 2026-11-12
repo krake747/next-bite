@@ -5,7 +5,7 @@ export function Skeleton({ className, children, ...props }: Readonly<React.Compo
     return (
         <div
             data-slot="skeleton"
-            className={cx("rounded-control bg-stone-200 motion-safe:animate-pulse", className)}
+            className={cx("rounded-control bg-surface-muted motion-safe:animate-pulse", className)}
             {...props}
         >
             {children}

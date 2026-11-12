@@ -1,4 +1,5 @@
 import { useConvexMutation, useConvexQuery } from "@api/convex.context"
+import { convexQueryOptions } from "@api/convex.options"
 import { type Id } from "@api/data.model"
 import { api } from "@api/endpoints"
 
@@ -21,6 +22,30 @@ export const useCreateGroup = () => useConvexMutation(api.groups.create)
 export const useCreateInvite = () => useConvexMutation(api.invites.create)
 export const useAcceptInvite = () => useConvexMutation(api.invites.accept)
 export const useRevokeInvite = () => useConvexMutation(api.invites.revoke)
+
+export function groupsListOptions() {
+    return convexQueryOptions(api.groups.list)
+}
+
+export function groupOptions(groupId: Id<"groups">) {
+    return convexQueryOptions(api.groups.get, { groupId })
+}
+
+export function groupPlacesOptions(groupId: Id<"groups">) {
+    return convexQueryOptions(api.places.forGroup, { groupId })
+}
+
+export function inviteOptions(token: string) {
+    return convexQueryOptions(api.invites.get, { token, now: Date.now() })
+}
+
+export function groupsListWarmups(): ReadonlyArray<object> {
+    return [groupsListOptions()]
+}
+
+export function groupDetailWarmups(groupId: Id<"groups">): ReadonlyArray<object> {
+    return [groupOptions(groupId), groupPlacesOptions(groupId)]
+}
 
 export function isSafeRedirectPath(value: string | null | undefined): value is string {
     if (typeof value !== "string" || !value.startsWith("/") || value.startsWith("//")) {

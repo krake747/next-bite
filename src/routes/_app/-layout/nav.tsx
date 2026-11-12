@@ -11,9 +11,8 @@ import {
 } from "@phosphor-icons/react"
 import { Link, useMatchRoute } from "@tanstack/react-router"
 
-import { useConvexQuery } from "@api/convex.context"
-import { api } from "@api/endpoints"
-import { useAuth, useSessionStatus } from "@core/session"
+import { useViewerProfile } from "@core/identity"
+import { useAuth } from "@core/session"
 import { LazyImage } from "@pattern/lazy-image"
 import { cva, cx } from "@ui/cva.config"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@ui/dropdown-menu"
@@ -92,10 +91,9 @@ function profileIdentity(
 
 function useUserCardIdentity(): CardIdentity {
     const auth = useAuth()
-    const status = useSessionStatus()
-    const profile = useConvexQuery(api.identity.me, undefined, { skip: status.kind !== "ready" })
-    if (profile?.status === "ready") {
-        return profileIdentity(profile.profile, auth.user)
+    const profile = useViewerProfile()
+    if (profile !== undefined) {
+        return profileIdentity(profile, auth.user)
     }
     return sessionIdentity(auth.user)
 }

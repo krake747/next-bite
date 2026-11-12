@@ -1,11 +1,10 @@
+import { useSuspenseQuery } from "@tanstack/react-query"
 import { createFileRoute, useNavigate } from "@tanstack/react-router"
 import { useState } from "react"
 
-import { useSuspenseConvexQuery, useConvexAction } from "@api/convex.context"
-import { convexQueryOptions, warmQueriesWithin } from "@api/convex.options"
+import { warmQueriesWithin } from "@api/convex.options"
 import { toId } from "@api/data.model"
-import { api } from "@api/endpoints"
-import { type Restaurant } from "@core/restaurants"
+import { placeDetailWarmups, placeOptions, usePlaceHours, type Restaurant } from "@core/restaurants"
 import { useToggleWant } from "@core/saves"
 import { useAuth } from "@core/session"
 import { OpeningHoursDialog } from "@features/restaurants/opening-hours-dialog"
@@ -13,6 +12,8 @@ import { type OpeningHours } from "@features/restaurants/opening-hours-utils"
 import { RestaurantGallery } from "@features/restaurants/restaurant-gallery"
 import { RestaurantHeader } from "@features/restaurants/restaurant-header"
 import { RestaurantInterestButton } from "@features/restaurants/restaurant-interest-button"
+import { keyForPhotoUrl } from "@pattern/gallery/photos"
+import { LazyImage } from "@pattern/lazy-image"
 import { LoadingPlaceholder } from "@pattern/loading"
 import { QueryErrorState } from "@pattern/query-error"
 import { SocialMetadata } from "@pattern/social-metadata"
@@ -28,8 +29,7 @@ export const Route = createFileRoute("/_app/restaurants/$restaurantId")({
     errorComponent: RestaurantDetailError,
     loader: async ({ context, params }) => {
         const restaurantId = toId<"places">(params.restaurantId)
-        const detail = convexQueryOptions(api.places.get, { id: restaurantId })
-        await warmQueriesWithin(context.queryClient, [detail], LOADER_WARM_BUDGET_MS)
+        await warmQueriesWithin(context.queryClient, placeDetailWarmups(restaurantId), LOADER_WARM_BUDGET_MS)
         return null
     },
 })
@@ -49,7 +49,7 @@ function DetailHero({ restaurant }: Readonly<{ restaurant: Restaurant }>) {
     const navigate = useNavigate()
     const auth = useAuth()
     const toggleWant = useToggleWant(restaurant._id, restaurant.mySave)
-    const fetchHours = useConvexAction(api.places.hours)
+    const fetchHours = usePlaceHours()
     const [showHours, setShowHours] = useState(false)
     const [hours, setHours] = useState<OpeningHours | undefined>(undefined)
     const [hoursFailed, setHoursFailed] = useState(false)
@@ -142,12 +142,15 @@ function DetailPhotos({ photos }: Readonly<{ photos: ReadonlyArray<{ readonly ur
     if (photos.length === 0) {
         return null
     }
+    const seen = new Map<string, number>()
     return (
         <div className="rounded-card border border-border bg-surface p-4 shadow-card">
             <h2 className="font-display text-lg font-semibold text-balance text-foreground">Photos</h2>
             <div className="grid grid-cols-3 gap-2 pt-3">
                 {photos.map((photo) => (
-                    <img key={photo.url} src={photo.url} alt="" className="aspect-square rounded-lg object-cover" />
+                    <div key={keyForPhotoUrl(seen, photo.url)} className="aspect-square overflow-hidden rounded-lg">
+                        <LazyImage src={photo.url} alt="" ratio={1 / 1} />
+                    </div>
                 ))}
             </div>
         </div>
@@ -182,7 +185,7 @@ function DetailNotFound() {
 function RestaurantDetailView() {
     const { restaurantId } = Route.useParams()
     const restaurantConvexId = toId<"places">(restaurantId)
-    const restaurant = useSuspenseConvexQuery(api.places.get, { id: restaurantConvexId })
+    const { data: restaurant } = useSuspenseQuery(placeOptions(restaurantConvexId))
 
     if (restaurant === null) {
         return <DetailNotFound />

@@ -2,6 +2,7 @@ import { useEffect } from "react"
 
 import { useAuthContext } from "@api/auth.provider"
 import { useConvexClient, useConvexMutation, useConvexQuery, useSuspenseConvexQuery } from "@api/convex.context"
+import { convexQueryOptions } from "@api/convex.options"
 import { type Doc } from "@api/data.model"
 import { api } from "@api/endpoints"
 
@@ -11,6 +12,10 @@ import { type Viewer } from "./viewer"
 export { isViewer, type Viewer } from "./viewer"
 
 export const useMe = () => useSuspenseConvexQuery(api.identity.me)
+
+export function meWarmups(): ReadonlyArray<object> {
+    return [convexQueryOptions(api.identity.me)]
+}
 
 export const useRename = () => useConvexMutation(api.identity.rename)
 

@@ -3,7 +3,8 @@ import { mutationOptions, useMutation, useQueryClient, type QueryClient } from "
 import { type ConvexReactClient } from "convex/react"
 import { useEffect, useRef, useState } from "react"
 
-import { useConvexClient, useConvexMutation } from "@api/convex.context"
+import { useConvexAction, useConvexClient, useConvexMutation } from "@api/convex.context"
+import { convexQueryOptions } from "@api/convex.options"
 import { type Doc, type Id } from "@api/data.model"
 import {
     buildTempPlace,
@@ -140,6 +141,16 @@ export function preloadHomeCollections(queryClient: QueryClient): void {
 
 export const useRestaurants = () => useOwnerOrFeed("owner")
 export const useFeedRestaurants = () => useOwnerOrFeed("feed")
+
+export function placeOptions(id: Id<"places">) {
+    return convexQueryOptions(api.places.get, { id })
+}
+
+export function placeDetailWarmups(id: Id<"places">): ReadonlyArray<object> {
+    return [placeOptions(id)]
+}
+
+export const usePlaceHours = () => useConvexAction(api.places.hours)
 
 async function resolveOwnerProfile(
     client: ConvexReactClient,
