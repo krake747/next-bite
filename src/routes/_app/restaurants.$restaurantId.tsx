@@ -1,9 +1,10 @@
+import { useSuspenseQuery } from "@tanstack/react-query"
 import { createFileRoute, useNavigate } from "@tanstack/react-router"
 import { useState } from "react"
 
 import { warmQueriesWithin } from "@api/convex.options"
 import { toId } from "@api/data.model"
-import { placeDetailWarmups, usePlaceHours, usePlaceSuspense, type Restaurant } from "@core/restaurants"
+import { placeDetailWarmups, placeOptions, usePlaceHours, type Restaurant } from "@core/restaurants"
 import { useToggleWant } from "@core/saves"
 import { useAuth } from "@core/session"
 import { OpeningHoursDialog } from "@features/restaurants/opening-hours-dialog"
@@ -184,7 +185,7 @@ function DetailNotFound() {
 function RestaurantDetailView() {
     const { restaurantId } = Route.useParams()
     const restaurantConvexId = toId<"places">(restaurantId)
-    const restaurant = usePlaceSuspense(restaurantConvexId)
+    const { data: restaurant } = useSuspenseQuery(placeOptions(restaurantConvexId))
 
     if (restaurant === null) {
         return <DetailNotFound />

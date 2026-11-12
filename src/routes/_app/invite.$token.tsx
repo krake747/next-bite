@@ -1,7 +1,8 @@
+import { useSuspenseQuery } from "@tanstack/react-query"
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router"
 import { useEffect, useState } from "react"
 
-import { isSafeRedirectPath, useAcceptInvite, useInvitePreview } from "@core/groups"
+import { inviteOptions, isSafeRedirectPath, useAcceptInvite } from "@core/groups"
 import { clearError, errorFrom, type FormError } from "@core/outcome"
 import { useAuth } from "@core/session"
 import { Header, HeaderSubtitle, HeaderTitle } from "@pattern/header"
@@ -57,7 +58,7 @@ function InviteView() {
     const { token } = Route.useParams()
     const navigate = useNavigate()
     const auth = useAuth()
-    const preview = useInvitePreview(token)
+    const { data: preview } = useSuspenseQuery(inviteOptions(token))
     const acceptInvite = useAcceptInvite()
     const [acceptError, setAcceptError] = useState<FormError>(clearError)
     const [accepted, setAccepted] = useState(false)

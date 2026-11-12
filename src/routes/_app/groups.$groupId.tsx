@@ -1,13 +1,14 @@
+import { useSuspenseQuery } from "@tanstack/react-query"
 import { createFileRoute, Link } from "@tanstack/react-router"
 import { useState } from "react"
 
 import { type Id, toId } from "@api/data.model"
 import {
     groupDetailWarmups,
+    groupOptions,
+    groupPlacesOptions,
     useAddToGroup,
     useCreateInvite,
-    useGroupPlacesSuspense,
-    useGroupSuspense,
     useRemoveFromGroup,
     useRevokeInvite,
 } from "@core/groups"
@@ -260,8 +261,8 @@ function GroupDetailView() {
     const { groupId } = Route.useParams()
     const groupConvexId = toId<"groups">(groupId)
     const auth = useAuth()
-    const group = useGroupSuspense(groupConvexId)
-    const restaurants = useGroupPlacesSuspense(groupConvexId)
+    const { data: group } = useSuspenseQuery(groupOptions(groupConvexId))
+    const { data: restaurants } = useSuspenseQuery(groupPlacesOptions(groupConvexId))
     const viewer = useViewer()
 
     if (group === null) {

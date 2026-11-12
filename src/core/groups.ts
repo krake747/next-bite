@@ -1,4 +1,4 @@
-import { useConvexMutation, useConvexQuery, useSuspenseConvexQuery } from "@api/convex.context"
+import { useConvexMutation, useConvexQuery } from "@api/convex.context"
 import { convexQueryOptions } from "@api/convex.options"
 import { type Id } from "@api/data.model"
 import { api } from "@api/endpoints"
@@ -23,21 +23,28 @@ export const useCreateInvite = () => useConvexMutation(api.invites.create)
 export const useAcceptInvite = () => useConvexMutation(api.invites.accept)
 export const useRevokeInvite = () => useConvexMutation(api.invites.revoke)
 
-export const useGroupsListSuspense = () => useSuspenseConvexQuery(api.groups.list)
+export function groupsListOptions() {
+    return convexQueryOptions(api.groups.list)
+}
 
-export const useGroupSuspense = (groupId: Id<"groups">) => useSuspenseConvexQuery(api.groups.get, { groupId })
+export function groupOptions(groupId: Id<"groups">) {
+    return convexQueryOptions(api.groups.get, { groupId })
+}
 
-export const useGroupPlacesSuspense = (groupId: Id<"groups">) =>
-    useSuspenseConvexQuery(api.places.forGroup, { groupId })
+export function groupPlacesOptions(groupId: Id<"groups">) {
+    return convexQueryOptions(api.places.forGroup, { groupId })
+}
 
-export const useInvitePreview = (token: string) => useSuspenseConvexQuery(api.invites.get, { token, now: Date.now() })
+export function inviteOptions(token: string) {
+    return convexQueryOptions(api.invites.get, { token, now: Date.now() })
+}
 
 export function groupsListWarmups(): ReadonlyArray<object> {
-    return [convexQueryOptions(api.groups.list)]
+    return [groupsListOptions()]
 }
 
 export function groupDetailWarmups(groupId: Id<"groups">): ReadonlyArray<object> {
-    return [convexQueryOptions(api.groups.get, { groupId }), convexQueryOptions(api.places.forGroup, { groupId })]
+    return [groupOptions(groupId), groupPlacesOptions(groupId)]
 }
 
 export function isSafeRedirectPath(value: string | null | undefined): value is string {

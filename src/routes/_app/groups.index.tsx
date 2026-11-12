@@ -1,7 +1,8 @@
+import { useSuspenseQuery } from "@tanstack/react-query"
 import { createFileRoute, Link } from "@tanstack/react-router"
 import { useState } from "react"
 
-import { groupsListWarmups, useCreateGroup, useGroupsListSuspense } from "@core/groups"
+import { groupsListOptions, groupsListWarmups, useCreateGroup } from "@core/groups"
 import { clearError, errorFrom, type FormError } from "@core/outcome"
 import { useSessionStatus, warmAuthenticatedQueries } from "@core/session"
 import { EmptyState } from "@pattern/empty-state"
@@ -92,7 +93,7 @@ function CreateGroupForm() {
 }
 
 function GroupsView() {
-    const groups = useGroupsListSuspense()
+    const { data: groups } = useSuspenseQuery(groupsListOptions())
 
     return (
         <>
