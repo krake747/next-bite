@@ -1,4 +1,5 @@
 import { APIError } from "better-auth"
+import { v } from "convex/values"
 
 import { type Id } from "./_generated/dataModel"
 import { internalMutation, type MutationCtx } from "./_generated/server"
@@ -138,6 +139,15 @@ async function ensureSeedGroup(ctx: MutationCtx, ownerId: ProfileId, friendId: P
 // Idempotent: reruns return what already exists and change nothing.
 export const previewBaseline = internalMutation({
     args: {},
+    returns: v.object({
+        users: v.array(v.object({ email: v.string(), profileId: v.id("profiles") })),
+        places: v.array(v.object({ slug: v.string(), placeId: v.id("places") })),
+        group: v.object({
+            name: v.string(),
+            groupId: v.id("groups"),
+            memberProfileIds: v.array(v.id("profiles")),
+        }),
+    }),
     handler: async (ctx) => {
         const ownerId = await ensureSeedUser(ctx, SEED_OWNER)
         const friendId = await ensureSeedUser(ctx, SEED_FRIEND)
@@ -153,7 +163,7 @@ export const previewBaseline = internalMutation({
         // keeps the read bounded so the scan cannot grow without limit.
         const members = await ctx.db
             .query("groupMembers")
-            .withIndex("by_group", (q) => q.eq("groupId", groupId))
+            .withIndex("by_group_user", (q) => q.eq("groupId", groupId))
             .take(1000)
         return {
             users: [

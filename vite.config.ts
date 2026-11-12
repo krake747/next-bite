@@ -318,6 +318,31 @@ export default defineConfig({
                 },
             },
             {
+                files: ["convex/**"],
+                rules: {
+                    "convex/no-collect-in-query": "error",
+                    "convex/no-filter-in-query": "error",
+                    "convex/no-duplicate-indexes": "error",
+                    "convex/require-args-validator": "error",
+                    "convex/require-access-control": [
+                        "error",
+                        {
+                            pattern:
+                                "^(requireProfile|requireMember|requireActionProfile|requireSubject|profileOrCreate|signedInProfile)$",
+                        },
+                    ],
+                    "convex/no-process-env": "error",
+                },
+            },
+            {
+                // Specs run in Node under Vitest, where process.env is the only
+                // env injection mechanism; the rule still covers all shipped code.
+                files: ["convex/**/*.spec.ts"],
+                rules: {
+                    "convex/no-process-env": "allow",
+                },
+            },
+            {
                 files: ["**/*.browser.spec.{ts,tsx}"],
                 plugins: ["typescript"],
                 rules: {

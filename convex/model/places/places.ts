@@ -365,7 +365,7 @@ export async function forGroupCards(
     await requireMember(db, groupId, viewerId)
     const links = await db
         .query("groupPlaces")
-        .withIndex("by_group", (q) => q.eq("groupId", groupId))
+        .withIndex("by_group_place", (q) => q.eq("groupId", groupId))
         .take(GROUP_PLACES_TAKE)
     const places = await Promise.all(links.map(async (link) => db.get("places", link.placeId)))
     return assembleCards(

@@ -17,7 +17,10 @@ export const create = mutation({
         name: v.string(),
     },
     returns: v.id("groups"),
-    handler: async (ctx, args) => createGroupRecord(ctx.db, (await requireProfile(ctx))._id, args.name),
+    handler: async (ctx, args) => {
+        const me = await requireProfile(ctx)
+        return createGroupRecord(ctx.db, me._id, args.name)
+    },
 })
 
 export const leave = mutation({
@@ -25,7 +28,10 @@ export const leave = mutation({
         groupId: v.id("groups"),
     },
     returns: v.id("groupMembers"),
-    handler: async (ctx, args) => leaveGroupRecord(ctx.db, (await requireProfile(ctx))._id, args.groupId),
+    handler: async (ctx, args) => {
+        const me = await requireProfile(ctx)
+        return leaveGroupRecord(ctx.db, me._id, args.groupId)
+    },
 })
 
 export const list = query({

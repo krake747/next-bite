@@ -1,5 +1,6 @@
 import { betterAuth } from "better-auth"
 import { emailOTP } from "better-auth/plugins"
+import { v } from "convex/values"
 
 import { createClient, type GenericCtx } from "@convex-dev/better-auth"
 import { convex } from "@convex-dev/better-auth/plugins"
@@ -14,8 +15,10 @@ import { getValidatedSiteUrl, hasMailgunConfig, isEmailOtpEnabled, isMailDevFall
 export const authComponent = createClient<DataModel>(components.betterAuth)
 
 // See ADR-0005: capability flags only.
+// oxlint-disable-next-line convex/require-access-control -- public capability flags for the signed-out landing and login; returns no user data
 export const getAuthMethods = query({
     args: {},
+    returns: v.object({ password: v.boolean(), emailOtp: v.boolean() }),
     handler: () => ({
         password: true,
         emailOtp: isEmailOtpEnabled() && (hasMailgunConfig() || isMailDevFallback()),

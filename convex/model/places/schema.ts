@@ -34,14 +34,12 @@ export const placesTables = {
         updatedAt: v.number(),
     })
         .index("by_place", ["placeId"])
-        .index("by_user", ["userId"])
         .index("by_user_place", ["userId", "placeId"]),
     groupPlaces: defineTable({
         groupId: v.id("groups"),
         placeId: v.id("places"),
         addedBy: v.id("profiles"),
     })
-        .index("by_group", ["groupId"])
         .index("by_place", ["placeId"])
         .index("by_group_place", ["groupId", "placeId"]),
     clientMutations: defineTable({

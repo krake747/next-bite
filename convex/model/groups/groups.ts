@@ -92,7 +92,7 @@ export async function getGroupView(
     }
     const members = await db
         .query("groupMembers")
-        .withIndex("by_group", (q) => q.eq("groupId", groupId))
+        .withIndex("by_group_user", (q) => q.eq("groupId", groupId))
         .take(MEMBER_LIMIT)
     const names = await getProfiles(
         db,

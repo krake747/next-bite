@@ -12,7 +12,6 @@ export const groupsTables = {
         groupId: v.id("groups"),
         userId: v.id("profiles"),
     })
-        .index("by_group", ["groupId"])
         .index("by_user", ["userId"])
         .index("by_group_user", ["groupId", "userId"]),
     invites: defineTable({
