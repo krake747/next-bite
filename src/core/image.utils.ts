@@ -1,19 +1,15 @@
 import { ALLOWED_IMAGE_TYPES, MAX_UPLOAD_BYTES } from "./constants"
 
-export const MAX_FILE_SIZE = MAX_UPLOAD_BYTES
-
 const FULL_SIZE_WIDTH = 1920
 
-const VALID_IMAGE_TYPES = [...ALLOWED_IMAGE_TYPES]
+export const IMAGE_ACCEPT = [...ALLOWED_IMAGE_TYPES].join(",")
 
-export const IMAGE_ACCEPT = VALID_IMAGE_TYPES.join(",")
-
-export const IMAGE_TYPE_LABEL = VALID_IMAGE_TYPES.map((type) =>
-    type === "image/webp" ? "WebP" : type.replace("image/", "").toUpperCase(),
-).join(", ")
+export const IMAGE_TYPE_LABEL = [...ALLOWED_IMAGE_TYPES]
+    .map((type) => (type === "image/webp" ? "WebP" : type.replace("image/", "").toUpperCase()))
+    .join(", ")
 
 export function isAcceptedImageType(mimeType: string): boolean {
-    return VALID_IMAGE_TYPES.includes(mimeType)
+    return ALLOWED_IMAGE_TYPES.has(mimeType)
 }
 
 export function extensionForMime(mimeType: string): string {
@@ -45,8 +41,8 @@ export function validateImageFile(file: Readonly<File>): void {
         throw new Error(`Invalid file type. Must be one of: ${IMAGE_TYPE_LABEL}`)
     }
 
-    if (file.size > MAX_FILE_SIZE) {
-        throw new Error(`File too large. Maximum size is ${MAX_FILE_SIZE / 1024 / 1024}MB`)
+    if (file.size > MAX_UPLOAD_BYTES) {
+        throw new Error(`File too large. Maximum size is ${formatFileSize(MAX_UPLOAD_BYTES)}`)
     }
 }
 

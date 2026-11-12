@@ -2,44 +2,25 @@ import { CircleNotchIcon, ImageIcon, UploadIcon, XIcon } from "@phosphor-icons/r
 import { useEffect, useRef, useState } from "react"
 
 import { type Id } from "@api/data.model"
-import { MAX_IMAGES } from "@core/constants"
+import { MAX_IMAGES, MAX_UPLOAD_BYTES } from "@core/constants"
 import {
     extensionForMime,
     formatFileSize,
     isAcceptedImageType,
     processImage,
-    MAX_FILE_SIZE,
     IMAGE_ACCEPT,
     IMAGE_TYPE_LABEL,
 } from "@core/image.utils"
 import { clearError, errorFrom, type FormError } from "@core/outcome"
-import { useDeleteUpload, useUploadImage, type ImageRecord } from "@core/restaurants"
+import { type ImageRecord } from "@core/schemas"
 import { LazyImage } from "@pattern/lazy-image"
 import { cx } from "@ui/cva.config"
-
-type FileListLike = Readonly<{
-    readonly length: number
-    readonly [index: number]: Readonly<File>
-}>
-
-type DragStateEvent = Readonly<{
-    readonly preventDefault: () => void
-    readonly stopPropagation: () => void
-}>
-
-type DropEvent = Readonly<{
-    readonly preventDefault: () => void
-    readonly stopPropagation: () => void
-    readonly dataTransfer: Readonly<{ readonly files: FileListLike | null }> | null
-}>
-
-type FileInputEvent = Readonly<{
-    readonly target: Readonly<{ readonly files: FileListLike | null }>
-}>
 
 type ImageUploadProps = {
     readonly images: ReadonlyArray<Readonly<ImageRecord>>
     readonly onImagesChange: (images: ReadonlyArray<Readonly<ImageRecord>>) => void
+    readonly uploadImage: (file: Readonly<File>) => Promise<ImageRecord>
+    readonly deleteUpload: (args: { readonly storageId: Id<"_storage"> }) => Promise<unknown>
     readonly disabled?: boolean | undefined
     readonly maxFiles?: number | undefined
     readonly onRemove?: ((storageId: Id<"_storage">) => void) | undefined
@@ -68,13 +49,13 @@ function mergeImages(
     return merged
 }
 
-function prepareFilesList(files: FileListLike, existingCount: number, maxFiles: number): File[] {
+function prepareFilesList(
+    files: FileList | ReadonlyArray<Readonly<File>>,
+    existingCount: number,
+    maxFiles: number,
+): File[] {
     const accepted = Array.from(files).filter((file) => isAcceptedImageType(file.type))
     return accepted.slice(0, Math.max(0, maxFiles - existingCount))
-}
-
-function toUploadError(error: unknown): FormError {
-    return errorFrom(error, "UploadIcon failed")
 }
 
 async function processAndUpload(file: File, uploadImage: (file: File) => Promise<ImageRecord>): Promise<ImageRecord> {
@@ -87,7 +68,7 @@ async function processAndUpload(file: File, uploadImage: (file: File) => Promise
 }
 
 type UploadBatchDeps = {
-    readonly files: FileListLike
+    readonly files: FileList | ReadonlyArray<Readonly<File>>
     readonly existingCount: number
     readonly maxFiles: number
     readonly uploadImage: (file: Readonly<File>) => Promise<ImageRecord>
@@ -146,7 +127,7 @@ async function runUploadBatch(deps: UploadBatchDeps): Promise<void> {
         }
     } catch (error) {
         if (isCurrent()) {
-            deps.setUploadError(toUploadError(error))
+            deps.setUploadError(errorFrom(error, "Upload failed"))
         }
     } finally {
         if (isCurrent()) {
@@ -156,13 +137,12 @@ async function runUploadBatch(deps: UploadBatchDeps): Promise<void> {
 }
 
 export function ImageUpload(props: Readonly<ImageUploadProps>) {
-    const uploadImage = useUploadImage()
-    const deleteUpload = useDeleteUpload()
     const [isUploading, setIsUploading] = useState(false)
     const [uploadError, setUploadError] = useState<FormError>(clearError)
     const batchRef = useRef(0)
     const mountedRef = useRef(true)
     const latestImagesRef = useRef(props.images)
+    const maxFiles = props.maxFiles ?? MAX_IMAGES
     useEffect(() => {
         latestImagesRef.current = props.images
     }, [props.images])
@@ -180,17 +160,17 @@ export function ImageUpload(props: Readonly<ImageUploadProps>) {
         return () => batchRef.current === batch
     }
 
-    const handleFiles = async (files: FileListLike) => {
+    const handleFiles = async (files: FileList | ReadonlyArray<Readonly<File>>) => {
         await runUploadBatch({
             files,
             existingCount: props.images.length,
-            maxFiles: props.maxFiles ?? MAX_IMAGES,
-            uploadImage,
+            maxFiles,
+            uploadImage: props.uploadImage,
             claimBatch,
             isMounted: () => mountedRef.current,
             getLatestImages: () => latestImagesRef.current,
             cleanup: async (args) => {
-                await deleteUpload.mutateAsync(args)
+                await props.deleteUpload(args)
             },
             onImagesChange: props.onImagesChange,
             setUploading: setIsUploading,
@@ -200,7 +180,7 @@ export function ImageUpload(props: Readonly<ImageUploadProps>) {
 
     return (
         <div className="space-y-4">
-            <UploadHeader variant={props.variant} count={props.images.length} maxFiles={props.maxFiles ?? MAX_IMAGES} />
+            <UploadHeader variant={props.variant} count={props.images.length} maxFiles={maxFiles} />
 
             <ImageGrid
                 images={props.images}
@@ -211,7 +191,7 @@ export function ImageUpload(props: Readonly<ImageUploadProps>) {
             <UploadDropzone
                 disabled={props.disabled ?? false}
                 isUploading={isUploading}
-                canAddMore={props.images.length < (props.maxFiles ?? MAX_IMAGES)}
+                canAddMore={props.images.length < maxFiles}
                 variant={props.variant}
                 ctaLabel={props.ctaLabel}
                 trigger={props.trigger}
@@ -309,10 +289,10 @@ function AvatarUploadButton({
     isUploading: boolean
     ctaLabel: string | undefined
     onClick: () => void
-    onDragEnter: (event: DragStateEvent) => void
-    onDragLeave: (event: DragStateEvent) => void
-    onDragOver: (event: DragStateEvent) => void
-    onDrop: (event: DropEvent) => void
+    onDragEnter: (event: React.DragEvent) => void
+    onDragLeave: (event: React.DragEvent) => void
+    onDragOver: (event: React.DragEvent) => void
+    onDrop: (event: React.DragEvent) => void
 }>) {
     return (
         <button
@@ -338,6 +318,26 @@ function AvatarUploadButton({
     )
 }
 
+function UploadFileInput({
+    inputRef,
+    onChange,
+}: Readonly<{
+    inputRef: React.RefObject<HTMLInputElement | null>
+    onChange: (event: React.ChangeEvent<HTMLInputElement>) => void
+}>) {
+    return (
+        <input
+            ref={inputRef}
+            type="file"
+            multiple
+            accept={IMAGE_ACCEPT}
+            data-slot="image-upload-input"
+            className="hidden"
+            onChange={onChange}
+        />
+    )
+}
+
 function UploadDropzone({
     disabled,
     isUploading,
@@ -353,7 +353,7 @@ function UploadDropzone({
     variant: "gallery" | "avatar" | undefined
     ctaLabel: string | undefined
     trigger: ((controls: AvatarTriggerControls) => React.ReactNode) | undefined
-    onFiles: (files: FileListLike) => void
+    onFiles: (files: FileList | ReadonlyArray<Readonly<File>>) => void
 }>) {
     const [isDragging, setIsDragging] = useState(false)
     const fileInputRef = useRef<HTMLInputElement | null>(null)
@@ -362,24 +362,24 @@ function UploadDropzone({
         return null
     }
 
-    const handleDragEnter = (event: DragStateEvent) => {
+    const handleDragEnter = (event: React.DragEvent) => {
         event.preventDefault()
         event.stopPropagation()
         setIsDragging(true)
     }
 
-    const handleDragLeave = (event: DragStateEvent) => {
+    const handleDragLeave = (event: React.DragEvent) => {
         event.preventDefault()
         event.stopPropagation()
         setIsDragging(false)
     }
 
-    const handleDragOver = (event: DragStateEvent) => {
+    const handleDragOver = (event: React.DragEvent) => {
         event.preventDefault()
         event.stopPropagation()
     }
 
-    const handleDrop = (event: DropEvent) => {
+    const handleDrop = (event: React.DragEvent) => {
         event.preventDefault()
         event.stopPropagation()
         setIsDragging(false)
@@ -396,7 +396,7 @@ function UploadDropzone({
         fileInputRef.current?.click()
     }
 
-    const handleFileInputChange = (event: FileInputEvent) => {
+    const handleFileInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         if (event.target.files !== null) {
             onFiles(event.target.files)
             if (fileInputRef.current !== null) {
@@ -411,15 +411,7 @@ function UploadDropzone({
         }
         return (
             <>
-                <input
-                    ref={fileInputRef}
-                    type="file"
-                    multiple
-                    accept={IMAGE_ACCEPT}
-                    data-slot="image-upload-input"
-                    className="hidden"
-                    onChange={handleFileInputChange}
-                />
+                <UploadFileInput inputRef={fileInputRef} onChange={handleFileInputChange} />
                 {trigger !== undefined ? (
                     trigger({ openPicker, isUploading })
                 ) : (
@@ -439,15 +431,7 @@ function UploadDropzone({
 
     return (
         <>
-            <input
-                ref={fileInputRef}
-                type="file"
-                multiple
-                accept={IMAGE_ACCEPT}
-                data-slot="image-upload-input"
-                className="hidden"
-                onChange={handleFileInputChange}
-            />
+            <UploadFileInput inputRef={fileInputRef} onChange={handleFileInputChange} />
             <button
                 type="button"
                 onClick={handleClick}
@@ -470,7 +454,7 @@ function UploadDropzone({
                     {isDragging ? "Drop images here" : "Click or drag & drop to upload images"}
                 </span>
                 <span className="mt-1 text-xs text-muted-foreground">
-                    {IMAGE_TYPE_LABEL} up to {formatFileSize(MAX_FILE_SIZE)}
+                    {IMAGE_TYPE_LABEL} up to {formatFileSize(MAX_UPLOAD_BYTES)}
                 </span>
             </button>
         </>

@@ -229,6 +229,4 @@ export function useUploadImage() {
 
 export const useDeleteUpload = () => useConvexMutation(api.storage.deleteUpload)
 
-export type { ImageRecord } from "./schemas"
-
 export type { PlaceCard as Restaurant } from "@api/db/restaurants"

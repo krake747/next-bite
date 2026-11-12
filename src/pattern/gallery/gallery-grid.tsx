@@ -1,7 +1,7 @@
 import { LazyImage } from "@pattern/lazy-image"
 import { cx } from "@ui/cva.config"
 
-import { keyForPhotoUrl } from "./photos"
+import { keysForPhotoUrls } from "./photos"
 
 export function GalleryGrid({
     images,
@@ -12,14 +12,13 @@ export function GalleryGrid({
     onSelect: (index: number) => void
     className?: string | undefined
 }>) {
-    const seen = new Map<string, number>()
-    const keyFor = (imageUrl: string): string => keyForPhotoUrl(seen, imageUrl)
+    const keys = keysForPhotoUrls(images)
     return (
         <div data-slot="gallery-grid" className={cx("flex-1 overflow-y-auto p-4", className)}>
             <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4">
                 {images.map((imageUrl, index) => (
                     <button
-                        key={keyFor(imageUrl)}
+                        key={keys[index] ?? imageUrl}
                         type="button"
                         onClick={() => {
                             onSelect(index)

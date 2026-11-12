@@ -3,7 +3,7 @@ import { useEffect } from "react"
 import { describe, expect, test, vi } from "vitest"
 
 import { type Id } from "@api/data.model"
-import { type ImageRecord } from "@core/restaurants"
+import { type ImageRecord } from "@core/schemas"
 
 import { useRestaurantImages, type GalleryCleanup, type GalleryDraft } from "./use-restaurant-images"
 

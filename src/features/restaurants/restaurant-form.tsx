@@ -3,8 +3,8 @@ import { useEffect, useRef, useState } from "react"
 
 import { type Id } from "@api/data.model"
 import { SyncTimeoutError, type PlaceCreateArgs } from "@api/db/restaurants"
-import { useAddPlace, useDeleteUpload, type ImageRecord } from "@core/restaurants"
-import { RestaurantSchema, type RestaurantOutput } from "@core/schemas"
+import { useAddPlace, useDeleteUpload, useUploadImage } from "@core/restaurants"
+import { RestaurantSchema, type ImageRecord, type RestaurantOutput } from "@core/schemas"
 import { ImageUpload } from "@pattern/image-upload"
 import { type PlaceSelection } from "@pattern/places-autocomplete"
 import { Button } from "@ui/button"
@@ -222,6 +222,7 @@ function initialInputFor(props: AddRestaurantFormProps) {
 
 export function RestaurantForm(props: AddRestaurantFormProps) {
     const addPlace = useAddPlace()
+    const uploadImage = useUploadImage()
     const deleteUpload = useDeleteUpload()
     const gallery = useRestaurantImages({
         cleanup: async (args) => {
@@ -262,6 +263,8 @@ export function RestaurantForm(props: AddRestaurantFormProps) {
                 onImagesChange={(updated) => {
                     gallery.setImages([...updated])
                 }}
+                uploadImage={uploadImage}
+                deleteUpload={async (args) => deleteUpload.mutateAsync(args)}
             />
             <div className="flex justify-end gap-2 pt-2">
                 <Button type="button" tone="secondary" onClick={props.onCancel}>

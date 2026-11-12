@@ -12,7 +12,7 @@ import { type OpeningHours } from "@features/restaurants/opening-hours-utils"
 import { RestaurantGallery } from "@features/restaurants/restaurant-gallery"
 import { RestaurantHeader } from "@features/restaurants/restaurant-header"
 import { RestaurantInterestButton } from "@features/restaurants/restaurant-interest-button"
-import { keyForPhotoUrl } from "@pattern/gallery/photos"
+import { keysForPhotoUrls } from "@pattern/gallery"
 import { LazyImage } from "@pattern/lazy-image"
 import { LoadingPlaceholder } from "@pattern/loading"
 import { QueryErrorState } from "@pattern/query-error"
@@ -142,13 +142,13 @@ function DetailPhotos({ photos }: Readonly<{ photos: ReadonlyArray<{ readonly ur
     if (photos.length === 0) {
         return null
     }
-    const seen = new Map<string, number>()
+    const keys = keysForPhotoUrls(photos.map((photo) => photo.url))
     return (
         <div className="rounded-card border border-border bg-surface p-4 shadow-card">
             <h2 className="font-display text-lg font-semibold text-balance text-foreground">Photos</h2>
             <div className="grid grid-cols-3 gap-2 pt-3">
-                {photos.map((photo) => (
-                    <div key={keyForPhotoUrl(seen, photo.url)} className="aspect-square overflow-hidden rounded-lg">
+                {photos.map((photo, index) => (
+                    <div key={keys[index] ?? photo.url} className="aspect-square overflow-hidden rounded-lg">
                         <LazyImage src={photo.url} alt="" ratio={1 / 1} />
                     </div>
                 ))}
