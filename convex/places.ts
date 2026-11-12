@@ -71,10 +71,11 @@ export const create = mutation({
         mutationKey: v.optional(v.string()),
     },
     returns: v.id("places"),
-    handler: async (ctx, args) =>
-        createPlaceRecord(
+    handler: async (ctx, args) => {
+        const me = await requireProfile(ctx)
+        return createPlaceRecord(
             ctx,
-            (await requireProfile(ctx))._id,
+            me._id,
             {
                 name: args.name,
                 ...(args.cuisine !== undefined ? { cuisine: args.cuisine } : {}),
@@ -85,7 +86,8 @@ export const create = mutation({
             },
             args.photos,
             args.mutationKey,
-        ),
+        )
+    },
 })
 
 export const mine = query({
@@ -128,7 +130,10 @@ export const setSave = mutation({
         status: v.union(saveStatusValidator, v.null()),
     },
     returns: v.union(v.id("saves"), v.null()),
-    handler: async (ctx, args) => setSaveRecord(ctx.db, (await requireProfile(ctx))._id, args.placeId, args.status),
+    handler: async (ctx, args) => {
+        const me = await requireProfile(ctx)
+        return setSaveRecord(ctx.db, me._id, args.placeId, args.status)
+    },
 })
 
 export const addToGroup = mutation({
@@ -137,7 +142,10 @@ export const addToGroup = mutation({
         placeId: v.id("places"),
     },
     returns: v.id("groupPlaces"),
-    handler: async (ctx, args) => addToGroupRecord(ctx.db, (await requireProfile(ctx))._id, args.groupId, args.placeId),
+    handler: async (ctx, args) => {
+        const me = await requireProfile(ctx)
+        return addToGroupRecord(ctx.db, me._id, args.groupId, args.placeId)
+    },
 })
 
 export const removeFromGroup = mutation({
@@ -146,8 +154,10 @@ export const removeFromGroup = mutation({
         placeId: v.id("places"),
     },
     returns: v.id("groupPlaces"),
-    handler: async (ctx, args) =>
-        removeFromGroupRecord(ctx.db, (await requireProfile(ctx))._id, args.groupId, args.placeId),
+    handler: async (ctx, args) => {
+        const me = await requireProfile(ctx)
+        return removeFromGroupRecord(ctx.db, me._id, args.groupId, args.placeId)
+    },
 })
 
 export const forGroup = query({

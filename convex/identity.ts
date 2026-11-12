@@ -125,6 +125,7 @@ export const removeAvatar = mutation({
     },
 })
 
+// oxlint-disable-next-line convex/require-access-control -- public session read for the SSR shell; returns null when signed out
 export const sessionUser = query({
     args: {},
     returns: sessionUserValidator,

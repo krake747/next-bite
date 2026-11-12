@@ -17,9 +17,13 @@ export const create = mutation({
         target: inviteTargetValidator,
     },
     returns: v.string(),
-    handler: async (ctx, args) => createInviteRecord(ctx.db, (await requireProfile(ctx))._id, args.target),
+    handler: async (ctx, args) => {
+        const me = await requireProfile(ctx)
+        return createInviteRecord(ctx.db, me._id, args.target)
+    },
 })
 
+// oxlint-disable-next-line convex/require-access-control -- ADR-0005: bearer-token public preview; the unguessable token is the access control
 export const get = query({
     // See ADR-0005: bearer token, server-side accept.
     args: {
@@ -35,7 +39,10 @@ export const accept = mutation({
         token: v.string(),
     },
     returns: acceptResultValidator,
-    handler: async (ctx, args) => acceptInviteRecord(ctx.db, (await requireProfile(ctx))._id, args.token),
+    handler: async (ctx, args) => {
+        const me = await requireProfile(ctx)
+        return acceptInviteRecord(ctx.db, me._id, args.token)
+    },
 })
 
 export const revoke = mutation({
@@ -43,5 +50,8 @@ export const revoke = mutation({
         token: v.string(),
     },
     returns: v.object({ result: v.literal("revoked") }),
-    handler: async (ctx, args) => revokeInviteRecord(ctx.db, (await requireProfile(ctx))._id, args.token),
+    handler: async (ctx, args) => {
+        const me = await requireProfile(ctx)
+        return revokeInviteRecord(ctx.db, me._id, args.token)
+    },
 })

@@ -23,12 +23,17 @@ export const create = mutation({
         startsAt: v.number(),
     },
     returns: v.id("plans"),
-    handler: async (ctx, args) =>
-        createPlanRecord(ctx.db, (await requireProfile(ctx))._id, args.groupId, args.placeId, args.startsAt),
+    handler: async (ctx, args) => {
+        const me = await requireProfile(ctx)
+        return createPlanRecord(ctx.db, me._id, args.groupId, args.placeId, args.startsAt)
+    },
 })
 
 export const cancel = mutation({
     args: { planId: v.id("plans") },
     returns: v.id("plans"),
-    handler: async (ctx, args) => cancelPlanRecord(ctx.db, (await requireProfile(ctx))._id, args.planId),
+    handler: async (ctx, args) => {
+        const me = await requireProfile(ctx)
+        return cancelPlanRecord(ctx.db, me._id, args.planId)
+    },
 })
