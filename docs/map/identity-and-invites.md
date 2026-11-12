@@ -41,10 +41,10 @@ Product terms: User, Invitation. Defined in `GLOSSARY.md`.
 
 ## Tests
 
-- `src/core/identity.integration.spec.ts`, `profile.integration.spec.ts`,
-  `auth.methods.integration.spec.ts`, `invites.integration.spec.ts`
-- `login.integration.spec.ts`, `account.integration.spec.ts`, `you.integration.spec.ts`,
-  `avatar-section.browser.spec.tsx`
+- `src/core/identity.integration.spec.ts`, `src/core/profile.integration.spec.ts`,
+  `src/core/auth.methods.integration.spec.ts`, `src/core/invites.integration.spec.ts`
+- `src/routes/login.integration.spec.tsx`, `src/routes/route-guards.integration.spec.ts`,
+  `src/routes/_app/avatar-section.browser.spec.tsx`
 
 ## State
 

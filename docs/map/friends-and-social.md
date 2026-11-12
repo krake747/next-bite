@@ -19,20 +19,20 @@ Product terms: Friend, Friend update, Want, Been. Defined in `GLOSSARY.md`.
 
 - `social.ts`: `useFriends`, `useFriendRequests`, `useAcceptFriend`, `useRemoveFriend`, and
   `useRequestFriendByEmail`.
-- `interests.ts`: per restaurant social summaries, counts, and feed ordering.
+- `saves.ts`: per restaurant social summaries, counts, and feed ordering.
 
 ## Backend (`convex/`)
 
 - `social.ts`: `friends`, `requests`, `requestByEmail`, `accept`, and `remove`. One row per
   direction; accepting writes both rows.
-- `interests.ts`: `getForRestaurant`, `listMyStatuses`, `getSummaries`, and `toggleInterest`.
+- `places.ts`: `setSave` for Want and Been; summaries read through `saves`.
 - `convex/model/social/friendships.ts`: friendship helpers and the file that owns the friend and
   request limits.
 
 ## Data
 
 - `convex/model/social/schema.ts`: table `friendships`.
-- `convex/model/places/schema.ts`: table `interests` for Want and Been rows.
+- `convex/model/places/schema.ts`: table `saves` for Want and Been rows.
 
 ## Decisions
 
@@ -41,10 +41,7 @@ Product terms: Friend, Friend update, Want, Been. Defined in `GLOSSARY.md`.
 
 ## Tests
 
-- `src/core/social.integration.spec.ts`, `friends.integration.spec.ts`,
-  `home-feed.integration.spec.ts`
-- `activity-post.browser.spec.tsx`, `reaction-bar.browser.spec.tsx`,
-  `photo-gallery.browser.spec.tsx`
+- `src/core/social.integration.spec.ts` and `src/routes/home-feed.integration.spec.tsx`.
 
 ## State
 
