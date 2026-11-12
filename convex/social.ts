@@ -1,4 +1,4 @@
-import { v } from "convex/values"
+import { type Infer, v } from "convex/values"
 
 import { type Id } from "./_generated/dataModel"
 import { mutation, query, type QueryCtx } from "./_generated/server"
@@ -21,7 +21,7 @@ import {
     requestFriendship,
 } from "./model/social/friendships"
 
-type ProfileSummary = { profileId: Id<"profiles">; name: string }
+type ProfileSummary = Infer<typeof profileSummaryValidator>
 
 async function summaries(ctx: QueryCtx, ids: ReadonlyArray<Id<"profiles">>): Promise<ProfileSummary[]> {
     const names = await getProfiles(ctx.db, ids)

@@ -8,24 +8,18 @@ import { requireProfile, signedInProfile } from "./model/identity/profiles"
 import { fetchOpeningHours, type OpeningHoursData } from "./model/places/hours"
 import {
     addToGroupRecord,
-    canViewPlace,
     createPlaceRecord,
     feedCards,
     forGroupCards,
     getCard,
+    googlePlaceIdForViewer,
     mineCards,
     placeCardValidator,
     removeFromGroupRecord,
     saveStatusValidator,
     setSaveRecord,
 } from "./model/places/places"
-import { openingHoursValidator, placeGoogleValidator } from "./validators"
-
-const photoInputValidator = v.object({
-    storageId: v.id("_storage"),
-    width: v.optional(v.number()),
-    height: v.optional(v.number()),
-})
+import { openingHoursValidator, photoInputValidator, placeGoogleValidator } from "./validators"
 
 async function requireActionProfile(ctx: ActionCtx): Promise<Id<"profiles">> {
     const identity = await ctx.auth.getUserIdentity()
@@ -44,18 +38,7 @@ export const _placeForHours = internalQuery({
     returns: v.string(),
     handler: async (ctx, args) => {
         const userId = (await requireProfile(ctx))._id
-        const place = await ctx.db.get("places", args.placeId)
-        if (place === null) {
-            throw new Error("Place not found")
-        }
-        if (!(await canViewPlace(ctx.db, userId, place))) {
-            throw new Error("Unauthorized: place is not visible to you")
-        }
-        const placeId = place.address.google?.placeId
-        if (placeId === undefined || placeId === "") {
-            throw new Error("Place has no Google place id")
-        }
-        return placeId
+        return googlePlaceIdForViewer(ctx.db, userId, args.placeId)
     },
 })
 

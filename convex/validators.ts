@@ -10,11 +10,10 @@ export const restaurantImageValidator = v.object({
     height: v.optional(v.number()),
 })
 
-export const imageObjectValidator = restaurantImageValidator
-
-export const coordsValidator = v.object({
-    lat: v.number(),
-    lng: v.number(),
+export const photoInputValidator = v.object({
+    storageId: v.id("_storage"),
+    width: v.optional(v.number()),
+    height: v.optional(v.number()),
 })
 
 export const placeGoogleValidator = v.object({
@@ -22,8 +21,6 @@ export const placeGoogleValidator = v.object({
     lat: v.optional(v.number()),
     lng: v.optional(v.number()),
 })
-
-export const shareTargetValidator = v.object({ kind: v.literal("group"), groupId: v.id("groups") })
 
 export const inviteTargetValidator = v.union(
     v.object({ kind: v.literal("friend") }),
@@ -40,10 +37,4 @@ export const openingHoursValidator = v.object({
         }),
     ),
     weekdayText: v.array(v.string()),
-})
-
-export const enrichmentValidator = v.object({
-    placeId: v.optional(v.string()),
-    coords: v.optional(coordsValidator),
-    openingHours: v.optional(openingHoursValidator),
 })

@@ -6,10 +6,11 @@ import { authComponent } from "./auth"
 import { readAuthUser } from "./helpers"
 import {
     clearProfileAvatar,
-    createProfile,
+    ensureProfileRecord,
     profileByAuthUser,
     profileValidator,
     renameProfile,
+    requireSubject,
     setProfileAvatar,
     signedInProfile,
     viewerProfile,
@@ -31,25 +32,22 @@ const sessionUserValidator = v.union(
     }),
 )
 
-async function requireSubject(ctx: MutationCtx): Promise<string> {
-    const identity = await ctx.auth.getUserIdentity()
-    if (identity === null) {
-        throw new Error("Unauthorized: authentication required")
-    }
-    return identity.subject
-}
-
 async function profileOrCreate(ctx: MutationCtx, name: string | undefined): Promise<Doc<"profiles">> {
     const subject = await requireSubject(ctx)
-    const existing = await profileByAuthUser(ctx.db, subject)
-    if (existing !== null) {
-        return existing
-    }
     const authUser = await readAuthUser(ctx)
     if (!authUser?.email) {
+        const existing = await profileByAuthUser(ctx.db, subject)
+        if (existing !== null) {
+            return existing
+        }
         throw new Error("Profile not found: call ensureProfile first")
     }
-    const profileId = await createProfile(ctx.db, subject, name ?? authUser.name ?? authUser.email, authUser.email)
+    const profileId = await ensureProfileRecord(
+        ctx.db,
+        subject,
+        name ?? authUser.name ?? authUser.email,
+        authUser.email,
+    )
     const created = await ctx.db.get("profiles", profileId)
     if (created === null) {
         throw new Error("Profile not found: call ensureProfile first")
@@ -74,12 +72,13 @@ export const ensureProfile = mutation({
     returns: v.id("profiles"),
     handler: async (ctx, args) => {
         const subject = await requireSubject(ctx)
-        const existing = await profileByAuthUser(ctx.db, subject)
-        if (existing !== null) {
-            return existing._id
-        }
         const authUser = await readAuthUser(ctx)
-        return createProfile(ctx.db, subject, args.name ?? authUser?.name ?? authUser?.email ?? args.email, args.email)
+        return ensureProfileRecord(
+            ctx.db,
+            subject,
+            args.name ?? authUser?.name ?? authUser?.email ?? args.email,
+            args.email,
+        )
     },
 })
 

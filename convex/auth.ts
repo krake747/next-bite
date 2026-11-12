@@ -10,9 +10,14 @@ import { type DataModel } from "./_generated/dataModel"
 import { query } from "./_generated/server"
 import authConfig from "./auth.config"
 import { sendOtpEmail } from "./email"
-import { getValidatedSiteUrl, hasMailgunConfig, isEmailOtpEnabled, isMailDevFallback } from "./env"
+import { getValidatedSiteUrl, isEmailOtpAvailable } from "./env"
 
 export const authComponent = createClient<DataModel>(components.betterAuth)
+
+// Named owners for the auth URL values. The deploy table in docs/environments.md owns the
+// environment mapping; these constants own the code fallbacks.
+export const STATIC_REGISTRATION_URL = "http://localhost"
+export const LOCAL_TRUSTED_ORIGIN = "http://localhost:5173"
 
 // See ADR-0005: capability flags only.
 // oxlint-disable-next-line convex/require-access-control -- public capability flags for the signed-out landing and login; returns no user data
@@ -21,7 +26,7 @@ export const getAuthMethods = query({
     returns: v.object({ password: v.boolean(), emailOtp: v.boolean() }),
     handler: () => ({
         password: true,
-        emailOtp: isEmailOtpEnabled() && (hasMailgunConfig() || isMailDevFallback()),
+        emailOtp: isEmailOtpAvailable(),
     }),
 })
 
@@ -32,12 +37,12 @@ export const createAuth = (ctx: GenericCtx<DataModel>) => {
     // builds its own instance below with the live env, and a missing SITE_URL still
     // throws there. Keyed on emptiness, not on ctx shape: HTTP action ctx has no db.
     const staticRegistration = Object.keys(ctx).length === 0
-    const siteUrl = staticRegistration ? "http://localhost" : getValidatedSiteUrl()
+    const siteUrl = staticRegistration ? STATIC_REGISTRATION_URL : getValidatedSiteUrl()
     return betterAuth({
         baseURL: siteUrl,
         // Until the cutover, localhost and production share this backend
         // (docs/environments.md). Trust both so sign-in works in each place.
-        trustedOrigins: [siteUrl, "http://localhost:5173"],
+        trustedOrigins: [siteUrl, LOCAL_TRUSTED_ORIGIN],
         database: authComponent.adapter(ctx),
         emailAndPassword: {
             enabled: true,
@@ -46,7 +51,7 @@ export const createAuth = (ctx: GenericCtx<DataModel>) => {
             minPasswordLength: 8,
         },
         plugins: [
-            ...(isEmailOtpEnabled() && (hasMailgunConfig() || isMailDevFallback())
+            ...(isEmailOtpAvailable()
                 ? [
                       emailOTP({
                           async sendVerificationOTP({ email, otp, type }) {
