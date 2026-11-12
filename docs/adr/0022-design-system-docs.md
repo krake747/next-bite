@@ -27,3 +27,8 @@ manual visual read remains the release check alongside the full gate.
 The original ban on docs page tests blocked sync specs that keep the gallery honest. Browser specs
 and registry checks for /ds are allowed because docs point at code and pages render real components.
 Unit snapshots of docs copy stay out; behavior and sync stay in.
+
+## Amendment 2026-11-12
+
+/ds is public in production per #234. The dev-only redirect is removed so the footer link works on
+the live site. The gallery still renders real components with representative mock data.
