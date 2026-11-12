@@ -124,6 +124,8 @@ export function PaletteDemo() {
                         {family.swatches.map((swatch) => (
                             <div
                                 key={swatch.label}
+                                role="img"
+                                aria-label={`${family.name} ${swatch.label} ${swatch.value}`}
                                 title={`${family.name} ${swatch.label}`}
                                 style={{ backgroundColor: swatch.value }}
                                 className="h-10 flex-1"

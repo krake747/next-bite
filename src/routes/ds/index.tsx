@@ -1,7 +1,9 @@
+import { ArrowRightIcon } from "@phosphor-icons/react"
 import { createFileRoute, Link } from "@tanstack/react-router"
 
 import { Header, HeaderSubtitle, HeaderTitle } from "@pattern/header"
 import { cx } from "@ui/cva.config"
+import { focusRing } from "@ui/variants"
 
 import { designSystemSections, sectionGroups } from "./-sections/registry"
 
@@ -15,9 +17,7 @@ function DesignSystemIndex() {
         <>
             <Header>
                 <HeaderTitle>Design system</HeaderTitle>
-                <HeaderSubtitle>
-                    Good food. Great company. The living inventory of every component in the app, rendered for real.
-                </HeaderSubtitle>
+                <HeaderSubtitle>The living inventory of every component in the app, rendered for real.</HeaderSubtitle>
             </Header>
             <div className="space-y-10 pt-6 pb-10">
                 {sectionGroups.map((group) => (
@@ -36,10 +36,17 @@ function DesignSystemIndex() {
                                         <Link
                                             to="/ds/$sectionId"
                                             params={{ sectionId: entry.meta.id }}
-                                            className="block rounded-card border border-border bg-surface p-5 shadow-card"
+                                            className={cx(
+                                                focusRing(),
+                                                "group block rounded-card border border-border bg-surface p-5 shadow-card transition-colors hover:border-border-strong hover:bg-surface-muted",
+                                            )}
                                         >
-                                            <p className="font-display text-lg font-semibold text-balance text-foreground">
+                                            <p className="flex items-center justify-between gap-2 font-display text-lg font-semibold text-balance text-foreground">
                                                 {entry.meta.title}
+                                                <ArrowRightIcon
+                                                    className="size-4 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-0.5"
+                                                    aria-hidden="true"
+                                                />
                                             </p>
                                             <p className="mt-1 text-sm text-pretty text-muted-foreground">
                                                 {entry.meta.body}
