@@ -1,8 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router"
 
-import { useSessionStatus } from "@core/session"
 import { Header, HeaderSubtitle, HeaderTitle } from "@pattern/header"
-import { SessionGate } from "@routes/-components/session-gate"
 import { cx } from "@ui/cva.config"
 
 import { designSystemSections, sectionGroups } from "./-sections/registry"
@@ -13,7 +11,6 @@ export const Route = createFileRoute("/ds/")({
 })
 
 function DesignSystemIndex() {
-    const status = useSessionStatus()
     return (
         <>
             <Header>
@@ -22,44 +19,38 @@ function DesignSystemIndex() {
                     Good food. Great company. The living inventory of every component in the app, rendered for real.
                 </HeaderSubtitle>
             </Header>
-            <SessionGate status={status} context="the design system">
-                <div className="space-y-10 pt-6 pb-10">
-                    {sectionGroups.map((group) => (
-                        <section key={group} aria-label={group}>
-                            <h2 className="font-display text-2xl font-semibold text-balance text-foreground">
-                                {group}
-                            </h2>
-                            <ul className="grid gap-4 pt-4 md:grid-cols-2">
-                                {Object.values(designSystemSections)
-                                    .filter((entry) => entry.meta.group === group)
-                                    .map((entry, index, entries) => (
-                                        <li
-                                            key={entry.meta.id}
-                                            className={cx(
-                                                entries.length % 2 === 1 &&
-                                                    index === entries.length - 1 &&
-                                                    "md:col-span-2",
-                                            )}
+            <div className="space-y-10 pt-6 pb-10">
+                {sectionGroups.map((group) => (
+                    <section key={group} aria-label={group}>
+                        <h2 className="font-display text-2xl font-semibold text-balance text-foreground">{group}</h2>
+                        <ul className="grid gap-4 pt-4 md:grid-cols-2">
+                            {Object.values(designSystemSections)
+                                .filter((entry) => entry.meta.group === group)
+                                .map((entry, index, entries) => (
+                                    <li
+                                        key={entry.meta.id}
+                                        className={cx(
+                                            entries.length % 2 === 1 && index === entries.length - 1 && "md:col-span-2",
+                                        )}
+                                    >
+                                        <Link
+                                            to="/ds/$sectionId"
+                                            params={{ sectionId: entry.meta.id }}
+                                            className="block rounded-card border border-border bg-surface p-5 shadow-card"
                                         >
-                                            <Link
-                                                to="/ds/$sectionId"
-                                                params={{ sectionId: entry.meta.id }}
-                                                className="block rounded-card border border-border bg-surface p-5 shadow-card"
-                                            >
-                                                <p className="font-display text-lg font-semibold text-balance text-foreground">
-                                                    {entry.meta.title}
-                                                </p>
-                                                <p className="mt-1 text-sm text-pretty text-muted-foreground">
-                                                    {entry.meta.body}
-                                                </p>
-                                            </Link>
-                                        </li>
-                                    ))}
-                            </ul>
-                        </section>
-                    ))}
-                </div>
-            </SessionGate>
+                                            <p className="font-display text-lg font-semibold text-balance text-foreground">
+                                                {entry.meta.title}
+                                            </p>
+                                            <p className="mt-1 text-sm text-pretty text-muted-foreground">
+                                                {entry.meta.body}
+                                            </p>
+                                        </Link>
+                                    </li>
+                                ))}
+                        </ul>
+                    </section>
+                ))}
+            </div>
         </>
     )
 }

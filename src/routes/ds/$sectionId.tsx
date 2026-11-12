@@ -1,8 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router"
 
-import { useSessionStatus } from "@core/session"
-import { SessionGate } from "@routes/-components/session-gate"
-
 import { designSystemSections } from "./-sections/registry"
 import { AnatomyTable, PropsTable, VariantTable } from "./-sections/token-table"
 
@@ -25,7 +22,6 @@ function SectionNotFound() {
 function DesignSystemSectionPage() {
     const { sectionId } = Route.useParams()
     const entry = designSystemSections[sectionId]
-    const status = useSessionStatus()
 
     if (entry === undefined) {
         return <SectionNotFound />
@@ -66,11 +62,9 @@ function DesignSystemSectionPage() {
                     )}
                 </section>
             )}
-            <SessionGate status={status} context="the design system">
-                <div className="pt-6">
-                    <entry.Demo />
-                </div>
-            </SessionGate>
+            <div className="pt-6">
+                <entry.Demo />
+            </div>
             {entry.meta.props !== undefined && (
                 <>
                     <h2 className="pt-8 font-display text-xl font-semibold text-balance text-foreground">Props</h2>
