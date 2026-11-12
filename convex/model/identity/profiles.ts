@@ -38,7 +38,7 @@ export async function profileByAuthUser(db: ProfileDb, authUserId: string): Prom
 }
 
 export async function profileByEmail(db: ProfileDb, email: string): Promise<Doc<"profiles"> | null> {
-    const address = email.trim()
+    const address = normalizeEmail(email)
     const exact = await db
         .query("profiles")
         .withIndex("by_email", (q) => q.eq("email", address))
@@ -50,6 +50,18 @@ export async function profileByEmail(db: ProfileDb, email: string): Promise<Doc<
         .query("profiles")
         .withIndex("by_email", (q) => q.eq("email", address.toLowerCase()))
         .unique()
+}
+
+export function normalizeEmail(raw: string): string {
+    return raw.trim().toLowerCase()
+}
+
+export async function requireSubject(ctx: ProfileCtx): Promise<string> {
+    const identity = await ctx.auth.getUserIdentity()
+    if (identity === null) {
+        throw new Error("Unauthorized: authentication required")
+    }
+    return identity.subject
 }
 
 export async function signedInProfile(ctx: ProfileCtx): Promise<Doc<"profiles"> | null> {
@@ -92,7 +104,20 @@ export async function createProfile(
     name: string,
     email: string,
 ): Promise<Id<"profiles">> {
-    return db.insert("profiles", { authUserId, name: formatDisplayName(name), email: email.trim().toLowerCase() })
+    return db.insert("profiles", { authUserId, name: formatDisplayName(name), email: normalizeEmail(email) })
+}
+
+export async function ensureProfileRecord(
+    db: ProfileWriter,
+    authUserId: string,
+    name: string,
+    email: string,
+): Promise<Id<"profiles">> {
+    const existing = await profileByAuthUser(db, authUserId)
+    if (existing !== null) {
+        return existing._id
+    }
+    return createProfile(db, authUserId, name, email)
 }
 
 export async function renameProfile(db: ProfileWriter, profileId: Id<"profiles">, name: string): Promise<void> {

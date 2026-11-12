@@ -39,12 +39,16 @@ export async function photoClaim(db: PhotoDb, storageId: Id<"_storage">): Promis
         .unique()
 }
 
+export async function isStorageClaimed(db: PhotoDb, storageId: Id<"_storage">): Promise<boolean> {
+    if ((await avatarHolder(db, storageId)) !== null) {
+        return true
+    }
+    return (await photoClaim(db, storageId)) !== null
+}
+
 export async function claimPhoto(ctx: PhotoCtx, placeId: Id<"places">, input: PhotoInput): Promise<Doc<"photos">> {
     const { mimeType, byteSize } = await photoMetadata(ctx.db, input.storageId)
-    if (
-        (await avatarHolder(ctx.db, input.storageId)) !== null ||
-        (await photoClaim(ctx.db, input.storageId)) !== null
-    ) {
+    if (await isStorageClaimed(ctx.db, input.storageId)) {
         throw new Error("Storage is already claimed")
     }
     const url = await ctx.storage.getUrl(input.storageId)

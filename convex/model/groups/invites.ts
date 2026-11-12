@@ -7,7 +7,7 @@ import { getProfiles, nameOf } from "../identity/profiles"
 import { areFriends, befriend } from "../social/friendships"
 import { requireMember } from "./memberships"
 
-const INVITE_TTL_MS = 7 * 24 * 60 * 60 * 1000
+export const INVITE_TTL_MS = 7 * 24 * 60 * 60 * 1000
 
 export const inviteViewValidator = v.object({
     target: inviteTargetValidator,

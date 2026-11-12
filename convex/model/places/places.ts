@@ -1,8 +1,9 @@
 import { type GenericDatabaseReader, type GenericDatabaseWriter, type StorageWriter } from "convex/server"
-import { v } from "convex/values"
+import { type Infer, v } from "convex/values"
 
 import { MAX_IMAGES } from "../../../src/core/constants"
 import { type DataModel, type Doc, type Id } from "../../_generated/dataModel"
+import { restaurantImageValidator } from "../../validators"
 import { memberGroupIds, requireMember } from "../groups/memberships"
 import { getProfiles, nameOf } from "../identity/profiles"
 import { areFriends, friendIds } from "../social/friendships"
@@ -23,12 +24,7 @@ export const placeValidator = v.object({
     ...placesTables.places.validator.fields,
 })
 
-export const cardPhotoValidator = v.object({
-    url: v.string(),
-    width: v.optional(v.number()),
-    height: v.optional(v.number()),
-    storageId: v.id("_storage"),
-})
+export const cardPhotoValidator = restaurantImageValidator.pick("url", "width", "height", "storageId")
 
 export const saveStatusValidator = v.union(v.literal("want"), v.literal("been"))
 
@@ -180,6 +176,25 @@ export async function canViewPlace(
     return false
 }
 
+export async function googlePlaceIdForViewer(
+    db: GenericDatabaseReader<DataModel>,
+    viewerId: ProfileId,
+    placeId: PlaceId,
+): Promise<string> {
+    const place = await db.get("places", placeId)
+    if (place === null) {
+        throw new Error("Place not found")
+    }
+    if (!(await canViewPlace(db, viewerId, place))) {
+        throw new Error("Unauthorized: place is not visible to you")
+    }
+    const googleId = place.address.google?.placeId
+    if (googleId === undefined || googleId === "") {
+        throw new Error("Place has no Google place id")
+    }
+    return googleId
+}
+
 type CardPhotoInput = {
     url: string
     storageId: Id<"_storage">
@@ -201,7 +216,7 @@ function toCardPhoto(photo: Doc<"photos">): CardPhotoInput {
 export type PlaceCard = Doc<"places"> & {
     readonly ownerName: string
     readonly photos: CardPhotoInput[]
-    readonly mySave: "want" | "been" | null
+    readonly mySave: Infer<typeof saveStatusValidator> | null
     readonly wantCount: number | string
 }
 

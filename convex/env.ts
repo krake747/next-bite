@@ -35,6 +35,10 @@ export function isMailDevFallback(): boolean {
     return env.MAILGUN_DEV_FALLBACK === "true"
 }
 
+export function isEmailOtpAvailable(): boolean {
+    return isEmailOtpEnabled() && (hasMailgunConfig() || isMailDevFallback())
+}
+
 export function mailgunConfig(): { apiKey: string; domain: string } | null {
     const apiKey = env.MAILGUN_API_KEY
     const domain = env.MAILGUN_DOMAIN

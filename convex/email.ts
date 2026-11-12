@@ -1,6 +1,6 @@
 import { isMailDevFallback, mailgunConfig } from "./env"
 
-export { hasMailgunConfig, isMailDevFallback } from "./env"
+export const MAILGUN_EU_BASE = "https://api.eu.mailgun.net/v3"
 
 type OtpType = "sign-in" | "email-verification" | "forget-password" | "change-email"
 
@@ -32,7 +32,7 @@ export async function sendTransactionalEmail(
         subject: input.subject,
         text: input.text,
     })
-    const response = await fetch(`https://api.eu.mailgun.net/v3/${config.domain}/messages`, {
+    const response = await fetch(`${MAILGUN_EU_BASE}/${config.domain}/messages`, {
         method: "POST",
         headers: {
             Authorization: `Basic ${btoa(`api:${config.apiKey}`)}`,
