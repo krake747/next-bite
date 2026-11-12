@@ -38,8 +38,8 @@ is a reactive view, not a second database.
 ## Auth
 
 - Better Auth owns identity and sessions; Convex owns profiles and authorization.
-- Password plus emailed one-time code. The invitation flow keeps invite context across auth and
-  accepts idempotently.
+- Password plus emailed one-time code where mail is configured (ADR-0027). The invitation flow keeps
+  invite context across auth and accepts idempotently.
 - Derive the user from authenticated context in every backend function; never trust client user IDs.
   Only a ready session authorizes (ADR-0025).
 - `convex/identity.ts` and `convex/social.ts` are the public API for profiles and friendships. A

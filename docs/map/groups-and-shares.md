@@ -6,8 +6,8 @@ Product terms: Group, Share. Defined in `GLOSSARY.md`.
 
 - `groups.tsx`: section layout.
 - `groups.index.tsx`: group list.
-- `groups.$groupId.tsx`: group detail with members, shares, invitations, and plans. Warms
-  `api.groups.get` and `api.shares.listForGroup` in its loader.
+- `groups.$groupId.tsx`: group detail with members, shared places, invitations, and plans. Warms
+  `api.groups.get` and `api.places.forGroup` in its loader.
 
 ## UI (`src/features/groups/`)
 
@@ -16,23 +16,22 @@ Product terms: Group, Share. Defined in `GLOSSARY.md`.
 
 ## Core (`src/core/`)
 
-- `groups.ts`: `useMyGroups`, `useRestaurantShares`, `useShareWithGroup`, `useUnshare`,
+- `groups.ts`: `useMyGroups`, `useGroupPlaces`, `useAddToGroup`, `useRemoveFromGroup`,
   `useCreateGroup`, and the invite hooks `useCreateInvite`, `useAcceptInvite`, `useRevokeInvite`.
 
 ## Backend (`convex/`)
 
 - `groups.ts`: `create`, `leave`, `list`, and `get`. Membership helpers live in
   `convex/model/groups/` (`groups.ts`, `memberships.ts`).
-- `shares.ts`: `shareWithGroup`, `unshare`, `listShares`, and `listForGroup`. Sharing requires
-  restaurant ownership and group membership; duplicates for the same group return the existing
-  share.
+- `places.ts`: `addToGroup`, `removeFromGroup`, and `forGroup`. Group listing reads through
+  `groupPlaces`; see `docs/adr/0007-group-owns-shared-list.md`.
 - `invites.ts`: `create`, `get`, `accept`, and `revoke`. Invitation records live in
   `convex/model/groups/invites.ts`.
 
 ## Data
 
 - `convex/model/groups/schema.ts`: tables `groups`, `groupMembers`, and `invites`.
-- `convex/model/places/schema.ts`: table `restaurantShares` for the share rows.
+- `convex/model/places/schema.ts`: table `groupPlaces` for the shared rows.
 
 ## Decisions
 
@@ -42,14 +41,11 @@ Product terms: Group, Share. Defined in `GLOSSARY.md`.
 
 ## Tests
 
-- `src/routes/_app/groups.integration.spec.ts`
-- `src/core/groups.integration.spec.ts`, `sharing.integration.spec.ts`,
-  `invites.integration.spec.ts`
-- `share-to-group-dialog.browser.spec.tsx`, `group-members.browser.spec.tsx`
+- `src/core/groups.integration.spec.ts` and `src/core/invites.integration.spec.ts`.
 
 ## State
 
-Shipped: create, list, detail, leave, share, unshare, and invitation links. Partial: the public
-group functions are create, leave, list, and get; membership writes otherwise happen through
-invitation acceptance in `convex/invites.ts`. Out of scope of the current code: group level choice
-mechanics such as voting or a shortlist.
+Shipped: create, list, detail, leave, and invitation links. Group places are added and removed
+through `api.places.addToGroup`, `api.places.removeFromGroup`, and invitation acceptance in
+`convex/invites.ts`. Out of scope of the current code: group level choice mechanics such as voting
+or a shortlist.

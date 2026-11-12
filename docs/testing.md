@@ -6,7 +6,7 @@ and `e2e/` own the end-to-end suite.
 ## Tiers
 
 The filename suffix picks the tier. `pnpm test` runs every tier; `package.json` has a script for
-most single tiers.
+most single tiers (convex runs via `pnpm test --project convex`).
 
 | Suffix                         | Tier        | Use for                                                              |
 | ------------------------------ | ----------- | -------------------------------------------------------------------- |

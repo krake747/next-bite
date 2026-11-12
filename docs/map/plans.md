@@ -18,14 +18,13 @@ for a group. The restaurant detail route has no plan section; restaurant-scoped 
 
 ## Backend (`convex/`)
 
-- `places.ts`: `forGroup`, `create`, and `cancel`, backed by `convex/model/plans/`. Members are the
+- `plans.ts`: `forGroup`, `create`, and `cancel`, backed by `convex/model/plans/`. Members are the
   participants; acceptance is membership plus a group-held place. Status values live in the schema
   fragment.
 
 ## Data (`convex/model/plans/schema.ts`)
 
-Table `plans`: `groupId`, `placeId`, `createdBy`, `startsAt`, and `status` (`planned` or
-`cancelled`), indexed by group and start time.
+Table `plans`. See the schema fragment for fields and indexes.
 
 ## Decisions
 
