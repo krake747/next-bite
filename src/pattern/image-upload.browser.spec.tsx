@@ -5,8 +5,8 @@ import { render } from "vitest-browser-react"
 import { page } from "vitest/browser"
 
 import { ConvexProvider } from "@api/convex.context"
+import { type Id } from "@api/data.model"
 import { createSeededClient, type MutationCall } from "@api/db/seeded.client"
-import { type Id } from "@convex/_generated/dataModel"
 import { type ImageRecord } from "@core/restaurants"
 import { ImageUpload } from "@pattern/image-upload"
 

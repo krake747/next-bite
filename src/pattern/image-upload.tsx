@@ -14,6 +14,7 @@ import {
 } from "@core/image.utils"
 import { clearError, errorFrom, type FormError } from "@core/outcome"
 import { useDeleteUpload, useUploadImage, type ImageRecord } from "@core/restaurants"
+import { LazyImage } from "@pattern/lazy-image"
 import { cx } from "@ui/cva.config"
 
 type FileListLike = Readonly<{
@@ -487,13 +488,7 @@ function ImagePreview({
 }>) {
     return (
         <div className="group relative aspect-square overflow-hidden rounded-lg bg-surface-muted">
-            <img
-                src={imageUrl}
-                alt={`Uploaded image preview`}
-                className="size-full object-cover"
-                loading="lazy"
-                decoding="async"
-            />
+            <LazyImage src={imageUrl} alt="Uploaded image preview" ratio={1 / 1} />
 
             {!disabled && (
                 <button

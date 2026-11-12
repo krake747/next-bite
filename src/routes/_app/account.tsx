@@ -1,8 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router"
 
-import { convexQueryOptions, warmQueriesWithin } from "@api/convex.options"
-import { api } from "@api/endpoints"
-import { useSessionStatus } from "@core/session"
+import { meWarmups } from "@core/identity"
+import { useSessionStatus, warmAuthenticatedQueries } from "@core/session"
 import { UserDetailsSection } from "@features/account/profile-card"
 import { Header, HeaderSubtitle, HeaderTitle } from "@pattern/header"
 import { QueryErrorState } from "@pattern/query-error"
@@ -16,11 +15,7 @@ export const Route = createFileRoute("/_app/account")({
     component: AccountPage,
     errorComponent: AccountError,
     loader: async ({ context }) => {
-        if (context.auth?.isAuthenticated !== true) {
-            return null
-        }
-        await warmQueriesWithin(context.queryClient, [convexQueryOptions(api.identity.me)], LOADER_WARM_BUDGET_MS)
-        return null
+        return warmAuthenticatedQueries(context.queryClient, context.auth, meWarmups(), LOADER_WARM_BUDGET_MS)
     },
 })
 

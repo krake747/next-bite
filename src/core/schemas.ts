@@ -1,6 +1,6 @@
 import * as v from "valibot"
 
-import { type Id } from "../../convex/_generated/dataModel"
+import { type Id } from "@api/data.model"
 
 export const RestaurantSchema = v.object({
     name: v.pipe(v.string(), v.minLength(1, "Name is required")),

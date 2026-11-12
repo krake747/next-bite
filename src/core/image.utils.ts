@@ -1,8 +1,10 @@
-export const MAX_FILE_SIZE = 20 * 1024 * 1024
+import { ALLOWED_IMAGE_TYPES, MAX_UPLOAD_BYTES } from "./constants"
+
+export const MAX_FILE_SIZE = MAX_UPLOAD_BYTES
 
 const FULL_SIZE_WIDTH = 1920
 
-const VALID_IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp", "image/gif"] as const
+const VALID_IMAGE_TYPES = [...ALLOWED_IMAGE_TYPES]
 
 export const IMAGE_ACCEPT = VALID_IMAGE_TYPES.join(",")
 
@@ -11,7 +13,7 @@ export const IMAGE_TYPE_LABEL = VALID_IMAGE_TYPES.map((type) =>
 ).join(", ")
 
 export function isAcceptedImageType(mimeType: string): boolean {
-    return (VALID_IMAGE_TYPES as ReadonlyArray<string>).includes(mimeType)
+    return VALID_IMAGE_TYPES.includes(mimeType)
 }
 
 export function extensionForMime(mimeType: string): string {

@@ -3,6 +3,7 @@ import { Suspense } from "react"
 
 import { type SessionStatus } from "@core/session"
 import { LoadingPlaceholder } from "@pattern/loading"
+import { TextLink } from "@ui/text-link"
 
 const defaultFallback = (
     <div className="pt-6">
@@ -23,11 +24,8 @@ export function SessionGate({
 }>): React.ReactNode {
     if (status.kind === "signed-out") {
         return (
-            <p className="pt-6 text-stone-600">
-                <Link to="/login" className="font-medium text-tomato-700 hover:underline">
-                    Sign in
-                </Link>{" "}
-                to see {context}.
+            <p className="pt-6 text-muted-foreground">
+                <TextLink render={<Link to="/login" />}>Sign in</TextLink> to see {context}.
             </p>
         )
     }

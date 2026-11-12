@@ -1,9 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router"
 import { useEffect, useState } from "react"
 
-import { useSuspenseConvexQuery } from "@api/convex.context"
-import { api } from "@api/endpoints"
-import { isSafeRedirectPath, useAcceptInvite } from "@core/groups"
+import { isSafeRedirectPath, useAcceptInvite, useInvitePreview } from "@core/groups"
 import { clearError, errorFrom, type FormError } from "@core/outcome"
 import { useAuth } from "@core/session"
 import { Header, HeaderSubtitle, HeaderTitle } from "@pattern/header"
@@ -12,6 +10,7 @@ import { QueryErrorState } from "@pattern/query-error"
 import { BackNav } from "@routes/-layouts/back-nav"
 import { PageContainer } from "@routes/-layouts/page-container"
 import { Button } from "@ui/button"
+import { TextLink } from "@ui/text-link"
 
 export const Route = createFileRoute("/_app/invite/$token")({
     head: () => ({ meta: [{ title: "Group invitation" }] }),
@@ -47,9 +46,7 @@ function InviteError({ message }: Readonly<{ message: string }>) {
             <PageContainer>
                 <BackNav backTo="/home" label="Back home" />
                 <p className="pt-6">
-                    <Link to="/home" className="font-medium text-primary hover:underline">
-                        Back to Next Bite
-                    </Link>
+                    <TextLink render={<Link to="/home" />}>Back to Next Bite</TextLink>
                 </p>
             </PageContainer>
         </>
@@ -60,7 +57,7 @@ function InviteView() {
     const { token } = Route.useParams()
     const navigate = useNavigate()
     const auth = useAuth()
-    const preview = useSuspenseConvexQuery(api.invites.get, { token, now: Date.now() })
+    const preview = useInvitePreview(token)
     const acceptInvite = useAcceptInvite()
     const [acceptError, setAcceptError] = useState<FormError>(clearError)
     const [accepted, setAccepted] = useState(false)

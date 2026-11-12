@@ -3,8 +3,7 @@ import { renderHook } from "@testing-library/react"
 import { type ConvexReactClient } from "convex/react"
 import { describe, expect, test, vi } from "vitest"
 
-import { toId } from "@api/data.model"
-import { type Id } from "@convex/_generated/dataModel"
+import { toId, type Id } from "@api/data.model"
 import { CollectionSyncError, useRestaurants } from "@core/restaurants"
 
 import { CatchError } from "../../vitest.catch"

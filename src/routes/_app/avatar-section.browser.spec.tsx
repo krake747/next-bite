@@ -4,8 +4,8 @@ import { render } from "vitest-browser-react"
 import { page } from "vitest/browser"
 
 import { ConvexProvider } from "@api/convex.context"
+import { type Id } from "@api/data.model"
 import { createSeededClient } from "@api/db/seeded.client"
-import { type Id } from "@convex/_generated/dataModel"
 
 import { AvatarSection } from "../../features/account/profile-card"
 
