@@ -46,6 +46,14 @@ anything accepting a `render` prop. Base prop shapes live in Base UI's type defi
 review: `children` is destructured and rendered; the spread is named `...props`; `render` goes
 through `useRender`.
 
+## Sections own their guards, shells take element props
+
+A page composes private components; each section returns null when its data is missing instead of
+conditional rendering at the call site. Each component destructures only what it reads. Layout
+shells type props as `React.ComponentProps<element>`; data carriers keep explicit types. Shared
+logic lives next to its only consumers. Check: a conditional block in a page body that a section
+could own; a layout prop type rewritten by hand.
+
 ## Every prop has a caller, extraction waits for the third copy
 
 A prop no call site passes gets deleted, not documented. A shared component gets extracted when

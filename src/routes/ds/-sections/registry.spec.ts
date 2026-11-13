@@ -1,6 +1,6 @@
 import { describe, expect, test } from "vitest"
 
-import { designSystemSections, sectionGroups } from "./registry"
+import { designSystemSections, sectionGroups, sectionIcons } from "./registry"
 
 const uiTsxModules = import.meta.glob("../../../ui/*.tsx")
 const uiTsModules = import.meta.glob("../../../ui/*.ts")
@@ -108,6 +108,12 @@ describe("design-system registry", () => {
             expect(entry.meta.guidance?.whenToUse.length).toBeGreaterThan(0)
             expect(entry.meta.guidance?.whenToAvoid?.length).toBeGreaterThan(0)
             expect(entry.meta.guidance?.siblings?.length).toBeGreaterThan(0)
+        }
+    })
+
+    test("maps every section to a nav icon", () => {
+        for (const entry of Object.values(designSystemSections)) {
+            expect(sectionIcons[entry.meta.id]).toBeDefined()
         }
     })
 

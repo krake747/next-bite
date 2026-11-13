@@ -42,7 +42,8 @@ subs, and a Spike answers a question.
    author.
 3. **Evidence:** comments carry command output, not claims. Fixes paste the failing and the passing
    run. Verification runs the behavior; rereading the diff is not verification.
-4. **Branch:** `<type>/NNN-short-slug`, carrying the issue number.
+4. **Branch:** `<type>/NNN-short-slug`, carrying the issue number. Ticketless small work (the
+   one-or-two-file kind from Create) uses `<type>/short-slug` with no number.
 5. **PR:** the body carries `Fixes #<n>` to close on merge, or `Refs #<n>` / `Part of #<n>`. Write
    real newlines, never literal `\n`. Magic words in PR comments do not link. Cite numbers only from
    tool output.

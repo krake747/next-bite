@@ -1,3 +1,32 @@
+import {
+    AppWindowIcon,
+    CaretDownIcon,
+    CardsIcon,
+    ChatTextIcon,
+    CircleDashedIcon,
+    CircleNotchIcon,
+    ColumnsIcon,
+    CursorClickIcon,
+    HouseIcon,
+    ImageIcon,
+    LinkIcon,
+    ListIcon,
+    MinusIcon,
+    PaletteIcon,
+    QuotesIcon,
+    RectangleIcon,
+    RowsIcon,
+    ShapesIcon,
+    SidebarIcon,
+    TagIcon,
+    TextAaIcon,
+    TextboxIcon,
+    TrayIcon,
+    UserCircleIcon,
+    UsersIcon,
+    WarningCircleIcon,
+} from "@phosphor-icons/react"
+
 import { AspectRatioDemo, aspectRatioMeta } from "./aspect-ratio"
 import { AvatarDemo, avatarMeta } from "./avatar"
 import { BadgeDemo, badgeMeta } from "./badge"
@@ -25,7 +54,7 @@ import { TooltipDemo, tooltipMeta } from "./tooltip"
 import { TypographyDemo, typographyMeta } from "./typography"
 
 // Add a primitive: section file with meta and Demo, browser spec via section-spec helper,
-// registry entry below, nav icon in -layout/nav, SYNC comment in the ui file.
+// registry entry and nav icon below, SYNC comment in the ui file.
 
 export type SectionGroup = "Tokens" | "Components" | "Patterns"
 
@@ -68,6 +97,34 @@ export type SectionMeta = {
 export type SectionEntry = {
     readonly meta: SectionMeta
     readonly Demo: () => React.JSX.Element
+}
+
+export const sectionIcons: Record<string, typeof HouseIcon> = {
+    palette: PaletteIcon,
+    typography: TextAaIcon,
+    shape: ShapesIcon,
+    loading: CircleNotchIcon,
+    "aspect-ratio": ImageIcon,
+    avatar: UserCircleIcon,
+    badge: TagIcon,
+    button: RectangleIcon,
+    card: CardsIcon,
+    collapsible: CaretDownIcon,
+    dialog: AppWindowIcon,
+    "dropdown-menu": ListIcon,
+    "empty-state": TrayIcon,
+    "icon-button": CursorClickIcon,
+    input: TextboxIcon,
+    popover: ChatTextIcon,
+    "query-error": WarningCircleIcon,
+    separator: MinusIcon,
+    sheet: SidebarIcon,
+    sidebar: ColumnsIcon,
+    skeleton: CircleDashedIcon,
+    "social-metadata": UsersIcon,
+    tabs: RowsIcon,
+    "text-link": LinkIcon,
+    tooltip: QuotesIcon,
 }
 
 export const sectionGroups: ReadonlyArray<SectionGroup> = ["Tokens", "Components", "Patterns"]
