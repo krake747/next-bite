@@ -164,3 +164,21 @@ Wrong:
 ```
 
 Right: map the failure into state the UI reads, or delete the catch. A `catch` that only swallows gets deleted in favor of letting the caller handle it.
+
+## Arrow function declarations
+
+Wrong:
+
+```tsx
+const PagerLink: React.FC<Props> = ({ sectionId, children }) => {
+    return (...)
+}
+```
+
+Right: function declarations, except in-component handlers, inline callbacks, and one-liners.
+
+```tsx
+function PagerLink({ sectionId, children }: Props) {
+    return (...)
+}
+```

@@ -1,7 +1,7 @@
 ---
 name: react-review
 description: Use when reviewing React components, hooks, or route files for idiomatic React, when the user asks for refactor targets or a React cleanup pass, or types /react-review. Reports composition, colocation, state ownership, and repo-idiom findings ranked by hurt. It reports, it does not fix. External scanner counterpart is react-doctor.
-version: "1.0.0"
+version: "1.1.0"
 ---
 
 # React Review
@@ -18,11 +18,11 @@ Review like the engineer who will maintain the file. Code that renders but resis
 
 Read the target first, then judge it against these dimensions. The order is the triage order: a broken hook outranks an awkward prop. Expanded checklists with repo examples live in [references/dimensions.md](references/dimensions.md).
 
-1. **Correctness of hooks and rendering**: hooks called unconditionally and in stable order, stable `key` values, no state that duplicates derivable data, effects that clean up async work which can outlive unmount. See `useCopyFeedback`-style timers as the model: ref-held, cleared on retrigger and on unmount.
-2. **Composition over configuration**: layout shells take `children`, related pieces compose as compound components, call sites pass layout only. A pile of boolean props that switches between renders is a component begging to be split. Wrappers own styling; call sites never restyle.
-3. **Colocation**: logic lives next to its only consumers: helpers beside their single call site, tables beside the rows they render, maps beside the registry they index. A shared module with one importer is a file waiting to be inlined.
-4. **State ownership**: props for one level of passing, context (read through `use()`, never `useContext`) when it goes deeper. A component that renders from optional data owns its guard and returns null instead of pushing conditionals to its caller. Each component destructures only what it reads.
-5. **Repo idioms**: React Compiler owns memoization, so `useMemo`, `useCallback`, and `React.memo` never appear (ADR-0009). Layout shells type props as `React.ComponentProps<element>`; data carriers keep explicit types. Multi-line event logic lives in named `handle*` functions; single-expression delegation stays inline. Props are `Readonly`, types beat interfaces, and nothing is ever cast.
+1. **Correctness of hooks and rendering**: hooks called unconditionally and in stable order, stable `key` values, no state that duplicates derivable data, effects that clean up async work which can outlive unmount. Prefer derived values, maps, and explicit state models over effects that sync state step by step; effects that touch the world stay effects. See `useCopyFeedback`-style timers as the model: ref-held, cleared on retrigger and on unmount.
+2. **Composition over configuration**: layout shells take `children`, related pieces compose as compound components, call sites pass layout only. A pile of boolean props that switches between renders is a component begging to be split; a new `showHeader` or `renderActions` prop where the caller could pass children is the violation to name. Wrappers own styling; call sites never restyle. An abstraction earns its place only if deleting it would move meaningful complexity into its callers; a wrapper forwarding props unchanged with no logic gets inlined.
+3. **Colocation**: logic lives next to its only consumers: helpers beside their single call site, tables beside the rows they render, maps beside the registry they index. A shared module with one importer is a file waiting to be inlined. Each concept keeps one defining home; reuse the existing component, token, or query instead of making another version.
+4. **State ownership**: props for one level of passing, context (read through `use()`, never `useContext`) when it goes deeper. A component that renders from optional data owns its guard and returns null instead of pushing conditionals to its caller. Each component destructures only what it reads. When a module splits, every state transition keeps one owner; siblings never duplicate controlled state or callbacks.
+5. **Repo idioms**: React Compiler owns memoization, so `useMemo`, `useCallback`, and `React.memo` never appear (ADR-0009). Prefer `function` declarations over arrow function expressions, except in-component handlers, inline callbacks, and one-liners. Layout shells type props as `React.ComponentProps<element>`; data carriers keep explicit types. Multi-line event logic lives in named `handle*` functions; single-expression delegation stays inline. Props are `Readonly`, types beat interfaces, and nothing is ever cast.
 6. **Dead code**: a prop with zero call sites gets deleted, an unused helper goes with it. Extraction waits for the third copy: the first duplication is a note, the second is a candidate, the third is the refactor.
 
 ## Escalation triggers: flag on sight
@@ -38,6 +38,7 @@ These are almost always wrong. You do not need to deliberate. Wrong-to-right sni
 - A prop drilled through an intermediary that never reads it (context instead).
 - Nullable `useState` whose value reaches render without narrowing through a union.
 - A `catch` whose body only swallows, with no state update.
+- Arrow function declarations for components or module helpers (in-component handlers, inline callbacks, and one-liners are exempt).
 
 ## Output format
 
