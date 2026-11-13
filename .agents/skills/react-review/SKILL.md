@@ -16,7 +16,7 @@ Review like the engineer who will maintain the file. Code that renders but resis
 
 ## What to review, in priority order
 
-Read the target first, then judge it against these dimensions. The order is the triage order: a broken hook outranks an awkward prop.
+Read the target first, then judge it against these dimensions. The order is the triage order: a broken hook outranks an awkward prop. Expanded checklists with repo examples live in [references/dimensions.md](references/dimensions.md).
 
 1. **Correctness of hooks and rendering**: hooks called unconditionally and in stable order, stable `key` values, no state that duplicates derivable data, effects that clean up async work which can outlive unmount. See `useCopyFeedback`-style timers as the model: ref-held, cleared on retrigger and on unmount.
 2. **Composition over configuration**: layout shells take `children`, related pieces compose as compound components, call sites pass layout only. A pile of boolean props that switches between renders is a component begging to be split. Wrappers own styling; call sites never restyle.
@@ -27,7 +27,7 @@ Read the target first, then judge it against these dimensions. The order is the 
 
 ## Escalation triggers: flag on sight
 
-These are almost always wrong. You do not need to deliberate:
+These are almost always wrong. You do not need to deliberate. Wrong-to-right snippets for each trigger live in [references/triggers.md](references/triggers.md).
 
 - `useMemo`, `useCallback`, or `React.memo`.
 - `useContext` (the repo reads context through `use()`).
