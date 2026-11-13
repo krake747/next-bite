@@ -1,7 +1,7 @@
 ---
 name: react-review
 description: Use when reviewing React components, hooks, or route files for idiomatic React, when the user asks for refactor targets or a React cleanup pass, or types /react-review. Reports composition, colocation, state ownership, and repo-idiom findings ranked by hurt. It reports, it does not fix. External scanner counterpart is react-doctor.
-version: "1.1.0"
+version: "1.0.0"
 ---
 
 # React Review
