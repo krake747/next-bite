@@ -114,6 +114,45 @@ export function AnatomyTable({ rows, caption }: Readonly<{ rows: ReadonlyArray<A
     )
 }
 
+export type PracticeRow = {
+    readonly kind: "do" | "dont"
+    readonly text: string
+}
+
+export function PracticesTable({ rows, caption }: Readonly<{ rows: ReadonlyArray<PracticeRow>; caption: string }>) {
+    return (
+        <table data-slot="practices-table" className="w-full text-left text-sm">
+            <caption className="sr-only">{caption}</caption>
+            <thead>
+                <tr className="text-xs text-muted-foreground">
+                    <th scope="col" className="py-2 pr-4 font-medium">
+                        Guidance
+                    </th>
+                    <th scope="col" className="py-2 font-medium">
+                        Practices
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+                {rows.map((row) => (
+                    <tr key={row.kind} className="border-t border-border">
+                        <td className="py-2 pr-4 whitespace-nowrap">
+                            {row.kind === "do" ? (
+                                <span className="rounded-full bg-success px-3 py-1 text-xs text-inverse">Do</span>
+                            ) : (
+                                <span className="rounded-full bg-destructive px-3 py-1 text-xs text-inverse">
+                                    Don&apos;t
+                                </span>
+                            )}
+                        </td>
+                        <td className="py-2 text-muted-foreground">{row.text}</td>
+                    </tr>
+                ))}
+            </tbody>
+        </table>
+    )
+}
+
 export function TokenTable({ rows, caption }: Readonly<{ rows: ReadonlyArray<TokenRow>; caption: string }>) {
     return (
         <table data-slot="token-table" className="w-full text-left text-sm">

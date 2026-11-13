@@ -6,8 +6,8 @@ import { cx } from "@ui/cva.config"
 import { IconButton } from "@ui/icon-button"
 import { focusRing } from "@ui/variants"
 
-import { designSystemSections } from "./-sections/registry"
-import { AnatomyTable, PropsTable, VariantTable } from "./-sections/token-table"
+import { designSystemSections, type Guidance } from "./-sections/registry"
+import { AnatomyTable, PracticesTable, PropsTable, VariantTable, type PracticeRow } from "./-sections/token-table"
 
 export const Route = createFileRoute("/ds/$sectionId")({
     head: () => ({ meta: [{ title: "Design System - Next Bite" }] }),
@@ -34,18 +34,29 @@ function SectionNotFound() {
     )
 }
 
+export function toImportSpecifier(importPath: string): string {
+    const match = /^src\/(ui|pattern|core|api|features|routes)\/(.+)\.tsx?$/.exec(importPath)
+    if (match?.[1] === undefined || match?.[2] === undefined) {
+        return importPath
+    }
+    return `@${match[1]}/${match[2]}`
+}
+
 function ImportPath({ importPath }: Readonly<{ importPath: string }>) {
     const [copied, setCopied] = useState(false)
+    const specifier = toImportSpecifier(importPath)
     return (
         <div className="mt-2 flex items-center gap-2">
-            <p className="truncate font-mono text-xs text-muted-foreground">{importPath}</p>
+            <p title={importPath} className="truncate font-mono text-xs text-muted-foreground">
+                {specifier}
+            </p>
             <IconButton
-                label={copied ? "Copied" : `Copy ${importPath}`}
+                label={copied ? "Copied" : `Copy ${specifier}`}
                 tone="plain"
                 size="sm"
                 onClick={() => {
                     void navigator.clipboard
-                        .writeText(`import from "@${importPath.replace(/^src\//, "")}"`)
+                        .writeText(specifier)
                         .then(() => {
                             setCopied(true)
                         })
@@ -62,6 +73,53 @@ function ImportPath({ importPath }: Readonly<{ importPath: string }>) {
             </IconButton>
         </div>
     )
+}
+
+function SpecifierCode({ importPath }: Readonly<{ importPath: string }>) {
+    const [copied, setCopied] = useState(false)
+    const specifier = toImportSpecifier(importPath)
+    const snippet = `"${specifier}";`
+    const caption =
+        specifier === importPath
+            ? "Stylesheet path for these tokens."
+            : "Module specifier for the from clause of an import."
+    return (
+        <div className="overflow-hidden rounded-card border border-border bg-surface">
+            <div className="flex items-center justify-between gap-2 border-b border-border px-4 py-1.5">
+                <p className="font-mono text-xs text-muted-foreground">ts</p>
+                <IconButton
+                    label={copied ? "Copied" : "Copy import snippet"}
+                    tone="plain"
+                    size="sm"
+                    onClick={() => {
+                        void navigator.clipboard
+                            .writeText(snippet)
+                            .then(() => {
+                                setCopied(true)
+                            })
+                            .catch(() => {
+                                setCopied(false)
+                            })
+                    }}
+                >
+                    {copied ? (
+                        <CheckIcon className="size-4" aria-hidden="true" />
+                    ) : (
+                        <CopyIcon className="size-4" aria-hidden="true" />
+                    )}
+                </IconButton>
+            </div>
+            <pre className="overflow-x-auto px-4 py-3 font-mono text-sm text-foreground tabular-nums">{snippet}</pre>
+            <p className="border-t border-border px-4 py-2 text-xs text-muted-foreground">{caption}</p>
+        </div>
+    )
+}
+
+function practiceRows(guidance: Guidance): ReadonlyArray<PracticeRow> {
+    return [
+        { kind: "do" as const, text: guidance.whenToUse },
+        ...(guidance.whenToAvoid === undefined ? [] : [{ kind: "dont" as const, text: guidance.whenToAvoid }]),
+    ]
 }
 
 function DesignSystemSectionPage() {
@@ -85,19 +143,35 @@ function DesignSystemSectionPage() {
                 {entry.meta.title}
             </h1>
             <ImportPath importPath={entry.meta.importPath} />
-            <p className="mt-3 text-pretty text-muted-foreground">{entry.meta.body}</p>
+            <section aria-label="Preview" className="pt-6">
+                <div className="grid min-h-80 place-items-center rounded-card border border-border bg-surface px-4 py-10 sm:px-8">
+                    <entry.Demo />
+                </div>
+            </section>
+            <section aria-label="Usage" className="pt-8">
+                <h2 className="font-display text-xl font-semibold text-balance text-foreground">Usage</h2>
+                <p className="mt-1 text-pretty text-muted-foreground">{entry.meta.body}</p>
+                <div className="pt-4">
+                    <SpecifierCode importPath={entry.meta.importPath} />
+                </div>
+            </section>
+            {entry.meta.anatomy !== undefined && (
+                <section aria-label="Anatomy" className="pt-8">
+                    <h2 className="font-display text-xl font-semibold text-balance text-foreground">Anatomy</h2>
+                    <div className="mt-2 overflow-x-auto rounded-card border border-border px-4 py-2">
+                        <AnatomyTable caption={`${entry.meta.title} anatomy`} rows={entry.meta.anatomy} />
+                    </div>
+                </section>
+            )}
             {entry.meta.guidance !== undefined && (
-                <section aria-label="Guidance" className="pt-6">
-                    <h2 className="font-display text-xl font-semibold text-balance text-foreground">When to use</h2>
-                    <p className="mt-1 text-pretty text-muted-foreground">{entry.meta.guidance.whenToUse}</p>
-                    {entry.meta.guidance.whenToAvoid !== undefined && (
-                        <>
-                            <h2 className="pt-4 font-display text-xl font-semibold text-balance text-foreground">
-                                When not to use
-                            </h2>
-                            <p className="mt-1 text-pretty text-muted-foreground">{entry.meta.guidance.whenToAvoid}</p>
-                        </>
-                    )}
+                <section aria-label="Best practices" className="pt-8">
+                    <h2 className="font-display text-xl font-semibold text-balance text-foreground">Best practices</h2>
+                    <div className="mt-2 overflow-x-auto rounded-card border border-border px-4 py-2">
+                        <PracticesTable
+                            caption={`${entry.meta.title} best practices`}
+                            rows={practiceRows(entry.meta.guidance)}
+                        />
+                    </div>
                     {entry.meta.guidance.siblings !== undefined && entry.meta.guidance.siblings.length > 0 && (
                         <>
                             <h2 className="pt-4 font-display text-xl font-semibold text-balance text-foreground">
@@ -124,32 +198,25 @@ function DesignSystemSectionPage() {
                     )}
                 </section>
             )}
-            <div className="pt-6">
-                <entry.Demo />
-            </div>
-            {entry.meta.props !== undefined && (
-                <>
-                    <h2 className="pt-8 font-display text-xl font-semibold text-balance text-foreground">Props</h2>
-                    <div className="overflow-x-auto pt-2">
-                        <PropsTable caption={`${entry.meta.title} props`} rows={entry.meta.props} />
-                    </div>
-                </>
-            )}
             {entry.meta.variants !== undefined && (
-                <>
-                    <h2 className="pt-8 font-display text-xl font-semibold text-balance text-foreground">Variants</h2>
-                    <div className="overflow-x-auto pt-2">
+                <section aria-label="Examples" className="pt-8">
+                    <h2 className="font-display text-xl font-semibold text-balance text-foreground">Examples</h2>
+                    <p className="mt-1 text-pretty text-muted-foreground">
+                        Common configurations, variations, and states. Only these variants exist. An unlisted variant is
+                        a bug, not an option.
+                    </p>
+                    <div className="mt-2 overflow-x-auto rounded-card border border-border px-4 py-2">
                         <VariantTable caption={`${entry.meta.title} variants`} rows={entry.meta.variants} />
                     </div>
-                </>
+                </section>
             )}
-            {entry.meta.anatomy !== undefined && (
-                <>
-                    <h2 className="pt-8 font-display text-xl font-semibold text-balance text-foreground">Anatomy</h2>
-                    <div className="overflow-x-auto pt-2">
-                        <AnatomyTable caption={`${entry.meta.title} anatomy`} rows={entry.meta.anatomy} />
+            {entry.meta.props !== undefined && (
+                <section aria-label="Props" className="pt-8">
+                    <h2 className="font-display text-xl font-semibold text-balance text-foreground">Props</h2>
+                    <div className="mt-2 overflow-x-auto rounded-card border border-border px-4 py-2">
+                        <PropsTable caption={`${entry.meta.title} props`} rows={entry.meta.props} />
                     </div>
-                </>
+                </section>
             )}
             {(previousEntry !== undefined || nextEntry !== undefined) && (
                 <nav aria-label="Sections" className="flex items-center justify-between gap-4 pt-10">

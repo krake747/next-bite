@@ -62,14 +62,14 @@ async function renderAt(path: string): Promise<void> {
     )
 }
 
-function expectGuidanceAboveDemo(guidanceText: string, demoName: string): void {
-    const guidance = screen.getByText(guidanceText)
+function expectDemoAboveGuidance(demoName: string, guidanceText: string): void {
     const demo = screen.getByRole("button", { name: demoName })
-    expect(guidance.compareDocumentPosition(demo) & Node.DOCUMENT_POSITION_FOLLOWING).toBeGreaterThan(0)
+    const guidance = screen.getByText(guidanceText)
+    expect(demo.compareDocumentPosition(guidance) & Node.DOCUMENT_POSITION_FOLLOWING).toBeGreaterThan(0)
 }
 
 describe("design-system section page", () => {
-    test("renders button guidance above the demo", async () => {
+    test("renders button hero demo before usage guidance", async () => {
         await renderAt("/ds/button")
         await waitFor(() => {
             expect(screen.getByText(buttonMeta.guidance.whenToUse)).toBeInTheDocument()
@@ -77,10 +77,22 @@ describe("design-system section page", () => {
         await waitFor(() => {
             expect(screen.getByRole("button", { name: "Primary" })).toBeInTheDocument()
         })
-        expectGuidanceAboveDemo(buttonMeta.guidance.whenToUse, "Primary")
+        expectDemoAboveGuidance("Primary", buttonMeta.guidance.whenToUse)
     })
 
-    test("renders text-link guidance above the demo", async () => {
+    test("renders button specifier, practices, and examples", async () => {
+        await renderAt("/ds/button")
+        await waitFor(() => {
+            expect(screen.getByText("@ui/button")).toBeInTheDocument()
+        })
+        expect(screen.getByText('"@ui/button";')).toBeInTheDocument()
+        expect(screen.getByText("Best practices")).toBeInTheDocument()
+        expect(screen.getByText("Do")).toBeInTheDocument()
+        expect(screen.getByText("Don't")).toBeInTheDocument()
+        expect(screen.getByText("Examples")).toBeInTheDocument()
+    })
+
+    test("renders text-link hero demo before usage guidance", async () => {
         await renderAt("/ds/text-link")
         await waitFor(() => {
             expect(screen.getByText(textLinkMeta.guidance.whenToUse)).toBeInTheDocument()
@@ -88,8 +100,8 @@ describe("design-system section page", () => {
         await waitFor(() => {
             expect(screen.getByRole("link", { name: "See the list" })).toBeInTheDocument()
         })
-        const guidance = screen.getByText(textLinkMeta.guidance.whenToUse)
         const demo = screen.getByRole("link", { name: "See the list" })
-        expect(guidance.compareDocumentPosition(demo) & Node.DOCUMENT_POSITION_FOLLOWING).toBeGreaterThan(0)
+        const guidance = screen.getByText(textLinkMeta.guidance.whenToUse)
+        expect(demo.compareDocumentPosition(guidance) & Node.DOCUMENT_POSITION_FOLLOWING).toBeGreaterThan(0)
     })
 })
