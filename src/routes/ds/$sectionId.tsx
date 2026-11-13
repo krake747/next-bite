@@ -42,29 +42,32 @@ export function toImportSpecifier(importPath: string): string {
     return `@${match[1]}/${match[2]}`
 }
 
-function ImportPath({ importPath }: Readonly<{ importPath: string }>) {
+function useCopyFeedback(text: string): { readonly copied: boolean; readonly handleCopy: () => void } {
     const [copied, setCopied] = useState(false)
+
+    function handleCopy(): void {
+        void navigator.clipboard
+            .writeText(text)
+            .then(() => {
+                setCopied(true)
+            })
+            .catch(() => {
+                setCopied(false)
+            })
+    }
+
+    return { copied, handleCopy }
+}
+
+function ImportPath({ importPath }: Readonly<{ importPath: string }>) {
     const specifier = toImportSpecifier(importPath)
+    const { copied, handleCopy } = useCopyFeedback(specifier)
     return (
         <div className="mt-2 flex items-center gap-2">
             <p title={importPath} className="truncate font-mono text-xs text-muted-foreground">
                 {specifier}
             </p>
-            <IconButton
-                label={copied ? "Copied" : `Copy ${specifier}`}
-                tone="plain"
-                size="sm"
-                onClick={() => {
-                    void navigator.clipboard
-                        .writeText(specifier)
-                        .then(() => {
-                            setCopied(true)
-                        })
-                        .catch(() => {
-                            setCopied(false)
-                        })
-                }}
-            >
+            <IconButton label={copied ? "Copied" : `Copy ${specifier}`} tone="plain" size="sm" onClick={handleCopy}>
                 {copied ? (
                     <CheckIcon className="size-4" aria-hidden="true" />
                 ) : (
@@ -76,9 +79,9 @@ function ImportPath({ importPath }: Readonly<{ importPath: string }>) {
 }
 
 function SpecifierCode({ importPath }: Readonly<{ importPath: string }>) {
-    const [copied, setCopied] = useState(false)
     const specifier = toImportSpecifier(importPath)
     const snippet = `"${specifier}";`
+    const { copied, handleCopy } = useCopyFeedback(snippet)
     const caption =
         specifier === importPath
             ? "Stylesheet path for these tokens."
@@ -91,16 +94,7 @@ function SpecifierCode({ importPath }: Readonly<{ importPath: string }>) {
                     label={copied ? "Copied" : "Copy import snippet"}
                     tone="plain"
                     size="sm"
-                    onClick={() => {
-                        void navigator.clipboard
-                            .writeText(snippet)
-                            .then(() => {
-                                setCopied(true)
-                            })
-                            .catch(() => {
-                                setCopied(false)
-                            })
-                    }}
+                    onClick={handleCopy}
                 >
                     {copied ? (
                         <CheckIcon className="size-4" aria-hidden="true" />
