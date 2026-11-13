@@ -97,7 +97,7 @@ function useCopyFeedback(text: string): { readonly copied: boolean; readonly han
     return { copied, handleCopy }
 }
 
-function ImportPath({ importPath }: Readonly<{ importPath: string }>) {
+function SpecifierLine({ importPath }: Readonly<{ importPath: string }>) {
     const specifier = toImportSpecifier(importPath)
     return (
         <p title={importPath} className="mt-2 truncate font-mono text-xs text-muted-foreground">
@@ -153,7 +153,7 @@ function SectionTitle({ children, className }: Readonly<React.ComponentProps<"h2
     )
 }
 
-function DocCard({ children }: Readonly<React.ComponentProps<"div">>) {
+function SectionCard({ children }: Readonly<React.ComponentProps<"div">>) {
     return <div className="mt-2 overflow-x-auto rounded-card border border-border px-4 py-2">{children}</div>
 }
 
@@ -164,12 +164,12 @@ function SectionHeader() {
     return (
         <header>
             <h1 className="font-display text-3xl font-semibold tracking-tight text-balance text-foreground">{title}</h1>
-            <ImportPath importPath={importPath} />
+            <SpecifierLine importPath={importPath} />
         </header>
     )
 }
 
-function PagerLink({
+function PagerLinkShell({
     sectionId,
     children,
     className,
@@ -191,19 +191,19 @@ function PagerLink({
 
 function PreviousPagerLink({ sectionId, title }: Readonly<{ sectionId: string; title: string }>) {
     return (
-        <PagerLink sectionId={sectionId}>
+        <PagerLinkShell sectionId={sectionId}>
             <ArrowLeftIcon className="size-4 shrink-0" aria-hidden="true" />
             <span className="min-w-0 flex-1 truncate">{title}</span>
-        </PagerLink>
+        </PagerLinkShell>
     )
 }
 
 function NextPagerLink({ sectionId, title }: Readonly<{ sectionId: string; title: string }>) {
     return (
-        <PagerLink sectionId={sectionId} className="justify-end">
+        <PagerLinkShell sectionId={sectionId} className="justify-end">
             <span className="min-w-0 flex-1 truncate">{title}</span>
             <ArrowRightIcon className="size-4 shrink-0" aria-hidden="true" />
-        </PagerLink>
+        </PagerLinkShell>
     )
 }
 
@@ -287,9 +287,9 @@ function AnatomySection() {
     return (
         <section aria-label="Anatomy" className="pt-8">
             <SectionTitle>Anatomy</SectionTitle>
-            <DocCard>
+            <SectionCard>
                 <AnatomyTable caption={`${title} anatomy`} rows={anatomy} />
-            </DocCard>
+            </SectionCard>
         </section>
     )
 }
@@ -305,9 +305,9 @@ function BestPracticesSection() {
     return (
         <section aria-label="Best practices" className="pt-8">
             <SectionTitle>Best practices</SectionTitle>
-            <DocCard>
+            <SectionCard>
                 <PracticesTable caption={`${title} best practices`} rows={practiceRows(guidance)} />
-            </DocCard>
+            </SectionCard>
             {siblings.length > 0 && (
                 <>
                     <SectionTitle className="pt-4">Related</SectionTitle>
@@ -348,9 +348,9 @@ function ExamplesSection() {
                 Common configurations, variations, and states. Only these variants exist. An unlisted variant is a bug,
                 not an option.
             </p>
-            <DocCard>
+            <SectionCard>
                 <VariantTable caption={`${title} variants`} rows={variants} />
-            </DocCard>
+            </SectionCard>
         </section>
     )
 }
@@ -365,9 +365,9 @@ function PropsSection() {
     return (
         <section aria-label="Props" className="pt-8">
             <SectionTitle>Props</SectionTitle>
-            <DocCard>
+            <SectionCard>
                 <PropsTable caption={`${title} props`} rows={props} />
-            </DocCard>
+            </SectionCard>
         </section>
     )
 }
