@@ -147,16 +147,13 @@ function useSectionEntry(): SectionEntry {
     return entry
 }
 
-function SectionTitle({
-    children,
-    className,
-}: Readonly<{ children: React.ReactNode; className?: string | undefined }>) {
+function SectionTitle({ children, className }: Readonly<React.ComponentProps<"h2">>) {
     return (
         <h2 className={cx("font-display text-xl font-semibold text-balance text-foreground", className)}>{children}</h2>
     )
 }
 
-function DocCard({ children }: Readonly<{ children: React.ReactNode }>) {
+function DocCard({ children }: Readonly<React.ComponentProps<"div">>) {
     return <div className="mt-2 overflow-x-auto rounded-card border border-border px-4 py-2">{children}</div>
 }
 
@@ -246,7 +243,7 @@ function NextSectionPager() {
     )
 }
 
-function SectionPager({ children }: Readonly<{ children: React.ReactNode }>) {
+function SectionPager({ children }: Readonly<React.ComponentProps<"nav">>) {
     return (
         <nav aria-label="Sections" className="flex items-center justify-between gap-4 pt-10">
             {children}
