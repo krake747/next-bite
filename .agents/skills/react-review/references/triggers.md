@@ -165,6 +165,31 @@ Wrong:
 
 Right: map the failure into state the UI reads, or delete the catch. A `catch` that only swallows gets deleted in favor of letting the caller handle it.
 
+## Async setState without an owner
+
+Wrong:
+
+```tsx
+function handleSubmit(): void {
+    setSaving(true)
+    void save().then(() => {
+        setSaving(false)
+    })
+}
+```
+
+Right: the starter claims a generation and settles land only when current, so a retry or double-submit cannot let a stale response overwrite newer state.
+
+```tsx
+const generation = ++generationRef.current
+void save().then(() => {
+    if (generation !== generationRef.current) {
+        return
+    }
+    setSaving(false)
+})
+```
+
 ## Arrow function declarations
 
 Wrong:

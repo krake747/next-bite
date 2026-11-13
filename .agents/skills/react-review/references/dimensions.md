@@ -8,7 +8,7 @@ Look for conditional hooks, unstable keys, state that duplicates derivable data,
 
 Smell: an effect that syncs two state variables step by step where a derived value reads directly, or a timer reset with no cleanup, so a second copy leaves a stale timer behind.
 
-Fix: replace the sync with a derived read, a lookup map, or an explicit state model. For timers, hold the handle in a ref and clear it on retrigger and on unmount. Effects that touch the world stay effects.
+Fix: replace the sync with a derived read, a lookup map, or an explicit state model. For timers, hold the handle in a ref and clear it on retrigger and on unmount. Where flags jointly decide one outcome, name the union and export it: separate boot from op pending, never let `undefined` mean a screen, and give the async transition a generation check. Effects that touch the world stay effects.
 
 ## 2. Composition over configuration
 
@@ -24,7 +24,7 @@ Look for helpers, maps, and row-builders that live far from their only consumer.
 
 Smell: an icon map in a layout file consumed only to render one nav, or a `practiceRows` builder in a route file serving one table module.
 
-Fix: move the logic next to its consumer. A shared module with one importer gets inlined. Each concept keeps one defining home; reuse the existing component, token, or query instead of making another version. The exception is genuinely shared reference (tokens, registry data), which stays where every consumer can reach it.
+Fix: move the logic next to its consumer. A shared module with one importer gets inlined. Each concept keeps one defining home; reuse the existing component, token, or query instead of making another version. Concrete findings: a friendship status redeclared per file instead of the shared validator, or a route path copied as a string with no owning helper. The exception is genuinely shared reference (tokens, registry data), which stays where every consumer can reach it.
 
 ## 4. State ownership
 
