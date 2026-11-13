@@ -1,6 +1,6 @@
 ---
 name: react-review
-description: Use when reviewing React components, hooks, or route files for idiomatic React, when the user asks for refactor targets or a React cleanup pass, or types /react-review. Reports composition, colocation, state ownership, and repo-idiom findings ranked by hurt. It reports, it does not fix. Visual counterpart is emil-ui-review; external scanner counterpart is react-doctor.
+description: Use when reviewing React components, hooks, or route files for idiomatic React, when the user asks for refactor targets or a React cleanup pass, or types /react-review. Reports composition, colocation, state ownership, and repo-idiom findings ranked by hurt. It reports, it does not fix. External scanner counterpart is react-doctor.
 version: "1.0.0"
 ---
 
@@ -8,7 +8,7 @@ version: "1.0.0"
 
 A specialized review skill. It does one thing: judge React code against this repo's idioms and report what to refactor, ranked by how much it hurts. It does not build features or fix the code. Point it at a diff, a component, a hook, or a file.
 
-This is the code counterpart to `emil-ui-review`, which owns the visual bar. When a finding is visual (spacing, motion, contrast), defer to that skill. When a finding is a known diagnostic with a scanner recipe, defer to `react-doctor`. This skill owns structure: composition, colocation, ownership, and idiom.
+This skill owns structure: composition, colocation, ownership, and idiom. When a finding is visual (spacing, motion, contrast), leave it for a UI review pass. When a finding is a known diagnostic with a scanner recipe, defer to `react-doctor`.
 
 ## Operating posture
 
