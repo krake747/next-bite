@@ -1,4 +1,4 @@
-import { type PropRow, type VariantRow } from "./registry"
+import { type Guidance, type PropRow, type VariantRow } from "./registry"
 
 export type TokenRow = {
     readonly token: string
@@ -112,6 +112,13 @@ export function AnatomyTable({ rows, caption }: Readonly<{ rows: ReadonlyArray<A
             </tbody>
         </table>
     )
+}
+
+export function practiceRows(guidance: Guidance): ReadonlyArray<PracticeRow> {
+    return [
+        { kind: "do" as const, text: guidance.whenToUse },
+        ...(guidance.whenToAvoid === undefined ? [] : [{ kind: "dont" as const, text: guidance.whenToAvoid }]),
+    ]
 }
 
 export type PracticeRow = {

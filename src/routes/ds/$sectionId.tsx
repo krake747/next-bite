@@ -6,8 +6,8 @@ import { cx } from "@ui/cva.config"
 import { IconButton } from "@ui/icon-button"
 import { focusRing } from "@ui/variants"
 
-import { designSystemSections, type Guidance, type SectionEntry } from "./-sections/registry"
-import { AnatomyTable, PracticesTable, PropsTable, VariantTable, type PracticeRow } from "./-sections/token-table"
+import { designSystemSections, type SectionEntry } from "./-sections/registry"
+import { AnatomyTable, PracticesTable, PropsTable, VariantTable, practiceRows } from "./-sections/token-table"
 
 export const Route = createFileRoute("/ds/$sectionId")({
     head: () => ({ meta: [{ title: "Design System - Next Bite" }] }),
@@ -59,7 +59,7 @@ function DesignSystemSectionPage() {
 }
 
 export function toImportSpecifier(importPath: string): string {
-    const match = /^src\/(ui|pattern|core|api|features|routes)\/(.+)\.tsx?$/.exec(importPath)
+    const match = /^src\/([^/]+)\/(.+)\.tsx?$/.exec(importPath)
     if (match?.[1] === undefined || match?.[2] === undefined) {
         return importPath
     }
@@ -74,6 +74,9 @@ function useCopyFeedback(text: string): { readonly copied: boolean; readonly han
             .writeText(text)
             .then(() => {
                 setCopied(true)
+                window.setTimeout(() => {
+                    setCopied(false)
+                }, 2000)
             })
             .catch(() => {
                 setCopied(false)
@@ -85,20 +88,10 @@ function useCopyFeedback(text: string): { readonly copied: boolean; readonly han
 
 function ImportPath({ importPath }: Readonly<{ importPath: string }>) {
     const specifier = toImportSpecifier(importPath)
-    const { copied, handleCopy } = useCopyFeedback(specifier)
     return (
-        <div className="mt-2 flex items-center gap-2">
-            <p title={importPath} className="truncate font-mono text-xs text-muted-foreground">
-                {specifier}
-            </p>
-            <IconButton label={copied ? "Copied" : `Copy ${specifier}`} tone="plain" size="sm" onClick={handleCopy}>
-                {copied ? (
-                    <CheckIcon className="size-4" aria-hidden="true" />
-                ) : (
-                    <CopyIcon className="size-4" aria-hidden="true" />
-                )}
-            </IconButton>
-        </div>
+        <p title={importPath} className="mt-2 truncate font-mono text-xs text-muted-foreground">
+            {specifier}
+        </p>
     )
 }
 
@@ -133,13 +126,6 @@ function SpecifierCode({ importPath }: Readonly<{ importPath: string }>) {
     )
 }
 
-function practiceRows(guidance: Guidance): ReadonlyArray<PracticeRow> {
-    return [
-        { kind: "do" as const, text: guidance.whenToUse },
-        ...(guidance.whenToAvoid === undefined ? [] : [{ kind: "dont" as const, text: guidance.whenToAvoid }]),
-    ]
-}
-
 const SectionEntryContext = createContext<SectionEntry | null>(null)
 
 function useSectionEntry(): SectionEntry {
@@ -150,15 +136,23 @@ function useSectionEntry(): SectionEntry {
     return entry
 }
 
+function SectionTitle({ children }: Readonly<{ children: React.ReactNode }>) {
+    return <h2 className="font-display text-xl font-semibold text-balance text-foreground">{children}</h2>
+}
+
+function DocCard({ children }: Readonly<{ children: React.ReactNode }>) {
+    return <div className="mt-2 overflow-x-auto rounded-card border border-border px-4 py-2">{children}</div>
+}
+
 function SectionHeader() {
     const { meta } = useSectionEntry()
     const title = meta.title
     const importPath = meta.importPath
     return (
-        <>
+        <header>
             <h1 className="font-display text-3xl font-semibold tracking-tight text-balance text-foreground">{title}</h1>
             <ImportPath importPath={importPath} />
-        </>
+        </header>
     )
 }
 
@@ -220,7 +214,7 @@ function SectionPager() {
                     <PreviousPagerLink sectionId={previousEntry.meta.id} title={previousEntry.meta.title} />
                 )}
             </div>
-            <div className="min-w-0 flex-1 text-right">
+            <div className="min-w-0 flex-1">
                 {nextEntry !== undefined && (
                     <NextPagerLink sectionId={nextEntry.meta.id} title={nextEntry.meta.title} />
                 )}
@@ -246,7 +240,7 @@ function UsageSection() {
     const importPath = meta.importPath
     return (
         <section aria-label="Usage" className="pt-8">
-            <h2 className="font-display text-xl font-semibold text-balance text-foreground">Usage</h2>
+            <SectionTitle>Usage</SectionTitle>
             <p className="mt-1 text-pretty text-muted-foreground">{body}</p>
             <div className="pt-4">
                 <SpecifierCode importPath={importPath} />
@@ -264,10 +258,10 @@ function AnatomySection() {
     }
     return (
         <section aria-label="Anatomy" className="pt-8">
-            <h2 className="font-display text-xl font-semibold text-balance text-foreground">Anatomy</h2>
-            <div className="mt-2 overflow-x-auto rounded-card border border-border px-4 py-2">
+            <SectionTitle>Anatomy</SectionTitle>
+            <DocCard>
                 <AnatomyTable caption={`${title} anatomy`} rows={anatomy} />
-            </div>
+            </DocCard>
         </section>
     )
 }
@@ -282,10 +276,10 @@ function BestPracticesSection() {
     const siblings = guidance.siblings ?? []
     return (
         <section aria-label="Best practices" className="pt-8">
-            <h2 className="font-display text-xl font-semibold text-balance text-foreground">Best practices</h2>
-            <div className="mt-2 overflow-x-auto rounded-card border border-border px-4 py-2">
+            <SectionTitle>Best practices</SectionTitle>
+            <DocCard>
                 <PracticesTable caption={`${title} best practices`} rows={practiceRows(guidance)} />
-            </div>
+            </DocCard>
             {siblings.length > 0 && (
                 <>
                     <h2 className="pt-4 font-display text-xl font-semibold text-balance text-foreground">Related</h2>
@@ -321,14 +315,14 @@ function ExamplesSection() {
     }
     return (
         <section aria-label="Examples" className="pt-8">
-            <h2 className="font-display text-xl font-semibold text-balance text-foreground">Examples</h2>
+            <SectionTitle>Examples</SectionTitle>
             <p className="mt-1 text-pretty text-muted-foreground">
                 Common configurations, variations, and states. Only these variants exist. An unlisted variant is a bug,
                 not an option.
             </p>
-            <div className="mt-2 overflow-x-auto rounded-card border border-border px-4 py-2">
+            <DocCard>
                 <VariantTable caption={`${title} variants`} rows={variants} />
-            </div>
+            </DocCard>
         </section>
     )
 }
@@ -342,10 +336,10 @@ function PropsSection() {
     }
     return (
         <section aria-label="Props" className="pt-8">
-            <h2 className="font-display text-xl font-semibold text-balance text-foreground">Props</h2>
-            <div className="mt-2 overflow-x-auto rounded-card border border-border px-4 py-2">
+            <SectionTitle>Props</SectionTitle>
+            <DocCard>
                 <PropsTable caption={`${title} props`} rows={props} />
-            </div>
+            </DocCard>
         </section>
     )
 }
