@@ -126,8 +126,10 @@ function DesignSystemSectionPage() {
 
     const ids = Object.keys(designSystemSections)
     const currentIndex = ids.indexOf(sectionId)
-    const previousId = currentIndex > 0 ? ids[currentIndex - 1] : undefined
-    const nextId = currentIndex >= 0 && currentIndex < ids.length - 1 ? ids[currentIndex + 1] : undefined
+    // .at(-1) wraps to the last element, so the backward edge still needs its guard. .at() returns
+    // undefined past the end, which covers the forward edge on its own.
+    const previousId = currentIndex <= 0 ? undefined : ids.at(currentIndex - 1)
+    const nextId = ids.at(currentIndex + 1)
     const previousEntry = previousId === undefined ? undefined : designSystemSections[previousId]
     const nextEntry = nextId === undefined ? undefined : designSystemSections[nextId]
 
