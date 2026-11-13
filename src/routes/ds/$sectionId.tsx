@@ -194,31 +194,47 @@ function NextPagerLink({ sectionId, title }: Readonly<{ sectionId: string; title
     )
 }
 
-function SectionPager() {
+function useNeighborEntry(offset: -1 | 1): SectionEntry | undefined {
     const { meta } = useSectionEntry()
     const id = meta.id
     const entries = Object.values(designSystemSections)
     const currentIndex = entries.findIndex((candidate) => candidate.meta.id === id)
     if (currentIndex < 0) {
-        return null
+        return undefined
     }
-    const [previousEntry] = entries.slice(Math.max(0, currentIndex - 1), currentIndex)
-    const [nextEntry] = entries.slice(currentIndex + 1, currentIndex + 2)
-    if (previousEntry === undefined && nextEntry === undefined) {
+    const [neighbor] = entries.slice(Math.max(0, currentIndex + offset), currentIndex + offset + 1)
+    return neighbor
+}
+
+function PreviousSectionPager() {
+    const previousEntry = useNeighborEntry(-1)
+    if (!previousEntry) {
         return null
     }
     return (
+        <div className="min-w-0 flex-1">
+            <PreviousPagerLink sectionId={previousEntry.meta.id} title={previousEntry.meta.title} />
+        </div>
+    )
+}
+
+function NextSectionPager() {
+    const nextEntry = useNeighborEntry(1)
+    if (!nextEntry) {
+        return null
+    }
+    return (
+        <div className="min-w-0 flex-1">
+            <NextPagerLink sectionId={nextEntry.meta.id} title={nextEntry.meta.title} />
+        </div>
+    )
+}
+
+function SectionPager() {
+    return (
         <nav aria-label="Sections" className="flex items-center justify-between gap-4 pt-10">
-            <div className="min-w-0 flex-1">
-                {previousEntry !== undefined && (
-                    <PreviousPagerLink sectionId={previousEntry.meta.id} title={previousEntry.meta.title} />
-                )}
-            </div>
-            <div className="min-w-0 flex-1">
-                {nextEntry !== undefined && (
-                    <NextPagerLink sectionId={nextEntry.meta.id} title={nextEntry.meta.title} />
-                )}
-            </div>
+            <PreviousSectionPager />
+            <NextSectionPager />
         </nav>
     )
 }
