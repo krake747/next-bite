@@ -34,7 +34,8 @@ Production deploys from CI on green `main`; see `docs/environments.md`.
 
 ## Workflow
 
-- Branch from `origin/main` as `<type>/NNN-short-slug` and target PRs at `main`.
+- Branch from `origin/main` as `<type>/NNN-short-slug` (`<type>/short-slug` for ticketless small
+  work; see `docs/agents/tickets.md`) and target PRs at `main`.
 - Use conventional commits (`.commitlintrc.json`). A PR that closes an issue says `Fixes #<n>`.
 - Run `pnpm check:full` before pushing. The pre-push hook runs the fast gate; never skip it with
   `--no-verify`. PR CI runs the full gate.

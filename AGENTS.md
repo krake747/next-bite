@@ -16,7 +16,8 @@ overview is `docs/architecture.md`.
 - Done means `pnpm check:full` is green. Run `pnpm check:arch` before pushing structural changes:
   moved files, new modules, or imports across zones.
 - One worktree per task under the gitignored `.worktrees/`, based on `origin/main`; keep the main
-  checkout on its branch. Branches are `<type>/NNN-short-slug`; PRs target `main`.
+  checkout on its branch. Branches are `<type>/NNN-short-slug` (`<type>/short-slug` for ticketless
+  small work, see `docs/agents/tickets.md`); PRs target `main`.
 - Read `convex/_generated/ai/guidelines.md` before writing Convex code. It overrides training-data
   defaults.
 - ADRs in `docs/adr/` bind. Surface a conflict instead of silently overriding a record.
