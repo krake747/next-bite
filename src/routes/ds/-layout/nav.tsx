@@ -19,14 +19,14 @@ import { focusRing } from "@ui/variants"
 
 import { designSystemSections, sectionGroups, sectionIcons } from "../-sections/registry"
 
-type SectionEntry = {
+type SectionNavItem = {
     readonly id: string
     readonly title: string
     readonly group: string
     readonly Icon: typeof HouseIcon
 }
 
-const sections: ReadonlyArray<SectionEntry> = Object.values(designSystemSections).map((entry) => ({
+const sections: ReadonlyArray<SectionNavItem> = Object.values(designSystemSections).map((entry) => ({
     id: entry.meta.id,
     title: entry.meta.title,
     group: entry.meta.group,
@@ -34,7 +34,7 @@ const sections: ReadonlyArray<SectionEntry> = Object.values(designSystemSections
 }))
 
 const mobileLink = cva({
-    base: "flex w-full items-center gap-3 rounded-control px-3 py-2.5 text-sm font-medium text-muted-foreground hover:bg-surface-muted hover:text-foreground data-[status=active]:bg-tomato-100 data-[status=active]:text-tomato-700",
+    base: "flex w-full items-center gap-3 rounded-control px-3 py-2.5 text-sm font-medium text-muted-foreground hover:bg-surface-muted hover:text-foreground data-[status=active]:bg-sidebar-accent data-[status=active]:text-sidebar-accent-foreground",
     composes: [focusRing],
 })
 
@@ -93,9 +93,9 @@ export function DesignSystemSidebar() {
                     <Link
                         to="/ds"
                         aria-label="Design system home"
-                        className="flex min-w-0 flex-1 items-center gap-2 rounded-lg px-3 py-2 text-foreground group-data-[collapsible=icon]:hidden hover:text-tomato-600"
+                        className="flex min-w-0 flex-1 items-center gap-2 rounded-lg px-3 py-2 text-foreground group-data-[collapsible=icon]:hidden hover:text-primary"
                     >
-                        <span className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-tomato-100 text-tomato-600">
+                        <span className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-sidebar-accent text-primary">
                             <ForkKnifeIcon className="size-4" aria-hidden="true" />
                         </span>
                         <span className="truncate font-display text-lg font-semibold">Design system</span>
