@@ -34,6 +34,30 @@ function SectionNotFound() {
     )
 }
 
+function DesignSystemSectionPage() {
+    const { sectionId } = Route.useParams()
+    const entry = designSystemSections[sectionId]
+
+    if (!entry) {
+        return <SectionNotFound />
+    }
+
+    return (
+        <div className="mx-auto w-full max-w-3xl pb-10">
+            <SectionEntryContext value={entry}>
+                <SectionHeader />
+                <PreviewSection />
+                <UsageSection />
+                <AnatomySection />
+                <BestPracticesSection />
+                <ExamplesSection />
+                <PropsSection />
+                <SectionPager />
+            </SectionEntryContext>
+        </div>
+    )
+}
+
 export function toImportSpecifier(importPath: string): string {
     const match = /^src\/(ui|pattern|core|api|features|routes)\/(.+)\.tsx?$/.exec(importPath)
     if (match?.[1] === undefined || match?.[2] === undefined) {
@@ -315,29 +339,5 @@ function PropsSection() {
                 <PropsTable caption={`${entry.meta.title} props`} rows={props} />
             </div>
         </section>
-    )
-}
-
-function DesignSystemSectionPage() {
-    const { sectionId } = Route.useParams()
-    const entry = designSystemSections[sectionId]
-
-    if (!entry) {
-        return <SectionNotFound />
-    }
-
-    return (
-        <div className="mx-auto w-full max-w-3xl pb-10">
-            <SectionEntryContext value={entry}>
-                <SectionHeader />
-                <PreviewSection />
-                <UsageSection />
-                <AnatomySection />
-                <BestPracticesSection />
-                <ExamplesSection />
-                <PropsSection />
-                <SectionPager />
-            </SectionEntryContext>
-        </div>
     )
 }
