@@ -146,6 +146,21 @@ function SidebarUserMenu() {
     const signOut = () => {
         void auth.signOut()
     }
+    if (auth.isInitializing) {
+        return (
+            <div
+                role="status"
+                aria-label="Loading account"
+                className="flex w-full items-center justify-start gap-3 rounded-xl px-3 py-2"
+            >
+                <span className="size-8 shrink-0 rounded-full bg-surface-muted motion-safe:animate-pulse" />
+                <span className="min-w-0 flex-1">
+                    <span className="block h-4 w-24 rounded bg-surface-muted motion-safe:animate-pulse" />
+                    <span className="mt-1 block h-3 w-32 rounded bg-surface-muted motion-safe:animate-pulse" />
+                </span>
+            </div>
+        )
+    }
     return (
         <DropdownMenu>
             <DropdownMenuTrigger
