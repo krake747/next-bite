@@ -2,7 +2,7 @@
 
 Date: 2026-11-05
 
-Amended: 2026-11-11
+Amended: 2026-11-13
 
 Status: Accepted
 
@@ -32,3 +32,8 @@ until photos get their own table. Uploading needs no origin allowlist, because C
 accepts the upload URL from any origin. An upload that is never attached costs storage for at most
 about a day. Releasing an image or replacing an avatar leaves the blob unclaimed for the daily job.
 Upload, claim, and cleanup paths need integration tests before production.
+
+## Amendment 2026-11-13
+
+Place photos now live in the `photos` table, indexed by storage ID. The interim separate claim
+record is gone.
