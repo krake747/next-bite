@@ -1,6 +1,6 @@
 import { ArrowLeftIcon, ArrowRightIcon, CheckIcon, CopyIcon } from "@phosphor-icons/react"
 import { createFileRoute, Link } from "@tanstack/react-router"
-import { createContext, use, useState } from "react"
+import { createContext, use, useEffect, useRef, useState } from "react"
 
 import { cx } from "@ui/cva.config"
 import { IconButton } from "@ui/icon-button"
@@ -71,13 +71,21 @@ export function toImportSpecifier(importPath: string): string {
 
 function useCopyFeedback(text: string): { readonly copied: boolean; readonly handleCopy: () => void } {
     const [copied, setCopied] = useState(false)
+    const timeout = useRef<number | undefined>(undefined)
+
+    useEffect(() => {
+        return () => {
+            window.clearTimeout(timeout.current)
+        }
+    }, [])
 
     function handleCopy(): void {
+        window.clearTimeout(timeout.current)
         void navigator.clipboard
             .writeText(text)
             .then(() => {
                 setCopied(true)
-                window.setTimeout(() => {
+                timeout.current = window.setTimeout(() => {
                     setCopied(false)
                 }, 2000)
             })
@@ -139,8 +147,13 @@ function useSectionEntry(): SectionEntry {
     return entry
 }
 
-function SectionTitle({ children }: Readonly<{ children: React.ReactNode }>) {
-    return <h2 className="font-display text-xl font-semibold text-balance text-foreground">{children}</h2>
+function SectionTitle({
+    children,
+    className,
+}: Readonly<{ children: React.ReactNode; className?: string | undefined }>) {
+    return (
+        <h2 className={cx("font-display text-xl font-semibold text-balance text-foreground", className)}>{children}</h2>
+    )
 }
 
 function DocCard({ children }: Readonly<{ children: React.ReactNode }>) {
@@ -300,7 +313,7 @@ function BestPracticesSection() {
             </DocCard>
             {siblings.length > 0 && (
                 <>
-                    <h2 className="pt-4 font-display text-xl font-semibold text-balance text-foreground">Related</h2>
+                    <SectionTitle className="pt-4">Related</SectionTitle>
                     <ul className="mt-1 space-y-1 text-muted-foreground">
                         {siblings.map((sibling) => (
                             <li key={sibling.id}>
