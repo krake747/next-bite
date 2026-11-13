@@ -144,7 +144,7 @@ function DesignSystemSectionPage() {
             </h1>
             <ImportPath importPath={entry.meta.importPath} />
             <section aria-label="Preview" className="pt-6">
-                <div className="grid min-h-80 place-items-center rounded-card border border-border bg-surface px-4 py-10 sm:px-8">
+                <div className="grid min-h-80 place-items-center overflow-hidden rounded-card border border-border bg-surface px-4 py-10 sm:px-8">
                     <entry.Demo />
                 </div>
             </section>
