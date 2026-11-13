@@ -1,4 +1,4 @@
-import { CheckIcon, CopyIcon } from "@phosphor-icons/react"
+import { ArrowLeftIcon, ArrowRightIcon, CheckIcon, CopyIcon } from "@phosphor-icons/react"
 import { createFileRoute, Link } from "@tanstack/react-router"
 import { useState } from "react"
 
@@ -116,6 +116,71 @@ function practiceRows(guidance: Guidance): ReadonlyArray<PracticeRow> {
     ]
 }
 
+function PagerLink({
+    sectionId,
+    children,
+    className,
+}: Readonly<{ sectionId: string; children: React.ReactNode; className?: string | undefined }>) {
+    return (
+        <Link
+            to="/ds/$sectionId"
+            params={{ sectionId }}
+            className={cx(
+                focusRing(),
+                "flex items-center gap-2 rounded-control border border-border bg-surface px-4 py-2 text-sm font-medium text-muted-foreground hover:text-foreground",
+                className,
+            )}
+        >
+            {children}
+        </Link>
+    )
+}
+
+function PreviousPagerLink({ sectionId, title }: Readonly<{ sectionId: string; title: string }>) {
+    return (
+        <PagerLink sectionId={sectionId}>
+            <ArrowLeftIcon className="size-4 shrink-0" aria-hidden="true" />
+            <span className="min-w-0 flex-1 truncate">{title}</span>
+        </PagerLink>
+    )
+}
+
+function NextPagerLink({ sectionId, title }: Readonly<{ sectionId: string; title: string }>) {
+    return (
+        <PagerLink sectionId={sectionId} className="justify-end">
+            <span className="min-w-0 flex-1 truncate">{title}</span>
+            <ArrowRightIcon className="size-4 shrink-0" aria-hidden="true" />
+        </PagerLink>
+    )
+}
+
+function SectionPager({ sectionId }: Readonly<{ sectionId: string }>) {
+    const entries = Object.values(designSystemSections)
+    const currentIndex = entries.findIndex((candidate) => candidate.meta.id === sectionId)
+    if (currentIndex < 0) {
+        return null
+    }
+    const [previousEntry] = entries.slice(Math.max(0, currentIndex - 1), currentIndex)
+    const [nextEntry] = entries.slice(currentIndex + 1, currentIndex + 2)
+    if (previousEntry === undefined && nextEntry === undefined) {
+        return null
+    }
+    return (
+        <nav aria-label="Sections" className="flex items-center justify-between gap-4 pt-10">
+            <div className="min-w-0 flex-1">
+                {previousEntry !== undefined && (
+                    <PreviousPagerLink sectionId={previousEntry.meta.id} title={previousEntry.meta.title} />
+                )}
+            </div>
+            <div className="min-w-0 flex-1 text-right">
+                {nextEntry !== undefined && (
+                    <NextPagerLink sectionId={nextEntry.meta.id} title={nextEntry.meta.title} />
+                )}
+            </div>
+        </nav>
+    )
+}
+
 function DesignSystemSectionPage() {
     const { sectionId } = Route.useParams()
     const entry = designSystemSections[sectionId]
@@ -123,14 +188,6 @@ function DesignSystemSectionPage() {
     if (!entry) {
         return <SectionNotFound />
     }
-
-    const ids = Object.keys(designSystemSections)
-    const currentIndex = ids.indexOf(sectionId)
-    // .at(-1) wraps to the last element, so the backward edge keeps its guard.
-    const previousId = currentIndex <= 0 ? undefined : ids.at(currentIndex - 1)
-    const nextId = ids.at(currentIndex + 1)
-    const previousEntry = previousId === undefined ? undefined : designSystemSections[previousId]
-    const nextEntry = nextId === undefined ? undefined : designSystemSections[nextId]
 
     return (
         <div className="mx-auto w-full max-w-3xl pb-10">
@@ -213,38 +270,7 @@ function DesignSystemSectionPage() {
                     </div>
                 </section>
             )}
-            {(previousEntry !== undefined || nextEntry !== undefined) && (
-                <nav aria-label="Sections" className="flex items-center justify-between gap-4 pt-10">
-                    <div className="min-w-0 flex-1">
-                        {previousEntry !== undefined && previousId !== undefined && (
-                            <Link
-                                to="/ds/$sectionId"
-                                params={{ sectionId: previousId }}
-                                className={cx(
-                                    focusRing(),
-                                    "block truncate rounded-control border border-border bg-surface px-4 py-2 text-sm font-medium text-muted-foreground hover:text-foreground",
-                                )}
-                            >
-                                ← {previousEntry.meta.title}
-                            </Link>
-                        )}
-                    </div>
-                    <div className="min-w-0 flex-1 text-right">
-                        {nextEntry !== undefined && nextId !== undefined && (
-                            <Link
-                                to="/ds/$sectionId"
-                                params={{ sectionId: nextId }}
-                                className={cx(
-                                    focusRing(),
-                                    "block truncate rounded-control border border-border bg-surface px-4 py-2 text-sm font-medium text-muted-foreground hover:text-foreground",
-                                )}
-                            >
-                                {nextEntry.meta.title} →
-                            </Link>
-                        )}
-                    </div>
-                </nav>
-            )}
+            <SectionPager sectionId={sectionId} />
         </div>
     )
 }

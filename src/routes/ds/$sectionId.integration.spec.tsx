@@ -1,5 +1,5 @@
 import { RouterProvider, createMemoryHistory, createRouter } from "@tanstack/react-router"
-import { screen, waitFor } from "@testing-library/react"
+import { screen, waitFor, within } from "@testing-library/react"
 import { describe, expect, test, vi } from "vitest"
 
 import { ConvexProvider } from "@api/convex.context"
@@ -90,6 +90,20 @@ describe("design-system section page", () => {
         expect(screen.getByText("Do")).toBeInTheDocument()
         expect(screen.getByText("Don't")).toBeInTheDocument()
         expect(screen.getByText("Examples")).toBeInTheDocument()
+    })
+
+    test("renders pager links to neighboring sections", async () => {
+        await renderAt("/ds/button")
+        await waitFor(() => {
+            expect(screen.getByRole("navigation", { name: "Sections" })).toBeInTheDocument()
+        })
+        const pager = screen.getByRole("navigation", { name: "Sections" })
+        expect(within(pager).getByRole("link", { name: "Badge" })).toBeInTheDocument()
+        expect(within(pager).getByRole("link", { name: "Card" })).toBeInTheDocument()
+        const names = within(pager)
+            .getAllByRole("link")
+            .map((link) => link.textContent)
+        expect(names).not.toContain("Typography")
     })
 
     test("renders text-link hero demo before usage guidance", async () => {
