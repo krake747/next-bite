@@ -151,9 +151,9 @@ function useSectionEntry(): SectionEntry {
 }
 
 function SectionHeader() {
-    const {
-        meta: { importPath, title },
-    } = useSectionEntry()
+    const { meta } = useSectionEntry()
+    const title = meta.title
+    const importPath = meta.importPath
     return (
         <>
             <h1 className="font-display text-3xl font-semibold tracking-tight text-balance text-foreground">{title}</h1>
@@ -201,9 +201,8 @@ function NextPagerLink({ sectionId, title }: Readonly<{ sectionId: string; title
 }
 
 function SectionPager() {
-    const {
-        meta: { id },
-    } = useSectionEntry()
+    const { meta } = useSectionEntry()
+    const id = meta.id
     const entries = Object.values(designSystemSections)
     const currentIndex = entries.findIndex((candidate) => candidate.meta.id === id)
     if (currentIndex < 0) {
@@ -242,9 +241,9 @@ function PreviewSection() {
 }
 
 function UsageSection() {
-    const {
-        meta: { body, importPath },
-    } = useSectionEntry()
+    const { meta } = useSectionEntry()
+    const body = meta.body
+    const importPath = meta.importPath
     return (
         <section aria-label="Usage" className="pt-8">
             <h2 className="font-display text-xl font-semibold text-balance text-foreground">Usage</h2>
@@ -257,9 +256,9 @@ function UsageSection() {
 }
 
 function AnatomySection() {
-    const {
-        meta: { anatomy, title },
-    } = useSectionEntry()
+    const { meta } = useSectionEntry()
+    const anatomy = meta.anatomy
+    const title = meta.title
     if (!anatomy) {
         return null
     }
@@ -274,9 +273,9 @@ function AnatomySection() {
 }
 
 function BestPracticesSection() {
-    const {
-        meta: { guidance, title },
-    } = useSectionEntry()
+    const { meta } = useSectionEntry()
+    const guidance = meta.guidance
+    const title = meta.title
     if (!guidance) {
         return null
     }
@@ -313,9 +312,9 @@ function BestPracticesSection() {
 }
 
 function ExamplesSection() {
-    const {
-        meta: { title, variants },
-    } = useSectionEntry()
+    const { meta } = useSectionEntry()
+    const title = meta.title
+    const variants = meta.variants
     if (!variants) {
         return null
     }
@@ -334,9 +333,9 @@ function ExamplesSection() {
 }
 
 function PropsSection() {
-    const {
-        meta: { props, title },
-    } = useSectionEntry()
+    const { meta } = useSectionEntry()
+    const props = meta.props
+    const title = meta.title
     if (!props) {
         return null
     }
