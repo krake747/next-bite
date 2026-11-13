@@ -14,6 +14,14 @@ This skill owns structure: composition, colocation, ownership, and idiom. When a
 
 Review like the engineer who will maintain the file. Code that renders but resists change, hides its data flow, or duplicates what the framework owns is a regression, not a pass. Default to flagging. Approval is earned, not assumed.
 
+## Behavior first
+
+Start from the user-observable behavior, not the code shape. No behavior change means no finding above a nit. Judge data shapes from the caller's side: the reader decides the shape, so a shape that serves no caller gets deleted and a shape two callers read differently gets split.
+
+A refactor must lock current behavior before it moves code: a regression test that fails on the old shape and passes on the new one, or a recorded before/after run. Flag any restructure with no behavior lock, however clean it reads.
+
+Every finding states the behavior at stake and its proof: the test output, the repro steps, or the spec line. Style without a behavioral consequence is a nit at most. If the intended behavior is not evident from the diff and its tests, grill for intent first instead of guessing (the grilling skill owns the interview); a review that invents intent manufactures findings.
+
 ## What to review, in priority order
 
 Read the target first, then judge it against these dimensions. The order is the triage order: a broken hook outranks an awkward prop. Expanded checklists with repo examples live in [references/dimensions.md](references/dimensions.md).
@@ -48,7 +56,7 @@ These are almost always wrong. You do not need to deliberate. Wrong-to-right sni
 Lead with the verdict, then the findings. Do not bury the one thing that matters under ten nits.
 
 - **Verdict**: one line: **Blocked**, **Approve with changes**, or **Ship it**. Blocked means at least one finding breaks hooks, data flow, or the repo lint gate.
-- **Blocking**: findings that must be fixed before the code lands. Each: what is wrong, where (`file:line`), why it hurts, and the fix with the repo rule it follows.
+- **Blocking**: findings that must be fixed before the code lands. Each: what is wrong, where (`file:line`), the behavior at stake plus its proof, why it hurts, and the fix with the repo rule it follows.
 - **Should fix**: real structural problems that are not blockers. Same shape.
 - **Nits**: small polish, clearly labeled as optional.
 

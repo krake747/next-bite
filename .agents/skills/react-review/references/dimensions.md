@@ -2,6 +2,10 @@
 
 Expanded checklists for the triage order in `SKILL.md`. Each dimension lists what to look for, a concrete smell from this repo, and the fix direction.
 
+## Behavior before shape
+
+Start every review here, before the numbered dimensions. Name the user-observable behavior the diff changes; if nothing observable changes, cap findings at nits. Read each new data shape from its callers: the side that reads the shape decides it, so delete shapes with no caller and split shapes two callers read differently. For a pure restructure, demand the lock first: a regression test that fails on the old shape and passes on the new one, or a recorded before/after run. A clean diff with no lock is still a finding.
+
 ## 1. Correctness of hooks and rendering
 
 Look for conditional hooks, unstable keys, state that duplicates derivable data, and effects whose async work can outlive unmount.

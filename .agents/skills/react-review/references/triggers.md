@@ -207,3 +207,9 @@ function PagerLink({ sectionId, children }: Props) {
     return (...)
 }
 ```
+
+## Restructure with no behavior lock
+
+Wrong: a refactor diff with green tests that never failed, no recorded before/after behavior.
+
+Right: lock behavior first, a regression test that fails on the old shape and passes on the new one, then move the code.
