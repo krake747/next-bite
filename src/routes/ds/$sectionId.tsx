@@ -6,7 +6,7 @@ import { cx } from "@ui/cva.config"
 import { IconButton } from "@ui/icon-button"
 import { focusRing } from "@ui/variants"
 
-import { designSystemSections, type Guidance } from "./-sections/registry"
+import { designSystemSections, type Guidance, type SectionEntry } from "./-sections/registry"
 import { AnatomyTable, PracticesTable, PropsTable, VariantTable, type PracticeRow } from "./-sections/token-table"
 
 export const Route = createFileRoute("/ds/$sectionId")({
@@ -181,6 +181,114 @@ function SectionPager({ sectionId }: Readonly<{ sectionId: string }>) {
     )
 }
 
+function PreviewSection({ entry }: Readonly<{ entry: SectionEntry }>) {
+    return (
+        <section aria-label="Preview" className="pt-6">
+            <div className="grid min-h-80 place-items-center overflow-hidden rounded-card border border-border bg-surface px-4 py-10 sm:px-8">
+                <entry.Demo />
+            </div>
+        </section>
+    )
+}
+
+function UsageSection({ entry }: Readonly<{ entry: SectionEntry }>) {
+    return (
+        <section aria-label="Usage" className="pt-8">
+            <h2 className="font-display text-xl font-semibold text-balance text-foreground">Usage</h2>
+            <p className="mt-1 text-pretty text-muted-foreground">{entry.meta.body}</p>
+            <div className="pt-4">
+                <SpecifierCode importPath={entry.meta.importPath} />
+            </div>
+        </section>
+    )
+}
+
+function AnatomySection({ entry }: Readonly<{ entry: SectionEntry }>) {
+    const anatomy = entry.meta.anatomy
+    if (!anatomy) {
+        return null
+    }
+    return (
+        <section aria-label="Anatomy" className="pt-8">
+            <h2 className="font-display text-xl font-semibold text-balance text-foreground">Anatomy</h2>
+            <div className="mt-2 overflow-x-auto rounded-card border border-border px-4 py-2">
+                <AnatomyTable caption={`${entry.meta.title} anatomy`} rows={anatomy} />
+            </div>
+        </section>
+    )
+}
+
+function BestPracticesSection({ entry }: Readonly<{ entry: SectionEntry }>) {
+    const guidance = entry.meta.guidance
+    if (!guidance) {
+        return null
+    }
+    return (
+        <section aria-label="Best practices" className="pt-8">
+            <h2 className="font-display text-xl font-semibold text-balance text-foreground">Best practices</h2>
+            <div className="mt-2 overflow-x-auto rounded-card border border-border px-4 py-2">
+                <PracticesTable caption={`${entry.meta.title} best practices`} rows={practiceRows(guidance)} />
+            </div>
+            {guidance.siblings !== undefined && guidance.siblings.length > 0 && (
+                <>
+                    <h2 className="pt-4 font-display text-xl font-semibold text-balance text-foreground">Related</h2>
+                    <ul className="mt-1 space-y-1 text-muted-foreground">
+                        {guidance.siblings.map((sibling) => (
+                            <li key={sibling.id}>
+                                <Link
+                                    to="/ds/$sectionId"
+                                    params={{ sectionId: sibling.id }}
+                                    className={cx(
+                                        focusRing(),
+                                        "rounded-sm font-mono text-xs text-foreground underline decoration-border underline-offset-4 hover:decoration-foreground",
+                                    )}
+                                >
+                                    {sibling.id}
+                                </Link>
+                                <span> {sibling.reason}</span>
+                            </li>
+                        ))}
+                    </ul>
+                </>
+            )}
+        </section>
+    )
+}
+
+function ExamplesSection({ entry }: Readonly<{ entry: SectionEntry }>) {
+    const variants = entry.meta.variants
+    if (!variants) {
+        return null
+    }
+    return (
+        <section aria-label="Examples" className="pt-8">
+            <h2 className="font-display text-xl font-semibold text-balance text-foreground">Examples</h2>
+            <p className="mt-1 text-pretty text-muted-foreground">
+                Common configurations, variations, and states. Only these variants exist. An unlisted variant is a bug,
+                not an option.
+            </p>
+            <div className="mt-2 overflow-x-auto rounded-card border border-border px-4 py-2">
+                <VariantTable caption={`${entry.meta.title} variants`} rows={variants} />
+            </div>
+        </section>
+    )
+}
+
+function PropsSection({ entry }: Readonly<{ entry: SectionEntry }>) {
+    const props = entry.meta.props
+    if (!props) {
+        return null
+    }
+    return (
+        <section aria-label="Props" className="pt-8">
+            <h2 className="font-display text-xl font-semibold text-balance text-foreground">Props</h2>
+            <div className="mt-2 overflow-x-auto rounded-card border border-border px-4 py-2">
+                <PropsTable caption={`${entry.meta.title} props`} rows={props} />
+            </div>
+        </section>
+    )
+}
+
 function DesignSystemSectionPage() {
     const { sectionId } = Route.useParams()
     const entry = designSystemSections[sectionId]
@@ -195,81 +303,12 @@ function DesignSystemSectionPage() {
                 {entry.meta.title}
             </h1>
             <ImportPath importPath={entry.meta.importPath} />
-            <section aria-label="Preview" className="pt-6">
-                <div className="grid min-h-80 place-items-center overflow-hidden rounded-card border border-border bg-surface px-4 py-10 sm:px-8">
-                    <entry.Demo />
-                </div>
-            </section>
-            <section aria-label="Usage" className="pt-8">
-                <h2 className="font-display text-xl font-semibold text-balance text-foreground">Usage</h2>
-                <p className="mt-1 text-pretty text-muted-foreground">{entry.meta.body}</p>
-                <div className="pt-4">
-                    <SpecifierCode importPath={entry.meta.importPath} />
-                </div>
-            </section>
-            {entry.meta.anatomy !== undefined && (
-                <section aria-label="Anatomy" className="pt-8">
-                    <h2 className="font-display text-xl font-semibold text-balance text-foreground">Anatomy</h2>
-                    <div className="mt-2 overflow-x-auto rounded-card border border-border px-4 py-2">
-                        <AnatomyTable caption={`${entry.meta.title} anatomy`} rows={entry.meta.anatomy} />
-                    </div>
-                </section>
-            )}
-            {entry.meta.guidance !== undefined && (
-                <section aria-label="Best practices" className="pt-8">
-                    <h2 className="font-display text-xl font-semibold text-balance text-foreground">Best practices</h2>
-                    <div className="mt-2 overflow-x-auto rounded-card border border-border px-4 py-2">
-                        <PracticesTable
-                            caption={`${entry.meta.title} best practices`}
-                            rows={practiceRows(entry.meta.guidance)}
-                        />
-                    </div>
-                    {entry.meta.guidance.siblings !== undefined && entry.meta.guidance.siblings.length > 0 && (
-                        <>
-                            <h2 className="pt-4 font-display text-xl font-semibold text-balance text-foreground">
-                                Related
-                            </h2>
-                            <ul className="mt-1 space-y-1 text-muted-foreground">
-                                {entry.meta.guidance.siblings.map((sibling) => (
-                                    <li key={sibling.id}>
-                                        <Link
-                                            to="/ds/$sectionId"
-                                            params={{ sectionId: sibling.id }}
-                                            className={cx(
-                                                focusRing(),
-                                                "rounded-sm font-mono text-xs text-foreground underline decoration-border underline-offset-4 hover:decoration-foreground",
-                                            )}
-                                        >
-                                            {sibling.id}
-                                        </Link>
-                                        <span> {sibling.reason}</span>
-                                    </li>
-                                ))}
-                            </ul>
-                        </>
-                    )}
-                </section>
-            )}
-            {entry.meta.variants !== undefined && (
-                <section aria-label="Examples" className="pt-8">
-                    <h2 className="font-display text-xl font-semibold text-balance text-foreground">Examples</h2>
-                    <p className="mt-1 text-pretty text-muted-foreground">
-                        Common configurations, variations, and states. Only these variants exist. An unlisted variant is
-                        a bug, not an option.
-                    </p>
-                    <div className="mt-2 overflow-x-auto rounded-card border border-border px-4 py-2">
-                        <VariantTable caption={`${entry.meta.title} variants`} rows={entry.meta.variants} />
-                    </div>
-                </section>
-            )}
-            {entry.meta.props !== undefined && (
-                <section aria-label="Props" className="pt-8">
-                    <h2 className="font-display text-xl font-semibold text-balance text-foreground">Props</h2>
-                    <div className="mt-2 overflow-x-auto rounded-card border border-border px-4 py-2">
-                        <PropsTable caption={`${entry.meta.title} props`} rows={entry.meta.props} />
-                    </div>
-                </section>
-            )}
+            <PreviewSection entry={entry} />
+            <UsageSection entry={entry} />
+            <AnatomySection entry={entry} />
+            <BestPracticesSection entry={entry} />
+            <ExamplesSection entry={entry} />
+            <PropsSection entry={entry} />
             <SectionPager sectionId={sectionId} />
         </div>
     )
