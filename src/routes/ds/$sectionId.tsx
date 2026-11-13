@@ -151,13 +151,13 @@ function useSectionEntry(): SectionEntry {
 }
 
 function SectionHeader() {
-    const entry = useSectionEntry()
+    const {
+        meta: { importPath, title },
+    } = useSectionEntry()
     return (
         <>
-            <h1 className="font-display text-3xl font-semibold tracking-tight text-balance text-foreground">
-                {entry.meta.title}
-            </h1>
-            <ImportPath importPath={entry.meta.importPath} />
+            <h1 className="font-display text-3xl font-semibold tracking-tight text-balance text-foreground">{title}</h1>
+            <ImportPath importPath={importPath} />
         </>
     )
 }
@@ -201,9 +201,11 @@ function NextPagerLink({ sectionId, title }: Readonly<{ sectionId: string; title
 }
 
 function SectionPager() {
-    const entry = useSectionEntry()
+    const {
+        meta: { id },
+    } = useSectionEntry()
     const entries = Object.values(designSystemSections)
-    const currentIndex = entries.findIndex((candidate) => candidate.meta.id === entry.meta.id)
+    const currentIndex = entries.findIndex((candidate) => candidate.meta.id === id)
     if (currentIndex < 0) {
         return null
     }
@@ -229,32 +231,35 @@ function SectionPager() {
 }
 
 function PreviewSection() {
-    const entry = useSectionEntry()
+    const { Demo } = useSectionEntry()
     return (
         <section aria-label="Preview" className="pt-6">
             <div className="grid min-h-80 place-items-center overflow-hidden rounded-card border border-border bg-surface px-4 py-10 sm:px-8">
-                <entry.Demo />
+                <Demo />
             </div>
         </section>
     )
 }
 
 function UsageSection() {
-    const entry = useSectionEntry()
+    const {
+        meta: { body, importPath },
+    } = useSectionEntry()
     return (
         <section aria-label="Usage" className="pt-8">
             <h2 className="font-display text-xl font-semibold text-balance text-foreground">Usage</h2>
-            <p className="mt-1 text-pretty text-muted-foreground">{entry.meta.body}</p>
+            <p className="mt-1 text-pretty text-muted-foreground">{body}</p>
             <div className="pt-4">
-                <SpecifierCode importPath={entry.meta.importPath} />
+                <SpecifierCode importPath={importPath} />
             </div>
         </section>
     )
 }
 
 function AnatomySection() {
-    const entry = useSectionEntry()
-    const anatomy = entry.meta.anatomy
+    const {
+        meta: { anatomy, title },
+    } = useSectionEntry()
     if (!anatomy) {
         return null
     }
@@ -262,15 +267,16 @@ function AnatomySection() {
         <section aria-label="Anatomy" className="pt-8">
             <h2 className="font-display text-xl font-semibold text-balance text-foreground">Anatomy</h2>
             <div className="mt-2 overflow-x-auto rounded-card border border-border px-4 py-2">
-                <AnatomyTable caption={`${entry.meta.title} anatomy`} rows={anatomy} />
+                <AnatomyTable caption={`${title} anatomy`} rows={anatomy} />
             </div>
         </section>
     )
 }
 
 function BestPracticesSection() {
-    const entry = useSectionEntry()
-    const guidance = entry.meta.guidance
+    const {
+        meta: { guidance, title },
+    } = useSectionEntry()
     if (!guidance) {
         return null
     }
@@ -278,7 +284,7 @@ function BestPracticesSection() {
         <section aria-label="Best practices" className="pt-8">
             <h2 className="font-display text-xl font-semibold text-balance text-foreground">Best practices</h2>
             <div className="mt-2 overflow-x-auto rounded-card border border-border px-4 py-2">
-                <PracticesTable caption={`${entry.meta.title} best practices`} rows={practiceRows(guidance)} />
+                <PracticesTable caption={`${title} best practices`} rows={practiceRows(guidance)} />
             </div>
             {guidance.siblings !== undefined && guidance.siblings.length > 0 && (
                 <>
@@ -307,8 +313,9 @@ function BestPracticesSection() {
 }
 
 function ExamplesSection() {
-    const entry = useSectionEntry()
-    const variants = entry.meta.variants
+    const {
+        meta: { title, variants },
+    } = useSectionEntry()
     if (!variants) {
         return null
     }
@@ -320,15 +327,16 @@ function ExamplesSection() {
                 not an option.
             </p>
             <div className="mt-2 overflow-x-auto rounded-card border border-border px-4 py-2">
-                <VariantTable caption={`${entry.meta.title} variants`} rows={variants} />
+                <VariantTable caption={`${title} variants`} rows={variants} />
             </div>
         </section>
     )
 }
 
 function PropsSection() {
-    const entry = useSectionEntry()
-    const props = entry.meta.props
+    const {
+        meta: { props, title },
+    } = useSectionEntry()
     if (!props) {
         return null
     }
@@ -336,7 +344,7 @@ function PropsSection() {
         <section aria-label="Props" className="pt-8">
             <h2 className="font-display text-xl font-semibold text-balance text-foreground">Props</h2>
             <div className="mt-2 overflow-x-auto rounded-card border border-border px-4 py-2">
-                <PropsTable caption={`${entry.meta.title} props`} rows={props} />
+                <PropsTable caption={`${title} props`} rows={props} />
             </div>
         </section>
     )
