@@ -8,7 +8,7 @@ the reviewer checks it.
 
 A module file names the module first, then the usecase after a dot: `auth.sdk`, `convex.options`,
 `image.utils`. One dot, two segments; tiers keep their own suffixes (`auth.store.spec`). Component
-files keep their single kebab name (`comment-list`, `pending-button`): dots mark module splits, not
+files keep their single kebab name (`activity-post`, `pending-button`): dots mark module splits, not
 word breaks. Check: a new file with two or more dashes that splits a module from its usecase.
 
 ## Primitives compose with the framework, never import it

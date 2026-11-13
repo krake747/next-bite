@@ -8,7 +8,7 @@ Product terms: User, Invitation. Defined in `GLOSSARY.md`.
 - `_app/invite.$token.tsx`: invitation acceptance inside the shell.
 - `_app/account.tsx` and `_app/you.tsx`: profile and own short list.
 - `_app/route.tsx` plus `-components/session-gate.tsx`: shell level session gating. Guards are
-  covered by `route-guards.integration.spec.ts`.
+  covered by `route-guards.integration.spec.tsx`.
 
 ## UI (`src/features/account/`)
 
@@ -43,12 +43,12 @@ Product terms: User, Invitation. Defined in `GLOSSARY.md`.
 
 - `src/core/identity.integration.spec.ts`, `src/core/profile.integration.spec.ts`,
   `src/core/auth.methods.integration.spec.ts`, `src/core/invites.integration.spec.ts`
-- `src/routes/login.integration.spec.tsx`, `src/routes/route-guards.integration.spec.ts`,
+- `src/routes/login.integration.spec.tsx`, `src/routes/route-guards.integration.spec.tsx`,
   `src/routes/_app/avatar-section.browser.spec.tsx`
 
 ## State
 
 Shipped: password plus emailed code sign in, profiles with avatars, friend and group invitations
-including single use friend links and reusable group links. Out of scope of the current code:
-nothing in this area is missing for the MVP; the gaps sit in choice mechanics, see
-[groups-and-shares.md](groups-and-shares.md) and [plans.md](plans.md).
+including friend links and reusable group links that stay usable until they expire or are revoked.
+Out of scope of the current code: nothing in this area is missing for the MVP; the gaps sit in
+choice mechanics, see [groups-and-shares.md](groups-and-shares.md) and [plans.md](plans.md).

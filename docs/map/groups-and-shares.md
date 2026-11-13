@@ -7,12 +7,12 @@ Product terms: Group, Share. Defined in `GLOSSARY.md`.
 - `groups.tsx`: section layout.
 - `groups.index.tsx`: group list.
 - `groups.$groupId.tsx`: group detail with members, shared places, invitations, and plans. Warms
-  `api.groups.get` and `api.places.forGroup` in its loader.
+  `api.groups.get` and `api.places.forGroup` in its loader. Members add a saved restaurant from this
+  page.
 
 ## UI (`src/features/groups/`)
 
 - `group-members.tsx`: member list.
-- `share-to-group-dialog.tsx`: share a restaurant into a group.
 
 ## Core (`src/core/`)
 
@@ -46,6 +46,6 @@ Product terms: Group, Share. Defined in `GLOSSARY.md`.
 ## State
 
 Shipped: create, list, detail, leave, and invitation links. Group places are added and removed
-through `api.places.addToGroup`, `api.places.removeFromGroup`, and invitation acceptance in
-`convex/invites.ts`. Out of scope of the current code: group level choice mechanics such as voting
-or a shortlist.
+through `api.places.addToGroup` and `api.places.removeFromGroup`. Invitation acceptance in
+`convex/invites.ts` adds membership, not places. Out of scope of the current code: group level
+choice mechanics such as voting or a shortlist.

@@ -12,7 +12,7 @@ friends. _Avoid_: Contact, recommender, reviewer
 **User**: An authenticated person using the app. A user owns their friend list and restaurant
 collection, and sees every restaurant their friends save plus those added to their groups. _Avoid_:
 Account, member, profile in product copy. `Login` is allowed only for auth mechanics (sign in, sign
-up, your login). A group role named `member` is part of `Group`, not a synonym for `User`.
+up, your login). Membership in a group is part of `Group`, not a synonym for `User`.
 
 **Cuisine**: A free-text label describing the type of food a restaurant serves. Not a controlled
 vocabulary. _Avoid_: Food type, category, genre
@@ -22,8 +22,8 @@ address, city, postal code, and geographic coordinates. The Google provider spel
 copy says location or restaurant. _Avoid_: Address, venue, place in product copy
 
 **Opening Hours**: A structured schedule by day of week indicating when a restaurant is open.
-Sourced from Google Maps Places API. Used for the "open now" filter and to display hours on
-restaurant cards. _Avoid_: Schedule, business hours, times
+Sourced from Google Maps Places API. Used to display hours and an Open now or Closed status on the
+restaurant detail. _Avoid_: Schedule, business hours, times
 
 **Group**: A named set of users who pool restaurant recommendations. The creator owns it; everyone
 else is a member. _Avoid_: Circle, crew
@@ -31,9 +31,10 @@ else is a member. _Avoid_: Circle, crew
 **Share**: A restaurant added to a group. Friends see every restaurant without one. Each share
 records who added it. _Avoid_: Forward
 
-**Invitation**: A token link inviting someone to connect as a friend or join a group. Friend
-invitations are single-use; group links stay reusable. The verb invite is allowed (Invite your
-friends, Send request); the noun is always invitation. _Avoid_: Invite, invite link as nouns
+**Invitation**: A token link inviting someone to connect as a friend or join a group. Links stay
+usable until they expire or are revoked; group links can be accepted by more than one person. The
+verb invite is allowed (Invite your friends, Send request); the noun is always invitation. _Avoid_:
+Invite, invite link as nouns
 
 **Save**: A restaurant on the user's own short list. Shown under Saved restaurants.
 

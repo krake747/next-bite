@@ -12,8 +12,7 @@ Product terms: Friend, Friend update, Want, Been. Defined in `GLOSSARY.md`.
 ## UI (`src/features/social/`)
 
 - `activity-post.tsx`: a friend shared restaurant as shown in the home river.
-- `reaction-bar.tsx`: reactions on activity.
-- `photo-gallery.tsx`: friend photo display.
+- `reaction-bar.tsx`: Want toggle on a friend update.
 
 ## Core (`src/core/`)
 

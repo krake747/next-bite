@@ -223,23 +223,12 @@
             ]
         },
         {
-            "name": "friend-presence",
-            "type": "registry:component",
-            "description": "Display-only active/away dot with screen-reader label.",
-            "files": [
-                {
-                    "path": "src/features/social/friend-presence.tsx",
-                    "type": "registry:component"
-                }
-            ]
-        },
-        {
             "name": "social-metadata",
             "type": "registry:component",
             "description": "Human-language attribution lines: added-by, want counts, visit counts.",
             "files": [
                 {
-                    "path": "src/features/social/social-metadata.tsx",
+                    "path": "src/pattern/social-metadata.tsx",
                     "type": "registry:component"
                 }
             ]
@@ -256,34 +245,12 @@
             ]
         },
         {
-            "name": "comment-list",
-            "type": "registry:component",
-            "description": "Plain-text comments, author-only delete, draft form.",
-            "files": [
-                {
-                    "path": "src/features/social/comment-list.tsx",
-                    "type": "registry:component"
-                }
-            ]
-        },
-        {
             "name": "activity-post",
             "type": "registry:component",
             "description": "Feed post composing author, text, restaurant, social context, and reactions.",
             "files": [
                 {
                     "path": "src/features/social/activity-post.tsx",
-                    "type": "registry:component"
-                }
-            ]
-        },
-        {
-            "name": "photo-gallery",
-            "type": "registry:component",
-            "description": "Attributed photo grid with shared viewer and add-photo entry.",
-            "files": [
-                {
-                    "path": "src/features/social/photo-gallery.tsx",
                     "type": "registry:component"
                 }
             ]
@@ -318,29 +285,6 @@
                 {
                     "path": "src/features/restaurants/restaurant-interest-button.tsx",
                     "type": "registry:component"
-                }
-            ]
-        },
-        {
-            "name": "group-card",
-            "type": "registry:block",
-            "description": "Shared food-club card: header, members, and restaurant collection.",
-            "files": [
-                {
-                    "path": "src/features/groups/group-card.tsx",
-                    "type": "registry:block"
-                },
-                {
-                    "path": "src/features/groups/group-header.tsx",
-                    "type": "registry:block"
-                },
-                {
-                    "path": "src/features/groups/group-members.tsx",
-                    "type": "registry:block"
-                },
-                {
-                    "path": "src/features/groups/shared-restaurant-list.tsx",
-                    "type": "registry:block"
                 }
             ]
         }
