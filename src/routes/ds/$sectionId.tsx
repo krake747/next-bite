@@ -126,6 +126,18 @@ function useSectionEntry(): SectionEntry {
     return entry
 }
 
+function SectionHeader() {
+    const entry = useSectionEntry()
+    return (
+        <>
+            <h1 className="font-display text-3xl font-semibold tracking-tight text-balance text-foreground">
+                {entry.meta.title}
+            </h1>
+            <ImportPath importPath={entry.meta.importPath} />
+        </>
+    )
+}
+
 function PagerLink({
     sectionId,
     children,
@@ -316,11 +328,8 @@ function DesignSystemSectionPage() {
 
     return (
         <div className="mx-auto w-full max-w-3xl pb-10">
-            <h1 className="font-display text-3xl font-semibold tracking-tight text-balance text-foreground">
-                {entry.meta.title}
-            </h1>
-            <ImportPath importPath={entry.meta.importPath} />
             <SectionEntryContext value={entry}>
+                <SectionHeader />
                 <PreviewSection />
                 <UsageSection />
                 <AnatomySection />
