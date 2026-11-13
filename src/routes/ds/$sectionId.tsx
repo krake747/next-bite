@@ -279,17 +279,18 @@ function BestPracticesSection() {
     if (!guidance) {
         return null
     }
+    const siblings = guidance.siblings ?? []
     return (
         <section aria-label="Best practices" className="pt-8">
             <h2 className="font-display text-xl font-semibold text-balance text-foreground">Best practices</h2>
             <div className="mt-2 overflow-x-auto rounded-card border border-border px-4 py-2">
                 <PracticesTable caption={`${title} best practices`} rows={practiceRows(guidance)} />
             </div>
-            {guidance.siblings !== undefined && guidance.siblings.length > 0 && (
+            {siblings.length > 0 && (
                 <>
                     <h2 className="pt-4 font-display text-xl font-semibold text-balance text-foreground">Related</h2>
                     <ul className="mt-1 space-y-1 text-muted-foreground">
-                        {guidance.siblings.map((sibling) => (
+                        {siblings.map((sibling) => (
                             <li key={sibling.id}>
                                 <Link
                                     to="/ds/$sectionId"
