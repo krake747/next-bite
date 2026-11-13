@@ -132,6 +132,7 @@ function DetailHero({ restaurant }: Readonly<{ restaurant: Restaurant }>) {
                 show={showHours}
                 onOpenChange={setShowHours}
                 openingHours={hours}
+                failed={hoursFailed}
                 restaurantName={restaurant.name}
             />
         </div>
@@ -195,7 +196,7 @@ function RestaurantDetailView() {
         <PageContainer>
             <BackNav backTo="/" label="Back to restaurants" />
             <div className="mx-auto max-w-3xl space-y-6 pt-4 lg:max-w-5xl">
-                <DetailHero restaurant={restaurant} />
+                <DetailHero key={restaurant._id} restaurant={restaurant} />
                 <DetailPhotos photos={restaurant.photos} />
             </div>
         </PageContainer>
