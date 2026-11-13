@@ -52,7 +52,10 @@ function DesignSystemSectionPage() {
                 <BestPracticesSection />
                 <ExamplesSection />
                 <PropsSection />
-                <SectionPager />
+                <SectionPager>
+                    <PreviousSectionPager />
+                    <NextSectionPager />
+                </SectionPager>
             </SectionEntryContext>
         </div>
     )
@@ -230,11 +233,10 @@ function NextSectionPager() {
     )
 }
 
-function SectionPager() {
+function SectionPager({ children }: Readonly<{ children: React.ReactNode }>) {
     return (
         <nav aria-label="Sections" className="flex items-center justify-between gap-4 pt-10">
-            <PreviousSectionPager />
-            <NextSectionPager />
+            {children}
         </nav>
     )
 }
