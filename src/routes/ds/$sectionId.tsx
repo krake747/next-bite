@@ -1,6 +1,6 @@
 import { ArrowLeftIcon, ArrowRightIcon, CheckIcon, CopyIcon } from "@phosphor-icons/react"
 import { createFileRoute, Link } from "@tanstack/react-router"
-import { useState } from "react"
+import { createContext, use, useState } from "react"
 
 import { cx } from "@ui/cva.config"
 import { IconButton } from "@ui/icon-button"
@@ -116,6 +116,16 @@ function practiceRows(guidance: Guidance): ReadonlyArray<PracticeRow> {
     ]
 }
 
+const SectionEntryContext = createContext<SectionEntry | null>(null)
+
+function useSectionEntry(): SectionEntry {
+    const entry = use(SectionEntryContext)
+    if (!entry) {
+        throw new Error("Section components must render inside a section entry provider")
+    }
+    return entry
+}
+
 function PagerLink({
     sectionId,
     children,
@@ -154,9 +164,10 @@ function NextPagerLink({ sectionId, title }: Readonly<{ sectionId: string; title
     )
 }
 
-function SectionPager({ sectionId }: Readonly<{ sectionId: string }>) {
+function SectionPager() {
+    const entry = useSectionEntry()
     const entries = Object.values(designSystemSections)
-    const currentIndex = entries.findIndex((candidate) => candidate.meta.id === sectionId)
+    const currentIndex = entries.findIndex((candidate) => candidate.meta.id === entry.meta.id)
     if (currentIndex < 0) {
         return null
     }
@@ -181,7 +192,8 @@ function SectionPager({ sectionId }: Readonly<{ sectionId: string }>) {
     )
 }
 
-function PreviewSection({ entry }: Readonly<{ entry: SectionEntry }>) {
+function PreviewSection() {
+    const entry = useSectionEntry()
     return (
         <section aria-label="Preview" className="pt-6">
             <div className="grid min-h-80 place-items-center overflow-hidden rounded-card border border-border bg-surface px-4 py-10 sm:px-8">
@@ -191,7 +203,8 @@ function PreviewSection({ entry }: Readonly<{ entry: SectionEntry }>) {
     )
 }
 
-function UsageSection({ entry }: Readonly<{ entry: SectionEntry }>) {
+function UsageSection() {
+    const entry = useSectionEntry()
     return (
         <section aria-label="Usage" className="pt-8">
             <h2 className="font-display text-xl font-semibold text-balance text-foreground">Usage</h2>
@@ -203,7 +216,8 @@ function UsageSection({ entry }: Readonly<{ entry: SectionEntry }>) {
     )
 }
 
-function AnatomySection({ entry }: Readonly<{ entry: SectionEntry }>) {
+function AnatomySection() {
+    const entry = useSectionEntry()
     const anatomy = entry.meta.anatomy
     if (!anatomy) {
         return null
@@ -218,7 +232,8 @@ function AnatomySection({ entry }: Readonly<{ entry: SectionEntry }>) {
     )
 }
 
-function BestPracticesSection({ entry }: Readonly<{ entry: SectionEntry }>) {
+function BestPracticesSection() {
+    const entry = useSectionEntry()
     const guidance = entry.meta.guidance
     if (!guidance) {
         return null
@@ -255,7 +270,8 @@ function BestPracticesSection({ entry }: Readonly<{ entry: SectionEntry }>) {
     )
 }
 
-function ExamplesSection({ entry }: Readonly<{ entry: SectionEntry }>) {
+function ExamplesSection() {
+    const entry = useSectionEntry()
     const variants = entry.meta.variants
     if (!variants) {
         return null
@@ -274,7 +290,8 @@ function ExamplesSection({ entry }: Readonly<{ entry: SectionEntry }>) {
     )
 }
 
-function PropsSection({ entry }: Readonly<{ entry: SectionEntry }>) {
+function PropsSection() {
+    const entry = useSectionEntry()
     const props = entry.meta.props
     if (!props) {
         return null
@@ -303,13 +320,15 @@ function DesignSystemSectionPage() {
                 {entry.meta.title}
             </h1>
             <ImportPath importPath={entry.meta.importPath} />
-            <PreviewSection entry={entry} />
-            <UsageSection entry={entry} />
-            <AnatomySection entry={entry} />
-            <BestPracticesSection entry={entry} />
-            <ExamplesSection entry={entry} />
-            <PropsSection entry={entry} />
-            <SectionPager sectionId={sectionId} />
+            <SectionEntryContext value={entry}>
+                <PreviewSection />
+                <UsageSection />
+                <AnatomySection />
+                <BestPracticesSection />
+                <ExamplesSection />
+                <PropsSection />
+                <SectionPager />
+            </SectionEntryContext>
         </div>
     )
 }
