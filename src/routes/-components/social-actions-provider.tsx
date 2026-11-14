@@ -4,7 +4,7 @@ import { createContext, use } from "react"
 import { type Restaurant } from "@core/restaurants"
 import { feedTextFor, useSetSave } from "@core/saves"
 import { useAuth } from "@core/session"
-import { type RestaurantCard } from "@features/restaurants/restaurant-card"
+import { type RestaurantCardOverlay } from "@features/restaurants/restaurant-card-overlay"
 import { type ActivityPost } from "@features/social/activity-post"
 
 export type SocialActions = {
@@ -12,7 +12,7 @@ export type SocialActions = {
     readonly goToDetail: (restaurant: Restaurant) => void
     readonly goToLogin: () => void
     readonly activityFor: (restaurant: Restaurant) => Omit<React.ComponentProps<typeof ActivityPost>, "restaurant">
-    readonly cardFor: (restaurant: Restaurant) => Omit<React.ComponentProps<typeof RestaurantCard>, "restaurant">
+    readonly cardFor: (restaurant: Restaurant) => Omit<React.ComponentProps<typeof RestaurantCardOverlay>, "restaurant">
 }
 
 const SocialActionsContext = createContext<SocialActions | null>(null)

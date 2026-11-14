@@ -6,8 +6,7 @@ import { useViewer } from "@core/identity"
 import { preloadHomeCollections, useFeedRestaurants, useRestaurants, type Restaurant } from "@core/restaurants"
 import { orderFeedByRecency } from "@core/saves"
 import { useAuth, useSessionStatus } from "@core/session"
-import { RestaurantCard } from "@features/restaurants/restaurant-card"
-import { RestaurantList } from "@features/restaurants/restaurant-list"
+import { RestaurantCardOverlay } from "@features/restaurants/restaurant-card-overlay"
 import { ActivityPost } from "@features/social/activity-post"
 import { ButtonLink } from "@pattern/button-link"
 import { EmptyState } from "@pattern/empty-state"
@@ -111,19 +110,8 @@ function HomeActivityItem({ restaurant }: Readonly<{ restaurant: Restaurant }>) 
     return <ActivityPost restaurant={restaurant} {...actions.activityFor(restaurant)} />
 }
 
-function HomeShortlist({ mine, feedCount }: Readonly<{ mine: ReadonlyArray<Restaurant>; feedCount: number }>) {
+function HomeShortlist({ mine }: Readonly<{ mine: ReadonlyArray<Restaurant> }>) {
     const actions = useSocialActions()
-    if (mine.length === 0 && feedCount === 0) {
-        return (
-            <section aria-label="Saved restaurants" className="pt-8">
-                <SectionTitle>Saved restaurants</SectionTitle>
-                <p className="mt-1 text-muted-foreground">Every restaurant on your short list.</p>
-                <div className="pt-4">
-                    <RestaurantList restaurants={[]} />
-                </div>
-            </section>
-        )
-    }
     if (mine.length === 0) {
         return (
             <section aria-label="Saved restaurants" className="pt-8">
@@ -142,7 +130,11 @@ function HomeShortlist({ mine, feedCount }: Readonly<{ mine: ReadonlyArray<Resta
             <p className="mt-1 text-muted-foreground">Every restaurant on your short list.</p>
             <div className="grid gap-4 pt-4 sm:gap-8 md:grid-cols-2 md:gap-10">
                 {mine.map((restaurant) => (
-                    <RestaurantCard key={restaurant._id} restaurant={restaurant} {...actions.cardFor(restaurant)} />
+                    <RestaurantCardOverlay
+                        key={restaurant._id}
+                        restaurant={restaurant}
+                        {...actions.cardFor(restaurant)}
+                    />
                 ))}
             </div>
         </section>
@@ -204,7 +196,7 @@ function HomeSections({
         <SocialActionsProvider>
             <HomePlans groups={groups} />
             <HomeActivity feed={feedOnly} />
-            <HomeShortlist mine={mine} feedCount={feedOnly.length} />
+            <HomeShortlist mine={mine} />
         </SocialActionsProvider>
     )
 }

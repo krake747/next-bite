@@ -1,12 +1,14 @@
-import { createFileRoute, Link } from "@tanstack/react-router"
+import { createFileRoute } from "@tanstack/react-router"
 
 import { useRestaurants, type Restaurant } from "@core/restaurants"
 import { orderFeedByRecency } from "@core/saves"
 import { useSessionStatus } from "@core/session"
+import { RestaurantCardCompact } from "@features/restaurants/restaurant-card-compact"
 import { Header, HeaderSubtitle, HeaderTitle } from "@pattern/header"
 import { QueryErrorState } from "@pattern/query-error"
 import { RestaurantListsSkeleton } from "@routes/-components/page-skeletons"
 import { SessionGate } from "@routes/-components/session-gate"
+import { SocialActionsProvider, useSocialActions } from "@routes/-components/social-actions-provider"
 import { PageContainer } from "@routes/-layouts/page-container"
 
 export const Route = createFileRoute("/_app/you")({
@@ -32,6 +34,7 @@ function RestaurantsSection({
     restaurants,
     emptyText,
 }: Readonly<{ title: string; restaurants: ReadonlyArray<Restaurant>; emptyText: string }>) {
+    const actions = useSocialActions()
     return (
         <section aria-label={title}>
             <h2 className="px-4 font-display text-2xl font-semibold text-balance text-foreground">
@@ -42,23 +45,8 @@ function RestaurantsSection({
             ) : (
                 <ul className="grid gap-3 pt-4 md:grid-cols-2">
                     {restaurants.map((restaurant) => (
-                        <li
-                            key={restaurant._id}
-                            className="rounded-card border border-border bg-surface p-4 shadow-card"
-                        >
-                            <Link
-                                to="/restaurants/$restaurantId"
-                                params={{ restaurantId: restaurant._id }}
-                                className="font-display text-lg font-semibold text-balance text-foreground hover:text-primary"
-                            >
-                                {restaurant.name}
-                            </Link>
-                            <p className="mt-1 text-sm text-muted-foreground">
-                                {restaurant.cuisine !== undefined && restaurant.cuisine !== ""
-                                    ? `${restaurant.cuisine} · `
-                                    : ""}
-                                {restaurant.address.label}
-                            </p>
+                        <li key={restaurant._id}>
+                            <RestaurantCardCompact restaurant={restaurant} {...actions.cardFor(restaurant)} />
                         </li>
                     ))}
                 </ul>
@@ -78,23 +66,25 @@ function YouContent() {
     const been = saved.filter((r) => r.mySave === "been")
 
     return (
-        <div className="flex flex-col gap-8">
-            <RestaurantsSection
-                title="Saved"
-                restaurants={saved}
-                emptyText="Nothing saved yet. Add your first restaurant from Home."
-            />
-            <RestaurantsSection
-                title="Want to try"
-                restaurants={want}
-                emptyText="No wants yet. Tap Want on any restaurant to park it here."
-            />
-            <RestaurantsSection
-                title="Been"
-                restaurants={been}
-                emptyText="No visits yet. Mark Been on restaurants you tried."
-            />
-        </div>
+        <SocialActionsProvider>
+            <div className="flex flex-col gap-8">
+                <RestaurantsSection
+                    title="Saved"
+                    restaurants={saved}
+                    emptyText="Nothing saved yet. Add your first restaurant from Home."
+                />
+                <RestaurantsSection
+                    title="Want to try"
+                    restaurants={want}
+                    emptyText="No wants yet. Tap Want on any restaurant to park it here."
+                />
+                <RestaurantsSection
+                    title="Been"
+                    restaurants={been}
+                    emptyText="No visits yet. Mark Been on restaurants you tried."
+                />
+            </div>
+        </SocialActionsProvider>
     )
 }
 
