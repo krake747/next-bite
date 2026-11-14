@@ -1,16 +1,19 @@
+import { XIcon } from "@phosphor-icons/react"
 import { useState } from "react"
 
 import { type Id } from "@api/data.model"
 import { type PlacePhotoInput } from "@api/db/restaurants"
+import { MAX_IMAGES } from "@core/constants"
 import { clearError, errorFrom, type FormError } from "@core/outcome"
-import { useAddPlacePhotos, useDeleteUpload, useUploadImage } from "@core/restaurants"
+import { useAddPlacePhotos, useDeleteUpload, useRemovePlacePhoto, useUploadImage } from "@core/restaurants"
+import { type Restaurant } from "@core/restaurants"
 import { type ImageRecord } from "@core/schemas"
 import { type GalleryPhoto } from "@pattern/gallery"
 import { ImageUpload } from "@pattern/image-upload"
+import { LazyImage } from "@pattern/lazy-image"
 import { Button } from "@ui/button"
 import { Dialog, DialogContent, DialogTitle } from "@ui/dialog"
 
-import { SavedPhotosSection } from "./place-saved-photos"
 import { useRestaurantImages } from "./use-restaurant-images"
 
 function toPhotoInput(image: ImageRecord): PlacePhotoInput {
@@ -20,8 +23,6 @@ function toPhotoInput(image: ImageRecord): PlacePhotoInput {
         ...(image.height !== undefined ? { height: image.height } : {}),
     }
 }
-
-const EMPTY_PHOTOS: ReadonlyArray<GalleryPhoto> = []
 
 function usePhotoUploadSubmit({
     placeId,
@@ -77,25 +78,94 @@ function PhotoUploadActions({
     )
 }
 
+function useSavedPhotoRemoval(placeId: Id<"places">) {
+    const removePhoto = useRemovePlacePhoto()
+    const [pendingStorageId, setPendingStorageId] = useState<Id<"_storage"> | null>(null)
+    const [removeError, setRemoveError] = useState<string | null>(null)
+
+    return {
+        pendingStorageId,
+        removeError,
+        remove: (storageId: Id<"_storage">) => {
+            if (pendingStorageId !== null) {
+                return
+            }
+            setPendingStorageId(storageId)
+            setRemoveError(null)
+            removePhoto.mutate(
+                { placeId, storageId },
+                {
+                    onSuccess: () => {
+                        setPendingStorageId(null)
+                    },
+                    onError: (error: unknown) => {
+                        setPendingStorageId(null)
+                        setRemoveError(error instanceof Error ? error.message : "Could not remove photo")
+                    },
+                },
+            )
+        },
+    }
+}
+
+function canRemovePhoto(
+    photo: GalleryPhoto,
+    viewerId: Id<"profiles"> | undefined,
+    ownerId: Id<"profiles"> | undefined,
+): boolean {
+    if (photo.storageId === undefined || viewerId === undefined) {
+        return false
+    }
+    return (
+        (ownerId !== undefined && ownerId === viewerId) || (photo.addedBy !== undefined && photo.addedBy === viewerId)
+    )
+}
+
+function SavedPhotoTile({
+    photo,
+    index,
+    restaurantName,
+    disabled,
+    onRemove,
+}: Readonly<{
+    photo: GalleryPhoto
+    index: number
+    restaurantName: string
+    disabled: boolean
+    onRemove: (photo: GalleryPhoto) => void
+}>) {
+    return (
+        <div className="group relative aspect-square overflow-hidden rounded-lg bg-surface-muted">
+            <LazyImage src={photo.url} alt={`${restaurantName} - image ${index + 1}`} ratio={1 / 1} />
+            <button
+                type="button"
+                onClick={() => {
+                    onRemove(photo)
+                }}
+                disabled={disabled}
+                className="hit-area-2 absolute top-1 right-1 rounded-full bg-destructive p-2 text-inverse shadow-md hover:bg-destructive/90"
+                aria-label={`Remove photo ${index + 1}`}
+            >
+                <XIcon className="size-3" aria-hidden="true" />
+            </button>
+        </div>
+    )
+}
+
 export function PlacePhotoUploadDialog({
-    placeId,
+    restaurant,
+    viewerId,
     show,
     onOpenChange,
-    remaining,
-    restaurantName,
-    existingPhotos,
-    viewerId,
-    ownerId,
 }: Readonly<{
-    placeId: Id<"places">
+    restaurant: Restaurant
+    viewerId?: Id<"profiles"> | undefined
     show: boolean
     onOpenChange: (open: boolean) => void
-    remaining: number
-    restaurantName: string
-    existingPhotos?: ReadonlyArray<GalleryPhoto> | undefined
-    viewerId?: Id<"profiles"> | undefined
-    ownerId?: Id<"profiles"> | undefined
 }>) {
+    const placeId = restaurant._id
+    const existingPhotos = restaurant.photos
+    const remaining = MAX_IMAGES - existingPhotos.length
     const uploadImage = useUploadImage()
     const deleteUpload = useDeleteUpload()
     const gallery = useRestaurantImages({
@@ -104,12 +174,23 @@ export function PlacePhotoUploadDialog({
         },
     })
     const submit = usePhotoUploadSubmit({ placeId, gallery, onOpenChange })
+    const removal = useSavedPhotoRemoval(placeId)
 
-    const handleOpenChange = (open: boolean) => {
+    const handleOpenChange = (open: boolean): void => {
         if (!open && !submit.isPending) {
             void gallery.discardChanges()
         }
         onOpenChange(open)
+    }
+
+    const handleImagesChange = (updated: ReadonlyArray<ImageRecord>): void => {
+        gallery.setImages([...updated])
+    }
+
+    const handleRemovePhoto = (target: GalleryPhoto): void => {
+        if (target.storageId !== undefined) {
+            removal.remove(target.storageId)
+        }
     }
 
     return (
@@ -117,24 +198,50 @@ export function PlacePhotoUploadDialog({
             <DialogContent size="sm" padding="sm">
                 <DialogTitle className="mb-1">Add photos</DialogTitle>
                 <p className="mb-4 text-sm text-muted-foreground">
-                    {restaurantName} · {remaining} {remaining === 1 ? "slot" : "slots"} left
+                    {restaurant.name} · {remaining} {remaining === 1 ? "slot" : "slots"} left
                 </p>
                 <ImageUpload
                     images={gallery.images}
-                    onImagesChange={(updated) => {
-                        gallery.setImages([...updated])
-                    }}
+                    onImagesChange={handleImagesChange}
                     uploadImage={uploadImage}
                     deleteUpload={async (args) => deleteUpload.mutateAsync(args)}
                     maxFiles={remaining}
                 />
-                <SavedPhotosSection
-                    placeId={placeId}
-                    photos={existingPhotos ?? EMPTY_PHOTOS}
-                    restaurantName={restaurantName}
-                    viewerId={viewerId}
-                    ownerId={ownerId}
-                />
+                {existingPhotos.length > 0 && (
+                    <div className="pt-4">
+                        <p className="text-sm font-medium text-foreground">Current photos</p>
+                        <div className="grid grid-cols-3 gap-2 pt-2">
+                            {existingPhotos.map((photo, index) =>
+                                canRemovePhoto(photo, viewerId, restaurant.ownerId) && photo.storageId !== undefined ? (
+                                    <SavedPhotoTile
+                                        key={photo.storageId}
+                                        photo={photo}
+                                        index={index}
+                                        restaurantName={restaurant.name}
+                                        disabled={removal.pendingStorageId !== null}
+                                        onRemove={handleRemovePhoto}
+                                    />
+                                ) : (
+                                    <div
+                                        key={photo.storageId ?? photo.url}
+                                        className="group relative aspect-square overflow-hidden rounded-lg bg-surface-muted"
+                                    >
+                                        <LazyImage
+                                            src={photo.url}
+                                            alt={`${restaurant.name} - image ${index + 1}`}
+                                            ratio={1 / 1}
+                                        />
+                                    </div>
+                                ),
+                            )}
+                        </div>
+                        {removal.removeError !== null && (
+                            <p role="alert" className="pt-2 text-sm text-destructive">
+                                {removal.removeError}
+                            </p>
+                        )}
+                    </div>
+                )}
                 {submit.error.kind === "error" && (
                     <p role="alert" className="pt-2 text-sm text-destructive">
                         {submit.error.message}

@@ -8,6 +8,13 @@ export function EmptyRestaurantsState() {
     const navigate = useNavigate()
     const auth = useAuth()
 
+    const handleAddFirst = (): void => {
+        void navigate({ to: "/add" })
+    }
+    const handleSignIn = (): void => {
+        void navigate({ to: "/login" })
+    }
+
     return (
         <div className="col-span-full flex flex-col items-center justify-center py-16 text-center">
             <div className="relative mb-6">
@@ -25,21 +32,12 @@ export function EmptyRestaurantsState() {
             </p>
 
             {auth.isAuthenticated ? (
-                <Button
-                    onClick={() => {
-                        void navigate({ to: "/add" })
-                    }}
-                >
+                <Button onClick={handleAddFirst}>
                     <PlusIcon className="size-4" />
                     Add your first restaurant
                 </Button>
             ) : (
-                <Button
-                    tone="secondary"
-                    onClick={() => {
-                        void navigate({ to: "/login" })
-                    }}
-                >
+                <Button tone="secondary" onClick={handleSignIn}>
                     <SparkleIcon className="size-4" />
                     Sign in to add restaurants
                 </Button>

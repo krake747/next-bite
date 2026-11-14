@@ -6,6 +6,7 @@ import { suggestCuisine } from "@features/restaurants/cuisine-suggestion"
 import { RestaurantForm, useFormDiscard } from "@features/restaurants/restaurant-form"
 import { ButtonLink } from "@pattern/button-link"
 import { GoogleAttribution } from "@pattern/google-attribution"
+import { Header, HeaderSubtitle, HeaderTitle } from "@pattern/header"
 import { PlacesAutocomplete, type PlaceSelection } from "@pattern/places-autocomplete"
 import { BackNav } from "@routes/-layouts/back-nav"
 import { PageContainer } from "@routes/-layouts/page-container"
@@ -52,6 +53,24 @@ function PlacePickerCard({
     )
 }
 
+function PlaceBanner({ selection, onResetChoice }: Readonly<{ selection: PlaceSelection; onResetChoice: () => void }>) {
+    return (
+        <div className="mb-5 border-b border-border pb-4">
+            <div className="flex items-center justify-between gap-3">
+                <p className="min-w-0 truncate text-sm text-muted-foreground">
+                    Adding <span className="font-semibold text-foreground">{selection.name ?? selection.address}</span>
+                </p>
+                <Button type="button" tone="ghost" onClick={onResetChoice}>
+                    Change
+                </Button>
+            </div>
+            <div className="flex justify-end pt-2">
+                <GoogleAttribution />
+            </div>
+        </div>
+    )
+}
+
 function AddRestaurantFormCard({
     choice,
     onSuccess,
@@ -70,24 +89,7 @@ function AddRestaurantFormCard({
         choice.kind === "place" ? (choice.selection.placeId ?? `address:${choice.selection.address}`) : choice.kind
     return (
         <div className="rounded-card border border-border bg-surface p-5 shadow-card">
-            {choice.kind === "place" && (
-                <div className="mb-5 border-b border-border pb-4">
-                    <div className="flex items-center justify-between gap-3">
-                        <p className="min-w-0 truncate text-sm text-muted-foreground">
-                            Adding{" "}
-                            <span className="font-semibold text-foreground">
-                                {choice.selection.name ?? choice.selection.address}
-                            </span>
-                        </p>
-                        <Button type="button" tone="ghost" onClick={onResetChoice}>
-                            Change
-                        </Button>
-                    </div>
-                    <div className="flex justify-end pt-2">
-                        <GoogleAttribution />
-                    </div>
-                </div>
-            )}
+            {choice.kind === "place" && <PlaceBanner selection={choice.selection} onResetChoice={onResetChoice} />}
             <RestaurantForm
                 key={choiceKey}
                 onSuccess={onSuccess}
@@ -133,38 +135,35 @@ function AddPage() {
     const handleSuccess = (restaurantId: string) => {
         void navigate({ to: "/restaurants/$restaurantId", params: { restaurantId } })
     }
+    const handleSelectPlace = (selection: PlaceSelection): void => {
+        changeChoice({ kind: "place", selection })
+    }
+    const handleManual = (): void => {
+        changeChoice({ kind: "manual" })
+    }
+    const handleResetChoice = (): void => {
+        changeChoice({ kind: "idle" })
+    }
 
     return (
         <PageContainer>
             <BackNav backTo="/home" label="Back to restaurants" />
+            <Header>
+                <HeaderTitle>Add a restaurant</HeaderTitle>
+                <HeaderSubtitle>
+                    Find it on Google Maps and confirm the details. Only your notes and photos are manual.
+                </HeaderSubtitle>
+            </Header>
             <div className="mx-auto max-w-2xl space-y-6 pt-4">
-                <div>
-                    <h1 className="font-display text-3xl font-semibold tracking-tight text-balance text-foreground">
-                        Add a restaurant
-                    </h1>
-                    <p className="mt-1 text-muted-foreground">
-                        Find it on Google Maps and confirm the details. Only your notes and photos are manual.
-                    </p>
-                </div>
-
                 {choice.kind === "idle" ? (
-                    <PlacePickerCard
-                        onSelect={(selection) => {
-                            changeChoice({ kind: "place", selection })
-                        }}
-                        onManual={() => {
-                            changeChoice({ kind: "manual" })
-                        }}
-                    />
+                    <PlacePickerCard onSelect={handleSelectPlace} onManual={handleManual} />
                 ) : (
                     <AddRestaurantFormCard
                         choice={choice}
                         onSuccess={handleSuccess}
                         onCancel={handleCancel}
                         onDiscardReady={registerDiscard}
-                        onResetChoice={() => {
-                            changeChoice({ kind: "idle" })
-                        }}
+                        onResetChoice={handleResetChoice}
                     />
                 )}
             </div>

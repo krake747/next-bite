@@ -1,6 +1,6 @@
 import { useSuspenseQuery } from "@tanstack/react-query"
 import { createFileRoute, Link } from "@tanstack/react-router"
-import { useState } from "react"
+import { createContext, use, useState } from "react"
 
 import { type Id, toId } from "@api/data.model"
 import {
@@ -12,13 +12,13 @@ import {
     useRemoveFromGroup,
     useRevokeInvite,
 } from "@core/groups"
-import { isViewer, useViewer } from "@core/identity"
+import { isViewer, useViewer, type Viewer } from "@core/identity"
 import { clearError, errorFrom, type FormError } from "@core/outcome"
 import { useRestaurants, type Restaurant } from "@core/restaurants"
 import { orderFeedByRecency } from "@core/saves"
 import { useAuth, useSessionStatus, warmAuthenticatedQueries } from "@core/session"
-import { GroupMembers } from "@features/groups/group-members"
 import { PlanSection } from "@features/plans/plans"
+import { AvatarGroup, type AvatarMember } from "@pattern/avatar-group"
 import { EmptyState } from "@pattern/empty-state"
 import { Header, HeaderSubtitle, HeaderTitle } from "@pattern/header"
 import { LoadingPlaceholder } from "@pattern/loading"
@@ -72,7 +72,40 @@ function GroupNotFound() {
     )
 }
 
-function AddFromMyList({ groupId, sharedIds }: Readonly<{ groupId: Id<"groups">; sharedIds: ReadonlySet<string> }>) {
+type GroupDetailContextValue = {
+    readonly groupId: Id<"groups">
+    readonly restaurants: ReadonlyArray<Restaurant>
+    readonly sharedIds: ReadonlySet<string>
+    readonly viewer: Viewer
+    readonly isOwner: boolean
+}
+
+const GroupDetailContext = createContext<GroupDetailContextValue | null>(null)
+
+function useGroupDetail(): GroupDetailContextValue {
+    const value = use(GroupDetailContext)
+    if (!value) {
+        throw new Error("Group detail components must render inside a group detail provider")
+    }
+    return value
+}
+
+function GroupMembers({ members }: Readonly<{ members: ReadonlyArray<AvatarMember> }>) {
+    if (members.length === 0) {
+        return <p className="text-sm text-muted-foreground">No members yet. Invite your friends.</p>
+    }
+    return (
+        <div className="flex items-center gap-2.5">
+            <AvatarGroup members={members} />
+            <p className="text-sm text-muted-foreground tabular-nums">
+                {members.length === 1 ? "1 member" : `${members.length} members`}
+            </p>
+        </div>
+    )
+}
+
+function AddFromMyList() {
+    const { groupId, sharedIds } = useGroupDetail()
     const restaurants = useRestaurants()
     const addToGroup = useAddToGroup()
 
@@ -118,15 +151,8 @@ function AddFromMyList({ groupId, sharedIds }: Readonly<{ groupId: Id<"groups">;
     )
 }
 
-function GroupRestaurantsSection({
-    groupId,
-    restaurants,
-    viewer,
-}: Readonly<{
-    groupId: Id<"groups">
-    restaurants: ReadonlyArray<Restaurant>
-    viewer: { readonly kind: "signed-in"; readonly id: string } | { readonly kind: "signed-out" }
-}>) {
+function GroupRestaurantsSection() {
+    const { groupId, restaurants, viewer } = useGroupDetail()
     const removeFromGroup = useRemoveFromGroup()
 
     const feed = orderFeedByRecency(restaurants)
@@ -212,6 +238,20 @@ function GroupInviteSection({ groupId }: Readonly<{ groupId: Id<"groups"> }>) {
         }
     }
 
+    const handleCopyLink = (): void => {
+        if (token.kind === "none") {
+            return
+        }
+        void navigator.clipboard
+            .writeText(`${window.location.origin}/invite/${token.token}`)
+            .then(() => {
+                setCopied(true)
+            })
+            .catch(() => {
+                setCopied(false)
+            })
+    }
+
     return (
         <PageSection label="Invitation link" title="Share with a link" className="pt-8">
             <p className="pt-1 text-sm text-muted-foreground">
@@ -229,19 +269,7 @@ function GroupInviteSection({ groupId }: Readonly<{ groupId: Id<"groups"> }>) {
                         {`/invite/${token.token}`}
                     </p>
                     <div className="flex flex-col gap-2 pt-3 sm:flex-row">
-                        <Button
-                            tone="secondary"
-                            onClick={() => {
-                                void navigator.clipboard
-                                    .writeText(`${window.location.origin}/invite/${token.token}`)
-                                    .then(() => {
-                                        setCopied(true)
-                                    })
-                                    .catch(() => {
-                                        setCopied(false)
-                                    })
-                            }}
-                        >
+                        <Button tone="secondary" onClick={handleCopyLink}>
                             {copied ? "Copied" : "Copy link"}
                         </Button>
                         <Button tone="secondary" onClick={() => void handleRevoke()} disabled={revokeInvite.isPending}>
@@ -282,19 +310,23 @@ function GroupDetailView() {
                     {group.isOwner ? "Owner" : "Member"}
                 </HeaderSubtitle>
             </Header>
-            <section aria-label="Members" className="pt-6">
-                <GroupMembers members={group.members.map((m) => ({ name: m.name }))} />
-            </section>
-            {auth.isAuthenticated && <GroupInviteSection groupId={groupConvexId} />}
-            <PlanSection groupId={groupConvexId} isGroupOwner={group.isOwner} />
-            <PageSection label="Shared restaurants" title="Shared list" className="pt-8">
-                <GroupRestaurantsSection groupId={groupConvexId} restaurants={restaurants} viewer={viewer} />
-            </PageSection>
-            {auth.isAuthenticated && (
-                <PageSection label="Add your restaurants" title="Add your restaurants" className="pt-8">
-                    <AddFromMyList groupId={groupConvexId} sharedIds={sharedIds} />
+            <GroupDetailContext
+                value={{ groupId: groupConvexId, restaurants, sharedIds, viewer, isOwner: group.isOwner }}
+            >
+                <section aria-label="Members" className="pt-6">
+                    <GroupMembers members={group.members} />
+                </section>
+                {auth.isAuthenticated && <GroupInviteSection groupId={groupConvexId} />}
+                <PlanSection groupId={groupConvexId} isGroupOwner={group.isOwner} />
+                <PageSection label="Shared restaurants" title="Shared list" className="pt-8">
+                    <GroupRestaurantsSection />
                 </PageSection>
-            )}
+                {auth.isAuthenticated && (
+                    <PageSection label="Add your restaurants" title="Add your restaurants" className="pt-8">
+                        <AddFromMyList />
+                    </PageSection>
+                )}
+            </GroupDetailContext>
         </PageContainer>
     )
 }
