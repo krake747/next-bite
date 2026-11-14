@@ -77,7 +77,7 @@ export const openingHoursValidator = v.object({
     weekdayText: v.array(v.string()),
 })
 
-export const placeDetailsTierValidator = v.union(v.literal("atmosphere"), v.literal("combined"))
+export const placeDetailsTierValidator = v.union(v.literal("pro"), v.literal("enterprise"))
 
 export const placeDetailsProValidator = v.object({
     displayName: v.optional(v.string()),
@@ -95,37 +95,30 @@ export const placeDetailsEnterpriseValidator = v.object({
     websiteUri: v.optional(v.string()),
 })
 
-export const placeDetailsAtmosphereValidator = v.object({
-    openingHours: openingHoursValidator,
-    rating: v.optional(v.number()),
-    ratingCount: v.optional(v.number()),
-    priceLevel: v.optional(v.string()),
-    websiteUri: v.optional(v.string()),
-    editorialSummary: v.optional(v.string()),
-    reviewSummary: v.optional(v.string()),
-    servesVegetarianFood: v.optional(v.boolean()),
-    goodForGroups: v.optional(v.boolean()),
-    reservable: v.optional(v.boolean()),
-})
-
-export const placeDetailsCombinedValidator = v.object({
-    ...placeDetailsProValidator.fields,
-    ...placeDetailsEnterpriseValidator.fields,
-})
-
-export const placeDetailsValidator = v.union(placeDetailsAtmosphereValidator, placeDetailsCombinedValidator)
+export const placeDetailsValidator = v.union(placeDetailsProValidator, placeDetailsEnterpriseValidator)
 
 // Google Places payloads cached per place and kind. Every TTL sits under the
 // 30-day caching allowance (see docs/migrations.md "Place coordinates") so a
 // stale row is never served past it; coordinates stay uncached by record.
 export const googleCacheKindValidator = v.union(
+    v.literal("details-pro"),
+    v.literal("details-enterprise"),
+    // Deprecated: Good to know is removed, so these kinds are never written.
+    // Kept so existing rows still validate; reads filter by new kinds and
+    // these rows expire untouched.
+    v.literal("atmosphere"),
     v.literal("details-combined"),
     v.literal("details-atmosphere"),
-    v.literal("atmosphere"),
 )
 
 export const googleCachePayloadValidator = v.union(
-    placeDetailsCombinedValidator,
-    placeDetailsAtmosphereValidator,
+    placeDetailsProValidator,
+    placeDetailsEnterpriseValidator,
+    // Deprecated: Good to know is removed. Kept so existing rows still validate.
     atmosphereValidator,
+    // Deprecated payload for the retired combined rows.
+    v.object({
+        ...placeDetailsProValidator.fields,
+        ...placeDetailsEnterpriseValidator.fields,
+    }),
 )

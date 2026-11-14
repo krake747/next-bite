@@ -5,9 +5,8 @@ import { type Id } from "./_generated/dataModel"
 import { action, internalQuery, mutation, query, type ActionCtx } from "./_generated/server"
 import { googleMapsApiKey, isGooglePlacesFixturesEnabled } from "./env"
 import { requireProfile, signedInProfile } from "./model/identity/profiles"
-import { fetchPlaceAtmosphere, type AtmosphereData } from "./model/places/atmosphere"
-import { fetchPlaceDetails, type PlaceDetailsResult } from "./model/places/details"
-import { fetchOpeningHours, type OpeningHoursData } from "./model/places/hours"
+import { fetchPlaceDetails, isMeaningfulResult, type PlaceDetailsResult } from "./model/places/details"
+import { type PlaceProDetails } from "./model/places/details"
 import { fetchPlaceLocation, type PlaceLocationData } from "./model/places/location"
 import {
     addPlacePhotos,
@@ -25,13 +24,11 @@ import {
     setSaveRecord,
 } from "./model/places/places"
 import {
-    openingHoursValidator,
     photoInputValidator,
     placeDetailsTierValidator,
     placeDetailsValidator,
     placeGoogleInputValidator,
     placeLocationValidator,
-    atmosphereValidator,
 } from "./validators"
 
 async function requireActionProfile(ctx: ActionCtx): Promise<Id<"profiles">> {
@@ -46,25 +43,7 @@ async function requireActionProfile(ctx: ActionCtx): Promise<Id<"profiles">> {
     return profileId
 }
 
-export const _placeForHours = internalQuery({
-    args: { placeId: v.id("places") },
-    returns: v.string(),
-    handler: async (ctx, args) => {
-        const userId = (await requireProfile(ctx))._id
-        return googlePlaceIdForViewer(ctx.db, userId, args.placeId)
-    },
-})
-
 export const _placeForLocation = internalQuery({
-    args: { placeId: v.id("places") },
-    returns: v.string(),
-    handler: async (ctx, args) => {
-        const userId = (await requireProfile(ctx))._id
-        return googlePlaceIdForViewer(ctx.db, userId, args.placeId)
-    },
-})
-
-export const _placeForAtmosphere = internalQuery({
     args: { placeId: v.id("places") },
     returns: v.string(),
     handler: async (ctx, args) => {
@@ -223,16 +202,6 @@ export const forGroup = query({
     },
 })
 
-export const hours = action({
-    args: { placeId: v.id("places") },
-    returns: openingHoursValidator,
-    handler: async (ctx, args): Promise<OpeningHoursData> => {
-        await requireActionProfile(ctx)
-        const placeId = await ctx.runQuery(internal.places._placeForHours, { placeId: args.placeId })
-        return fetchOpeningHours(placeId, googleMapsApiKey(), { fixtures: isGooglePlacesFixturesEnabled() })
-    },
-})
-
 export const location = action({
     args: { placeId: v.id("places") },
     returns: v.union(placeLocationValidator, v.null()),
@@ -243,61 +212,49 @@ export const location = action({
     },
 })
 
-// Seam stub for #230. The tiered details action with the Atmosphere mask lands
-// via #228; this narrow atmosphere action fetches only the Atmosphere fields
-// so the detail screen has a seam to consume now. Fold it into
-// details(tier="atmosphere") when #228 lands and switch the frontend hook.
-export const atmosphere = action({
-    args: { placeId: v.id("places") },
-    returns: atmosphereValidator,
-    handler: async (ctx, args): Promise<AtmosphereData> => {
-        await requireActionProfile(ctx)
-        const cached = await ctx.runQuery(internal.model.places.cache.readGoogleCache, {
-            placeId: args.placeId,
-            kind: "atmosphere",
-            now: Date.now(),
-        })
-        if (cached !== null && !("openingHours" in cached)) {
-            return cached
-        }
-        const placeId = await ctx.runQuery(internal.places._placeForAtmosphere, { placeId: args.placeId })
-        const fresh = await fetchPlaceAtmosphere(placeId, googleMapsApiKey(), {
-            fixtures: isGooglePlacesFixturesEnabled(),
-        })
-        await ctx.runMutation(internal.model.places.cache.storeGoogleCache, {
-            placeId: args.placeId,
-            kind: "atmosphere",
-            payload: fresh,
-            fetchedAt: Date.now(),
-        })
-        return fresh
-    },
-})
+function hasProFields(value: object): value is PlaceProDetails {
+    return (
+        "businessStatus" in value ||
+        "displayName" in value ||
+        "primaryType" in value ||
+        "googleMapsUri" in value ||
+        "utcOffsetMinutes" in value
+    )
+}
+
+function isDetailsCacheHit(tier: "pro" | "enterprise", cached: object): cached is PlaceDetailsResult {
+    if (tier === "enterprise") {
+        return "openingHours" in cached
+    }
+    return !("openingHours" in cached) && hasProFields(cached)
+}
 
 export const details = action({
     args: { placeId: v.id("places"), tier: placeDetailsTierValidator },
     returns: placeDetailsValidator,
     handler: async (ctx, args): Promise<PlaceDetailsResult> => {
         await requireActionProfile(ctx)
-        const kind = args.tier === "combined" ? "details-combined" : "details-atmosphere"
+        const kind = args.tier === "pro" ? "details-pro" : "details-enterprise"
         const cached = await ctx.runQuery(internal.model.places.cache.readGoogleCache, {
             placeId: args.placeId,
             kind,
             now: Date.now(),
         })
-        if (cached !== null && "openingHours" in cached) {
+        if (cached !== null && isDetailsCacheHit(args.tier, cached)) {
             return cached
         }
         const placeId = await ctx.runQuery(internal.places._placeForDetails, { placeId: args.placeId })
         const fresh = await fetchPlaceDetails(placeId, googleMapsApiKey(), args.tier, {
             fixtures: isGooglePlacesFixturesEnabled(),
         })
-        await ctx.runMutation(internal.model.places.cache.storeGoogleCache, {
-            placeId: args.placeId,
-            kind,
-            payload: fresh,
-            fetchedAt: Date.now(),
-        })
+        if (isMeaningfulResult(fresh)) {
+            await ctx.runMutation(internal.model.places.cache.storeGoogleCache, {
+                placeId: args.placeId,
+                kind,
+                payload: fresh,
+                fetchedAt: Date.now(),
+            })
+        }
         return fresh
     },
 })

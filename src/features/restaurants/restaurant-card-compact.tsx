@@ -12,6 +12,7 @@ import { RestaurantAddressLink } from "./restaurant-address-link"
 import { RestaurantInterestButton } from "./restaurant-interest-button"
 import { RestaurantStatusLine } from "./restaurant-signals"
 import { useRestaurantSignals } from "./use-restaurant-signals"
+import { useVisible } from "./use-visible"
 
 export function RestaurantCardCompact({
     restaurant,
@@ -27,7 +28,10 @@ export function RestaurantCardCompact({
 >) {
     const hasLocation = restaurant.address.google?.placeId !== undefined && restaurant.address.google.placeId !== ""
     const handleToggleWant = onToggleWant ?? (() => {})
-    const signals = useRestaurantSignals(restaurant._id, restaurant.address.google?.placeId)
+    // Signals bill Enterprise calls, so they load only once the card nears
+    // the viewport instead of on mount for every card in the feed.
+    const [sentinelRef, isVisible] = useVisible()
+    const signals = useRestaurantSignals(restaurant._id, restaurant.address.google?.placeId, isVisible)
     const cover = restaurant.photos[0]?.url
     const cuisine = restaurant.cuisine !== undefined && restaurant.cuisine !== "" ? restaurant.cuisine : undefined
     const price = signals.status === "ready" ? formatPriceLevel(signals.priceLevel) : undefined
@@ -40,7 +44,7 @@ export function RestaurantCardCompact({
     )
 
     return (
-        <Card {...cardProps}>
+        <Card ref={sentinelRef} {...cardProps}>
             <div className="flex flex-col p-4">
                 <div className="flex gap-3">
                     {cover !== undefined ? (

@@ -1,9 +1,9 @@
 import * as valibot from "valibot"
 
 import { fixtureCombinedDetails, type FixtureOptions } from "./fixtures"
-import { type OpeningHoursData } from "./hours"
+import { openFallback, toOpeningHoursData, type OpeningHoursData } from "./hours"
 
-export type PlaceDetailsTier = "atmosphere" | "combined"
+export type PlaceDetailsTier = "enterprise" | "pro"
 
 export const PRO_FIELD_MASK = [
     "displayName",
@@ -21,20 +21,9 @@ export const ENTERPRISE_FIELD_MASK = [
     "websiteUri",
 ] as const
 
-export const COMBINED_FIELD_MASK = [...PRO_FIELD_MASK, ...ENTERPRISE_FIELD_MASK] as const
-
-export const ATMOSPHERE_FIELD_MASK = [
-    ...ENTERPRISE_FIELD_MASK,
-    "editorialSummary",
-    "reviewSummary",
-    "servesVegetarianFood",
-    "goodForGroups",
-    "reservable",
-] as const
-
 export const PLACE_FIELD_MASKS: Record<PlaceDetailsTier, ReadonlyArray<string>> = {
-    atmosphere: [...ATMOSPHERE_FIELD_MASK],
-    combined: [...COMBINED_FIELD_MASK],
+    enterprise: [...ENTERPRISE_FIELD_MASK],
+    pro: [...PRO_FIELD_MASK],
 }
 
 export type PlaceProDetails = {
@@ -53,17 +42,7 @@ export type PlaceEnterpriseDetails = {
     readonly websiteUri?: string
 }
 
-export type PlaceAtmosphereDetails = PlaceEnterpriseDetails & {
-    readonly editorialSummary?: string
-    readonly reviewSummary?: string
-    readonly servesVegetarianFood?: boolean
-    readonly goodForGroups?: boolean
-    readonly reservable?: boolean
-}
-
-export type PlaceCombinedDetails = PlaceProDetails & PlaceEnterpriseDetails
-
-export type PlaceDetailsResult = PlaceCombinedDetails | PlaceAtmosphereDetails
+export type PlaceDetailsResult = PlaceProDetails | PlaceEnterpriseDetails
 
 type GoogleOpeningHours = {
     readonly openNow?: boolean | undefined
@@ -128,82 +107,15 @@ const googleDetailsSchema = valibot.object({
     rating: valibot.optional(valibot.number()),
     userRatingCount: valibot.optional(valibot.number()),
     websiteUri: valibot.optional(valibot.string()),
-    editorialSummary: valibot.optional(
-        valibot.union([
-            valibot.string(),
-            valibot.object({
-                text: valibot.optional(valibot.string()),
-            }),
-        ]),
-    ),
-    reviewSummary: valibot.optional(
-        valibot.union([
-            valibot.string(),
-            valibot.object({
-                text: valibot.optional(
-                    valibot.union([valibot.string(), valibot.object({ text: valibot.optional(valibot.string()) })]),
-                ),
-            }),
-        ]),
-    ),
-    servesVegetarianFood: valibot.optional(valibot.boolean()),
-    goodForGroups: valibot.optional(valibot.boolean()),
-    reservable: valibot.optional(valibot.boolean()),
 })
 
 type GoogleDetails = valibot.InferOutput<typeof googleDetailsSchema>
 
 function toOpeningHours(google: GoogleOpeningHours | undefined): OpeningHoursData {
     if (google === undefined) {
-        return { openState: "unknown", periods: [], weekdayText: [] }
+        return openFallback()
     }
-    const openState = google.openNow === true ? "open" : google.openNow === false ? "closed" : "unknown"
-    const periods: { day: number; openTime: string; closeTime: string }[] = []
-    const seen = new Set<number>()
-    for (const period of google.periods ?? []) {
-        const day = period.open?.day
-        if (day === undefined || seen.has(day)) {
-            continue
-        }
-        periods.push({
-            day,
-            openTime: `${(period.open?.hour ?? 0).toString().padStart(2, "0")}:${(period.open?.minute ?? 0).toString().padStart(2, "0")}`,
-            closeTime: `${(period.close?.hour ?? 0).toString().padStart(2, "0")}:${(period.close?.minute ?? 0).toString().padStart(2, "0")}`,
-        })
-        seen.add(day)
-    }
-    return { openState, periods, weekdayText: [...(google.weekdayDescriptions ?? [])] }
-}
-
-function textOf(value: string | { readonly text?: string | undefined } | undefined): string | undefined {
-    if (value === undefined) {
-        return undefined
-    }
-    if (typeof value === "string") {
-        const trimmed = value.trim()
-        return trimmed === "" ? undefined : trimmed
-    }
-    const trimmed = value.text?.trim() ?? ""
-    return trimmed === "" ? undefined : trimmed
-}
-
-function reviewTextOf(value: GoogleDetails["reviewSummary"]): string | undefined {
-    if (value === undefined) {
-        return undefined
-    }
-    if (typeof value === "string") {
-        const trimmed = value.trim()
-        return trimmed === "" ? undefined : trimmed
-    }
-    const inner = value.text
-    if (inner === undefined) {
-        return undefined
-    }
-    if (typeof inner === "string") {
-        const trimmed = inner.trim()
-        return trimmed === "" ? undefined : trimmed
-    }
-    return textOf(inner)
+    return toOpeningHoursData(google)
 }
 
 function toProDetails(google: GoogleDetails): PlaceProDetails {
@@ -256,24 +168,37 @@ function toEnterpriseDetails(google: GoogleDetails): PlaceEnterpriseDetails {
     return out
 }
 
-function toAtmosphereDetails(google: GoogleDetails): PlaceAtmosphereDetails {
-    const base = toEnterpriseDetails(google)
-    const editorial = textOf(google.editorialSummary)
-    const review = reviewTextOf(google.reviewSummary)
-    return {
-        ...base,
-        ...(editorial !== undefined ? { editorialSummary: editorial } : {}),
-        ...(review !== undefined ? { reviewSummary: review } : {}),
-        ...(google.servesVegetarianFood !== undefined ? { servesVegetarianFood: google.servesVegetarianFood } : {}),
-        ...(google.goodForGroups !== undefined ? { goodForGroups: google.goodForGroups } : {}),
-        ...(google.reservable !== undefined ? { reservable: google.reservable } : {}),
-    }
-}
-
 const inflight = new Map<string, Promise<PlaceDetailsResult>>()
 
-function fallbackFor(): PlaceDetailsResult {
-    return { openingHours: { openState: "unknown", periods: [], weekdayText: [] } }
+function fallbackFor(tier: PlaceDetailsTier): PlaceDetailsResult {
+    if (tier === "enterprise") {
+        return { openingHours: { openState: "unknown", periods: [], weekdayText: [] } }
+    }
+    return {}
+}
+
+export function isMeaningfulResult(result: PlaceDetailsResult): boolean {
+    if ("openingHours" in result) {
+        return (
+            result.rating !== undefined ||
+            result.ratingCount !== undefined ||
+            result.priceLevel !== undefined ||
+            result.websiteUri !== undefined ||
+            result.openingHours.openState !== "unknown" ||
+            result.openingHours.periods.length > 0 ||
+            result.openingHours.weekdayText.length > 0
+        )
+    }
+    if ("businessStatus" in result || "displayName" in result) {
+        return (
+            "displayName" in result ||
+            "primaryType" in result ||
+            "googleMapsUri" in result ||
+            "businessStatus" in result ||
+            "utcOffsetMinutes" in result
+        )
+    }
+    return false
 }
 
 async function fetchTier(placeId: string, apiKey: string, tier: PlaceDetailsTier): Promise<PlaceDetailsResult> {
@@ -287,15 +212,15 @@ async function fetchTier(placeId: string, apiKey: string, tier: PlaceDetailsTier
         })
         if (!response.ok) {
             await response.text()
-            return fallbackFor()
+            return fallbackFor(tier)
         }
         const google: GoogleDetails = valibot.parse(googleDetailsSchema, await response.json())
-        if (tier === "combined") {
-            return { ...toProDetails(google), ...toEnterpriseDetails(google) }
+        if (tier === "pro") {
+            return toProDetails(google)
         }
-        return toAtmosphereDetails(google)
+        return toEnterpriseDetails(google)
     } catch {
-        return fallbackFor()
+        return fallbackFor(tier)
     }
 }
 
@@ -306,17 +231,17 @@ export async function fetchPlaceDetails(
     options: FixtureOptions = {},
 ): Promise<PlaceDetailsResult> {
     if (placeId === "") {
-        return fallbackFor()
+        return fallbackFor(tier)
     }
     if (options.fixtures === true) {
         const google = valibot.parse(googleDetailsSchema, fixtureCombinedDetails)
-        if (tier === "combined") {
-            return { ...toProDetails(google), ...toEnterpriseDetails(google) }
+        if (tier === "pro") {
+            return toProDetails(google)
         }
-        return toAtmosphereDetails(google)
+        return toEnterpriseDetails(google)
     }
     if (apiKey === undefined) {
-        return fallbackFor()
+        return fallbackFor(tier)
     }
     const key = `${tier}:${placeId}`
     const running = inflight.get(key)

@@ -148,11 +148,6 @@ export function placeDetailWarmups(id: Id<"places">): ReadonlyArray<object> {
 
 export const usePlaceLocation = () => useConvexAction(api.places.location).mutateAsync
 
-// Seam for #230. Consumes the Atmosphere mask that lands via #228; when the
-// tiered details action merges, point this at api.places.details with
-// tier "atmosphere" instead of the narrow atmosphere action.
-export const usePlaceAtmosphere = () => useConvexAction(api.places.atmosphere).mutateAsync
-
 export const usePlaceDetails = () => useConvexAction(api.places.details).mutateAsync
 
 async function resolveOwnerProfile(
