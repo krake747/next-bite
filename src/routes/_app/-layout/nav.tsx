@@ -16,7 +16,6 @@ import { useAuth } from "@core/session"
 import { LazyImage } from "@pattern/lazy-image"
 import { cva, cx } from "@ui/cva.config"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@ui/dropdown-menu"
-import { useIsMobile } from "@ui/hooks/use-media-query"
 import {
     Sidebar,
     SidebarContent,
@@ -200,25 +199,38 @@ function SidebarUserMenu() {
 }
 
 export function AppNav() {
+    return (
+        <>
+            <div className="md:hidden">
+                <MobileNav />
+            </div>
+            <div className="hidden md:contents">
+                <DesktopNav />
+            </div>
+        </>
+    )
+}
+
+function MobileNav() {
+    return (
+        <nav
+            aria-label="Primary"
+            data-slot="app-nav"
+            className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-surface/90 backdrop-blur-md"
+        >
+            <div className="mx-auto grid w-full max-w-350 grid-cols-5 gap-1 px-2 pt-2 pb-[calc(0.5rem+env(safe-area-inset-bottom))]">
+                <AppLink to={destinations[0].to} label={destinations[0].label} Icon={destinations[0].Icon} />
+                <AppLink to={destinations[1].to} label={destinations[1].label} Icon={destinations[1].Icon} />
+                <AppLink to="/add" label="Add" Icon={PlusIcon} />
+                <AppLink to={destinations[2].to} label={destinations[2].label} Icon={destinations[2].Icon} />
+                <AppLink to={destinations[3].to} label={destinations[3].label} Icon={destinations[3].Icon} />
+            </div>
+        </nav>
+    )
+}
+
+function DesktopNav() {
     const matchRoute = useMatchRoute()
-    const isMobile = useIsMobile()
-    if (isMobile) {
-        return (
-            <nav
-                aria-label="Primary"
-                data-slot="app-nav"
-                className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-surface/90 backdrop-blur-md"
-            >
-                <div className="mx-auto grid w-full max-w-350 grid-cols-5 gap-1 px-2 pt-2 pb-[calc(0.5rem+env(safe-area-inset-bottom))]">
-                    <AppLink to={destinations[0].to} label={destinations[0].label} Icon={destinations[0].Icon} />
-                    <AppLink to={destinations[1].to} label={destinations[1].label} Icon={destinations[1].Icon} />
-                    <AppLink to="/add" label="Add" Icon={PlusIcon} />
-                    <AppLink to={destinations[2].to} label={destinations[2].label} Icon={destinations[2].Icon} />
-                    <AppLink to={destinations[3].to} label={destinations[3].label} Icon={destinations[3].Icon} />
-                </div>
-            </nav>
-        )
-    }
     return (
         <TooltipProvider>
             <SidebarProvider className="contents">

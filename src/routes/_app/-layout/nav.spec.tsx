@@ -57,6 +57,21 @@ async function renderShell(): Promise<void> {
     )
 }
 
+describe("responsive nav chrome", () => {
+    test("renders mobile tabs and sidebar together; CSS picks the visible one", async () => {
+        authState = {
+            isAuthenticated: true,
+            isLoading: false,
+            isInitializing: false,
+            user: { id: "user-1", email: "alex@example.com", name: "Alex" },
+        }
+        await renderShell()
+
+        expect(screen.getAllByRole("link", { name: "Home" })).toHaveLength(2)
+        expect(screen.getByRole("link", { name: "Next Bite home" })).toBeInTheDocument()
+    })
+})
+
 describe("sidebar account menu", () => {
     test("shows a neutral loading state while auth initializes", async () => {
         authState = { isAuthenticated: false, isLoading: true, isInitializing: true, user: null }
