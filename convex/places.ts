@@ -5,7 +5,7 @@ import { type Id } from "./_generated/dataModel"
 import { action, internalQuery, mutation, query, type ActionCtx } from "./_generated/server"
 import { googleMapsApiKey, isGooglePlacesFixturesEnabled } from "./env"
 import { requireProfile, signedInProfile } from "./model/identity/profiles"
-import { fetchPlaceDetails, isMeaningfulResult, type PlaceDetailsResult } from "./model/places/details"
+import { fallbackFor, fetchPlaceDetails, isMeaningfulResult, type PlaceDetailsResult } from "./model/places/details"
 import { type PlaceProDetails } from "./model/places/details"
 import { fetchPlaceLocation, type PlaceLocationData } from "./model/places/location"
 import {
@@ -23,6 +23,7 @@ import {
     saveStatusValidator,
     setSaveRecord,
 } from "./model/places/places"
+import { takeGoogleQuota } from "./rateLimits"
 import {
     photoInputValidator,
     placeDetailsTierValidator,
@@ -208,7 +209,13 @@ export const location = action({
     handler: async (ctx, args): Promise<PlaceLocationData | null> => {
         await requireActionProfile(ctx)
         const placeId = await ctx.runQuery(internal.places._placeForLocation, { placeId: args.placeId })
-        return fetchPlaceLocation(placeId, googleMapsApiKey(), { fixtures: isGooglePlacesFixturesEnabled() })
+        const useFixtures = isGooglePlacesFixturesEnabled()
+        const apiKey = googleMapsApiKey()
+        // Fail open over quota: the map renders its unavailable state.
+        if (!useFixtures && apiKey !== undefined && !(await takeGoogleQuota(ctx, "location"))) {
+            return null
+        }
+        return fetchPlaceLocation(placeId, apiKey, { fixtures: useFixtures })
     },
 })
 
@@ -243,9 +250,19 @@ export const details = action({
         if (cached !== null && isDetailsCacheHit(args.tier, cached)) {
             return cached
         }
+        const useFixtures = isGooglePlacesFixturesEnabled()
+        const apiKey = googleMapsApiKey()
+        // Fail open over quota: the detail screen renders without the tier.
+        if (
+            !useFixtures &&
+            apiKey !== undefined &&
+            !(await takeGoogleQuota(ctx, args.tier === "pro" ? "detailsPro" : "detailsEnterprise"))
+        ) {
+            return fallbackFor(args.tier)
+        }
         const placeId = await ctx.runQuery(internal.places._placeForDetails, { placeId: args.placeId })
-        const fresh = await fetchPlaceDetails(placeId, googleMapsApiKey(), args.tier, {
-            fixtures: isGooglePlacesFixturesEnabled(),
+        const fresh = await fetchPlaceDetails(placeId, apiKey, args.tier, {
+            fixtures: useFixtures,
         })
         if (isMeaningfulResult(fresh)) {
             await ctx.runMutation(internal.model.places.cache.storeGoogleCache, {
