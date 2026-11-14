@@ -141,8 +141,13 @@ export function createSeededClient(options: SeededClientOptions = {}) {
         // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- test-only action stub serving seeded results by function and args
         action: (async (ref: unknown, args: unknown) => {
             await Promise.resolve()
-            actionCalls.push({ fn: nameOf(ref), args })
-            return valueFor(seedKey(nameOf(ref), args ?? {}))
+            const fn = nameOf(ref)
+            actionCalls.push({ fn, args })
+            const key = seedKey(fn, args ?? {})
+            if (!seeds.has(key)) {
+                throw new Error(`Unseeded action: ${key}`)
+            }
+            return valueFor(key)
         }) as ConvexReactClient["action"],
     }
 

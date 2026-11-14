@@ -73,6 +73,7 @@ describe("restaurant detail enterprise wiring", () => {
         const seeds = new Map<string, unknown>([
             [seedKey("places:get", { id: restaurantId }), verde],
             [seedKey("places:details", { placeId: restaurantId, tier: "enterprise" }), enterpriseDetails],
+            [seedKey("places:atmosphere", { placeId: restaurantId }), { photos: [] }],
             [seedKey("social:friends", undefined), []],
             [seedKey("social:requests", undefined), { incoming: [], outgoing: [] }],
         ])
