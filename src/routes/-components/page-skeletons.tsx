@@ -58,16 +58,23 @@ export function HomeSkeleton() {
                         className="font-display text-3xl font-semibold tracking-tight sm:text-4xl"
                         width="w-3/4"
                     />
-                    <p className="mt-2 max-w-xl text-muted-foreground">
-                        Your friends&apos; latest saves, newest first.
-                    </p>
+                    <TextSkeleton className="mt-2 max-w-xl" width="w-1/2" />
                     <div className="mt-4 flex flex-wrap items-center gap-3">
-                        <ButtonSkeleton width="w-40" />
+                        <ButtonSkeleton width="w-32" />
+                        <ButtonSkeleton width="w-36" />
                     </div>
                 </div>
-                <div className="flex flex-col gap-6 pt-14">
-                    <RestaurantCardSkeleton />
-                    <RestaurantCardSkeleton />
+                <div className="flex flex-col gap-8 pt-8">
+                    <div>
+                        <TextSkeleton className="font-display text-2xl font-semibold" width="w-40" />
+                        <div className="mt-4 grid gap-4 md:grid-cols-2">
+                            <ListCardSkeleton className="p-5" />
+                            <ListCardSkeleton className="p-5" />
+                        </div>
+                    </div>
+                    <div className="flex flex-col gap-6">
+                        <RestaurantCardSkeleton />
+                    </div>
                 </div>
             </div>
         </PageSkeleton>

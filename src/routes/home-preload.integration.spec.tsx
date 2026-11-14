@@ -62,6 +62,11 @@ async function renderAt(path: string, rows: ReadonlyArray<PlaceCard>) {
     const seeds = new Map<string, unknown>([
         [seedKey("social:friends", undefined), []],
         [seedKey("social:requests", undefined), { incoming: [], outgoing: [] }],
+        [seedKey("groups:list", {}), []],
+        [
+            seedKey("identity:me", undefined),
+            { status: "ready", profile: { _id: testUser.id, authUserId: testUser.id, name: testUser.name } },
+        ],
     ])
     const backend = createSeededClient({ seeds, liveRows: rows })
     const router = createRouter({
