@@ -74,6 +74,48 @@ function acceptDestinationOf(result: unknown): AcceptDestination {
     return { kind: "unknown" }
 }
 
+function InviteAuthHeader({
+    isFriendInvite,
+    createdByName,
+    groupName,
+}: Readonly<{ isFriendInvite: boolean; createdByName: string; groupName: string | undefined }>) {
+    return (
+        <Header>
+            <HeaderTitle>
+                {isFriendInvite ? `${createdByName} invited you` : `${groupName ?? "A group"} invited you`}
+            </HeaderTitle>
+            <HeaderSubtitle>
+                {isFriendInvite ? (
+                    "Sign in to accept this friend invitation."
+                ) : (
+                    <>
+                        {createdByName} shared a reusable group link. Sign in to join {groupName ?? "the group"}.
+                    </>
+                )}
+            </HeaderSubtitle>
+        </Header>
+    )
+}
+
+function InviteAuthActions({ isFriendInvite, invitePath }: Readonly<{ isFriendInvite: boolean; invitePath: string }>) {
+    const navigate = useNavigate()
+    const redirect = isSafeRedirectPath(invitePath) ? invitePath : "/"
+    const handleSignIn = (): void => {
+        void navigate({ to: "/login", search: { redirect }, replace: true })
+    }
+    const handleSignUp = (): void => {
+        void navigate({ to: "/signup", search: { redirect }, replace: true })
+    }
+    return (
+        <div className="flex flex-col gap-3 pt-6 sm:flex-row">
+            <Button onClick={handleSignIn}>{isFriendInvite ? "Sign in to accept" : "Sign in to join"}</Button>
+            <Button tone="secondary" onClick={handleSignUp}>
+                {isFriendInvite ? "Sign up to accept" : "Sign up to join"}
+            </Button>
+        </div>
+    )
+}
+
 function InviteSignInPrompt({
     isFriendInvite,
     invitePath,
@@ -85,46 +127,12 @@ function InviteSignInPrompt({
     createdByName: string
     groupName: string | undefined
 }>) {
-    const navigate = useNavigate()
-    const goToAuth = (to: "/login" | "/signup") => {
-        const redirect = isSafeRedirectPath(invitePath) ? invitePath : "/"
-        void navigate({ to, search: { redirect }, replace: true })
-    }
     return (
         <>
-            <Header>
-                <HeaderTitle>
-                    {isFriendInvite ? `${createdByName} invited you` : `${groupName ?? "A group"} invited you`}
-                </HeaderTitle>
-                <HeaderSubtitle>
-                    {isFriendInvite ? (
-                        "Sign in to accept this friend invitation."
-                    ) : (
-                        <>
-                            {createdByName} shared a reusable group link. Sign in to join {groupName ?? "the group"}.
-                        </>
-                    )}
-                </HeaderSubtitle>
-            </Header>
+            <InviteAuthHeader isFriendInvite={isFriendInvite} createdByName={createdByName} groupName={groupName} />
             <PageContainer>
                 <BackNav backTo="/" label="Back home" />
-                <div className="flex flex-col gap-3 pt-6 sm:flex-row">
-                    <Button
-                        onClick={() => {
-                            goToAuth("/login")
-                        }}
-                    >
-                        {isFriendInvite ? "Sign in to accept" : "Sign in to join"}
-                    </Button>
-                    <Button
-                        tone="secondary"
-                        onClick={() => {
-                            goToAuth("/signup")
-                        }}
-                    >
-                        {isFriendInvite ? "Sign up to accept" : "Sign up to join"}
-                    </Button>
-                </div>
+                <InviteAuthActions isFriendInvite={isFriendInvite} invitePath={invitePath} />
             </PageContainer>
         </>
     )

@@ -70,6 +70,16 @@ function InviteByEmailForm() {
         }
     }
 
+    const handleEmailChange = (event: React.ChangeEvent<HTMLInputElement>): void => {
+        setEmail(event.target.value)
+        if (error.kind === "error") {
+            setError(clearError)
+        }
+        if (sent) {
+            setSent(false)
+        }
+    }
+
     return (
         <form
             onSubmit={(event) => {
@@ -86,15 +96,7 @@ function InviteByEmailForm() {
                     id="friend-email"
                     type="email"
                     value={email}
-                    onChange={(event) => {
-                        setEmail(event.target.value)
-                        if (error.kind === "error") {
-                            setError(clearError)
-                        }
-                        if (sent) {
-                            setSent(false)
-                        }
-                    }}
+                    onChange={handleEmailChange}
                     placeholder="friend@example.com"
                     maxLength={254}
                     aria-invalid={error.kind === "error"}

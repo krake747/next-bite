@@ -1,6 +1,6 @@
 import { useSuspenseQuery } from "@tanstack/react-query"
 import { createFileRoute, Link } from "@tanstack/react-router"
-import { useState } from "react"
+import { useEffect, useRef, useState } from "react"
 
 import { type Id, toId } from "@api/data.model"
 import {
@@ -187,6 +187,13 @@ function GroupInviteSection({ groupId }: Readonly<{ groupId: Id<"groups"> }>) {
     const [token, setToken] = useState<InvitationLink>({ kind: "none" })
     const [error, setError] = useState<FormError>(clearError)
     const [copied, setCopied] = useState(false)
+    const copyTimeout = useRef<number | undefined>(undefined)
+
+    useEffect(() => {
+        return () => {
+            window.clearTimeout(copyTimeout.current)
+        }
+    }, [])
 
     const handleCreate = async () => {
         setError(clearError)
@@ -212,6 +219,24 @@ function GroupInviteSection({ groupId }: Readonly<{ groupId: Id<"groups"> }>) {
         }
     }
 
+    const handleCopyLink = (): void => {
+        if (token.kind === "none") {
+            return
+        }
+        window.clearTimeout(copyTimeout.current)
+        void navigator.clipboard
+            .writeText(`${window.location.origin}/invite/${token.token}`)
+            .then(() => {
+                setCopied(true)
+                copyTimeout.current = window.setTimeout(() => {
+                    setCopied(false)
+                }, 2000)
+            })
+            .catch(() => {
+                setCopied(false)
+            })
+    }
+
     return (
         <PageSection label="Invitation link" title="Share with a link" className="pt-8">
             <p className="pt-1 text-sm text-muted-foreground">
@@ -229,19 +254,7 @@ function GroupInviteSection({ groupId }: Readonly<{ groupId: Id<"groups"> }>) {
                         {`/invite/${token.token}`}
                     </p>
                     <div className="flex flex-col gap-2 pt-3 sm:flex-row">
-                        <Button
-                            tone="secondary"
-                            onClick={() => {
-                                void navigator.clipboard
-                                    .writeText(`${window.location.origin}/invite/${token.token}`)
-                                    .then(() => {
-                                        setCopied(true)
-                                    })
-                                    .catch(() => {
-                                        setCopied(false)
-                                    })
-                            }}
-                        >
+                        <Button tone="secondary" onClick={handleCopyLink}>
                             {copied ? "Copied" : "Copy link"}
                         </Button>
                         <Button tone="secondary" onClick={() => void handleRevoke()} disabled={revokeInvite.isPending}>

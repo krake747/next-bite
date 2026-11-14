@@ -235,6 +235,9 @@ export function RestaurantForm(props: AddRestaurantFormProps) {
     const handleLocationChange = (selection: PlaceSelection) => {
         applyPlaceSelection(form, selection, nameField.input, cuisineField.input)
     }
+    const handleImagesChange = (updated: ReadonlyArray<ImageRecord>): void => {
+        gallery.setImages([...updated])
+    }
 
     return (
         <Form of={form} onSubmit={submit.handleSubmit} className="space-y-4">
@@ -244,9 +247,7 @@ export function RestaurantForm(props: AddRestaurantFormProps) {
             <LinkField form={form} />
             <ImageUpload
                 images={gallery.images}
-                onImagesChange={(updated) => {
-                    gallery.setImages([...updated])
-                }}
+                onImagesChange={handleImagesChange}
                 uploadImage={uploadImage}
                 deleteUpload={async (args) => deleteUpload.mutateAsync(args)}
             />

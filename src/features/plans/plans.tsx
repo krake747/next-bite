@@ -126,6 +126,10 @@ export function PlanSection({ groupId, isGroupOwner }: Readonly<{ groupId: Id<"g
         }
     }
 
+    const handleCancelError = (error: unknown): void => {
+        setError(errorFrom(error, "Could not cancel the plan"))
+    }
+
     return (
         <PageSection label="Plans" title="Plan an outing" className="pt-8">
             {groupPlaces.length === 0 ? (
@@ -172,14 +176,7 @@ export function PlanSection({ groupId, isGroupOwner }: Readonly<{ groupId: Id<"g
                     {error.message}
                 </p>
             )}
-            <PlanList
-                plans={plans}
-                viewer={viewer}
-                isGroupOwner={isGroupOwner}
-                onCancelError={(error) => {
-                    setError(errorFrom(error, "Could not cancel the plan"))
-                }}
-            />
+            <PlanList plans={plans} viewer={viewer} isGroupOwner={isGroupOwner} onCancelError={handleCancelError} />
         </PageSection>
     )
 }

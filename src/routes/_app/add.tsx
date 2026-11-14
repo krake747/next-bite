@@ -52,6 +52,24 @@ function PlacePickerCard({
     )
 }
 
+function PlaceBanner({ selection, onResetChoice }: Readonly<{ selection: PlaceSelection; onResetChoice: () => void }>) {
+    return (
+        <div className="mb-5 border-b border-border pb-4">
+            <div className="flex items-center justify-between gap-3">
+                <p className="min-w-0 truncate text-sm text-muted-foreground">
+                    Adding <span className="font-semibold text-foreground">{selection.name ?? selection.address}</span>
+                </p>
+                <Button type="button" tone="ghost" onClick={onResetChoice}>
+                    Change
+                </Button>
+            </div>
+            <div className="flex justify-end pt-2">
+                <GoogleAttribution />
+            </div>
+        </div>
+    )
+}
+
 function AddRestaurantFormCard({
     choice,
     onSuccess,
@@ -70,24 +88,7 @@ function AddRestaurantFormCard({
         choice.kind === "place" ? (choice.selection.placeId ?? `address:${choice.selection.address}`) : choice.kind
     return (
         <div className="rounded-card border border-border bg-surface p-5 shadow-card">
-            {choice.kind === "place" && (
-                <div className="mb-5 border-b border-border pb-4">
-                    <div className="flex items-center justify-between gap-3">
-                        <p className="min-w-0 truncate text-sm text-muted-foreground">
-                            Adding{" "}
-                            <span className="font-semibold text-foreground">
-                                {choice.selection.name ?? choice.selection.address}
-                            </span>
-                        </p>
-                        <Button type="button" tone="ghost" onClick={onResetChoice}>
-                            Change
-                        </Button>
-                    </div>
-                    <div className="flex justify-end pt-2">
-                        <GoogleAttribution />
-                    </div>
-                </div>
-            )}
+            {choice.kind === "place" && <PlaceBanner selection={choice.selection} onResetChoice={onResetChoice} />}
             <RestaurantForm
                 key={choiceKey}
                 onSuccess={onSuccess}
@@ -133,6 +134,15 @@ function AddPage() {
     const handleSuccess = (restaurantId: string) => {
         void navigate({ to: "/restaurants/$restaurantId", params: { restaurantId } })
     }
+    const handleSelectPlace = (selection: PlaceSelection): void => {
+        changeChoice({ kind: "place", selection })
+    }
+    const handleManual = (): void => {
+        changeChoice({ kind: "manual" })
+    }
+    const handleResetChoice = (): void => {
+        changeChoice({ kind: "idle" })
+    }
 
     return (
         <PageContainer>
@@ -148,23 +158,14 @@ function AddPage() {
                 </div>
 
                 {choice.kind === "idle" ? (
-                    <PlacePickerCard
-                        onSelect={(selection) => {
-                            changeChoice({ kind: "place", selection })
-                        }}
-                        onManual={() => {
-                            changeChoice({ kind: "manual" })
-                        }}
-                    />
+                    <PlacePickerCard onSelect={handleSelectPlace} onManual={handleManual} />
                 ) : (
                     <AddRestaurantFormCard
                         choice={choice}
                         onSuccess={handleSuccess}
                         onCancel={handleCancel}
                         onDiscardReady={registerDiscard}
-                        onResetChoice={() => {
-                            changeChoice({ kind: "idle" })
-                        }}
+                        onResetChoice={handleResetChoice}
                     />
                 )}
             </div>
