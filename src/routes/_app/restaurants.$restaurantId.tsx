@@ -69,8 +69,7 @@ function DetailHero({ restaurant }: Readonly<{ restaurant: Restaurant }>) {
             }
         }
         setEnterprise({ status: "loading" })
-        void fetchDetails
-            .mutateAsync({ placeId: restaurant._id, tier: "enterprise" })
+        void fetchDetails({ placeId: restaurant._id, tier: "enterprise" })
             .then((result) => {
                 if (cancelled) {
                     return
@@ -89,8 +88,8 @@ function DetailHero({ restaurant }: Readonly<{ restaurant: Restaurant }>) {
         return () => {
             cancelled = true
         }
-        // fetchDetails is stable per session; refetch only when the place changes.
-    }, [restaurant._id, googlePlaceId])
+        // fetchDetails is the stable mutateAsync function; refetch only when the place changes.
+    }, [restaurant._id, googlePlaceId, fetchDetails])
 
     const goToLogin = () => {
         void navigate({ to: "/login" })

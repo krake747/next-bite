@@ -158,7 +158,7 @@ function InviteView() {
     const navigate = useNavigate()
     const auth = useAuth()
     const { data: preview } = useSuspenseQuery(inviteOptions(token))
-    const acceptInvite = useAcceptInvite()
+    const { mutateAsync: acceptInvite } = useAcceptInvite()
     const [acceptError, setAcceptError] = useState<FormError>(clearError)
     const [accepted, setAccepted] = useState(false)
     const [retryCount, setRetryCount] = useState(0)
@@ -171,8 +171,7 @@ function InviteView() {
         const shouldRun = auth.isAuthenticated && !auth.isLoading && !accepted
         if (shouldRun) {
             setAcceptError(clearError)
-            acceptInvite
-                .mutateAsync({ token })
+            acceptInvite({ token })
                 .then((result) => {
                     if (cancelled) {
                         return

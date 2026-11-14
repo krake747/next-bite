@@ -89,8 +89,7 @@ export function RestaurantCardMap({
                 setLocationState({ kind: "missing" })
             }
         }, LOCATION_TIMEOUT_MS)
-        void fetchLocation
-            .mutateAsync({ placeId })
+        void fetchLocation({ placeId })
             .then((location) => {
                 if (requestRef.current !== requestId) {
                     return
