@@ -32,12 +32,6 @@ export const placeGoogleInputValidator = v.object({
 export const placeLocationValidator = v.object({
     lat: v.number(),
     lng: v.number(),
-    viewport: v.optional(
-        v.object({
-            low: v.object({ lat: v.number(), lng: v.number() }),
-            high: v.object({ lat: v.number(), lng: v.number() }),
-        }),
-    ),
 })
 
 export const placePhotoValidator = v.object({
