@@ -38,6 +38,14 @@ function DisplayNameRow({ initialName }: Readonly<{ initialName: string }>) {
         }
     }
 
+    const handleNameChange = (event: React.ChangeEvent<HTMLInputElement>): void => {
+        setName(event.target.value)
+    }
+
+    const handleNameBlur = (): void => {
+        void handleBlur()
+    }
+
     return (
         <SettingsRow label="Display name" description="How friends see you.">
             <div className="flex w-full flex-col gap-1.5 sm:w-56">
@@ -45,12 +53,8 @@ function DisplayNameRow({ initialName }: Readonly<{ initialName: string }>) {
                     value={name}
                     aria-label="Display name"
                     disabled={rename.isPending}
-                    onChange={(event) => {
-                        setName(event.target.value)
-                    }}
-                    onBlur={() => {
-                        void handleBlur()
-                    }}
+                    onChange={handleNameChange}
+                    onBlur={handleNameBlur}
                     maxLength={80}
                     aria-invalid={error.kind === "error"}
                     aria-describedby={error.kind === "error" ? "user-name-error" : undefined}
@@ -66,29 +70,21 @@ function DisplayNameRow({ initialName }: Readonly<{ initialName: string }>) {
     )
 }
 
-function ProfileCard({
-    email,
-    initialName,
-    avatarUrl,
-    heading,
-    subheading,
+function ProfileSection({
+    title,
+    description,
+    children,
 }: Readonly<{
-    email: string
-    initialName: string
-    avatarUrl: string | undefined
-    heading: string
-    subheading: string
+    title: string
+    description: string
+    children: React.ReactNode
 }>) {
     return (
-        <section aria-label={heading}>
-            <h2 className="px-4 font-display text-2xl font-semibold text-balance text-foreground">{heading}</h2>
-            <p className="mt-1 px-4 text-sm text-muted-foreground">{subheading}</p>
+        <section aria-label={title}>
+            <h2 className="px-4 font-display text-2xl font-semibold text-balance text-foreground">{title}</h2>
+            <p className="mt-1 px-4 text-sm text-muted-foreground">{description}</p>
             <div className="mt-3 divide-y divide-border rounded-card border border-border bg-surface px-4 shadow-card">
-                <AvatarSection avatarUrl={avatarUrl} name={initialName} />
-                <SettingsRow label="Email">
-                    <p className="text-sm font-medium text-foreground">{email}</p>
-                </SettingsRow>
-                <DisplayNameRow initialName={initialName} />
+                {children}
             </div>
         </section>
     )
@@ -100,25 +96,27 @@ export function UserDetailsSection() {
 
     if (profile.status === "onboarding") {
         return (
-            <ProfileCard
+            <ProfileSection
                 key="onboarding"
-                email={auth.user?.email ?? ""}
-                initialName={auth.user?.name ?? ""}
-                avatarUrl={undefined}
-                heading="Complete your details"
-                subheading="Add your name so friends recognize you."
-            />
+                title="Complete your details"
+                description="Add your name so friends recognize you."
+            >
+                <AvatarSection avatarUrl={undefined} name={auth.user?.name ?? ""} />
+                <SettingsRow label="Email">
+                    <p className="text-sm font-medium text-foreground">{auth.user?.email ?? ""}</p>
+                </SettingsRow>
+                <DisplayNameRow initialName={auth.user?.name ?? ""} />
+            </ProfileSection>
         )
     }
     return (
-        <ProfileCard
-            key={profile.profile.email}
-            email={profile.profile.email}
-            initialName={profile.profile.name}
-            avatarUrl={profile.profile.avatar?.url}
-            heading="Your details"
-            subheading="Only you see this page."
-        />
+        <ProfileSection key={profile.profile.email} title="Your details" description="Only you see this page.">
+            <AvatarSection avatarUrl={profile.profile.avatar?.url} name={profile.profile.name} />
+            <SettingsRow label="Email">
+                <p className="text-sm font-medium text-foreground">{profile.profile.email}</p>
+            </SettingsRow>
+            <DisplayNameRow initialName={profile.profile.name} />
+        </ProfileSection>
     )
 }
 
@@ -158,13 +156,19 @@ export function AvatarSection({
         }
     }
 
+    const handleImagesChange = (updated: ReadonlyArray<ImageRecord>): void => {
+        void handleAvatar(updated)
+    }
+
+    const handleRemoveClick = (): void => {
+        void handleRemove()
+    }
+
     return (
         <div className="flex items-center gap-4 py-4">
             <ImageUpload
                 images={[]}
-                onImagesChange={(updated) => {
-                    void handleAvatar(updated)
-                }}
+                onImagesChange={handleImagesChange}
                 uploadImage={uploadImage}
                 deleteUpload={async (args) => deleteUpload.mutateAsync(args)}
                 maxFiles={1}
@@ -228,15 +232,7 @@ export function AvatarSection({
             />
             <div className="min-w-0 flex-1">
                 {avatarUrl !== undefined && (
-                    <Button
-                        type="button"
-                        tone="ghost"
-                        size="sm"
-                        disabled={saving}
-                        onClick={() => {
-                            void handleRemove()
-                        }}
-                    >
+                    <Button type="button" tone="ghost" size="sm" disabled={saving} onClick={handleRemoveClick}>
                         Remove photo
                     </Button>
                 )}
