@@ -1,12 +1,23 @@
 import { CaretDownIcon, NavigationArrowIcon } from "@phosphor-icons/react"
 import { AdvancedMarker, Map } from "@vis.gl/react-google-maps"
-import { Suspense, useState } from "react"
+import { Suspense, useEffect, useRef, useState } from "react"
+
+import { type Id } from "@api/data.model"
+import { usePlaceLocation } from "@core/restaurants"
+
+type MapLocation = Readonly<{ readonly lat: number; readonly lng: number }>
+
+type LocationState =
+    | { readonly kind: "idle" }
+    | { readonly kind: "loading" }
+    | { readonly kind: "ready"; readonly location: MapLocation }
+    | { readonly kind: "missing" }
 
 function RestaurantCardMapView({
     location,
     name,
 }: Readonly<{
-    location: Readonly<{ readonly lat: number; readonly lng: number }>
+    location: MapLocation
     name: string | undefined
 }>) {
     const directionsUrl = `https://www.google.com/maps/dir/?api=1&destination=${location.lat},${location.lng}`
@@ -40,13 +51,49 @@ function RestaurantCardMapView({
 }
 
 export function RestaurantCardMap({
-    location,
+    placeId,
+    googlePlaceId,
     name,
 }: Readonly<{
-    location: Readonly<{ readonly lat: number; readonly lng: number }>
+    placeId: Id<"places">
+    googlePlaceId: string
     name: string | undefined
 }>) {
+    const fetchLocation = usePlaceLocation()
     const [showMap, setShowMap] = useState(false)
+    const [locationState, setLocationState] = useState<LocationState>({ kind: "idle" })
+    const requestRef = useRef(0)
+
+    useEffect(() => {
+        if (!showMap || locationState.kind !== "idle") {
+            return () => {}
+        }
+        if (googlePlaceId === "") {
+            setLocationState({ kind: "missing" })
+            return () => {}
+        }
+        const requestId = requestRef.current + 1
+        requestRef.current = requestId
+        setLocationState({ kind: "loading" })
+        let cancelled = false
+        void fetchLocation
+            .mutateAsync({ placeId })
+            .then((location) => {
+                if (cancelled || requestRef.current !== requestId) {
+                    return
+                }
+                setLocationState(location === null ? { kind: "missing" } : { kind: "ready", location })
+            })
+            .catch(() => {
+                if (!cancelled && requestRef.current === requestId) {
+                    setLocationState({ kind: "missing" })
+                }
+            })
+        return () => {
+            cancelled = true
+        }
+    }, [showMap, locationState.kind, googlePlaceId, placeId, fetchLocation])
+
     return (
         <div className="px-5 md:px-4">
             <button
@@ -74,7 +121,13 @@ export function RestaurantCardMap({
                         <div className="mt-2 aspect-video w-full rounded-xl bg-surface-muted" aria-hidden="true" />
                     }
                 >
-                    <RestaurantCardMapView location={location} name={name} />
+                    {locationState.kind === "ready" ? (
+                        <RestaurantCardMapView location={locationState.location} name={name} />
+                    ) : locationState.kind === "missing" ? (
+                        <p className="mt-2 text-center text-xs text-muted-foreground">Map unavailable</p>
+                    ) : (
+                        <div className="mt-2 aspect-video w-full rounded-xl bg-surface-muted" aria-hidden="true" />
+                    )}
                 </Suspense>
             )}
         </div>

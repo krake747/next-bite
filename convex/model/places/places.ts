@@ -3,6 +3,7 @@ import { type Infer, v } from "convex/values"
 
 import { MAX_IMAGES } from "../../../src/core/constants"
 import { type DataModel, type Doc, type Id } from "../../_generated/dataModel"
+import { internalMutation } from "../../_generated/server"
 import { restaurantImageValidator } from "../../validators"
 import { memberGroupIds, requireMember } from "../groups/memberships"
 import { getProfiles, nameOf } from "../identity/profiles"
@@ -43,10 +44,40 @@ export type PlaceFields = {
     readonly name: string
     readonly cuisine?: string
     readonly addressLabel: string
-    readonly google?: Doc<"places">["address"]["google"]
+    readonly google?: Readonly<{ readonly placeId?: string }>
     readonly note?: string
     readonly link?: string
 }
+
+// Backfill for the relaxed coordinate keys (see validators comment). Strips
+// lat/lng with replace, since patch never removes keys. Idempotent: reruns
+// report migrated 0. Listed in .github/scripts/backend-migrate.sh.
+export const stripPlaceCoordinates = internalMutation({
+    args: {},
+    returns: v.object({ total: v.number(), migrated: v.number() }),
+    handler: async (ctx) => {
+        let total = 0
+        let migrated = 0
+        for await (const doc of ctx.db.query("places")) {
+            total += 1
+            const google = doc.address.google
+            if (google?.lat === undefined && google?.lng === undefined) {
+                continue
+            }
+            const placeId = google?.placeId
+            const { _id, _creationTime, ...clean } = doc
+            await ctx.db.replace("places", _id, {
+                ...clean,
+                address: {
+                    label: doc.address.label,
+                    ...(placeId !== undefined && placeId !== "" ? { google: { placeId } } : {}),
+                },
+            })
+            migrated += 1
+        }
+        return { total, migrated }
+    },
+})
 
 function fail(message: string): never {
     throw new Error(message)

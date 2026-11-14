@@ -18,8 +18,6 @@ export type AddRestaurantFormProps = Readonly<{
         name: string
         cuisine: string
         location: string
-        lat?: number | undefined
-        lng?: number | undefined
         placeId?: string | undefined
     }>
     onSuccess: (placeId: string) => void
@@ -103,15 +101,8 @@ function toCreateArgs(
     gallery: Pick<GalleryDraft, "images">,
     clientMutationId: string,
 ): PlaceCreateArgs {
-    const { location, lat, lng, placeId, notes, link, cuisine, ...rest } = output
-    const google =
-        placeId !== undefined || lat !== undefined || lng !== undefined
-            ? {
-                  ...(placeId !== undefined ? { placeId } : {}),
-                  ...(lat !== undefined ? { lat } : {}),
-                  ...(lng !== undefined ? { lng } : {}),
-              }
-            : undefined
+    const { location, placeId, notes, link, cuisine, ...rest } = output
+    const google = placeId !== undefined ? { placeId } : undefined
     return {
         name: rest.name,
         ...(cuisine !== undefined && cuisine !== "" ? { cuisine } : {}),
@@ -197,13 +188,6 @@ function applyPlaceSelection(
     cuisineInput: string | undefined,
 ): void {
     setInput(form, { path: ["location"], input: selection.address })
-    if (selection.lat !== undefined && selection.lng !== undefined) {
-        setInput(form, { path: ["lat"], input: selection.lat })
-        setInput(form, { path: ["lng"], input: selection.lng })
-    } else {
-        setInput(form, { path: ["lat"], input: undefined })
-        setInput(form, { path: ["lng"], input: undefined })
-    }
     setInput(form, { path: ["placeId"], input: selection.placeId })
     if ((nameInput ?? "") === "" && selection.name !== undefined && selection.name !== "") {
         setInput(form, { path: ["name"], input: selection.name })

@@ -12,8 +12,6 @@ type Bias = Readonly<{ north: number; south: number; east: number; west: number 
 export type PlaceSelection = {
     readonly address: string
     readonly name?: string | undefined
-    readonly lat?: number | undefined
-    readonly lng?: number | undefined
     readonly placeId?: string | undefined
     readonly primaryType?: string | undefined
 }
@@ -52,11 +50,9 @@ function handlePlaceSelectEvent(event: unknown, onChange: PlacesAutocompleteProp
     const place = event.placePrediction.toPlace()
     void place
         .fetchFields({
-            fields: ["displayName", "formattedAddress", "location", "id", "primaryType"],
+            fields: ["displayName", "formattedAddress", "id", "primaryType"],
         })
         .then(() => {
-            const lat = place.location?.lat()
-            const lng = place.location?.lng()
             const address =
                 [place.formattedAddress, place.displayName].find(
                     (part) => part !== null && part !== undefined && part !== "",
@@ -66,8 +62,6 @@ function handlePlaceSelectEvent(event: unknown, onChange: PlacesAutocompleteProp
                 ...(place.displayName !== null && place.displayName !== undefined && place.displayName !== ""
                     ? { name: place.displayName }
                     : {}),
-                ...(lat !== undefined ? { lat } : {}),
-                ...(lng !== undefined ? { lng } : {}),
                 ...(place.id !== undefined ? { placeId: place.id } : {}),
                 ...(place.primaryType !== null && place.primaryType !== undefined && place.primaryType !== ""
                     ? { primaryType: place.primaryType }

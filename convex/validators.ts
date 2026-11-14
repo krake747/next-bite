@@ -18,8 +18,20 @@ export const photoInputValidator = v.object({
 
 export const placeGoogleValidator = v.object({
     placeId: v.optional(v.string()),
+    // Legacy: rows written before #227 carry coordinates. Relaxed per docs/migrations.md
+    // so the push accepts stored data; the stripPlaceCoordinates backfill removes
+    // these keys with replace, then this tightens to placeId only.
     lat: v.optional(v.number()),
     lng: v.optional(v.number()),
+})
+
+export const placeGoogleInputValidator = v.object({
+    placeId: v.optional(v.string()),
+})
+
+export const placeLocationValidator = v.object({
+    lat: v.number(),
+    lng: v.number(),
 })
 
 export const inviteTargetValidator = v.union(

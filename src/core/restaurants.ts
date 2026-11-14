@@ -152,6 +152,8 @@ export function placeDetailWarmups(id: Id<"places">): ReadonlyArray<object> {
 
 export const usePlaceHours = () => useConvexAction(api.places.hours)
 
+export const usePlaceLocation = () => useConvexAction(api.places.location)
+
 async function resolveOwnerProfile(
     client: ConvexReactClient,
     cached: Doc<"profiles"> | undefined,

@@ -6,6 +6,7 @@ import { action, internalQuery, mutation, query, type ActionCtx } from "./_gener
 import { googleMapsApiKey } from "./env"
 import { requireProfile, signedInProfile } from "./model/identity/profiles"
 import { fetchOpeningHours, type OpeningHoursData } from "./model/places/hours"
+import { fetchPlaceLocation, type PlaceLocationData } from "./model/places/location"
 import {
     addToGroupRecord,
     createPlaceRecord,
@@ -19,7 +20,12 @@ import {
     saveStatusValidator,
     setSaveRecord,
 } from "./model/places/places"
-import { openingHoursValidator, photoInputValidator, placeGoogleValidator } from "./validators"
+import {
+    openingHoursValidator,
+    photoInputValidator,
+    placeGoogleInputValidator,
+    placeLocationValidator,
+} from "./validators"
 
 async function requireActionProfile(ctx: ActionCtx): Promise<Id<"profiles">> {
     const identity = await ctx.auth.getUserIdentity()
@@ -42,12 +48,21 @@ export const _placeForHours = internalQuery({
     },
 })
 
+export const _placeForLocation = internalQuery({
+    args: { placeId: v.id("places") },
+    returns: v.string(),
+    handler: async (ctx, args) => {
+        const userId = (await requireProfile(ctx))._id
+        return googlePlaceIdForViewer(ctx.db, userId, args.placeId)
+    },
+})
+
 export const create = mutation({
     args: {
         name: v.string(),
         cuisine: v.optional(v.string()),
         addressLabel: v.string(),
-        google: v.optional(placeGoogleValidator),
+        google: v.optional(placeGoogleInputValidator),
         note: v.optional(v.string()),
         link: v.optional(v.string()),
         photos: v.array(photoInputValidator),
@@ -162,5 +177,15 @@ export const hours = action({
         await requireActionProfile(ctx)
         const placeId = await ctx.runQuery(internal.places._placeForHours, { placeId: args.placeId })
         return fetchOpeningHours(placeId, googleMapsApiKey())
+    },
+})
+
+export const location = action({
+    args: { placeId: v.id("places") },
+    returns: v.union(placeLocationValidator, v.null()),
+    handler: async (ctx, args): Promise<PlaceLocationData | null> => {
+        await requireActionProfile(ctx)
+        const placeId = await ctx.runQuery(internal.places._placeForLocation, { placeId: args.placeId })
+        return fetchPlaceLocation(placeId, googleMapsApiKey())
     },
 })

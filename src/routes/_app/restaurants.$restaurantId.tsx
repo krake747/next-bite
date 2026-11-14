@@ -94,7 +94,9 @@ function DetailHero({ restaurant }: Readonly<{ restaurant: Restaurant }>) {
                         ownerName={restaurant.ownerName}
                         wantCount={restaurant.wantCount}
                         location={restaurant.address.label}
-                        hasLocation={restaurant.address.google?.lat !== undefined}
+                        hasLocation={
+                            restaurant.address.google?.placeId !== undefined && restaurant.address.google.placeId !== ""
+                        }
                     />
                     <div className="flex flex-wrap items-center gap-3 px-5 pb-2 md:px-4">
                         <RestaurantInterestButton
