@@ -1,6 +1,6 @@
 import { useSuspenseQuery } from "@tanstack/react-query"
 import { createFileRoute, Link } from "@tanstack/react-router"
-import { createContext, use, useEffect, useRef, useState } from "react"
+import { createContext, use, useState } from "react"
 
 import { type Id, toId } from "@api/data.model"
 import {
@@ -17,8 +17,8 @@ import { clearError, errorFrom, type FormError } from "@core/outcome"
 import { useRestaurants, type Restaurant } from "@core/restaurants"
 import { orderFeedByRecency } from "@core/saves"
 import { useAuth, useSessionStatus, warmAuthenticatedQueries } from "@core/session"
-import { GroupMembers } from "@features/groups/group-members"
 import { PlanSection } from "@features/plans/plans"
+import { AvatarGroup, type AvatarMember } from "@pattern/avatar-group"
 import { EmptyState } from "@pattern/empty-state"
 import { Header, HeaderSubtitle, HeaderTitle } from "@pattern/header"
 import { LoadingPlaceholder } from "@pattern/loading"
@@ -88,6 +88,20 @@ function useGroupDetail(): GroupDetailContextValue {
         throw new Error("Group detail components must render inside a group detail provider")
     }
     return value
+}
+
+function GroupMembers({ members }: Readonly<{ members: ReadonlyArray<AvatarMember> }>) {
+    if (members.length === 0) {
+        return <p className="text-sm text-muted-foreground">No members yet. Invite your friends.</p>
+    }
+    return (
+        <div className="flex items-center gap-2.5">
+            <AvatarGroup members={members} />
+            <p className="text-sm text-muted-foreground tabular-nums">
+                {members.length === 1 ? "1 member" : `${members.length} members`}
+            </p>
+        </div>
+    )
 }
 
 function AddFromMyList() {
@@ -199,13 +213,6 @@ function GroupInviteSection({ groupId }: Readonly<{ groupId: Id<"groups"> }>) {
     const [token, setToken] = useState<InvitationLink>({ kind: "none" })
     const [error, setError] = useState<FormError>(clearError)
     const [copied, setCopied] = useState(false)
-    const copyTimeout = useRef<number | undefined>(undefined)
-
-    useEffect(() => {
-        return () => {
-            window.clearTimeout(copyTimeout.current)
-        }
-    }, [])
 
     const handleCreate = async () => {
         setError(clearError)
@@ -235,14 +242,10 @@ function GroupInviteSection({ groupId }: Readonly<{ groupId: Id<"groups"> }>) {
         if (token.kind === "none") {
             return
         }
-        window.clearTimeout(copyTimeout.current)
         void navigator.clipboard
             .writeText(`${window.location.origin}/invite/${token.token}`)
             .then(() => {
                 setCopied(true)
-                copyTimeout.current = window.setTimeout(() => {
-                    setCopied(false)
-                }, 2000)
             })
             .catch(() => {
                 setCopied(false)
@@ -311,7 +314,7 @@ function GroupDetailView() {
                 value={{ groupId: groupConvexId, restaurants, sharedIds, viewer, isOwner: group.isOwner }}
             >
                 <section aria-label="Members" className="pt-6">
-                    <GroupMembers members={group.members.map((m) => ({ name: m.name }))} />
+                    <GroupMembers members={group.members} />
                 </section>
                 {auth.isAuthenticated && <GroupInviteSection groupId={groupConvexId} />}
                 <PlanSection groupId={groupConvexId} isGroupOwner={group.isOwner} />
