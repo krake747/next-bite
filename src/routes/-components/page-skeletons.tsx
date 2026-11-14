@@ -1,4 +1,4 @@
-import { RestaurantCardSkeleton } from "@features/restaurants/restaurant-card-skeleton"
+import { RestaurantCardOverlaySkeleton } from "@features/restaurants/restaurant-card-overlay-skeleton"
 import { SettingsRow } from "@pattern/settings-row"
 import { cx } from "@ui/cva.config"
 import { Skeleton } from "@ui/skeleton"
@@ -73,7 +73,7 @@ export function HomeSkeleton() {
                         </div>
                     </div>
                     <div className="flex flex-col gap-6">
-                        <RestaurantCardSkeleton />
+                        <RestaurantCardOverlaySkeleton />
                     </div>
                 </div>
             </div>

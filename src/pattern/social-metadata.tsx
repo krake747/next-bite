@@ -12,12 +12,16 @@ function wantLineFor(wantCount: number | string | undefined): string | null {
     return `${pluralize(wantCount, "friend")} want${wantCount === 1 ? "s" : ""} to try`
 }
 
+import { cx } from "@ui/cva.config"
+
 export function SocialMetadata({
     ownerName,
     wantCount,
+    tone = "default",
 }: Readonly<{
     ownerName?: string | undefined
     wantCount?: number | string | undefined
+    tone?: "default" | "inverse" | undefined
 }>) {
     const ownerLine = ownerName !== undefined && ownerName !== "" ? `Added by ${ownerName}` : null
     const wantLine = wantLineFor(wantCount)
@@ -26,8 +30,16 @@ export function SocialMetadata({
     }
     return (
         <div className="space-y-0.5">
-            {ownerLine !== null && <p className="text-sm text-muted-foreground">{ownerLine}</p>}
-            {wantLine !== null && <p className="text-sm text-muted-foreground">{wantLine}</p>}
+            {ownerLine !== null && (
+                <p className={cx("text-sm", tone === "inverse" ? "text-inverse" : "text-muted-foreground")}>
+                    {ownerLine}
+                </p>
+            )}
+            {wantLine !== null && (
+                <p className={cx("text-sm", tone === "inverse" ? "text-inverse/80" : "text-muted-foreground")}>
+                    {wantLine}
+                </p>
+            )}
         </div>
     )
 }
