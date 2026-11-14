@@ -52,8 +52,8 @@ function ListCardSkeleton({ className }: Readonly<{ className: string }>) {
 export function HomeSkeleton() {
     return (
         <PageSkeleton label="Loading your home feed">
-            <div className="mx-auto w-full max-w-3xl">
-                <div className="pt-8 sm:pt-10">
+            <div className="mx-auto flex w-full max-w-2xl flex-col gap-8">
+                <div className="px-4 pt-8 sm:pt-10">
                     <TextSkeleton
                         className="font-display text-3xl font-semibold tracking-tight sm:text-4xl"
                         width="w-3/4"
@@ -64,9 +64,9 @@ export function HomeSkeleton() {
                         <ButtonSkeleton width="w-36" />
                     </div>
                 </div>
-                <div className="flex flex-col gap-8 pt-8">
+                <div className="flex flex-col gap-8">
                     <div>
-                        <TextSkeleton className="font-display text-2xl font-semibold" width="w-40" />
+                        <TextSkeleton className="px-4 font-display text-2xl font-semibold" width="w-40" />
                         <div className="mt-4 grid gap-4 md:grid-cols-2">
                             <ListCardSkeleton className="p-5" />
                             <ListCardSkeleton className="p-5" />

@@ -43,7 +43,7 @@ type HomeGroup = {
 }
 
 function SectionTitle({ children }: Readonly<{ children: React.ReactNode }>) {
-    return <h2 className="font-display text-xl font-semibold text-balance text-foreground sm:text-2xl">{children}</h2>
+    return <h2 className="font-display text-2xl font-semibold text-balance text-foreground">{children}</h2>
 }
 
 function HomePlans({ groups }: Readonly<{ groups: ReadonlyArray<HomeGroup> | undefined }>) {
@@ -52,8 +52,10 @@ function HomePlans({ groups }: Readonly<{ groups: ReadonlyArray<HomeGroup> | und
     }
     if (groups.length === 0) {
         return (
-            <section aria-label="Your plans" className="pt-8">
-                <SectionTitle>Your plans</SectionTitle>
+            <section aria-label="Your plans">
+                <div className="px-4">
+                    <SectionTitle>Your plans</SectionTitle>
+                </div>
                 <EmptyState
                     title="No plans yet"
                     body="Create a plan, invite friends, and collect suggestions in one place."
@@ -63,8 +65,8 @@ function HomePlans({ groups }: Readonly<{ groups: ReadonlyArray<HomeGroup> | und
         )
     }
     return (
-        <section aria-label="Your plans" className="pt-8">
-            <div className="flex items-baseline justify-between gap-4">
+        <section aria-label="Your plans">
+            <div className="flex items-baseline justify-between gap-4 px-4">
                 <SectionTitle>Your plans</SectionTitle>
                 <TextLink render={<Link to="/groups" />}>View all groups</TextLink>
             </div>
@@ -94,10 +96,12 @@ function HomeActivity({ feed }: Readonly<{ feed: ReadonlyArray<Restaurant> }>) {
         return null
     }
     return (
-        <section aria-label="Friends activity" className="pt-8">
-            <SectionTitle>Friends activity</SectionTitle>
-            <p className="mt-1 text-muted-foreground">What friends are saving, newest first.</p>
-            <div className="flex flex-col gap-4 pt-4 sm:gap-6">
+        <section aria-label="Friends activity">
+            <div className="px-4">
+                <SectionTitle>Friends activity</SectionTitle>
+            </div>
+            <p className="mt-1 px-4 text-muted-foreground">What friends are saving, newest first.</p>
+            <div className="flex flex-col gap-4 pt-4">
                 {feed.map((restaurant) => (
                     <HomeActivityItem key={restaurant._id} restaurant={restaurant} />
                 ))}
@@ -115,16 +119,20 @@ function HomeShortlist({ mine, feedCount }: Readonly<{ mine: ReadonlyArray<Resta
     const actions = useSocialActions()
     if (mine.length === 0 && feedCount === 0) {
         return (
-            <section aria-label="Saved restaurants" className="pt-8">
-                <SectionTitle>Saved restaurants</SectionTitle>
+            <section aria-label="Saved restaurants">
+                <div className="px-4">
+                    <SectionTitle>Saved restaurants</SectionTitle>
+                </div>
                 <EmptyRestaurantsState />
             </section>
         )
     }
     if (mine.length === 0) {
         return (
-            <section aria-label="Saved restaurants" className="pt-8">
-                <SectionTitle>Saved restaurants</SectionTitle>
+            <section aria-label="Saved restaurants">
+                <div className="px-4">
+                    <SectionTitle>Saved restaurants</SectionTitle>
+                </div>
                 <EmptyState
                     title="Nothing saved yet"
                     body="Share your first spot to start your short list."
@@ -134,10 +142,12 @@ function HomeShortlist({ mine, feedCount }: Readonly<{ mine: ReadonlyArray<Resta
         )
     }
     return (
-        <section aria-label="Saved restaurants" className="pt-8">
-            <SectionTitle>Saved restaurants</SectionTitle>
-            <p className="mt-1 text-muted-foreground">Every restaurant on your short list.</p>
-            <div className="grid gap-4 pt-4 sm:gap-8 md:grid-cols-2 md:gap-10">
+        <section aria-label="Saved restaurants">
+            <div className="px-4">
+                <SectionTitle>Saved restaurants</SectionTitle>
+            </div>
+            <p className="mt-1 px-4 text-muted-foreground">Every restaurant on your short list.</p>
+            <div className="grid gap-4 pt-4 md:grid-cols-2">
                 {mine.map((restaurant) => (
                     <RestaurantCardOverlay
                         key={restaurant._id}
@@ -156,7 +166,7 @@ function HomeHeader({
     friendCount,
 }: Readonly<{ name: string; savedCount: number; friendCount: number }>) {
     return (
-        <section aria-label="Welcome back" className="pt-8 sm:pt-10">
+        <section aria-label="Welcome back" className="px-4 pt-8 sm:pt-10">
             <h1 className="font-display text-3xl font-semibold tracking-tight text-balance text-foreground sm:text-4xl">
                 Pick your next table, {name}.
             </h1>
@@ -203,9 +213,11 @@ function HomeSections({
     const feedOnly = feed.filter((restaurant) => restaurant.ownerId !== ownId && !mineIds.has(restaurant._id))
     return (
         <SocialActionsProvider>
-            <HomePlans groups={groups} />
-            <HomeActivity feed={feedOnly} />
-            <HomeShortlist mine={mine} feedCount={feedOnly.length} />
+            <div className="flex flex-col gap-8">
+                <HomePlans groups={groups} />
+                <HomeActivity feed={feedOnly} />
+                <HomeShortlist mine={mine} feedCount={feedOnly.length} />
+            </div>
         </SocialActionsProvider>
     )
 }
@@ -222,7 +234,7 @@ function HomeContent() {
         return <HomeSkeleton />
     }
     return (
-        <div className="mx-auto w-full max-w-3xl pb-[env(safe-area-inset-bottom)]">
+        <div className="mx-auto flex w-full max-w-2xl flex-col gap-8 pb-[env(safe-area-inset-bottom)]">
             <HomeHeader
                 name={auth.user?.name?.split(" ")[0] ?? "food lover"}
                 savedCount={restaurantListState.length}
