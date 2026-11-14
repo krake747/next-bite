@@ -159,6 +159,8 @@ export const usePlaceLocation = () => useConvexAction(api.places.location)
 // tier "atmosphere" instead of the narrow atmosphere action.
 export const usePlaceAtmosphere = () => useConvexAction(api.places.atmosphere)
 
+export const usePlaceDetails = () => useConvexAction(api.places.details)
+
 async function resolveOwnerProfile(
     client: ConvexReactClient,
     cached: Doc<"profiles"> | undefined,

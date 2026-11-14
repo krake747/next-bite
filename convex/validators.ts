@@ -82,3 +82,40 @@ export const openingHoursValidator = v.object({
     ),
     weekdayText: v.array(v.string()),
 })
+
+export const placeDetailsTierValidator = v.union(v.literal("pro"), v.literal("enterprise"), v.literal("atmosphere"))
+
+export const placeDetailsProValidator = v.object({
+    displayName: v.optional(v.string()),
+    primaryType: v.optional(v.string()),
+    googleMapsUri: v.optional(v.string()),
+    businessStatus: v.optional(v.string()),
+    utcOffsetMinutes: v.optional(v.number()),
+})
+
+export const placeDetailsEnterpriseValidator = v.object({
+    openingHours: openingHoursValidator,
+    rating: v.optional(v.number()),
+    ratingCount: v.optional(v.number()),
+    priceLevel: v.optional(v.string()),
+    websiteUri: v.optional(v.string()),
+})
+
+export const placeDetailsAtmosphereValidator = v.object({
+    openingHours: openingHoursValidator,
+    rating: v.optional(v.number()),
+    ratingCount: v.optional(v.number()),
+    priceLevel: v.optional(v.string()),
+    websiteUri: v.optional(v.string()),
+    editorialSummary: v.optional(v.string()),
+    reviewSummary: v.optional(v.string()),
+    servesVegetarianFood: v.optional(v.boolean()),
+    goodForGroups: v.optional(v.boolean()),
+    reservable: v.optional(v.boolean()),
+})
+
+export const placeDetailsValidator = v.union(
+    placeDetailsProValidator,
+    placeDetailsEnterpriseValidator,
+    placeDetailsAtmosphereValidator,
+)

@@ -5,7 +5,8 @@ import { type Id } from "./_generated/dataModel"
 import { action, internalQuery, mutation, query, type ActionCtx } from "./_generated/server"
 import { googleMapsApiKey } from "./env"
 import { requireProfile, signedInProfile } from "./model/identity/profiles"
-import { fetchPlaceAtmosphere, type AtmosphereData } from "./model/places/atmosphere"
+<import { fetchPlaceAtmosphere, type AtmosphereData } from "./model/places/atmosphere"
+import { fetchPlaceDetails, type PlaceDetailsResult } from "./model/places/details"
 import { fetchOpeningHours, type OpeningHoursData } from "./model/places/hours"
 import { fetchPlaceLocation, type PlaceLocationData } from "./model/places/location"
 import {
@@ -24,6 +25,8 @@ import {
 import {
     openingHoursValidator,
     photoInputValidator,
+    placeDetailsTierValidator,
+    placeDetailsValidator,
     placeGoogleInputValidator,
     placeLocationValidator,
     atmosphereValidator,
@@ -60,6 +63,15 @@ export const _placeForLocation = internalQuery({
 })
 
 export const _placeForAtmosphere = internalQuery({
+    args: { placeId: v.id("places") },
+    returns: v.string(),
+    handler: async (ctx, args) => {
+        const userId = (await requireProfile(ctx))._id
+        return googlePlaceIdForViewer(ctx.db, userId, args.placeId)
+    },
+})
+
+export const _placeForDetails = internalQuery({
     args: { placeId: v.id("places") },
     returns: v.string(),
     handler: async (ctx, args) => {
@@ -212,5 +224,15 @@ export const atmosphere = action({
         await requireActionProfile(ctx)
         const placeId = await ctx.runQuery(internal.places._placeForAtmosphere, { placeId: args.placeId })
         return fetchPlaceAtmosphere(placeId, googleMapsApiKey())
+    },
+})
+
+export const details = action({
+    args: { placeId: v.id("places"), tier: placeDetailsTierValidator },
+    returns: placeDetailsValidator,
+    handler: async (ctx, args): Promise<PlaceDetailsResult> => {
+        await requireActionProfile(ctx)
+        const placeId = await ctx.runQuery(internal.places._placeForDetails, { placeId: args.placeId })
+        return fetchPlaceDetails(placeId, googleMapsApiKey(), args.tier)
     },
 })
