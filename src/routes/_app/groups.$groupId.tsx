@@ -1,6 +1,6 @@
 import { useSuspenseQuery } from "@tanstack/react-query"
 import { createFileRoute, Link } from "@tanstack/react-router"
-import { useEffect, useRef, useState } from "react"
+import { createContext, use, useEffect, useRef, useState } from "react"
 
 import { type Id, toId } from "@api/data.model"
 import {
@@ -12,7 +12,7 @@ import {
     useRemoveFromGroup,
     useRevokeInvite,
 } from "@core/groups"
-import { isViewer, useViewer } from "@core/identity"
+import { isViewer, useViewer, type Viewer } from "@core/identity"
 import { clearError, errorFrom, type FormError } from "@core/outcome"
 import { useRestaurants, type Restaurant } from "@core/restaurants"
 import { orderFeedByRecency } from "@core/saves"
@@ -72,7 +72,26 @@ function GroupNotFound() {
     )
 }
 
-function AddFromMyList({ groupId, sharedIds }: Readonly<{ groupId: Id<"groups">; sharedIds: ReadonlySet<string> }>) {
+type GroupDetailContextValue = {
+    readonly groupId: Id<"groups">
+    readonly restaurants: ReadonlyArray<Restaurant>
+    readonly sharedIds: ReadonlySet<string>
+    readonly viewer: Viewer
+    readonly isOwner: boolean
+}
+
+const GroupDetailContext = createContext<GroupDetailContextValue | null>(null)
+
+function useGroupDetail(): GroupDetailContextValue {
+    const value = use(GroupDetailContext)
+    if (!value) {
+        throw new Error("Group detail components must render inside a group detail provider")
+    }
+    return value
+}
+
+function AddFromMyList() {
+    const { groupId, sharedIds } = useGroupDetail()
     const restaurants = useRestaurants()
     const addToGroup = useAddToGroup()
 
@@ -118,15 +137,8 @@ function AddFromMyList({ groupId, sharedIds }: Readonly<{ groupId: Id<"groups">;
     )
 }
 
-function GroupRestaurantsSection({
-    groupId,
-    restaurants,
-    viewer,
-}: Readonly<{
-    groupId: Id<"groups">
-    restaurants: ReadonlyArray<Restaurant>
-    viewer: { readonly kind: "signed-in"; readonly id: string } | { readonly kind: "signed-out" }
-}>) {
+function GroupRestaurantsSection() {
+    const { groupId, restaurants, viewer } = useGroupDetail()
     const removeFromGroup = useRemoveFromGroup()
 
     const feed = orderFeedByRecency(restaurants)
@@ -295,19 +307,23 @@ function GroupDetailView() {
                     {group.isOwner ? "Owner" : "Member"}
                 </HeaderSubtitle>
             </Header>
-            <section aria-label="Members" className="pt-6">
-                <GroupMembers members={group.members.map((m) => ({ name: m.name }))} />
-            </section>
-            {auth.isAuthenticated && <GroupInviteSection groupId={groupConvexId} />}
-            <PlanSection groupId={groupConvexId} isGroupOwner={group.isOwner} />
-            <PageSection label="Shared restaurants" title="Shared list" className="pt-8">
-                <GroupRestaurantsSection groupId={groupConvexId} restaurants={restaurants} viewer={viewer} />
-            </PageSection>
-            {auth.isAuthenticated && (
-                <PageSection label="Add your restaurants" title="Add your restaurants" className="pt-8">
-                    <AddFromMyList groupId={groupConvexId} sharedIds={sharedIds} />
+            <GroupDetailContext
+                value={{ groupId: groupConvexId, restaurants, sharedIds, viewer, isOwner: group.isOwner }}
+            >
+                <section aria-label="Members" className="pt-6">
+                    <GroupMembers members={group.members.map((m) => ({ name: m.name }))} />
+                </section>
+                {auth.isAuthenticated && <GroupInviteSection groupId={groupConvexId} />}
+                <PlanSection groupId={groupConvexId} isGroupOwner={group.isOwner} />
+                <PageSection label="Shared restaurants" title="Shared list" className="pt-8">
+                    <GroupRestaurantsSection />
                 </PageSection>
-            )}
+                {auth.isAuthenticated && (
+                    <PageSection label="Add your restaurants" title="Add your restaurants" className="pt-8">
+                        <AddFromMyList />
+                    </PageSection>
+                )}
+            </GroupDetailContext>
         </PageContainer>
     )
 }
