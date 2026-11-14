@@ -4,7 +4,7 @@ import userEvent from "@testing-library/user-event"
 import { describe, expect, test, vi } from "vitest"
 
 import { ConvexProvider } from "@api/convex.context"
-import { toId } from "@api/data.model"
+import { toId, type Id } from "@api/data.model"
 import { type PlaceCard } from "@api/db/restaurants"
 import { createSeededClient, seedKey, type MutationCall } from "@api/db/seeded.client"
 
@@ -63,6 +63,17 @@ const enterpriseDetails = {
     websiteUri: "https://example.com/trattoria",
 }
 
+function isSeededStorageId(value: string): value is Id<"_storage"> {
+    return value.length > 0
+}
+
+function mustBeStorageId(value: string): Id<"_storage"> {
+    if (!isSeededStorageId(value)) {
+        throw new Error("Test photo needs a storage id")
+    }
+    return value
+}
+
 function detailCalls(actionCalls: ReadonlyArray<MutationCall>): ReadonlyArray<MutationCall> {
     return actionCalls.filter((call) => call.fn === "places:details")
 }
@@ -73,7 +84,7 @@ describe("restaurant detail enterprise wiring", () => {
         const seeds = new Map<string, unknown>([
             [seedKey("places:get", { id: restaurantId }), verde],
             [seedKey("places:details", { placeId: restaurantId, tier: "combined" }), enterpriseDetails],
-            [seedKey("places:atmosphere", { placeId: restaurantId }), { photos: [] }],
+            [seedKey("places:atmosphere", { placeId: restaurantId }), {}],
             [seedKey("social:friends", undefined), []],
             [seedKey("social:requests", undefined), { incoming: [], outgoing: [] }],
         ])
@@ -113,7 +124,7 @@ describe("restaurant detail enterprise wiring", () => {
                 seedKey("places:details", { placeId: restaurantId, tier: "combined" }),
                 { ...enterpriseDetails, businessStatus: "CLOSED_PERMANENTLY" },
             ],
-            [seedKey("places:atmosphere", { placeId: restaurantId }), { photos: [] }],
+            [seedKey("places:atmosphere", { placeId: restaurantId }), {}],
             [seedKey("social:friends", undefined), []],
             [seedKey("social:requests", undefined), { incoming: [], outgoing: [] }],
         ])
@@ -134,5 +145,48 @@ describe("restaurant detail enterprise wiring", () => {
 
         expect(await screen.findByText("Permanently closed")).toBeInTheDocument()
         expect(detailCalls(actionCalls)).toHaveLength(1)
+    })
+
+    test("shows the photo carousel with add for the owner", async () => {
+        const calls: MutationCall[] = []
+        const photo = (id: string) => ({
+            url: `https://example.com/${id}.jpg`,
+            storageId: mustBeStorageId(id),
+            addedBy: toId<"profiles">(alex.id),
+        })
+        const withPhotos: PlaceCard = { ...verde, photos: [photo("s1"), photo("s2")] }
+        const seeds = new Map<string, unknown>([
+            [seedKey("places:get", { id: restaurantId }), withPhotos],
+            [seedKey("places:details", { placeId: restaurantId, tier: "combined" }), enterpriseDetails],
+            [seedKey("places:atmosphere", { placeId: restaurantId }), {}],
+            [seedKey("social:friends", undefined), []],
+            [seedKey("social:requests", undefined), { incoming: [], outgoing: [] }],
+            [
+                seedKey("identity:me", undefined),
+                { status: "ready", profile: { _id: "user-1", authUserId: "user-1", name: "Alex" } },
+            ],
+        ])
+        const backend = createSeededClient({ seeds, calls })
+        const router = createRouter({
+            routeTree,
+            history: createMemoryHistory({
+                initialEntries: [`/restaurants/${restaurantId}`],
+            }),
+            context: { queryClient: backend.queryClient, authSnapshot: authSnapshotFor(alex) },
+        })
+        await router.load()
+        renderDocument(
+            <ConvexProvider client={backend.client} auth="authenticated">
+                <RouterProvider router={router} />
+            </ConvexProvider>,
+        )
+
+        expect(await screen.findByRole("button", { name: "Go to slide 2" })).toBeInTheDocument()
+        expect(screen.queryByRole("button", { name: "Open photo viewer at image 1" })).not.toBeInTheDocument()
+
+        await userEvent.click(screen.getByRole("button", { name: "Add photos" }))
+        const dialog = await screen.findByRole("dialog", { name: "Add photos" })
+        expect(dialog).toBeInTheDocument()
+        await userEvent.click(screen.getByRole("button", { name: "Cancel" }))
     })
 })

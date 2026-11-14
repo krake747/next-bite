@@ -1,26 +1,12 @@
 import { useEffect, useState } from "react"
 
 import { type Id } from "@api/data.model"
-import { env } from "@core/env"
 import { usePlaceAtmosphere } from "@core/restaurants"
-import { keysForPhotoUrls } from "@pattern/gallery"
 import { GoogleAttribution } from "@pattern/google-attribution"
-import { LazyImage } from "@pattern/lazy-image"
 import { LoadingPlaceholder } from "@pattern/loading"
 import { Badge } from "@ui/badge"
 
 const ABOUT_SUMMARY_URL = "https://support.google.com/local-listings/answer/9851099"
-
-export type AtmospherePhoto = {
-    readonly name: string
-    readonly widthPx?: number | undefined
-    readonly heightPx?: number | undefined
-    readonly authorDisplayName?: string | undefined
-    readonly authorUri?: string | undefined
-    readonly authorPhotoUri?: string | undefined
-    readonly flagContentUri?: string | undefined
-    readonly googleMapsUri?: string | undefined
-}
 
 export type AtmosphereReviewSummary = {
     readonly text?: string | undefined
@@ -39,105 +25,11 @@ export type AtmosphereFlagValues = {
     readonly reservable?: boolean | undefined
 }
 
-function googlePhotoMediaUrl(name: string, apiKey: string): string {
-    return `https://places.googleapis.com/v1/${name}/media?maxHeightPx=1200&maxWidthPx=1600&key=${apiKey}`
-}
-
 function flagLabel(value: boolean, positive: string): string {
     if (value) {
         return positive
     }
     return `No ${positive.toLowerCase()}`
-}
-
-function PhotoAuthor({ photo }: Readonly<{ photo: AtmospherePhoto }>) {
-    if (photo.authorDisplayName === undefined || photo.authorDisplayName === "") {
-        return <p className="truncate">Google contributor</p>
-    }
-    if (photo.authorUri !== undefined && photo.authorUri !== "") {
-        return (
-            <p className="truncate text-foreground">
-                <a
-                    href={photo.authorUri}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="hover:text-primary hover:underline"
-                >
-                    {photo.authorDisplayName}
-                </a>
-            </p>
-        )
-    }
-    return <p className="truncate text-foreground">{photo.authorDisplayName}</p>
-}
-
-function PhotoLinks({ photo }: Readonly<{ photo: AtmospherePhoto }>) {
-    if (
-        (photo.googleMapsUri === undefined || photo.googleMapsUri === "") &&
-        (photo.flagContentUri === undefined || photo.flagContentUri === "")
-    ) {
-        return null
-    }
-    return (
-        <p className="flex flex-wrap gap-x-2 gap-y-1">
-            {photo.googleMapsUri !== undefined && photo.googleMapsUri !== "" && (
-                <a
-                    href={photo.googleMapsUri}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="hover:text-primary hover:underline"
-                >
-                    Source
-                </a>
-            )}
-            {photo.flagContentUri !== undefined && photo.flagContentUri !== "" && (
-                <a
-                    href={photo.flagContentUri}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="hover:text-primary hover:underline"
-                >
-                    Report
-                </a>
-            )}
-        </p>
-    )
-}
-
-export function GooglePhotoGallery({
-    photos,
-    apiKey,
-}: Readonly<{ photos: ReadonlyArray<AtmospherePhoto>; apiKey: string }>) {
-    if (photos.length === 0) {
-        return null
-    }
-    const urls = photos.map((photo) => googlePhotoMediaUrl(photo.name, apiKey))
-    const keys = keysForPhotoUrls(urls)
-    return (
-        <div className="rounded-card border border-border bg-surface p-4 shadow-card">
-            <div className="flex items-center justify-between gap-2">
-                <h2 className="font-display text-lg font-semibold text-balance text-foreground">Google photos</h2>
-                <GoogleAttribution />
-            </div>
-            <div className="grid grid-cols-3 gap-2 pt-3">
-                {photos.map((photo, index) => (
-                    <figure key={keys[index] ?? photo.name} className="overflow-hidden rounded-lg border border-border">
-                        <div className="aspect-square overflow-hidden">
-                            <LazyImage
-                                src={urls[index]}
-                                alt={photo.authorDisplayName ?? "Google place photo"}
-                                ratio={1 / 1}
-                            />
-                        </div>
-                        <figcaption className="space-y-1 p-2 text-xs text-muted-foreground">
-                            <PhotoAuthor photo={photo} />
-                            <PhotoLinks photo={photo} />
-                        </figcaption>
-                    </figure>
-                ))}
-            </div>
-        </div>
-    )
 }
 
 function FlagBadges({ flags }: Readonly<{ flags: AtmosphereFlagValues }>) {
@@ -259,7 +151,6 @@ type AtmosphereState =
     | { readonly kind: "failed" }
 
 type AtmosphereDataShape = {
-    readonly photos: ReadonlyArray<AtmospherePhoto>
     readonly editorialSummary?: AtmosphereEditorial | undefined
     readonly reviewSummary?: AtmosphereReviewSummary | undefined
     readonly servesVegetarianFood?: boolean | undefined
@@ -310,9 +201,8 @@ export function PlaceAtmosphere({
     if (state.kind === "failed") {
         return null
     }
-    const { photos, editorialSummary, reviewSummary, servesVegetarianFood, goodForGroups, reservable } = state.data
+    const { editorialSummary, reviewSummary, servesVegetarianFood, goodForGroups, reservable } = state.data
     if (
-        photos.length === 0 &&
         servesVegetarianFood === undefined &&
         goodForGroups === undefined &&
         reservable === undefined &&
@@ -323,7 +213,6 @@ export function PlaceAtmosphere({
     }
     return (
         <div className="space-y-6">
-            <GooglePhotoGallery photos={photos} apiKey={env.VITE_GOOGLE_MAPS_API_KEY} />
             <AtmosphereFlags
                 flags={{ servesVegetarianFood, goodForGroups, reservable }}
                 editorialSummary={editorialSummary}

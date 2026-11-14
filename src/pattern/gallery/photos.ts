@@ -1,5 +1,9 @@
+import { type Id } from "@api/data.model"
+
 export type GalleryPhoto = {
     readonly url: string
+    readonly storageId?: Id<"_storage"> | undefined
+    readonly addedBy?: Id<"profiles"> | undefined
 }
 
 export function photoUrls(photos: ReadonlyArray<GalleryPhoto>): string[] {

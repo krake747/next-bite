@@ -28,27 +28,24 @@ describe("RestaurantCardMap", () => {
     test("shows the map once the location resolves", async () => {
         mutateAsync.mockResolvedValueOnce({ lat: 49.6117, lng: 6.13 })
         const screen = await renderMap()
-        await screen.getByRole("button", { name: "View on Map" }).click()
-        await expect.element(screen.getByText("Click map to get directions")).toBeVisible()
+        await expect.element(screen.getByRole("link", { name: "Get directions" })).toBeVisible()
     })
 
     test("flips a hung lookup to unavailable instead of loading forever", { timeout: 30_000 }, async () => {
         mutateAsync.mockReturnValueOnce(new Promise(() => {}))
         const screen = await renderMap()
-        await screen.getByRole("button", { name: "View on Map" }).click()
         await expect.element(screen.getByText("Map unavailable"), { timeout: 20_000 }).toBeVisible()
     })
 
     test("shows unavailable with retry when the lookup fails, and retry refetches", async () => {
         mutateAsync.mockRejectedValueOnce(new Error("boom"))
         const screen = await renderMap()
-        await screen.getByRole("button", { name: "View on Map" }).click()
         await expect.element(screen.getByText("Map unavailable")).toBeVisible()
         expect(mutateAsync).toHaveBeenCalledTimes(1)
 
         mutateAsync.mockResolvedValueOnce({ lat: 49.6117, lng: 6.13 })
         await screen.getByRole("button", { name: "Retry" }).click()
-        await expect.element(screen.getByText("Click map to get directions")).toBeVisible()
+        await expect.element(screen.getByRole("link", { name: "Get directions" })).toBeVisible()
         expect(mutateAsync).toHaveBeenCalledTimes(2)
     })
 })

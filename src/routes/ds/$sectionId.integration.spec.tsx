@@ -98,7 +98,7 @@ describe("design-system section page", () => {
             expect(screen.getByRole("navigation", { name: "Sections" })).toBeInTheDocument()
         })
         const pager = screen.getByRole("navigation", { name: "Sections" })
-        expect(within(pager).getByRole("link", { name: "Badge" })).toBeInTheDocument()
+        expect(within(pager).getByRole("link", { name: "Breadcrumb" })).toBeInTheDocument()
         expect(within(pager).getByRole("link", { name: "Card" })).toBeInTheDocument()
         const names = within(pager)
             .getAllByRole("link")

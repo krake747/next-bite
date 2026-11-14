@@ -20,6 +20,7 @@ export type PlacePhoto = {
     readonly width?: number
     readonly height?: number
     readonly storageId: Id<"_storage">
+    readonly addedBy?: Id<"profiles">
 }
 
 export type SaveStatus = "want" | "been"

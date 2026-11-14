@@ -7,6 +7,7 @@ const uiTsModules = import.meta.glob("../../../ui/*.ts")
 const uiHookModules = import.meta.glob("../../../ui/hooks/*.ts")
 
 const exemptUiModules: Readonly<Record<string, string>> = {
+    "carousel.context": "context and engine types, component lives in carousel.tsx",
     "cva.config": "cva setup, no component",
     variants: "shared cva styles, no component",
     "css-vars": "style helper, no component",

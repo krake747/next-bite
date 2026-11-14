@@ -312,6 +312,130 @@ describe("places group places", () => {
     })
 })
 
+describe("places.addPhotos", () => {
+    test("lets the owner append photos and records the contributor", async () => {
+        const t = setup()
+        await registerUser(t, "anna")
+        const first = await storeBlob(t)
+        const placeId = await createPlace(t, "anna", "Trattoria Verde", [first])
+        const second = await storeBlob(t)
+
+        const added = await asUser(t, "anna").mutation(api.places.addPhotos, {
+            placeId,
+            photos: [{ storageId: second }],
+        })
+
+        expect(added).toHaveLength(1)
+        const card = await asUser(t, "anna").query(api.places.get, { id: placeId })
+        expect(card?.photos.map((photo) => photo.storageId)).toEqual([first, second])
+        expect(card?.photos[1]?.addedBy).toBeDefined()
+    })
+
+    test("lets a friend contribute to a visible place", async () => {
+        const t = setup()
+        await registerUser(t, "anna")
+        await registerUser(t, "ben")
+        const placeId = await createPlace(t, "anna")
+        await befriend(t, "anna", "ben")
+        const blob = await storeBlob(t)
+
+        await asUser(t, "ben").mutation(api.places.addPhotos, { placeId, photos: [{ storageId: blob }] })
+
+        const card = await asUser(t, "anna").query(api.places.get, { id: placeId })
+        expect(card?.photos.map((photo) => photo.storageId)).toEqual([blob])
+    })
+
+    test("rejects photos on invisible places", async () => {
+        const t = setup()
+        await registerUser(t, "anna")
+        await registerUser(t, "cas")
+        const placeId = await createPlace(t, "anna")
+        const blob = await storeBlob(t)
+
+        await expect(
+            asUser(t, "cas").mutation(api.places.addPhotos, { placeId, photos: [{ storageId: blob }] }),
+        ).rejects.toThrow("not visible")
+    })
+
+    test("enforces the photo cap across creates and adds", async () => {
+        const t = setup()
+        await registerUser(t, "anna")
+        const blobs: Id<"_storage">[] = []
+        for (let index = 0; index < 10; index += 1) {
+            blobs.push(await storeBlob(t))
+        }
+        const placeId = await createPlace(t, "anna", "Trattoria Verde", blobs)
+        const extra = await storeBlob(t)
+
+        await expect(
+            asUser(t, "anna").mutation(api.places.addPhotos, { placeId, photos: [{ storageId: extra }] }),
+        ).rejects.toThrow("Maximum 10 photos allowed")
+    })
+})
+
+describe("places.removePhoto", () => {
+    test("lets the owner remove any photo and deletes the file", async () => {
+        const t = setup()
+        await registerUser(t, "anna")
+        await registerUser(t, "ben")
+        const placeId = await createPlace(t, "anna")
+        await befriend(t, "anna", "ben")
+        const blob = await storeBlob(t)
+        await asUser(t, "ben").mutation(api.places.addPhotos, { placeId, photos: [{ storageId: blob }] })
+
+        await asUser(t, "anna").mutation(api.places.removePhoto, { placeId, storageId: blob })
+
+        const card = await asUser(t, "anna").query(api.places.get, { id: placeId })
+        expect(card?.photos).toEqual([])
+    })
+
+    test("lets a contributor remove their own photo", async () => {
+        const t = setup()
+        await registerUser(t, "anna")
+        await registerUser(t, "ben")
+        const placeId = await createPlace(t, "anna")
+        await befriend(t, "anna", "ben")
+        const blob = await storeBlob(t)
+        await asUser(t, "ben").mutation(api.places.addPhotos, { placeId, photos: [{ storageId: blob }] })
+
+        await asUser(t, "ben").mutation(api.places.removePhoto, { placeId, storageId: blob })
+
+        const card = await asUser(t, "anna").query(api.places.get, { id: placeId })
+        expect(card?.photos).toEqual([])
+    })
+
+    test("rejects a non-contributor removing someone else's photo", async () => {
+        const t = setup()
+        await registerUser(t, "anna")
+        await registerUser(t, "ben")
+        await registerUser(t, "cas")
+        const placeId = await createPlace(t, "anna")
+        await befriend(t, "anna", "ben")
+        await befriend(t, "anna", "cas")
+        const blob = await storeBlob(t)
+        await asUser(t, "ben").mutation(api.places.addPhotos, { placeId, photos: [{ storageId: blob }] })
+
+        await expect(asUser(t, "cas").mutation(api.places.removePhoto, { placeId, storageId: blob })).rejects.toThrow(
+            "only the owner or contributor",
+        )
+    })
+
+    test("rejects removal on invisible places and missing photos", async () => {
+        const t = setup()
+        await registerUser(t, "anna")
+        await registerUser(t, "cas")
+        const placeId = await createPlace(t, "anna")
+        const blob = await storeBlob(t)
+
+        await expect(asUser(t, "cas").mutation(api.places.removePhoto, { placeId, storageId: blob })).rejects.toThrow(
+            "not visible",
+        )
+        await expect(asUser(t, "anna").mutation(api.places.removePhoto, { placeId, storageId: blob })).rejects.toThrow(
+            "Photo not found",
+        )
+    })
+})
+
 describe("places.mine", () => {
     test("lists only the viewer's places", async () => {
         const t = setup()

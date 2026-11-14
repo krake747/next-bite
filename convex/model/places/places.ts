@@ -4,7 +4,6 @@ import { type Infer, v } from "convex/values"
 import { MAX_IMAGES } from "../../../src/core/constants"
 import { type DataModel, type Doc, type Id } from "../../_generated/dataModel"
 import { internalMutation } from "../../_generated/server"
-import { restaurantImageValidator } from "../../validators"
 import { memberGroupIds, requireMember } from "../groups/memberships"
 import { getProfiles, nameOf } from "../identity/profiles"
 import { areFriends, friendIds } from "../social/friendships"
@@ -25,7 +24,13 @@ export const placeValidator = v.object({
     ...placesTables.places.validator.fields,
 })
 
-export const cardPhotoValidator = restaurantImageValidator.pick("url", "width", "height", "storageId")
+export const cardPhotoValidator = v.object({
+    url: v.string(),
+    storageId: v.id("_storage"),
+    width: v.optional(v.number()),
+    height: v.optional(v.number()),
+    addedBy: v.optional(v.id("profiles")),
+})
 
 export const saveStatusValidator = v.union(v.literal("want"), v.literal("been"))
 
@@ -150,12 +155,68 @@ export async function createPlaceRecord(
         ...(clientMutationId !== undefined ? { clientMutationId } : {}),
     })
     for (const input of photoInputs) {
-        await claimPhoto(ctx, placeId, input)
+        await claimPhoto(ctx, placeId, input, ownerId)
     }
     if (clientMutationId !== undefined) {
         await ctx.db.insert("clientMutations", { key: clientMutationId, userId: ownerId, placeId })
     }
     return placeId
+}
+
+export async function addPlacePhotos(
+    ctx: { readonly db: GenericDatabaseWriter<DataModel>; readonly storage: StorageWriter },
+    viewerId: ProfileId,
+    placeId: PlaceId,
+    photoInputs: ReadonlyArray<PhotoInput>,
+): Promise<ReadonlyArray<Id<"photos">>> {
+    const place = await ctx.db.get("places", placeId)
+    if (place === null) {
+        fail("Place not found")
+    }
+    if (!(await canViewPlace(ctx.db, viewerId, place))) {
+        fail("Unauthorized: place is not visible to you")
+    }
+    const existing = await ctx.db
+        .query("photos")
+        .withIndex("by_place", (q) => q.eq("placeId", placeId))
+        .take(MAX_IMAGES + 1)
+    if (existing.length + photoInputs.length > MAX_IMAGES) {
+        fail(`Maximum ${MAX_IMAGES} photos allowed`)
+    }
+    const claimed: Id<"photos">[] = []
+    for (const input of photoInputs) {
+        claimed.push((await claimPhoto(ctx, placeId, input, viewerId))._id)
+    }
+    return claimed
+}
+
+export async function removePlacePhoto(
+    ctx: { readonly db: GenericDatabaseWriter<DataModel>; readonly storage: StorageWriter },
+    viewerId: ProfileId,
+    placeId: PlaceId,
+    storageId: Id<"_storage">,
+): Promise<void> {
+    const place = await ctx.db.get("places", placeId)
+    if (place === null) {
+        fail("Place not found")
+    }
+    if (!(await canViewPlace(ctx.db, viewerId, place))) {
+        fail("Unauthorized: place is not visible to you")
+    }
+    const photo = await ctx.db
+        .query("photos")
+        .withIndex("by_storage", (q) => q.eq("storageId", storageId))
+        .unique()
+    if (photo === null || photo.placeId !== placeId) {
+        fail("Photo not found for this place")
+    }
+    const isOwner = place.ownerId === viewerId
+    const isContributor = photo.addedBy === viewerId
+    if (!isOwner && !isContributor) {
+        fail("Unauthorized: only the owner or contributor can remove this photo")
+    }
+    await ctx.db.delete("photos", photo._id)
+    await ctx.storage.delete(storageId)
 }
 
 export async function isPlaceInGroup(
@@ -231,6 +292,7 @@ type CardPhotoInput = {
     storageId: Id<"_storage">
     width?: number
     height?: number
+    addedBy?: Id<"profiles">
 }
 
 function toCardPhoto(photo: Doc<"photos">): CardPhotoInput {
@@ -240,6 +302,9 @@ function toCardPhoto(photo: Doc<"photos">): CardPhotoInput {
     }
     if (photo.height !== undefined) {
         out.height = photo.height
+    }
+    if (photo.addedBy !== undefined) {
+        out.addedBy = photo.addedBy
     }
     return out
 }
