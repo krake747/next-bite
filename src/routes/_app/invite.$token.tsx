@@ -14,6 +14,7 @@ import { Button } from "@ui/button"
 import { TextLink } from "@ui/text-link"
 
 export const Route = createFileRoute("/_app/invite/$token")({
+    ssr: false,
     head: () => ({ meta: [{ title: "Group invitation" }] }),
     component: InviteView,
     pendingComponent: InviteLoading,

@@ -17,6 +17,7 @@ import { cx } from "@ui/cva.config"
 import { control, fieldLabel } from "@ui/variants"
 
 export const Route = createFileRoute("/_app/groups/")({
+    ssr: false,
     component: GroupsPage,
     errorComponent: GroupsError,
     loader: async ({ context }) => {
