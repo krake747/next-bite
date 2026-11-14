@@ -23,13 +23,13 @@ beforeEach(() => {
     detailsMutate.mockResolvedValue({})
 })
 
-// The lookup must fire once per tier and then stop. A refetch loop would
+// The lookup must fire once and then stop. A refetch loop would
 // keep firing on every render, which is what took down prod in #260.
 async function settleSignals() {
     await new Promise((resolve) => {
         setTimeout(resolve, 500)
     })
-    expect(detailsMutate).toHaveBeenCalledTimes(2)
+    expect(detailsMutate).toHaveBeenCalledTimes(1)
 }
 
 const mockRestaurant: Restaurant = {
@@ -77,12 +77,10 @@ describe("RestaurantCardCompact", () => {
     })
 
     test("shows price in the eyebrow and open-now status", async () => {
-        detailsMutate
-            .mockResolvedValueOnce({
-                openingHours: { openState: "open", periods: [], weekdayText: [] },
-                priceLevel: "PRICE_LEVEL_INEXPENSIVE",
-            })
-            .mockResolvedValueOnce({})
+        detailsMutate.mockResolvedValueOnce({
+            openingHours: { openState: "open", periods: [], weekdayText: [] },
+            priceLevel: "PRICE_LEVEL_INEXPENSIVE",
+        })
         const screen = await render(
             <RestaurantCardCompact
                 restaurant={{

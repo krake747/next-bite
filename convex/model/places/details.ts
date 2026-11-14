@@ -2,7 +2,7 @@ import * as valibot from "valibot"
 
 import { type OpeningHoursData } from "./hours"
 
-export type PlaceDetailsTier = "pro" | "enterprise" | "atmosphere"
+export type PlaceDetailsTier = "atmosphere" | "combined"
 
 export const PRO_FIELD_MASK = [
     "displayName",
@@ -20,6 +20,8 @@ export const ENTERPRISE_FIELD_MASK = [
     "websiteUri",
 ] as const
 
+export const COMBINED_FIELD_MASK = [...PRO_FIELD_MASK, ...ENTERPRISE_FIELD_MASK] as const
+
 export const ATMOSPHERE_FIELD_MASK = [
     ...ENTERPRISE_FIELD_MASK,
     "editorialSummary",
@@ -30,9 +32,8 @@ export const ATMOSPHERE_FIELD_MASK = [
 ] as const
 
 export const PLACE_FIELD_MASKS: Record<PlaceDetailsTier, ReadonlyArray<string>> = {
-    pro: [...PRO_FIELD_MASK],
-    enterprise: [...ENTERPRISE_FIELD_MASK],
     atmosphere: [...ATMOSPHERE_FIELD_MASK],
+    combined: [...COMBINED_FIELD_MASK],
 }
 
 export type PlaceProDetails = {
@@ -59,7 +60,9 @@ export type PlaceAtmosphereDetails = PlaceEnterpriseDetails & {
     readonly reservable?: boolean
 }
 
-export type PlaceDetailsResult = PlaceProDetails | PlaceEnterpriseDetails | PlaceAtmosphereDetails
+export type PlaceCombinedDetails = PlaceProDetails & PlaceEnterpriseDetails
+
+export type PlaceDetailsResult = PlaceCombinedDetails | PlaceAtmosphereDetails
 
 type GoogleOpeningHours = {
     readonly openNow?: boolean | undefined
@@ -268,10 +271,7 @@ function toAtmosphereDetails(google: GoogleDetails): PlaceAtmosphereDetails {
 
 const inflight = new Map<string, Promise<PlaceDetailsResult>>()
 
-function fallbackFor(tier: PlaceDetailsTier): PlaceDetailsResult {
-    if (tier === "pro") {
-        return {}
-    }
+function fallbackFor(): PlaceDetailsResult {
     return { openingHours: { openState: "unknown", periods: [], weekdayText: [] } }
 }
 
@@ -286,18 +286,15 @@ async function fetchTier(placeId: string, apiKey: string, tier: PlaceDetailsTier
         })
         if (!response.ok) {
             await response.text()
-            return fallbackFor(tier)
+            return fallbackFor()
         }
         const google: GoogleDetails = valibot.parse(googleDetailsSchema, await response.json())
-        if (tier === "pro") {
-            return toProDetails(google)
-        }
-        if (tier === "enterprise") {
-            return toEnterpriseDetails(google)
+        if (tier === "combined") {
+            return { ...toProDetails(google), ...toEnterpriseDetails(google) }
         }
         return toAtmosphereDetails(google)
     } catch {
-        return fallbackFor(tier)
+        return fallbackFor()
     }
 }
 
@@ -307,7 +304,7 @@ export async function fetchPlaceDetails(
     tier: PlaceDetailsTier,
 ): Promise<PlaceDetailsResult> {
     if (placeId === "" || apiKey === undefined) {
-        return fallbackFor(tier)
+        return fallbackFor()
     }
     const key = `${tier}:${placeId}`
     const running = inflight.get(key)

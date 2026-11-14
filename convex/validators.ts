@@ -89,7 +89,7 @@ export const openingHoursValidator = v.object({
     weekdayText: v.array(v.string()),
 })
 
-export const placeDetailsTierValidator = v.union(v.literal("pro"), v.literal("enterprise"), v.literal("atmosphere"))
+export const placeDetailsTierValidator = v.union(v.literal("atmosphere"), v.literal("combined"))
 
 export const placeDetailsProValidator = v.object({
     displayName: v.optional(v.string()),
@@ -120,8 +120,9 @@ export const placeDetailsAtmosphereValidator = v.object({
     reservable: v.optional(v.boolean()),
 })
 
-export const placeDetailsValidator = v.union(
-    placeDetailsProValidator,
-    placeDetailsEnterpriseValidator,
-    placeDetailsAtmosphereValidator,
-)
+export const placeDetailsCombinedValidator = v.object({
+    ...placeDetailsProValidator.fields,
+    ...placeDetailsEnterpriseValidator.fields,
+})
+
+export const placeDetailsValidator = v.union(placeDetailsAtmosphereValidator, placeDetailsCombinedValidator)
