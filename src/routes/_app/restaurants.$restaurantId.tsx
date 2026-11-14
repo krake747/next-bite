@@ -1,6 +1,6 @@
 import { useSuspenseQuery } from "@tanstack/react-query"
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router"
-import { lazy, Suspense, useEffect, useRef, useState } from "react"
+import { lazy, Suspense } from "react"
 
 import { warmQueriesWithin } from "@api/convex.options"
 import { toId } from "@api/data.model"
@@ -9,13 +9,13 @@ import { placeDetailWarmups, placeOptions, type Restaurant } from "@core/restaur
 import { useToggleWant } from "@core/saves"
 import { useAuth } from "@core/session"
 import { OpeningHoursDialog } from "@features/restaurants/opening-hours-dialog"
-import { PlaceAtmosphere } from "@features/restaurants/place-atmosphere"
 import { type EnterpriseDetails } from "@features/restaurants/place-details-utils"
 import { PlaceEnterpriseDetails } from "@features/restaurants/place-enterprise-details"
 import { RestaurantGallery } from "@features/restaurants/restaurant-gallery"
 import { RestaurantHeader } from "@features/restaurants/restaurant-header"
 import { RestaurantInterestButton } from "@features/restaurants/restaurant-interest-button"
 import { useDetailEnterprise } from "@features/restaurants/use-detail-enterprise"
+import { useVisible } from "@features/restaurants/use-visible"
 import { LoadingPlaceholder } from "@pattern/loading"
 import { QueryErrorState } from "@pattern/query-error"
 import { SocialMetadata } from "@pattern/social-metadata"
@@ -235,28 +235,9 @@ function MapOnVisible({
     googlePlaceId,
     name,
 }: Readonly<{ placeId: Restaurant["_id"]; googlePlaceId: string; name: string }>) {
-    const sentinelRef = useRef<HTMLDivElement>(null)
-    const [isVisible, setIsVisible] = useState(false)
     // The embedded map bills a Dynamic Maps load on mount, so it mounts only
     // once the section nears the viewport instead of with the page.
-    useEffect(() => {
-        const node = sentinelRef.current
-        if (node === null || isVisible) {
-            return () => {}
-        }
-        const observer = new IntersectionObserver(
-            (entries) => {
-                if (entries.some((entry) => entry.isIntersecting)) {
-                    setIsVisible(true)
-                }
-            },
-            { rootMargin: "400px" },
-        )
-        observer.observe(node)
-        return () => {
-            observer.disconnect()
-        }
-    }, [isVisible])
+    const [sentinelRef, isVisible] = useVisible()
     return (
         <div ref={sentinelRef} className="pt-2">
             {isVisible ? (
@@ -302,7 +283,6 @@ function RestaurantDetailView() {
             <DetailBreadcrumb name={restaurant.name} />
             <div className="mx-auto max-w-3xl space-y-6 pt-4 lg:max-w-5xl">
                 <DetailHero key={restaurant._id} restaurant={restaurant} />
-                <PlaceAtmosphere placeId={restaurant._id} googlePlaceId={restaurant.address.google?.placeId} />
                 <DetailMapSection
                     placeId={restaurant._id}
                     googlePlaceId={restaurant.address.google?.placeId}

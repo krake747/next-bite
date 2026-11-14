@@ -8,8 +8,7 @@ import { register as registerBetterAuthComponent } from "@convex-dev/better-auth
 import { server } from "../src/vitest.msw.setup"
 import { api } from "./_generated/api"
 import { type Id } from "./_generated/dataModel"
-import { ATMOSPHERE_MASK } from "./model/places/atmosphere"
-import { COMBINED_FIELD_MASK } from "./model/places/details"
+import { ENTERPRISE_FIELD_MASK, PRO_FIELD_MASK } from "./model/places/details"
 import schema from "./schema"
 
 const modules = import.meta.glob(["./**/*.ts", "!./**/*.spec.ts"])
@@ -19,17 +18,12 @@ const AUTH_USER_ID = "cache-user-1"
 
 const savedApiKey = process.env.GOOGLE_MAPS_API_KEY
 
-function combinedUrl(placeId: string): string {
-    return `https://places.googleapis.com/v1/places/${placeId}?fields=${COMBINED_FIELD_MASK.join(",")}`
+function maskUrl(placeId: string, mask: ReadonlyArray<string>): string {
+    return `https://places.googleapis.com/v1/places/${placeId}?fields=${[...mask].join(",")}`
 }
 
-function atmosphereUrl(placeId: string): string {
-    return `https://places.googleapis.com/v1/places/${placeId}?fields=${ATMOSPHERE_MASK}`
-}
-
-function combinedPayload() {
+function enterprisePayload() {
     return {
-        businessStatus: "OPERATIONAL",
         currentOpeningHours: { openNow: true, weekdayDescriptions: ["Monday: 9:00 AM - 5:00 PM"] },
         rating: 4.5,
         userRatingCount: 123,
@@ -38,12 +32,10 @@ function combinedPayload() {
     }
 }
 
-function atmospherePayload() {
+function proPayload() {
     return {
-        servesVegetarianFood: true,
-        goodForGroups: true,
-        reservable: false,
-        editorialSummary: { text: "A cozy neighborhood spot.", languageCode: "en" },
+        businessStatus: "OPERATIONAL",
+        displayName: { text: "Cached Place" },
     }
 }
 
@@ -75,12 +67,12 @@ describe("google place cache", () => {
         }
     })
 
-    test("details serves the cached row without a Google fetch", async () => {
+    test("enterprise details serve the cached row without a Google fetch", async () => {
         let fetches = 0
         server.use(
-            http.get(combinedUrl(GOOGLE_PLACE_ID), () => {
+            http.get(maskUrl(GOOGLE_PLACE_ID, ENTERPRISE_FIELD_MASK), () => {
                 fetches += 1
-                return HttpResponse.json(combinedPayload())
+                return HttpResponse.json(enterprisePayload())
             }),
         )
         const t = convexTest(schema, modules)
@@ -88,10 +80,9 @@ describe("google place cache", () => {
         const placeId = await seedPlace(t)
         const authed = t.withIdentity({ subject: AUTH_USER_ID })
 
-        const first = await authed.action(api.places.details, { placeId, tier: "combined" })
+        const first = await authed.action(api.places.details, { placeId, tier: "enterprise" })
         expect(fetches).toBe(1)
         expect(first).toEqual({
-            businessStatus: "OPERATIONAL",
             openingHours: { openState: "open", periods: [], weekdayText: ["Monday: 9:00 AM - 5:00 PM"] },
             rating: 4.5,
             ratingCount: 123,
@@ -99,17 +90,54 @@ describe("google place cache", () => {
             websiteUri: "https://example.com/trattoria",
         })
 
-        const second = await authed.action(api.places.details, { placeId, tier: "combined" })
+        const second = await authed.action(api.places.details, { placeId, tier: "enterprise" })
         expect(fetches).toBe(1)
         expect(second).toEqual(first)
+    })
+
+    test("pro tier serves the cached row without a Google refetch", async () => {
+        let proFetches = 0
+        server.use(
+            http.get(maskUrl(GOOGLE_PLACE_ID, PRO_FIELD_MASK), () => {
+                proFetches += 1
+                return HttpResponse.json(proPayload())
+            }),
+        )
+        const t = convexTest(schema, modules)
+        registerBetterAuthComponent(t, "betterAuth")
+        const placeId = await seedPlace(t)
+        const authed = t.withIdentity({ subject: AUTH_USER_ID })
+
+        await authed.action(api.places.details, { placeId, tier: "pro" })
+        expect(proFetches).toBe(1)
+        await authed.action(api.places.details, { placeId, tier: "pro" })
+        expect(proFetches).toBe(1)
+    })
+
+    test("empty results are not cached", async () => {
+        let fetches = 0
+        server.use(
+            http.get(maskUrl(GOOGLE_PLACE_ID, PRO_FIELD_MASK), () => {
+                fetches += 1
+                return HttpResponse.json({})
+            }),
+        )
+        const t = convexTest(schema, modules)
+        registerBetterAuthComponent(t, "betterAuth")
+        const placeId = await seedPlace(t)
+        const authed = t.withIdentity({ subject: AUTH_USER_ID })
+
+        await authed.action(api.places.details, { placeId, tier: "pro" })
+        await authed.action(api.places.details, { placeId, tier: "pro" })
+        expect(fetches).toBe(2)
     })
 
     test("details refetches and stores when the cached row is stale", async () => {
         let fetches = 0
         server.use(
-            http.get(combinedUrl(GOOGLE_PLACE_ID), () => {
+            http.get(maskUrl(GOOGLE_PLACE_ID, ENTERPRISE_FIELD_MASK), () => {
                 fetches += 1
-                return HttpResponse.json(combinedPayload())
+                return HttpResponse.json(enterprisePayload())
             }),
         )
         const t = convexTest(schema, modules)
@@ -120,7 +148,7 @@ describe("google place cache", () => {
         await t.run(async (ctx) => {
             await ctx.db.insert("googlePlaceCache", {
                 placeId,
-                kind: "details-combined",
+                kind: "details-enterprise",
                 payload: {
                     openingHours: { openState: "unknown", periods: [], weekdayText: [] },
                 },
@@ -128,36 +156,9 @@ describe("google place cache", () => {
             })
         })
 
-        const result = await authed.action(api.places.details, { placeId, tier: "combined" })
+        const result = await authed.action(api.places.details, { placeId, tier: "enterprise" })
         expect(fetches).toBe(1)
-        expect(result).toMatchObject({ businessStatus: "OPERATIONAL", rating: 4.5 })
-    })
-
-    test("atmosphere serves the cached row without a Google fetch", async () => {
-        let fetches = 0
-        server.use(
-            http.get(atmosphereUrl(GOOGLE_PLACE_ID), () => {
-                fetches += 1
-                return HttpResponse.json(atmospherePayload())
-            }),
-        )
-        const t = convexTest(schema, modules)
-        registerBetterAuthComponent(t, "betterAuth")
-        const placeId = await seedPlace(t)
-        const authed = t.withIdentity({ subject: AUTH_USER_ID })
-
-        const first = await authed.action(api.places.atmosphere, { placeId })
-        expect(fetches).toBe(1)
-        expect(first).toEqual({
-            servesVegetarianFood: true,
-            goodForGroups: true,
-            reservable: false,
-            editorialSummary: { text: "A cozy neighborhood spot.", languageCode: "en" },
-        })
-
-        const second = await authed.action(api.places.atmosphere, { placeId })
-        expect(fetches).toBe(1)
-        expect(second).toEqual(first)
+        expect(result).toMatchObject({ rating: 4.5 })
     })
 
     test("unauthenticated callers cannot read cached details", async () => {
@@ -165,6 +166,6 @@ describe("google place cache", () => {
         registerBetterAuthComponent(t, "betterAuth")
         const placeId = await seedPlace(t)
 
-        await expect(t.action(api.places.details, { placeId, tier: "combined" })).rejects.toThrow("Unauthorized")
+        await expect(t.action(api.places.details, { placeId, tier: "enterprise" })).rejects.toThrow("Unauthorized")
     })
 })

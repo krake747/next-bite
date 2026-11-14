@@ -14,29 +14,34 @@ export type RestaurantSignals =
       }
     | { readonly status: "failed" }
 
-export function useRestaurantSignals(placeId: Id<"places">, googlePlaceId: string | undefined): RestaurantSignals {
+export function useRestaurantSignals(
+    placeId: Id<"places">,
+    googlePlaceId: string | undefined,
+    enabled = true,
+): RestaurantSignals {
     const fetchDetails = usePlaceDetails()
     const [signals, setSignals] = useState<RestaurantSignals>({ status: "idle" })
 
     useEffect(() => {
         let cancelled = false
-        if (googlePlaceId === undefined || googlePlaceId === "") {
+        if (!enabled || googlePlaceId === undefined || googlePlaceId === "") {
             return () => {
                 cancelled = true
             }
         }
         setSignals({ status: "loading" })
-        void fetchDetails({ placeId, tier: "combined" })
-            .then((result) => {
+        void Promise.all([fetchDetails({ placeId, tier: "enterprise" }), fetchDetails({ placeId, tier: "pro" })])
+            .then(([enterpriseResult, proResult]) => {
                 if (!cancelled) {
                     setSignals({
                         status: "ready",
-                        openState: "openingHours" in result ? result.openingHours.openState : "unknown",
-                        ...("priceLevel" in result && result.priceLevel !== undefined
-                            ? { priceLevel: result.priceLevel }
+                        openState:
+                            "openingHours" in enterpriseResult ? enterpriseResult.openingHours.openState : "unknown",
+                        ...("priceLevel" in enterpriseResult && enterpriseResult.priceLevel !== undefined
+                            ? { priceLevel: enterpriseResult.priceLevel }
                             : {}),
-                        ...("businessStatus" in result && result.businessStatus !== undefined
-                            ? { businessStatus: result.businessStatus }
+                        ...("businessStatus" in proResult && proResult.businessStatus !== undefined
+                            ? { businessStatus: proResult.businessStatus }
                             : {}),
                     })
                 }
@@ -50,7 +55,7 @@ export function useRestaurantSignals(placeId: Id<"places">, googlePlaceId: strin
             cancelled = true
         }
         // fetchDetails is the stable mutateAsync function; refetch only when the place changes.
-    }, [placeId, googlePlaceId, fetchDetails])
+    }, [placeId, googlePlaceId, enabled, fetchDetails])
 
     return signals
 }

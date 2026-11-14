@@ -1,6 +1,25 @@
 import { useEffect, useState } from "react"
 
+import { type Id } from "@api/data.model"
 import { usePlaceDetails, type Restaurant } from "@core/restaurants"
+
+async function loadGranularDetails(
+    fetchDetails: ReturnType<typeof usePlaceDetails>,
+    placeId: Id<"places">,
+): Promise<{ readonly enterprise: EnterpriseDetails; readonly businessStatus: string | undefined } | null> {
+    try {
+        const [enterpriseResult, proResult] = await Promise.all([
+            fetchDetails({ placeId, tier: "enterprise" }),
+            fetchDetails({ placeId, tier: "pro" }),
+        ])
+        return {
+            enterprise: "openingHours" in enterpriseResult ? enterpriseResult : {},
+            businessStatus: "businessStatus" in proResult ? proResult.businessStatus : undefined,
+        }
+    } catch {
+        return null
+    }
+}
 
 import { type EnterpriseDetails, formatBusinessStatus } from "./place-details-utils"
 
@@ -39,27 +58,17 @@ export function useDetailEnterprise(restaurant: Restaurant): DetailEnterprise & 
         }
         setEnterprise({ status: "loading" })
         setProStatus({ status: "loading" })
-        void fetchDetails({ placeId: restaurant._id, tier: "combined" })
-            .then((result) => {
-                if (cancelled) {
-                    return
-                }
-                if ("openingHours" in result) {
-                    setEnterprise({ status: "ready", details: result })
-                } else {
-                    setEnterprise({ status: "ready", details: {} })
-                }
-                setProStatus({
-                    status: "ready",
-                    businessStatus: "businessStatus" in result ? result.businessStatus : undefined,
-                })
-            })
-            .catch(() => {
-                if (!cancelled) {
+        void loadGranularDetails(fetchDetails, restaurant._id).then((outcome) => {
+            if (cancelled || outcome === null) {
+                if (!cancelled && outcome === null) {
                     setEnterprise({ status: "failed" })
                     setProStatus({ status: "failed" })
                 }
-            })
+                return
+            }
+            setEnterprise({ status: "ready", details: outcome.enterprise })
+            setProStatus({ status: "ready", businessStatus: outcome.businessStatus })
+        })
         return () => {
             cancelled = true
         }

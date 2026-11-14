@@ -23,13 +23,23 @@ beforeEach(() => {
     detailsMutate.mockResolvedValue({})
 })
 
-// The lookup must fire once and then stop. A refetch loop would
-// keep firing on every render, which is what took down prod in #260.
+// The granular lookup fires once per tier (enterprise + pro) and then stops.
+// A refetch loop would keep firing on every render, which is what took down prod in #260.
 async function settleSignals() {
     await new Promise((resolve) => {
         setTimeout(resolve, 500)
     })
-    expect(detailsMutate).toHaveBeenCalledTimes(1)
+    expect(detailsMutate).toHaveBeenCalledTimes(2)
+}
+
+function mockGranularDetails(enterprise: unknown, pro: unknown = {}) {
+    detailsMutate.mockImplementation(async (args: { tier: string }) => {
+        await Promise.resolve()
+        if (args.tier === "enterprise") {
+            return enterprise
+        }
+        return pro
+    })
 }
 
 const mockRestaurant: Restaurant = {
@@ -74,7 +84,7 @@ describe("RestaurantCardOverlay", () => {
     })
 
     test("shows price and open-now signals", async () => {
-        detailsMutate.mockResolvedValueOnce({
+        mockGranularDetails({
             openingHours: { openState: "open", periods: [], weekdayText: [] },
             priceLevel: "PRICE_LEVEL_MODERATE",
         })
@@ -85,10 +95,12 @@ describe("RestaurantCardOverlay", () => {
     })
 
     test("flags permanently closed places", async () => {
-        detailsMutate.mockResolvedValueOnce({
-            openingHours: { openState: "closed", periods: [], weekdayText: [] },
-            businessStatus: "CLOSED_PERMANENTLY",
-        })
+        mockGranularDetails(
+            {
+                openingHours: { openState: "closed", periods: [], weekdayText: [] },
+            },
+            { businessStatus: "CLOSED_PERMANENTLY" },
+        )
         const screen = await render(<RestaurantCardOverlay restaurant={mockRestaurant} onToggleWant={() => {}} />)
         await expect.element(screen.getByText("Permanently closed")).toBeVisible()
         await settleSignals()

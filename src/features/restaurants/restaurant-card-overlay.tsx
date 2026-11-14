@@ -15,6 +15,7 @@ import { RestaurantAddressLink } from "./restaurant-address-link"
 import { RestaurantInterestButton } from "./restaurant-interest-button"
 import { RestaurantPriceBadge, RestaurantStatusLine } from "./restaurant-signals"
 import { useRestaurantSignals } from "./use-restaurant-signals"
+import { useVisible } from "./use-visible"
 
 export function RestaurantCardOverlay({
     restaurant,
@@ -32,7 +33,10 @@ export function RestaurantCardOverlay({
     const hasLocation = googlePlaceId !== undefined && googlePlaceId !== ""
     const handleToggleWant = onToggleWant ?? (() => {})
     const lightbox = useLightbox(restaurant.photos)
-    const signals = useRestaurantSignals(restaurant._id, googlePlaceId)
+    // Signals bill Enterprise calls, so they load only once the card nears
+    // the viewport instead of on mount for every card in the feed.
+    const [sentinelRef, isVisible] = useVisible()
+    const signals = useRestaurantSignals(restaurant._id, googlePlaceId, isVisible)
     const cover = restaurant.photos[0]?.url
     const tagline = restaurant.cuisine ?? "Saved place"
 
@@ -43,7 +47,7 @@ export function RestaurantCardOverlay({
     )
 
     return (
-        <Card {...cardProps}>
+        <Card ref={sentinelRef} {...cardProps}>
             <div className="relative aspect-[16/10] overflow-hidden">
                 {cover !== undefined ? (
                     <>

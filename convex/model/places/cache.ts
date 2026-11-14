@@ -8,13 +8,17 @@ export type GoogleCacheKind = Infer<typeof googleCacheKindValidator>
 const HOUR_MS = 60 * 60 * 1000
 const DAY_MS = 24 * HOUR_MS
 
-// Freshness per cached kind. Combined carries open state, so it expires fast;
-// atmosphere extras move slowly. Every TTL sits under the 30-day Places
-// caching allowance (see docs/migrations.md "Place coordinates").
+// Freshness per cached kind. Enterprise carries open state, so it holds a
+// shorter TTL than stable pro identity. Every TTL sits under the 30-day
+// Places caching allowance (see docs/migrations.md "Place coordinates").
 export const GOOGLE_CACHE_TTL_MS: Record<GoogleCacheKind, number> = {
+    "details-pro": 30 * DAY_MS,
+    "details-enterprise": 14 * DAY_MS,
+    // Deprecated: Good to know is removed, so these kinds are never written.
+    // Kept so old rows validate until expiry.
+    atmosphere: 7 * DAY_MS,
     "details-combined": DAY_MS,
     "details-atmosphere": 7 * DAY_MS,
-    atmosphere: 7 * DAY_MS,
 }
 
 function isFresh(fetchedAt: number, kind: GoogleCacheKind, now: number): boolean {

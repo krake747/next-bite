@@ -72,13 +72,17 @@ describe("google places fixtures", () => {
         const placeId = await seedPlace(t)
         const authed = t.withIdentity({ subject: AUTH_USER_ID })
 
-        const details = await authed.action(api.places.details, { placeId, tier: "combined" })
-        expect(details).toEqual({
+        const pro = await authed.action(api.places.details, { placeId, tier: "pro" })
+        expect(pro).toEqual({
             displayName: "Fixture Bistro",
             primaryType: "french_restaurant",
             googleMapsUri: "https://maps.google.com/?cid=fixture",
             businessStatus: "OPERATIONAL",
             utcOffsetMinutes: 60,
+        })
+
+        const enterprise = await authed.action(api.places.details, { placeId, tier: "enterprise" })
+        expect(enterprise).toEqual({
             openingHours: {
                 openState: "open",
                 periods: [{ day: 1, openTime: "09:00", closeTime: "22:00" }],
@@ -90,20 +94,6 @@ describe("google places fixtures", () => {
             websiteUri: "https://example.com/fixture-bistro",
         })
 
-        const atmosphere = await authed.action(api.places.atmosphere, { placeId })
-        expect(atmosphere).toEqual({
-            editorialSummary: { text: "A fixture bistrot with chalkboard menus.", languageCode: "en" },
-            reviewSummary: {
-                text: "Guests love the fixture tartine.",
-                disclosureText: "Summarized from fixture reviews.",
-                flagContentUri: "https://maps.google.com/flag",
-                reviewsUri: "https://maps.google.com/reviews",
-            },
-            servesVegetarianFood: true,
-            goodForGroups: true,
-            reservable: false,
-        })
-
         const location = await authed.action(api.places.location, { placeId })
         expect(location).toEqual({
             lat: 49.61,
@@ -112,13 +102,6 @@ describe("google places fixtures", () => {
                 low: { lat: 49.6, lng: 6.12 },
                 high: { lat: 49.62, lng: 6.14 },
             },
-        })
-
-        const hours = await authed.action(api.places.hours, { placeId })
-        expect(hours).toEqual({
-            openState: "open",
-            periods: [{ day: 1, openTime: "09:00", closeTime: "22:00" }],
-            weekdayText: ["Monday: 9:00 AM – 10:00 PM"],
         })
 
         expect(fetches).toBe(0)

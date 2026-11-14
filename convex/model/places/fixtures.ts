@@ -23,20 +23,6 @@ export const fixtureCombinedDetails = {
     userRatingCount: 42,
     priceLevel: "PRICE_LEVEL_MODERATE",
     websiteUri: "https://example.com/fixture-bistro",
-    editorialSummary: "A fixture bistrot with chalkboard menus.",
-}
-
-export const fixtureAtmosphere = {
-    editorialSummary: { text: "A fixture bistrot with chalkboard menus.", languageCode: "en" },
-    reviewSummary: {
-        text: { text: "Guests love the fixture tartine." },
-        disclosureText: { text: "Summarized from fixture reviews." },
-        flagContentUri: "https://maps.google.com/flag",
-        reviewsUri: "https://maps.google.com/reviews",
-    },
-    servesVegetarianFood: true,
-    goodForGroups: true,
-    reservable: false,
 }
 
 export const fixtureLocation = {
@@ -44,13 +30,5 @@ export const fixtureLocation = {
     viewport: {
         low: { latitude: 49.6, longitude: 6.12 },
         high: { latitude: 49.62, longitude: 6.14 },
-    },
-}
-
-export const fixtureOpeningHours = {
-    currentOpeningHours: {
-        openNow: true,
-        periods: [{ open: { day: 1, hour: 9, minute: 0 }, close: { day: 1, hour: 22, minute: 0 } }],
-        weekdayDescriptions: ["Monday: 9:00 AM – 10:00 PM"],
     },
 }
