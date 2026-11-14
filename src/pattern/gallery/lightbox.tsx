@@ -22,7 +22,17 @@ export function useLightbox(photos: ReadonlyArray<GalleryPhoto>) {
 
 type LightboxState = ReturnType<typeof useLightbox>
 
-export function Lightbox({ lightbox }: Readonly<{ lightbox: LightboxState }>) {
+export function Lightbox({
+    lightbox,
+    removableIndexes,
+    onRemoveAt,
+    removeError,
+}: Readonly<{
+    lightbox: LightboxState
+    removableIndexes?: ReadonlySet<number> | undefined
+    onRemoveAt?: ((index: number) => void) | undefined
+    removeError?: string | null | undefined
+}>) {
     if (lightbox.selection.kind === "closed") {
         return null
     }
@@ -36,6 +46,9 @@ export function Lightbox({ lightbox }: Readonly<{ lightbox: LightboxState }>) {
                     lightbox.close()
                 }
             }}
+            removableIndexes={removableIndexes}
+            onRemoveAt={onRemoveAt}
+            removeError={removeError}
         />
     )
 }

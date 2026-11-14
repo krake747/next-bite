@@ -24,6 +24,7 @@ export const placesTables = {
         height: v.optional(v.number()),
         mimeType: v.optional(v.string()),
         byteSize: v.optional(v.number()),
+        addedBy: v.optional(v.id("profiles")),
     })
         .index("by_storage", ["storageId"])
         .index("by_place", ["placeId"]),

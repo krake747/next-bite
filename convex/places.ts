@@ -10,6 +10,7 @@ import { fetchPlaceDetails, type PlaceDetailsResult } from "./model/places/detai
 import { fetchOpeningHours, type OpeningHoursData } from "./model/places/hours"
 import { fetchPlaceLocation, type PlaceLocationData } from "./model/places/location"
 import {
+    addPlacePhotos,
     addToGroupRecord,
     createPlaceRecord,
     feedCards,
@@ -19,6 +20,7 @@ import {
     mineCards,
     placeCardValidator,
     removeFromGroupRecord,
+    removePlacePhoto,
     saveStatusValidator,
     setSaveRecord,
 } from "./model/places/places"
@@ -123,6 +125,31 @@ export const mine = query({
             return []
         }
         return mineCards(ctx.db, me._id)
+    },
+})
+
+export const addPhotos = mutation({
+    args: {
+        placeId: v.id("places"),
+        photos: v.array(photoInputValidator),
+    },
+    returns: v.array(v.id("photos")),
+    handler: async (ctx, args) => {
+        const me = await requireProfile(ctx)
+        return [...(await addPlacePhotos(ctx, me._id, args.placeId, args.photos))]
+    },
+})
+
+export const removePhoto = mutation({
+    args: {
+        placeId: v.id("places"),
+        storageId: v.id("_storage"),
+    },
+    returns: v.null(),
+    handler: async (ctx, args) => {
+        const me = await requireProfile(ctx)
+        await removePlacePhoto(ctx, me._id, args.placeId, args.storageId)
+        return null
     },
 })
 

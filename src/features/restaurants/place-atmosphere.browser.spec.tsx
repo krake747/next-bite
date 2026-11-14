@@ -1,28 +1,7 @@
 import { describe, expect, test } from "vitest"
 import { render } from "vitest-browser-react"
 
-import { AtmosphereFlags, GooglePhotoGallery } from "./place-atmosphere"
-
-const photos = [
-    {
-        name: "places/ChIJtest/photos/photo-one",
-        authorDisplayName: "Ava",
-        authorUri: "https://maps.google.com/author",
-        flagContentUri: "https://maps.google.com/flag",
-        googleMapsUri: "https://maps.google.com/photo",
-    },
-]
-
-describe("GooglePhotoGallery", () => {
-    test("shows author credit, source links, and report affordances", async () => {
-        const screen = await render(<GooglePhotoGallery photos={photos} apiKey="test-key" />)
-
-        await expect.element(screen.getByText("Ava")).toBeInTheDocument()
-        await expect.element(screen.getByText("Source")).toBeInTheDocument()
-        await expect.element(screen.getByText("Report")).toBeInTheDocument()
-        await expect.element(screen.getByText("Powered by Google")).toBeInTheDocument()
-    })
-})
+import { AtmosphereFlags } from "./place-atmosphere"
 
 describe("AtmosphereFlags", () => {
     test("shows flags with disclosure text and summary links", async () => {

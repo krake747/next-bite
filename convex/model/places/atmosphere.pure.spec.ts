@@ -11,32 +11,20 @@ function serveAtmosphere(body: unknown, status = 200): void {
 }
 
 describe("fetchPlaceAtmosphere", () => {
-    test("returns empty photos without a place id or api key", async () => {
-        await expect(fetchPlaceAtmosphere("", "test-key")).resolves.toEqual({ photos: [] })
-        await expect(fetchPlaceAtmosphere("ChIJtest", undefined)).resolves.toEqual({ photos: [] })
+    test("returns empty atmosphere without a place id or api key", async () => {
+        await expect(fetchPlaceAtmosphere("", "test-key")).resolves.toEqual({})
+        await expect(fetchPlaceAtmosphere("ChIJtest", undefined)).resolves.toEqual({})
     })
 
     test("uses the Atmosphere field mask", () => {
-        expect(ATMOSPHERE_MASK).toContain("photos")
+        expect(ATMOSPHERE_MASK).not.toContain("photos")
         expect(ATMOSPHERE_MASK).toContain("servesVegetarianFood")
         expect(ATMOSPHERE_MASK).toContain("goodForGroups")
         expect(ATMOSPHERE_MASK).toContain("reservable")
     })
 
-    test("maps photos, summaries, and flags", async () => {
+    test("maps summaries and flags", async () => {
         serveAtmosphere({
-            photos: [
-                {
-                    name: "places/ChIJtest/photos/photo-one",
-                    widthPx: 1600,
-                    heightPx: 1200,
-                    authorAttributions: [
-                        { displayName: "Ava", uri: "https://maps.google.com/a", photoUri: "https://img/a" },
-                    ],
-                    flagContentUri: "https://maps.google.com/flag",
-                    googleMapsUri: "https://maps.google.com/photo",
-                },
-            ],
             editorialSummary: { text: "Cozy terrace spot", languageCode: "en" },
             reviewSummary: {
                 text: { text: "Guests love the terrace" },
@@ -50,18 +38,6 @@ describe("fetchPlaceAtmosphere", () => {
         })
 
         await expect(fetchPlaceAtmosphere("ChIJtest", "test-key")).resolves.toEqual({
-            photos: [
-                {
-                    name: "places/ChIJtest/photos/photo-one",
-                    widthPx: 1600,
-                    heightPx: 1200,
-                    authorDisplayName: "Ava",
-                    authorUri: "https://maps.google.com/a",
-                    authorPhotoUri: "https://img/a",
-                    flagContentUri: "https://maps.google.com/flag",
-                    googleMapsUri: "https://maps.google.com/photo",
-                },
-            ],
             editorialSummary: { text: "Cozy terrace spot", languageCode: "en" },
             reviewSummary: {
                 text: "Guests love the terrace",
@@ -75,9 +51,9 @@ describe("fetchPlaceAtmosphere", () => {
         })
     })
 
-    test("returns empty photos when the provider rejects", async () => {
+    test("returns empty atmosphere when the provider rejects", async () => {
         serveAtmosphere({}, 500)
 
-        await expect(fetchPlaceAtmosphere("ChIJtest", "test-key")).resolves.toEqual({ photos: [] })
+        await expect(fetchPlaceAtmosphere("ChIJtest", "test-key")).resolves.toEqual({})
     })
 })

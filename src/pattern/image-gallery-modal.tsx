@@ -11,9 +11,20 @@ type ImageGalleryModalProps = {
     show: boolean
     onOpenChange: (open: boolean) => void
     initialIndex?: number | undefined
+    removableIndexes?: ReadonlySet<number> | undefined
+    onRemoveAt?: ((index: number) => void) | undefined
+    removeError?: string | null | undefined
 }
 
-export function ImageGalleryModal({ images, show, onOpenChange, initialIndex }: Readonly<ImageGalleryModalProps>) {
+export function ImageGalleryModal({
+    images,
+    show,
+    onOpenChange,
+    initialIndex,
+    removableIndexes,
+    onRemoveAt,
+    removeError,
+}: Readonly<ImageGalleryModalProps>) {
     if (images.length === 0) {
         return null
     }
@@ -26,13 +37,26 @@ export function ImageGalleryModal({ images, show, onOpenChange, initialIndex }: 
                     onClose={() => {
                         onOpenChange(false)
                     }}
+                    removableIndexes={removableIndexes}
+                    onRemoveAt={onRemoveAt}
+                    removeError={removeError}
                 />
             </GalleryViewer>
         </Dialog>
     )
 }
 
-function GalleryShell({ onClose }: Readonly<{ onClose: () => void }>) {
+function GalleryShell({
+    onClose,
+    removableIndexes,
+    onRemoveAt,
+    removeError,
+}: Readonly<{
+    onClose: () => void
+    removableIndexes?: ReadonlySet<number> | undefined
+    onRemoveAt?: ((index: number) => void) | undefined
+    removeError?: string | null | undefined
+}>) {
     const viewer = useGalleryViewer()
 
     const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -78,7 +102,19 @@ function GalleryShell({ onClose }: Readonly<{ onClose: () => void }>) {
             </div>
 
             {viewer.mode === "grid" ? (
-                <GalleryGrid images={viewer.images} onSelect={viewer.openLightbox} />
+                <>
+                    {removeError !== undefined && removeError !== null && removeError !== "" && (
+                        <p role="alert" className="px-4 pt-2 text-sm text-destructive">
+                            {removeError}
+                        </p>
+                    )}
+                    <GalleryGrid
+                        images={viewer.images}
+                        onSelect={viewer.openLightbox}
+                        removableIndexes={removableIndexes}
+                        onRemoveAt={onRemoveAt}
+                    />
+                </>
             ) : (
                 <LightboxView />
             )}

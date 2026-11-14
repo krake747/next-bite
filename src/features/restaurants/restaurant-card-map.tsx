@@ -1,4 +1,3 @@
-import { CaretDownIcon, NavigationArrowIcon } from "@phosphor-icons/react"
 import { AdvancedMarker, Map } from "@vis.gl/react-google-maps"
 import { Suspense, useEffect, useRef, useState } from "react"
 
@@ -32,13 +31,7 @@ function RestaurantCardMapView({
     const bounds = boundsForViewport(location.viewport)
     return (
         <div>
-            <a
-                href={directionsUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="mt-2 block aspect-video w-full cursor-pointer overflow-hidden rounded-xl border border-border shadow-inner"
-                title="Get directions"
-            >
+            <div className="mt-2 aspect-video w-full overflow-hidden rounded-xl border border-border shadow-inner">
                 <Map
                     mapId="DEMO_MAP_ID"
                     disableDefaultUI
@@ -52,8 +45,17 @@ function RestaurantCardMapView({
                 >
                     <AdvancedMarker position={location} title={name ?? null} />
                 </Map>
-            </a>
-            <p className="mt-2 text-center text-xs text-muted-foreground">Click map to get directions</p>
+            </div>
+            <p className="mt-2 text-center text-xs text-muted-foreground">
+                <a
+                    href={directionsUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="font-medium underline decoration-border-strong underline-offset-2 transition-colors duration-150 hover:text-primary"
+                >
+                    Get directions
+                </a>
+            </p>
         </div>
     )
 }
@@ -68,21 +70,16 @@ export function RestaurantCardMap({
     name: string | undefined
 }>) {
     const fetchLocation = usePlaceLocation()
-    const [showMap, setShowMap] = useState(false)
     const [locationState, setLocationState] = useState<LocationState>({ kind: "idle" })
+    const [retryNonce, setRetryNonce] = useState(0)
     const requestRef = useRef(0)
     const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
     useEffect(() => {
-        return () => {
-            requestRef.current += 1
-            if (timeoutRef.current !== null) {
-                clearTimeout(timeoutRef.current)
-            }
+        if (googlePlaceId === "") {
+            setLocationState({ kind: "missing" })
+            return () => {}
         }
-    }, [])
-
-    const startLookup = () => {
         if (timeoutRef.current !== null) {
             clearTimeout(timeoutRef.current)
         }
@@ -115,60 +112,39 @@ export function RestaurantCardMap({
                 console.error("[RestaurantCardMap] location lookup failed", { placeId, error })
                 setLocationState({ kind: "missing" })
             })
-    }
+        return () => {
+            requestRef.current += 1
+            if (timeoutRef.current !== null) {
+                clearTimeout(timeoutRef.current)
+            }
+        }
+        // Fetch once per place id; manual retry bumps retryNonce.
+    }, [fetchLocation, placeId, googlePlaceId, retryNonce])
 
     return (
         <div className="w-full">
-            <button
-                type="button"
-                onClick={() => {
-                    if (!showMap) {
-                        if (googlePlaceId === "") {
-                            setLocationState({ kind: "missing" })
-                        } else if (locationState.kind === "idle") {
-                            startLookup()
-                        }
-                    }
-                    setShowMap((visible) => !visible)
-                }}
-                aria-expanded={showMap}
-                className="flex w-full items-center justify-between rounded-xl border border-transparent px-3 py-2.5 text-sm text-muted-foreground hover:border-border hover:bg-surface-muted"
+            <Suspense
+                fallback={<div className="mt-2 aspect-video w-full rounded-xl bg-surface-muted" aria-hidden="true" />}
             >
-                <div className="flex items-center gap-3">
-                    <div className="flex size-7 items-center justify-center rounded-full bg-surface-muted">
-                        <NavigationArrowIcon className="size-3.5 text-muted-foreground" aria-hidden="true" />
+                {locationState.kind === "ready" ? (
+                    <RestaurantCardMapView location={locationState.location} name={name} />
+                ) : locationState.kind === "missing" ? (
+                    <div className="mt-2 flex flex-col items-center gap-1">
+                        <p className="text-center text-xs text-muted-foreground">Map unavailable</p>
+                        <button
+                            type="button"
+                            onClick={() => {
+                                setRetryNonce((nonce) => nonce + 1)
+                            }}
+                            className="rounded-sm text-xs font-medium text-muted-foreground underline decoration-border-strong underline-offset-2 transition-colors duration-150 hover:text-primary"
+                        >
+                            Retry
+                        </button>
                     </div>
-                    <span className="font-medium">View on Map</span>
-                </div>
-                <CaretDownIcon
-                    aria-hidden="true"
-                    className={`size-4 text-muted-foreground ${showMap ? "rotate-180" : ""}`}
-                />
-            </button>
-            {showMap && (
-                <Suspense
-                    fallback={
-                        <div className="mt-2 aspect-video w-full rounded-xl bg-surface-muted" aria-hidden="true" />
-                    }
-                >
-                    {locationState.kind === "ready" ? (
-                        <RestaurantCardMapView location={locationState.location} name={name} />
-                    ) : locationState.kind === "missing" ? (
-                        <div className="mt-2 flex flex-col items-center gap-1">
-                            <p className="text-center text-xs text-muted-foreground">Map unavailable</p>
-                            <button
-                                type="button"
-                                onClick={startLookup}
-                                className="rounded-sm text-xs font-medium text-muted-foreground underline decoration-border-strong underline-offset-2 transition-colors duration-150 hover:text-primary"
-                            >
-                                Retry
-                            </button>
-                        </div>
-                    ) : (
-                        <div className="mt-2 aspect-video w-full rounded-xl bg-surface-muted" aria-hidden="true" />
-                    )}
-                </Suspense>
-            )}
+                ) : (
+                    <div className="mt-2 aspect-video w-full rounded-xl bg-surface-muted" aria-hidden="true" />
+                )}
+            </Suspense>
         </div>
     )
 }

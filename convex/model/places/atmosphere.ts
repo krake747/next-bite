@@ -10,30 +10,14 @@ export type AtmosphereData = Infer<typeof atmosphereValidator>
 // so #228 can reuse the masks without a competing action.
 export const PRO_MASK = "displayName,primaryType,formattedAddress,googleMapsUri"
 export const ENTERPRISE_MASK = `${PRO_MASK},currentOpeningHours,rating,userRatingCount,priceLevel,websiteUri`
-export const ATMOSPHERE_MASK = `${ENTERPRISE_MASK},photos,editorialSummary,reviewSummary,servesVegetarianFood,goodForGroups,reservable`
+export const ATMOSPHERE_MASK = `${ENTERPRISE_MASK},editorialSummary,reviewSummary,servesVegetarianFood,goodForGroups,reservable`
 
 const localizedTextSchema = valibot.object({
     text: valibot.optional(valibot.string()),
     languageCode: valibot.optional(valibot.string()),
 })
 
-const authorAttributionSchema = valibot.object({
-    displayName: valibot.optional(valibot.string()),
-    uri: valibot.optional(valibot.string()),
-    photoUri: valibot.optional(valibot.string()),
-})
-
-const googlePhotoSchema = valibot.object({
-    name: valibot.optional(valibot.string()),
-    widthPx: valibot.optional(valibot.number()),
-    heightPx: valibot.optional(valibot.number()),
-    authorAttributions: valibot.optional(valibot.array(authorAttributionSchema)),
-    flagContentUri: valibot.optional(valibot.string()),
-    googleMapsUri: valibot.optional(valibot.string()),
-})
-
 const googleAtmosphereSchema = valibot.object({
-    photos: valibot.optional(valibot.array(googlePhotoSchema)),
     editorialSummary: valibot.optional(localizedTextSchema),
     reviewSummary: valibot.optional(
         valibot.object({
@@ -49,35 +33,10 @@ const googleAtmosphereSchema = valibot.object({
 })
 
 function emptyAtmosphere(): AtmosphereData {
-    return { photos: [] }
+    return {}
 }
 
 type GoogleAtmosphere = valibot.InferOutput<typeof googleAtmosphereSchema>
-type GooglePhoto = valibot.InferOutput<typeof googlePhotoSchema>
-
-function toAtmospherePhoto(photo: GooglePhoto): AtmosphereData["photos"][number] | null {
-    if (photo.name === undefined || photo.name === "") {
-        return null
-    }
-    const firstAuthor = photo.authorAttributions?.[0]
-    return {
-        name: photo.name,
-        ...(photo.widthPx !== undefined ? { widthPx: photo.widthPx } : {}),
-        ...(photo.heightPx !== undefined ? { heightPx: photo.heightPx } : {}),
-        ...(firstAuthor?.displayName !== undefined ? { authorDisplayName: firstAuthor.displayName } : {}),
-        ...(firstAuthor?.uri !== undefined ? { authorUri: firstAuthor.uri } : {}),
-        ...(firstAuthor?.photoUri !== undefined ? { authorPhotoUri: firstAuthor.photoUri } : {}),
-        ...(photo.flagContentUri !== undefined ? { flagContentUri: photo.flagContentUri } : {}),
-        ...(photo.googleMapsUri !== undefined ? { googleMapsUri: photo.googleMapsUri } : {}),
-    }
-}
-
-function toAtmospherePhotos(parsed: GoogleAtmosphere): AtmosphereData["photos"] {
-    return (parsed.photos ?? []).flatMap((photo) => {
-        const mapped = toAtmospherePhoto(photo)
-        return mapped === null ? [] : [mapped]
-    })
-}
 
 function toEditorialSummary(parsed: GoogleAtmosphere): AtmosphereData["editorialSummary"] {
     const text = parsed.editorialSummary?.text
@@ -112,7 +71,6 @@ function toAtmosphereData(parsed: GoogleAtmosphere): AtmosphereData {
     const editorialSummary = toEditorialSummary(parsed)
     const reviewSummary = toReviewSummary(parsed)
     return {
-        photos: toAtmospherePhotos(parsed),
         ...(editorialSummary !== undefined ? { editorialSummary } : {}),
         ...(reviewSummary !== undefined ? { reviewSummary } : {}),
         ...(parsed.servesVegetarianFood !== undefined ? { servesVegetarianFood: parsed.servesVegetarianFood } : {}),

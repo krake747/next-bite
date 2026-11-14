@@ -4,6 +4,17 @@
     "homepage": "https://github.com/krake747/next-bite",
     "items": [
         {
+            "name": "breadcrumb",
+            "type": "registry:ui",
+            "description": "Two-level breadcrumb: parent link plus current page with chevron separator.",
+            "files": [
+                {
+                    "path": "src/ui/breadcrumb.tsx",
+                    "type": "registry:ui"
+                }
+            ]
+        },
+        {
             "name": "button",
             "type": "registry:ui",
             "description": "Tomato primary, secondary, outline, ghost, destructive. Small, medium, large.",
@@ -55,6 +66,21 @@
             "files": [
                 {
                     "path": "src/ui/card.tsx",
+                    "type": "registry:ui"
+                }
+            ]
+        },
+        {
+            "name": "carousel",
+            "type": "registry:ui",
+            "description": "One-at-a-time slides with swipe, arrows, and engine access for dots.",
+            "files": [
+                {
+                    "path": "src/ui/carousel.tsx",
+                    "type": "registry:ui"
+                },
+                {
+                    "path": "src/ui/carousel.context.ts",
                     "type": "registry:ui"
                 }
             ]

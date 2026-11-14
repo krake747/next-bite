@@ -46,7 +46,12 @@ export async function isStorageClaimed(db: PhotoDb, storageId: Id<"_storage">): 
     return (await photoClaim(db, storageId)) !== null
 }
 
-export async function claimPhoto(ctx: PhotoCtx, placeId: Id<"places">, input: PhotoInput): Promise<Doc<"photos">> {
+export async function claimPhoto(
+    ctx: PhotoCtx,
+    placeId: Id<"places">,
+    input: PhotoInput,
+    addedBy: Id<"profiles">,
+): Promise<Doc<"photos">> {
     const { mimeType, byteSize } = await photoMetadata(ctx.db, input.storageId)
     if (await isStorageClaimed(ctx.db, input.storageId)) {
         throw new Error("Storage is already claimed")
@@ -63,6 +68,7 @@ export async function claimPhoto(ctx: PhotoCtx, placeId: Id<"places">, input: Ph
         ...(input.height !== undefined ? { height: input.height } : {}),
         mimeType,
         byteSize,
+        addedBy,
     })
     const photo = await ctx.db.get("photos", photoId)
     if (photo === null) {

@@ -13,11 +13,13 @@ import {
     ListIcon,
     MinusIcon,
     PaletteIcon,
+    PathIcon,
     QuotesIcon,
     RectangleIcon,
     RowsIcon,
     ShapesIcon,
     SidebarIcon,
+    SlideshowIcon,
     TagIcon,
     TextAaIcon,
     TextboxIcon,
@@ -30,8 +32,10 @@ import {
 import { AspectRatioDemo, aspectRatioMeta } from "./aspect-ratio"
 import { AvatarDemo, avatarMeta } from "./avatar"
 import { BadgeDemo, badgeMeta } from "./badge"
+import { BreadcrumbDemo, breadcrumbMeta } from "./breadcrumb"
 import { ButtonDemo, buttonMeta } from "./button"
 import { CardDemo, cardMeta } from "./card"
+import { CarouselDemo, carouselMeta } from "./carousel"
 import { CollapsibleDemo, collapsibleMeta } from "./collapsible"
 import { DialogDemo, dialogMeta } from "./dialog"
 import { DropdownMenuDemo, dropdownMenuMeta } from "./dropdown-menu"
@@ -107,8 +111,10 @@ export const sectionIcons: Record<string, typeof HouseIcon> = {
     "aspect-ratio": ImageIcon,
     avatar: UserCircleIcon,
     badge: TagIcon,
+    breadcrumb: PathIcon,
     button: RectangleIcon,
     card: CardsIcon,
+    carousel: SlideshowIcon,
     collapsible: CaretDownIcon,
     dialog: AppWindowIcon,
     "dropdown-menu": ListIcon,
@@ -136,8 +142,10 @@ export const designSystemSections: Readonly<Record<string, SectionEntry>> = {
     [aspectRatioMeta.id]: { meta: aspectRatioMeta, Demo: AspectRatioDemo },
     [avatarMeta.id]: { meta: avatarMeta, Demo: AvatarDemo },
     [badgeMeta.id]: { meta: badgeMeta, Demo: BadgeDemo },
+    [breadcrumbMeta.id]: { meta: breadcrumbMeta, Demo: BreadcrumbDemo },
     [buttonMeta.id]: { meta: buttonMeta, Demo: ButtonDemo },
     [cardMeta.id]: { meta: cardMeta, Demo: CardDemo },
+    [carouselMeta.id]: { meta: carouselMeta, Demo: CarouselDemo },
     [collapsibleMeta.id]: { meta: collapsibleMeta, Demo: CollapsibleDemo },
     [dialogMeta.id]: { meta: dialogMeta, Demo: DialogDemo },
     [dropdownMenuMeta.id]: { meta: dropdownMenuMeta, Demo: DropdownMenuDemo },
