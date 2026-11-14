@@ -118,7 +118,7 @@ export function RestaurantCardMap({
     }
 
     return (
-        <div className="px-5 md:px-4">
+        <div className="w-full">
             <button
                 type="button"
                 onClick={() => {

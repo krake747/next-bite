@@ -6,14 +6,6 @@ import { type Restaurant } from "@core/restaurants"
 
 import { RestaurantCardOverlay } from "./restaurant-card-overlay"
 
-vi.mock("./restaurant-card-map", () => ({
-    RestaurantCardMap: () => (
-        <div data-slot="restaurant-card-map-stub">
-            <button type="button">View on Map</button>
-        </div>
-    ),
-}))
-
 const { detailsMutate } = vi.hoisted(() => {
     const detailsMutate = vi.fn<(args: { tier: string }) => Promise<unknown>>()
     return { detailsMutate }
@@ -66,7 +58,7 @@ describe("RestaurantCardOverlay", () => {
         await expect.element(attribution).toHaveAttribute("translate", "no")
     })
 
-    test("toggles want and renders the map slot", async () => {
+    test("toggles want without rendering the map", async () => {
         const onToggleWant = vi.fn<() => void>()
         const screen = await render(
             <RestaurantCardOverlay
@@ -78,7 +70,7 @@ describe("RestaurantCardOverlay", () => {
         )
         await screen.getByRole("button", { name: /Want to try/ }).click()
         expect(onToggleWant).toHaveBeenCalledTimes(1)
-        await expect.element(screen.getByRole("button", { name: "View on Map" })).toBeVisible()
+        await expect.element(screen.getByRole("button", { name: "View on Map" })).not.toBeInTheDocument()
     })
 
     test("shows price and open-now signals", async () => {
