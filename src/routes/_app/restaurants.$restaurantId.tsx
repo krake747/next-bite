@@ -1,6 +1,6 @@
 import { useSuspenseQuery } from "@tanstack/react-query"
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router"
-import { lazy, Suspense } from "react"
+import { lazy, Suspense, useEffect, useRef, useState } from "react"
 
 import { warmQueriesWithin } from "@api/convex.options"
 import { toId } from "@api/data.model"
@@ -225,11 +225,47 @@ function DetailMapSection({
         <div className="rounded-card border border-border bg-surface p-4 shadow-card">
             <h2 className="font-display text-lg font-semibold text-balance text-foreground">Location</h2>
             <p className="mt-1 text-sm text-muted-foreground">{addressLabel}</p>
-            <div className="pt-2">
+            <MapOnVisible placeId={placeId} googlePlaceId={googlePlaceId} name={name} />
+        </div>
+    )
+}
+
+function MapOnVisible({
+    placeId,
+    googlePlaceId,
+    name,
+}: Readonly<{ placeId: Restaurant["_id"]; googlePlaceId: string; name: string }>) {
+    const sentinelRef = useRef<HTMLDivElement>(null)
+    const [isVisible, setIsVisible] = useState(false)
+    // The embedded map bills a Dynamic Maps load on mount, so it mounts only
+    // once the section nears the viewport instead of with the page.
+    useEffect(() => {
+        const node = sentinelRef.current
+        if (node === null || isVisible) {
+            return () => {}
+        }
+        const observer = new IntersectionObserver(
+            (entries) => {
+                if (entries.some((entry) => entry.isIntersecting)) {
+                    setIsVisible(true)
+                }
+            },
+            { rootMargin: "400px" },
+        )
+        observer.observe(node)
+        return () => {
+            observer.disconnect()
+        }
+    }, [isVisible])
+    return (
+        <div ref={sentinelRef} className="pt-2">
+            {isVisible ? (
                 <Suspense fallback={<div className="aspect-video rounded-xl bg-surface-muted" aria-hidden="true" />}>
                     <RestaurantCardMap placeId={placeId} googlePlaceId={googlePlaceId} name={name} />
                 </Suspense>
-            </div>
+            ) : (
+                <div className="aspect-video rounded-xl bg-surface-muted" aria-hidden="true" />
+            )}
         </div>
     )
 }

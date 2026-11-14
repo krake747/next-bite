@@ -22,6 +22,7 @@ import type * as model_groups_invites from "../model/groups/invites.js";
 import type * as model_groups_memberships from "../model/groups/memberships.js";
 import type * as model_identity_profiles from "../model/identity/profiles.js";
 import type * as model_places_atmosphere from "../model/places/atmosphere.js";
+import type * as model_places_cache from "../model/places/cache.js";
 import type * as model_places_details from "../model/places/details.js";
 import type * as model_places_hours from "../model/places/hours.js";
 import type * as model_places_location from "../model/places/location.js";
@@ -57,6 +58,7 @@ declare const fullApi: ApiFromModules<{
   "model/groups/memberships": typeof model_groups_memberships;
   "model/identity/profiles": typeof model_identity_profiles;
   "model/places/atmosphere": typeof model_places_atmosphere;
+  "model/places/cache": typeof model_places_cache;
   "model/places/details": typeof model_places_details;
   "model/places/hours": typeof model_places_hours;
   "model/places/location": typeof model_places_location;

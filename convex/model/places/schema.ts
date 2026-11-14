@@ -1,7 +1,7 @@
 import { defineTable } from "convex/server"
 import { v } from "convex/values"
 
-import { placeGoogleValidator } from "../../validators"
+import { googleCacheKindValidator, googleCachePayloadValidator, placeGoogleValidator } from "../../validators"
 
 export const placesTables = {
     places: defineTable({
@@ -48,4 +48,10 @@ export const placesTables = {
         userId: v.id("profiles"),
         placeId: v.id("places"),
     }).index("by_user_key", ["userId", "key"]),
+    googlePlaceCache: defineTable({
+        placeId: v.id("places"),
+        kind: googleCacheKindValidator,
+        payload: googleCachePayloadValidator,
+        fetchedAt: v.number(),
+    }).index("by_place_kind", ["placeId", "kind"]),
 }
