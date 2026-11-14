@@ -5,6 +5,7 @@ import { type Id } from "./_generated/dataModel"
 import { action, internalQuery, mutation, query, type ActionCtx } from "./_generated/server"
 import { googleMapsApiKey } from "./env"
 import { requireProfile, signedInProfile } from "./model/identity/profiles"
+import { fetchPlaceAtmosphere, type AtmosphereData } from "./model/places/atmosphere"
 import { fetchOpeningHours, type OpeningHoursData } from "./model/places/hours"
 import { fetchPlaceLocation, type PlaceLocationData } from "./model/places/location"
 import {
@@ -25,6 +26,7 @@ import {
     photoInputValidator,
     placeGoogleInputValidator,
     placeLocationValidator,
+    atmosphereValidator,
 } from "./validators"
 
 async function requireActionProfile(ctx: ActionCtx): Promise<Id<"profiles">> {
@@ -49,6 +51,15 @@ export const _placeForHours = internalQuery({
 })
 
 export const _placeForLocation = internalQuery({
+    args: { placeId: v.id("places") },
+    returns: v.string(),
+    handler: async (ctx, args) => {
+        const userId = (await requireProfile(ctx))._id
+        return googlePlaceIdForViewer(ctx.db, userId, args.placeId)
+    },
+})
+
+export const _placeForAtmosphere = internalQuery({
     args: { placeId: v.id("places") },
     returns: v.string(),
     handler: async (ctx, args) => {
@@ -187,5 +198,19 @@ export const location = action({
         await requireActionProfile(ctx)
         const placeId = await ctx.runQuery(internal.places._placeForLocation, { placeId: args.placeId })
         return fetchPlaceLocation(placeId, googleMapsApiKey())
+    },
+})
+
+// Seam stub for #230. The tiered details action with the Atmosphere mask lands
+// via #228; this narrow atmosphere action fetches only the Atmosphere fields
+// so the detail screen has a seam to consume now. Fold it into
+// details(tier="atmosphere") when #228 lands and switch the frontend hook.
+export const atmosphere = action({
+    args: { placeId: v.id("places") },
+    returns: atmosphereValidator,
+    handler: async (ctx, args): Promise<AtmosphereData> => {
+        await requireActionProfile(ctx)
+        const placeId = await ctx.runQuery(internal.places._placeForAtmosphere, { placeId: args.placeId })
+        return fetchPlaceAtmosphere(placeId, googleMapsApiKey())
     },
 })

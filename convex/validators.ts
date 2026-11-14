@@ -34,6 +34,38 @@ export const placeLocationValidator = v.object({
     lng: v.number(),
 })
 
+export const placePhotoValidator = v.object({
+    name: v.string(),
+    widthPx: v.optional(v.number()),
+    heightPx: v.optional(v.number()),
+    authorDisplayName: v.optional(v.string()),
+    authorUri: v.optional(v.string()),
+    authorPhotoUri: v.optional(v.string()),
+    flagContentUri: v.optional(v.string()),
+    googleMapsUri: v.optional(v.string()),
+})
+
+export const editorialSummaryValidator = v.object({
+    text: v.string(),
+    languageCode: v.optional(v.string()),
+})
+
+export const reviewSummaryValidator = v.object({
+    text: v.optional(v.string()),
+    disclosureText: v.optional(v.string()),
+    flagContentUri: v.optional(v.string()),
+    reviewsUri: v.optional(v.string()),
+})
+
+export const atmosphereValidator = v.object({
+    photos: v.array(placePhotoValidator),
+    editorialSummary: v.optional(editorialSummaryValidator),
+    reviewSummary: v.optional(reviewSummaryValidator),
+    servesVegetarianFood: v.optional(v.boolean()),
+    goodForGroups: v.optional(v.boolean()),
+    reservable: v.optional(v.boolean()),
+})
+
 export const inviteTargetValidator = v.union(
     v.object({ kind: v.literal("friend") }),
     v.object({ kind: v.literal("group"), groupId: v.id("groups") }),

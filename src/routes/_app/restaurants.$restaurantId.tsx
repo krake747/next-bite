@@ -9,6 +9,7 @@ import { useToggleWant } from "@core/saves"
 import { useAuth } from "@core/session"
 import { OpeningHoursDialog } from "@features/restaurants/opening-hours-dialog"
 import { type OpeningHours } from "@features/restaurants/opening-hours-utils"
+import { PlaceAtmosphere } from "@features/restaurants/place-atmosphere"
 import { RestaurantGallery } from "@features/restaurants/restaurant-gallery"
 import { RestaurantHeader } from "@features/restaurants/restaurant-header"
 import { RestaurantInterestButton } from "@features/restaurants/restaurant-interest-button"
@@ -200,6 +201,7 @@ function RestaurantDetailView() {
             <div className="mx-auto max-w-3xl space-y-6 pt-4 lg:max-w-5xl">
                 <DetailHero key={restaurant._id} restaurant={restaurant} />
                 <DetailPhotos photos={restaurant.photos} />
+                <PlaceAtmosphere placeId={restaurant._id} googlePlaceId={restaurant.address.google?.placeId} />
             </div>
         </PageContainer>
     )
