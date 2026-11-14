@@ -42,7 +42,7 @@ function FormSkeleton({
 
 function ListCardSkeleton({ className }: Readonly<{ className: string }>) {
     return (
-        <li className={cx("rounded-card border border-border bg-surface shadow-card", className)}>
+        <li className={cx("list-none rounded-card border border-border bg-surface shadow-card", className)}>
             <TextSkeleton className="font-display text-lg font-semibold" width="w-2/3" />
             <TextSkeleton className="mt-1 text-sm" width="w-1/3" />
         </li>
