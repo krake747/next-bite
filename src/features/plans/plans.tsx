@@ -7,6 +7,7 @@ import { clearError, errorFrom, type FormError } from "@core/outcome"
 import { useCancelPlan, useCreatePlan, usePlansForGroup } from "@core/plans"
 import { useAuth } from "@core/session"
 import { LoadingPlaceholder } from "@pattern/loading"
+import { PageSection } from "@pattern/page-section"
 import { Button } from "@ui/button"
 
 type PlanRow = NonNullable<ReturnType<typeof usePlansForGroup>>[number]
@@ -97,12 +98,11 @@ export function PlanSection({ groupId, isGroupOwner }: Readonly<{ groupId: Id<"g
     }
     if (plans === undefined || groupPlaces === undefined) {
         return (
-            <section aria-label="Plans" className="pt-8">
-                <h2 className="font-display text-2xl font-semibold text-balance text-foreground">Plan an outing</h2>
+            <PageSection label="Plans" title="Plan an outing" className="pt-8">
                 <div className="pt-3">
                     <LoadingPlaceholder />
                 </div>
-            </section>
+            </PageSection>
         )
     }
 
@@ -127,8 +127,7 @@ export function PlanSection({ groupId, isGroupOwner }: Readonly<{ groupId: Id<"g
     }
 
     return (
-        <section aria-label="Plans" className="pt-8">
-            <h2 className="font-display text-2xl font-semibold text-balance text-foreground">Plan an outing</h2>
+        <PageSection label="Plans" title="Plan an outing" className="pt-8">
             {groupPlaces.length === 0 ? (
                 <p className="pt-3 text-sm text-muted-foreground">
                     Add a restaurant to the shared list first, then plan the outing.
@@ -181,6 +180,6 @@ export function PlanSection({ groupId, isGroupOwner }: Readonly<{ groupId: Id<"g
                     setError(errorFrom(error, "Could not cancel the plan"))
                 }}
             />
-        </section>
+        </PageSection>
     )
 }

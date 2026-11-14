@@ -8,6 +8,7 @@ import { type ImageRecord } from "@core/schemas"
 import { useAuth } from "@core/session"
 import { ImageUpload } from "@pattern/image-upload"
 import { LazyImage } from "@pattern/lazy-image"
+import { PageSection } from "@pattern/page-section"
 import { SettingsRow } from "@pattern/settings-row"
 import { Button } from "@ui/button"
 import { cx } from "@ui/cva.config"
@@ -80,13 +81,12 @@ function ProfileSection({
     children: React.ReactNode
 }>) {
     return (
-        <section aria-label={title}>
-            <h2 className="px-4 font-display text-2xl font-semibold text-balance text-foreground">{title}</h2>
+        <PageSection padded label={title} title={title}>
             <p className="mt-1 px-4 text-sm text-muted-foreground">{description}</p>
             <div className="mt-3 divide-y divide-border rounded-card border border-border bg-surface px-4 shadow-card">
                 {children}
             </div>
-        </section>
+        </PageSection>
     )
 }
 
