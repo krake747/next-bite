@@ -27,7 +27,7 @@ describe("RestaurantSchema", () => {
     })
 
     test("rejects mistyped optionals", () => {
-        expect(v.safeParse(RestaurantSchema, { ...validRestaurant, lat: "49.6" }).success).toBe(false)
+        expect(v.safeParse(RestaurantSchema, { ...validRestaurant, placeId: 42 }).success).toBe(false)
     })
 })
 

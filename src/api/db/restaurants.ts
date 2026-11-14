@@ -41,8 +41,6 @@ export type PlacePhotoInput = {
 
 export type PlaceGoogleInput = {
     readonly placeId?: string
-    readonly lat?: number
-    readonly lng?: number
 }
 
 export type PlaceCreateArgs = {
@@ -101,7 +99,7 @@ export function toCreateArgs(row: PlaceCard): PlaceCreateArgs {
         name: row.name,
         ...(row.cuisine !== undefined ? { cuisine: row.cuisine } : {}),
         addressLabel: row.address.label,
-        ...(row.address.google !== undefined ? { google: { ...row.address.google } } : {}),
+        ...(row.address.google?.placeId !== undefined ? { google: { placeId: row.address.google.placeId } } : {}),
         ...(row.note !== undefined ? { note: row.note } : {}),
         ...(row.link !== undefined ? { link: row.link } : {}),
         photos: row.photos.map((photo) => toPhotoInput(photo)),
@@ -129,15 +127,7 @@ export function buildTempPlace(input: TempPlaceInput): PlaceCard {
         ...(input.cuisine !== undefined ? { cuisine: input.cuisine } : {}),
         address: {
             label: input.addressLabel,
-            ...(input.google !== undefined
-                ? {
-                      google: {
-                          ...(input.google.placeId !== undefined ? { placeId: input.google.placeId } : {}),
-                          ...(input.google.lat !== undefined ? { lat: input.google.lat } : {}),
-                          ...(input.google.lng !== undefined ? { lng: input.google.lng } : {}),
-                      },
-                  }
-                : {}),
+            ...(input.google?.placeId !== undefined ? { google: { placeId: input.google.placeId } } : {}),
         },
         ...(input.note !== undefined ? { note: input.note } : {}),
         ...(input.link !== undefined ? { link: input.link } : {}),

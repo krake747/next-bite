@@ -23,8 +23,8 @@ export function RestaurantCard({
         detailsHref?: string | undefined
     } & React.ComponentProps<typeof Card>
 >) {
-    const coords = restaurant.address.google
-    const hasLocation = coords?.lat !== undefined && coords?.lng !== undefined
+    const googlePlaceId = restaurant.address.google?.placeId
+    const hasLocation = googlePlaceId !== undefined && googlePlaceId !== ""
     const handleToggleWant = onToggleWant ?? (() => {})
 
     return (
@@ -47,13 +47,13 @@ export function RestaurantCard({
                     onToggleWant={handleToggleWant}
                 />
             </div>
-            {hasLocation && coords?.lat !== undefined && coords?.lng !== undefined && (
+            {hasLocation && (
                 <Suspense
                     fallback={
                         <div className="mx-5 aspect-video rounded-xl bg-surface-muted md:mx-4" aria-hidden="true" />
                     }
                 >
-                    <RestaurantCardMap location={{ lat: coords.lat, lng: coords.lng }} name={restaurant.name} />
+                    <RestaurantCardMap placeId={restaurant._id} googlePlaceId={googlePlaceId} name={restaurant.name} />
                 </Suspense>
             )}
         </Card>

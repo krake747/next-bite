@@ -26,9 +26,6 @@ function initialFor(choice: ActiveChoice) {
               name: choice.selection.name ?? "",
               cuisine: suggestCuisine(choice.selection.primaryType) ?? "",
               location: choice.selection.address,
-              ...(choice.selection.lat !== undefined && choice.selection.lng !== undefined
-                  ? { lat: choice.selection.lat, lng: choice.selection.lng }
-                  : {}),
               ...(choice.selection.placeId !== undefined ? { placeId: choice.selection.placeId } : {}),
           }
         : undefined

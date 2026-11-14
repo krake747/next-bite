@@ -21,8 +21,13 @@ backend deploy (see `environments.md`), so every listed migration must be idempo
 Upload ownership is the first claim (ADR-0015). A place photo is claimed by its `photos` row and an
 avatar by its profile row; both are indexed by storage ID. The daily cleanup deletes any blob older
 than a day that holds no claim. The `stripProfilesCreatedAt` backfill ran clean on dev and was
-removed with the re-tighten; `backend-migrate.sh` lists no migrations until the next schema change
-needs one.
+removed with the re-tighten.
+
+## Place coordinates
+
+Stored place rows keep only the Google place id; coordinates are fetched fresh per view and never
+persisted past the 30-day allowance. `backend-migrate.sh` lists the `stripPlaceCoordinates` backfill
+until it reports zero remaining, then the schema re-tightens to place id only.
 
 ## Troubleshooting
 

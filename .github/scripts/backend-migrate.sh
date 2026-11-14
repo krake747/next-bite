@@ -3,8 +3,8 @@
 # CONVEX_DEPLOY_KEY targets. Every listed migration must be idempotent.
 set -euo pipefail
 
-# No pending migrations. Each entry must stay idempotent; see docs/migrations.md.
-MIGRATIONS=()
+# The place coordinate strip runs first; keep entries idempotent.
+MIGRATIONS=("model/places/places:stripPlaceCoordinates")
 
 main() {
     : "${CONVEX_DEPLOY_KEY:?CONVEX_DEPLOY_KEY is not set}"
