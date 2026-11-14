@@ -252,8 +252,23 @@ export const atmosphere = action({
     returns: atmosphereValidator,
     handler: async (ctx, args): Promise<AtmosphereData> => {
         await requireActionProfile(ctx)
+        const cached = await ctx.runQuery(internal.model.places.cache.readGoogleCache, {
+            placeId: args.placeId,
+            kind: "atmosphere",
+            now: Date.now(),
+        })
+        if (cached !== null && !("openingHours" in cached)) {
+            return cached
+        }
         const placeId = await ctx.runQuery(internal.places._placeForAtmosphere, { placeId: args.placeId })
-        return fetchPlaceAtmosphere(placeId, googleMapsApiKey())
+        const fresh = await fetchPlaceAtmosphere(placeId, googleMapsApiKey())
+        await ctx.runMutation(internal.model.places.cache.storeGoogleCache, {
+            placeId: args.placeId,
+            kind: "atmosphere",
+            payload: fresh,
+            fetchedAt: Date.now(),
+        })
+        return fresh
     },
 })
 
@@ -262,7 +277,23 @@ export const details = action({
     returns: placeDetailsValidator,
     handler: async (ctx, args): Promise<PlaceDetailsResult> => {
         await requireActionProfile(ctx)
+        const kind = args.tier === "combined" ? "details-combined" : "details-atmosphere"
+        const cached = await ctx.runQuery(internal.model.places.cache.readGoogleCache, {
+            placeId: args.placeId,
+            kind,
+            now: Date.now(),
+        })
+        if (cached !== null && "openingHours" in cached) {
+            return cached
+        }
         const placeId = await ctx.runQuery(internal.places._placeForDetails, { placeId: args.placeId })
-        return fetchPlaceDetails(placeId, googleMapsApiKey(), args.tier)
+        const fresh = await fetchPlaceDetails(placeId, googleMapsApiKey(), args.tier)
+        await ctx.runMutation(internal.model.places.cache.storeGoogleCache, {
+            placeId: args.placeId,
+            kind,
+            payload: fresh,
+            fetchedAt: Date.now(),
+        })
+        return fresh
     },
 })

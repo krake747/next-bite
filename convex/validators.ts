@@ -114,3 +114,18 @@ export const placeDetailsCombinedValidator = v.object({
 })
 
 export const placeDetailsValidator = v.union(placeDetailsAtmosphereValidator, placeDetailsCombinedValidator)
+
+// Google Places payloads cached per place and kind. Every TTL sits under the
+// 30-day caching allowance (see docs/migrations.md "Place coordinates") so a
+// stale row is never served past it; coordinates stay uncached by record.
+export const googleCacheKindValidator = v.union(
+    v.literal("details-combined"),
+    v.literal("details-atmosphere"),
+    v.literal("atmosphere"),
+)
+
+export const googleCachePayloadValidator = v.union(
+    placeDetailsCombinedValidator,
+    placeDetailsAtmosphereValidator,
+    atmosphereValidator,
+)
