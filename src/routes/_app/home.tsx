@@ -6,6 +6,7 @@ import { useViewer } from "@core/identity"
 import { preloadHomeCollections, useFeedRestaurants, useRestaurants, type Restaurant } from "@core/restaurants"
 import { orderFeedByRecency } from "@core/saves"
 import { useAuth, useSessionStatus } from "@core/session"
+import { EmptyRestaurantsState } from "@features/restaurants/empty-restaurants-state"
 import { RestaurantCardOverlay } from "@features/restaurants/restaurant-card-overlay"
 import { ActivityPost } from "@features/social/activity-post"
 import { ButtonLink } from "@pattern/button-link"
@@ -110,8 +111,16 @@ function HomeActivityItem({ restaurant }: Readonly<{ restaurant: Restaurant }>) 
     return <ActivityPost restaurant={restaurant} {...actions.activityFor(restaurant)} />
 }
 
-function HomeShortlist({ mine }: Readonly<{ mine: ReadonlyArray<Restaurant> }>) {
+function HomeShortlist({ mine, feedCount }: Readonly<{ mine: ReadonlyArray<Restaurant>; feedCount: number }>) {
     const actions = useSocialActions()
+    if (mine.length === 0 && feedCount === 0) {
+        return (
+            <section aria-label="Saved restaurants" className="pt-8">
+                <SectionTitle>Saved restaurants</SectionTitle>
+                <EmptyRestaurantsState />
+            </section>
+        )
+    }
     if (mine.length === 0) {
         return (
             <section aria-label="Saved restaurants" className="pt-8">
@@ -196,7 +205,7 @@ function HomeSections({
         <SocialActionsProvider>
             <HomePlans groups={groups} />
             <HomeActivity feed={feedOnly} />
-            <HomeShortlist mine={mine} />
+            <HomeShortlist mine={mine} feedCount={feedOnly.length} />
         </SocialActionsProvider>
     )
 }
