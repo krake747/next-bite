@@ -76,7 +76,7 @@ export function SheetDemo() {
     return (
         <Demo>
             <Sheet>
-                <SheetTrigger render={<Button tone="outline">Filter spots</Button>} />
+                <SheetTrigger id="ds-sheet-demo-trigger" render={<Button tone="outline">Filter spots</Button>} />
                 <SheetContent>
                     <SheetHeader>
                         <SheetTitle>Filter spots</SheetTitle>

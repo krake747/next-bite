@@ -181,6 +181,7 @@ export function Sidebar({
 
 export function SidebarTrigger({
     className,
+    id,
     onClick,
     ...props
 }: Omit<React.ComponentProps<typeof IconButton>, "label" | "children">) {
@@ -189,6 +190,7 @@ export function SidebarTrigger({
         <TooltipProvider delay={state === "collapsed" ? 0 : 400}>
             <Tooltip>
                 <TooltipTrigger
+                    id={id}
                     render={
                         <IconButton
                             data-sidebar="trigger"
@@ -322,6 +324,7 @@ const sidebarMenuButtonVariants = cva({
 
 export function SidebarMenuButton({
     render,
+    id,
     isActive = false,
     variant = "default",
     size = "default",
@@ -339,10 +342,11 @@ export function SidebarMenuButton({
         props: mergeProps<"button">(
             {
                 className: cx(sidebarMenuButtonVariants({ variant, size }), className),
+                id,
             },
             props,
         ),
-        render: tooltip ? <TooltipTrigger render={render} /> : render,
+        render: tooltip ? <TooltipTrigger render={render} id={id} /> : render,
         state: {
             slot: "sidebar-menu-button",
             sidebar: "menu-button",
