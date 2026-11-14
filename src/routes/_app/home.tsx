@@ -46,30 +46,52 @@ function SectionTitle({ children }: Readonly<{ children: React.ReactNode }>) {
     return <h2 className="font-display text-2xl font-semibold text-balance text-foreground">{children}</h2>
 }
 
+function HomeSection({
+    label,
+    title,
+    action,
+    description,
+    children,
+}: Readonly<{
+    label: string
+    title: string
+    action?: React.ReactNode | undefined
+    description?: string | undefined
+    children?: React.ReactNode | undefined
+}>) {
+    return (
+        <section aria-label={label}>
+            <div className="flex items-baseline justify-between gap-4 px-4">
+                <SectionTitle>{title}</SectionTitle>
+                {action}
+            </div>
+            {description !== undefined && <p className="mt-1 px-4 text-muted-foreground">{description}</p>}
+            {children}
+        </section>
+    )
+}
+
 function HomePlans({ groups }: Readonly<{ groups: ReadonlyArray<HomeGroup> | undefined }>) {
     if (groups === undefined) {
         return null
     }
     if (groups.length === 0) {
         return (
-            <section aria-label="Your plans">
-                <div className="px-4">
-                    <SectionTitle>Your plans</SectionTitle>
-                </div>
+            <HomeSection label="Your plans" title="Your plans">
                 <EmptyState
                     title="No plans yet"
                     body="Create a plan, invite friends, and collect suggestions in one place."
                     className="mt-4"
                 />
-            </section>
+            </HomeSection>
         )
     }
     return (
-        <section aria-label="Your plans">
-            <div className="flex items-baseline justify-between gap-4 px-4">
-                <SectionTitle>Your plans</SectionTitle>
-                <TextLink render={<Link to="/groups" />}>View all groups</TextLink>
-            </div>
+        <HomeSection
+            label="Your plans"
+            title="Your plans"
+            action={<TextLink render={<Link to="/groups" />}>View all groups</TextLink>}
+        >
             <ul className="mt-4 grid gap-4 md:grid-cols-2">
                 {groups.slice(0, 3).map(({ group }) => (
                     <li
@@ -87,7 +109,7 @@ function HomePlans({ groups }: Readonly<{ groups: ReadonlyArray<HomeGroup> | und
                     </li>
                 ))}
             </ul>
-        </section>
+        </HomeSection>
     )
 }
 
@@ -96,17 +118,17 @@ function HomeActivity({ feed }: Readonly<{ feed: ReadonlyArray<Restaurant> }>) {
         return null
     }
     return (
-        <section aria-label="Friends activity">
-            <div className="px-4">
-                <SectionTitle>Friends activity</SectionTitle>
-            </div>
-            <p className="mt-1 px-4 text-muted-foreground">What friends are saving, newest first.</p>
+        <HomeSection
+            label="Friends activity"
+            title="Friends activity"
+            description="What friends are saving, newest first."
+        >
             <div className="flex flex-col gap-4 pt-4">
                 {feed.map((restaurant) => (
                     <HomeActivityItem key={restaurant._id} restaurant={restaurant} />
                 ))}
             </div>
-        </section>
+        </HomeSection>
     )
 }
 
@@ -119,34 +141,28 @@ function HomeShortlist({ mine, feedCount }: Readonly<{ mine: ReadonlyArray<Resta
     const actions = useSocialActions()
     if (mine.length === 0 && feedCount === 0) {
         return (
-            <section aria-label="Saved restaurants">
-                <div className="px-4">
-                    <SectionTitle>Saved restaurants</SectionTitle>
-                </div>
+            <HomeSection label="Saved restaurants" title="Saved restaurants">
                 <EmptyRestaurantsState />
-            </section>
+            </HomeSection>
         )
     }
     if (mine.length === 0) {
         return (
-            <section aria-label="Saved restaurants">
-                <div className="px-4">
-                    <SectionTitle>Saved restaurants</SectionTitle>
-                </div>
+            <HomeSection label="Saved restaurants" title="Saved restaurants">
                 <EmptyState
                     title="Nothing saved yet"
                     body="Share your first spot to start your short list."
                     className="mt-4"
                 />
-            </section>
+            </HomeSection>
         )
     }
     return (
-        <section aria-label="Saved restaurants">
-            <div className="px-4">
-                <SectionTitle>Saved restaurants</SectionTitle>
-            </div>
-            <p className="mt-1 px-4 text-muted-foreground">Every restaurant on your short list.</p>
+        <HomeSection
+            label="Saved restaurants"
+            title="Saved restaurants"
+            description="Every restaurant on your short list."
+        >
             <div className="grid gap-4 pt-4 md:grid-cols-2">
                 {mine.map((restaurant) => (
                     <RestaurantCardOverlay
@@ -156,7 +172,7 @@ function HomeShortlist({ mine, feedCount }: Readonly<{ mine: ReadonlyArray<Resta
                     />
                 ))}
             </div>
-        </section>
+        </HomeSection>
     )
 }
 
