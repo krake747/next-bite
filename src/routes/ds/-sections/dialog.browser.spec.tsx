@@ -17,6 +17,6 @@ describe("Dialog design-system section", () => {
         const screen = await render(<DialogDemo />)
         await screen.getByRole("button", { name: "Leave group" }).click()
         await expect.element(screen.getByRole("dialog")).toBeInTheDocument()
-        await expect.element(screen.getByText("Leave supper club?")).toBeInTheDocument()
+        await expect.element(screen.getByText("Leave supper club?")).toBeVisible()
     })
 })

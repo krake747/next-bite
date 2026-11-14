@@ -69,12 +69,12 @@ export function DialogOverlay({ variant, tone, className, ...props }: Readonly<D
 }
 
 const panel = cva({
-    base: "relative w-full overflow-y-auto rounded-dialog border border-border bg-surface shadow-dialog outline-none",
+    base: "fixed z-50 overflow-y-auto rounded-dialog border border-border bg-surface shadow-dialog transition-[opacity,translate,scale] duration-150 outline-none data-ending-style:opacity-0 data-starting-style:opacity-0",
     variants: {
         size: {
-            sm: "max-w-sm",
-            md: "max-w-lg",
-            full: "h-full max-w-none rounded-none border-0 shadow-none",
+            sm: "top-1/2 left-1/2 max-h-[calc(100dvh-2rem)] w-[calc(100vw-2rem)] max-w-sm -translate-x-1/2 -translate-y-1/2 data-ending-style:scale-95 data-starting-style:scale-95",
+            md: "top-1/2 left-1/2 max-h-[calc(100dvh-2rem)] w-[calc(100vw-2rem)] max-w-lg -translate-x-1/2 -translate-y-1/2 data-ending-style:scale-95 data-starting-style:scale-95",
+            full: "inset-0 h-full max-w-none rounded-none border-0 shadow-none",
         },
         padding: {
             none: "p-0",

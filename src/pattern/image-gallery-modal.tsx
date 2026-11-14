@@ -75,7 +75,7 @@ function GalleryShell({
             tone="darkest"
             showCloseButton={false}
             ref={viewer.contentRef}
-            className="fixed inset-0 flex flex-col"
+            className="flex flex-col"
             onKeyDown={handleKeyDown}
             tabIndex={0}
         >
