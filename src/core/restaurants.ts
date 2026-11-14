@@ -150,8 +150,6 @@ export function placeDetailWarmups(id: Id<"places">): ReadonlyArray<object> {
     return [placeOptions(id)]
 }
 
-export const usePlaceHours = () => useConvexAction(api.places.hours)
-
 export const usePlaceLocation = () => useConvexAction(api.places.location)
 
 // Seam for #230. Consumes the Atmosphere mask that lands via #228; when the

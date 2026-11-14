@@ -16,6 +16,7 @@ export type SeededClientOptions = {
     readonly seeds?: SeedMap | undefined
     readonly calls?: MutationCall[] | undefined
     readonly mutateResult?: unknown
+    readonly actionCalls?: MutationCall[] | undefined
     readonly liveRows?: ReadonlyArray<unknown> | undefined
     readonly queryHook?: (() => Promise<unknown>) | undefined
     readonly queryGate?: (() => Promise<void>) | undefined
@@ -31,6 +32,7 @@ export function createSeededClient(options: SeededClientOptions = {}) {
     const seeds = options.seeds ?? new Map<string, unknown>()
     const calls = options.calls ?? []
     const mutateResult = options.mutateResult ?? "m1"
+    const actionCalls = options.actionCalls ?? []
     let liveRows: ReadonlyArray<unknown> = options.liveRows === undefined ? [] : [...options.liveRows]
     const receivers = new Set<Receiver>()
     const watchReceivers = new Set<Receiver>()
@@ -136,6 +138,12 @@ export function createSeededClient(options: SeededClientOptions = {}) {
             calls.push({ fn: nameOf(ref), args })
             return mutateResult
         }) as ConvexReactClient["mutation"],
+        // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- test-only action stub serving seeded results by function and args
+        action: (async (ref: unknown, args: unknown) => {
+            await Promise.resolve()
+            actionCalls.push({ fn: nameOf(ref), args })
+            return valueFor(seedKey(nameOf(ref), args ?? {}))
+        }) as ConvexReactClient["action"],
     }
 
     const pushState = (rows: ReadonlyArray<unknown>, key?: string): void => {

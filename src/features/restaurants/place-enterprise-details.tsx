@@ -22,10 +22,10 @@ export function PlaceEnterpriseDetails({ details }: Readonly<{ details: Enterpri
     return (
         <div data-slot="place-enterprise-details" className="flex flex-col gap-2.5 rounded-xl bg-surface-muted/60 p-3">
             <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-muted-foreground">
-                {rating !== undefined && (
+                {(rating !== undefined || count !== undefined) && (
                     <span className="flex items-center gap-1.5">
                         <StarIcon className="size-4 text-tomato-500" weight="fill" aria-hidden="true" />
-                        <span className="font-medium text-foreground">{rating}</span>
+                        {rating !== undefined && <span className="font-medium text-foreground">{rating}</span>}
                         {count !== undefined && <span className="text-muted-foreground">{count}</span>}
                     </span>
                 )}

@@ -14,7 +14,7 @@ export type EnterpriseDetails = {
     readonly websiteUri?: string | undefined
 }
 
-const PRICE_LABELS: Record<string, string> = {
+const PRICE_LABELS: Record<string, string | undefined> = {
     PRICE_LEVEL_FREE: "Free",
     PRICE_LEVEL_INEXPENSIVE: "$",
     PRICE_LEVEL_MODERATE: "$$",
