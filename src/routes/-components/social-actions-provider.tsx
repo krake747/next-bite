@@ -2,16 +2,16 @@ import { useNavigate } from "@tanstack/react-router"
 import { createContext, use } from "react"
 
 import { type Restaurant } from "@core/restaurants"
-import { feedTextFor, useSetSave } from "@core/saves"
+import { useSetSave } from "@core/saves"
 import { useAuth } from "@core/session"
 import { type RestaurantCardOverlay } from "@features/restaurants/restaurant-card-overlay"
-import { type ActivityPost } from "@features/social/activity-post"
+import { type Reactions } from "@features/social/reaction-bar"
 
 export type SocialActions = {
     readonly toggleWantFor: (restaurant: Restaurant) => () => void
     readonly goToDetail: (restaurant: Restaurant) => void
     readonly goToLogin: () => void
-    readonly activityFor: (restaurant: Restaurant) => Omit<React.ComponentProps<typeof ActivityPost>, "restaurant">
+    readonly reactionsFor: (restaurant: Restaurant) => Reactions
     readonly cardFor: (restaurant: Restaurant) => Omit<React.ComponentProps<typeof RestaurantCardOverlay>, "restaurant">
 }
 
@@ -50,18 +50,10 @@ export function SocialActionsProvider({ children }: Readonly<{ children: React.R
         setSave.mutate({ placeId: restaurant._id, status: restaurant.mySave === "want" ? null : "want" })
     }
 
-    const activityFor: SocialActions["activityFor"] = (restaurant) => ({
-        author: { name: restaurant.ownerName },
-        time: new Date(restaurant._creationTime).toLocaleDateString(),
-        text: feedTextFor(restaurant.name, restaurant.note),
-        restaurant: { name: restaurant.name, cuisine: restaurant.cuisine, images: restaurant.photos },
-        ownerName: restaurant.ownerName,
+    const reactionsFor: SocialActions["reactionsFor"] = (restaurant) => ({
+        wanted: restaurant.mySave === "want",
         wantCount: restaurant.wantCount,
-        reactions: {
-            wanted: restaurant.mySave === "want",
-            wantCount: restaurant.wantCount,
-            onToggleWant: toggleWantFor(restaurant),
-        },
+        onToggleWant: toggleWantFor(restaurant),
     })
 
     const cardFor: SocialActions["cardFor"] = (restaurant) => ({
@@ -70,7 +62,7 @@ export function SocialActionsProvider({ children }: Readonly<{ children: React.R
     })
 
     return (
-        <SocialActionsContext.Provider value={{ toggleWantFor, goToDetail, goToLogin, activityFor, cardFor }}>
+        <SocialActionsContext.Provider value={{ toggleWantFor, goToDetail, goToLogin, reactionsFor, cardFor }}>
             {children}
         </SocialActionsContext.Provider>
     )

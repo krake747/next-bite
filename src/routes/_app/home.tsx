@@ -104,7 +104,7 @@ function HomeActivity({ feed }: Readonly<{ feed: ReadonlyArray<Restaurant> }>) {
 
 function HomeActivityItem({ restaurant }: Readonly<{ restaurant: Restaurant }>) {
     const actions = useSocialActions()
-    return <ActivityPost restaurant={restaurant} {...actions.activityFor(restaurant)} />
+    return <ActivityPost restaurant={restaurant} reactions={actions.reactionsFor(restaurant)} />
 }
 
 function HomeShortlist({ mine, feedCount }: Readonly<{ mine: ReadonlyArray<Restaurant>; feedCount: number }>) {
