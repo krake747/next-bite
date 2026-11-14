@@ -2,7 +2,7 @@ import { render, screen } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import { describe, expect, test, vi } from "vitest"
 
-import { toId } from "@api/data.model"
+import { toId, type Id } from "@api/data.model"
 import { type Restaurant } from "@core/restaurants"
 
 import { ActivityPost } from "./activity-post"
@@ -10,19 +10,35 @@ import { ActivityPost } from "./activity-post"
 const placeId = toId<"places">("p1")
 const ownerId = toId<"profiles">("user-1")
 
-function restaurantWith(overrides: Partial<Restaurant>): Restaurant {
+function isStorageId(value: string): value is Id<"_storage"> {
+    return value.length > 0
+}
+
+function mustBeStorageId(value: string): Id<"_storage"> {
+    if (!isStorageId(value)) {
+        throw new Error("Test photo needs a storage id")
+    }
+    return value
+}
+
+function restaurantWith(overrides?: {
+    readonly note?: string | undefined
+    readonly cuisine?: string | undefined
+    readonly photos?: Restaurant["photos"] | undefined
+    readonly wantCount?: number | undefined
+}): Restaurant {
     return {
         _id: placeId,
-        _creationTime: new Date("2026-03-04T12:00:00Z").getTime(),
+        _creationTime: new Date("2026-03-04T12:00Z").getTime(),
         ownerId,
         ownerName: "Alex",
         name: "Trattoria Verde",
-        cuisine: "Italian",
+        ...(overrides?.cuisine !== undefined ? { cuisine: overrides.cuisine } : {}),
         address: { label: "Luxembourg City" },
-        photos: [],
+        photos: overrides?.photos ?? [],
         mySave: null,
-        wantCount: 0,
-        ...overrides,
+        wantCount: overrides?.wantCount ?? 0,
+        ...(overrides?.note !== undefined ? { note: overrides.note } : {}),
     }
 }
 
@@ -33,7 +49,8 @@ describe("ActivityPost", () => {
             <ActivityPost
                 restaurant={restaurantWith({
                     note: "Great carbonara.",
-                    photos: [{ url: photoUrl, storageId: toId<"_storage">("s1") }],
+                    cuisine: "Italian",
+                    photos: [{ url: photoUrl, storageId: mustBeStorageId("s1") }],
                     wantCount: 3,
                 })}
                 reactions={{ wanted: true, wantCount: 3, onToggleWant: () => {} }}
@@ -49,7 +66,7 @@ describe("ActivityPost", () => {
     })
 
     test("falls back to added text with no note, photos, or reactions", () => {
-        render(<ActivityPost restaurant={restaurantWith({ cuisine: undefined })} />)
+        render(<ActivityPost restaurant={restaurantWith()} />)
 
         expect(screen.getByText("Added Trattoria Verde.")).toBeInTheDocument()
         expect(screen.queryByRole("img")).not.toBeInTheDocument()
