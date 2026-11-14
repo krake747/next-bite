@@ -23,7 +23,7 @@ export function RestaurantGallery({
 
     return (
         <>
-            <AspectRatio ratio={2 / 1} className="w-full overflow-hidden">
+            <AspectRatio ratio={2 / 1} className="h-full w-full overflow-hidden">
                 {hasImages ? (
                     <>
                         <LazyImage src={cover} alt={`${name} - main image`} ratio={2 / 1} />
