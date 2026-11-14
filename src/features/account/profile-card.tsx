@@ -38,11 +38,11 @@ function DisplayNameRow({ initialName }: Readonly<{ initialName: string }>) {
         }
     }
 
-    function handleNameChange(event: React.ChangeEvent<HTMLInputElement>): void {
+    const handleNameChange = (event: React.ChangeEvent<HTMLInputElement>): void => {
         setName(event.target.value)
     }
 
-    function handleNameBlur(): void {
+    const handleNameBlur = (): void => {
         void handleBlur()
     }
 
@@ -156,11 +156,11 @@ export function AvatarSection({
         }
     }
 
-    function handleImagesChange(updated: ReadonlyArray<ImageRecord>): void {
+    const handleImagesChange = (updated: ReadonlyArray<ImageRecord>): void => {
         void handleAvatar(updated)
     }
 
-    function handleRemoveClick(): void {
+    const handleRemoveClick = (): void => {
         void handleRemove()
     }
 
