@@ -3,6 +3,7 @@ import { useEffect, useState } from "react"
 
 import { type Id } from "@api/data.model"
 import { MAX_IMAGES } from "@core/constants"
+import { type Restaurant } from "@core/restaurants"
 import { type GalleryPhoto } from "@pattern/gallery"
 import { LazyImage } from "@pattern/lazy-image"
 import { AspectRatio } from "@ui/aspect-ratio"
@@ -98,12 +99,10 @@ function GalleryTopOverlays({
     tagline,
     canAdd,
     onAdd,
-    actions,
 }: Readonly<{
     tagline: string
     canAdd: boolean
     onAdd: () => void
-    actions?: React.ReactNode | undefined
 }>) {
     return (
         <>
@@ -119,42 +118,33 @@ function GalleryTopOverlays({
                         <CameraPlusIcon className="size-4" aria-hidden="true" />
                     </IconButton>
                 )}
-                {actions}
             </div>
         </>
     )
 }
 
 export function RestaurantGallery({
-    photos,
-    name,
-    cuisine,
-    actions,
-    placeId,
+    restaurant,
     viewerId,
-    ownerId,
-}: Readonly<{
-    photos: ReadonlyArray<GalleryPhoto>
-    name: string
-    cuisine?: string | undefined
-    actions?: React.ReactNode | undefined
-    placeId?: Id<"places"> | undefined
-    viewerId?: Id<"profiles"> | undefined
-    ownerId?: Id<"profiles"> | undefined
-}>) {
+}: Readonly<{ restaurant: Restaurant; viewerId?: Id<"profiles"> | undefined }>) {
     const selection = useCarouselSelection()
     const [showUpload, setShowUpload] = useState(false)
-    const tagline = cuisine ?? "Saved place"
+    const photos = restaurant.photos
+    const tagline = restaurant.cuisine ?? "Saved place"
     const hasImages = photos.length > 0
     const browsable = photos.length > 1
-    const canAdd = placeId !== undefined && viewerId !== undefined && photos.length < MAX_IMAGES
+    const canAdd = viewerId !== undefined && photos.length < MAX_IMAGES
+
+    const handleAdd = (): void => {
+        setShowUpload(true)
+    }
 
     return (
         <>
             <AspectRatio ratio={2 / 1} className="h-full w-full overflow-hidden">
                 {hasImages ? (
                     <Carousel setApi={selection.setApi} className="h-full" opts={{ loop: browsable }}>
-                        <GallerySlides photos={photos} name={name} />
+                        <GallerySlides photos={photos} name={restaurant.name} />
                         {browsable && (
                             <>
                                 <CarouselPrevious tone="inverse" size="sm" className="left-3" />
@@ -175,27 +165,14 @@ export function RestaurantGallery({
                     </div>
                 )}
 
-                <GalleryTopOverlays
-                    tagline={tagline}
-                    canAdd={canAdd}
-                    onAdd={() => {
-                        setShowUpload(true)
-                    }}
-                    actions={actions}
-                />
+                <GalleryTopOverlays tagline={tagline} canAdd={canAdd} onAdd={handleAdd} />
             </AspectRatio>
-            {placeId !== undefined && (
-                <PlacePhotoUploadDialog
-                    placeId={placeId}
-                    show={showUpload}
-                    onOpenChange={setShowUpload}
-                    remaining={MAX_IMAGES - photos.length}
-                    restaurantName={name}
-                    existingPhotos={photos}
-                    viewerId={viewerId}
-                    ownerId={ownerId}
-                />
-            )}
+            <PlacePhotoUploadDialog
+                restaurant={restaurant}
+                viewerId={viewerId}
+                show={showUpload}
+                onOpenChange={setShowUpload}
+            />
         </>
     )
 }

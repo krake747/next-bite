@@ -150,12 +150,8 @@ function DetailGalleryPane() {
     return (
         <div className="lg:col-span-3">
             <RestaurantGallery
-                photos={restaurant.photos}
-                name={restaurant.name}
-                cuisine={restaurant.cuisine}
-                placeId={restaurant._id}
+                restaurant={restaurant}
                 viewerId={viewer.kind === "signed-in" ? toId<"profiles">(viewer.id) : undefined}
-                ownerId={restaurant.ownerId}
             />
         </div>
     )
@@ -174,18 +170,18 @@ function DetailHoursDialog() {
     )
 }
 
-function DetailHero({ restaurant }: Readonly<{ restaurant: Restaurant }>) {
+function DetailProvider({ restaurant, children }: Readonly<{ restaurant: Restaurant; children: React.ReactNode }>) {
     const navigate = useNavigate()
     const auth = useAuth()
     const toggleWant = useToggleWant(restaurant._id, restaurant.mySave)
     const { enterpriseDetails, openingHours, enterpriseFailed, closedLabel, showHours, setShowHours } =
         useDetailEnterprise(restaurant)
 
-    function goToLogin(): void {
+    const goToLogin = (): void => {
         void navigate({ to: "/login" })
     }
 
-    function handleToggleWant(): void {
+    const handleToggleWant = (): void => {
         if (!auth.isAuthenticated) {
             goToLogin()
             return
@@ -193,11 +189,11 @@ function DetailHero({ restaurant }: Readonly<{ restaurant: Restaurant }>) {
         toggleWant()
     }
 
-    function handleShowHours(): void {
+    const handleShowHours = (): void => {
         setShowHours(true)
     }
 
-    function handleOpenChange(open: boolean): void {
+    const handleOpenChange = (open: boolean): void => {
         setShowHours(open)
     }
 
@@ -215,15 +211,21 @@ function DetailHero({ restaurant }: Readonly<{ restaurant: Restaurant }>) {
                 onOpenChange: handleOpenChange,
             }}
         >
-            <div className="overflow-hidden rounded-card border border-border bg-surface shadow-card">
-                <DetailClosedBanner />
-                <div className="grid divide-border lg:grid-cols-5 lg:divide-x">
-                    <DetailGalleryPane />
-                    <DetailInfoPanel />
-                </div>
-                <DetailHoursDialog />
-            </div>
+            {children}
         </DetailContext>
+    )
+}
+
+function DetailHero() {
+    return (
+        <div className="overflow-hidden rounded-card border border-border bg-surface shadow-card">
+            <DetailClosedBanner />
+            <div className="grid divide-border lg:grid-cols-5 lg:divide-x">
+                <DetailGalleryPane />
+                <DetailInfoPanel />
+            </div>
+            <DetailHoursDialog />
+        </div>
     )
 }
 
@@ -252,46 +254,34 @@ function DetailNotFound() {
     )
 }
 
-function DetailMapSection({
-    placeId,
-    googlePlaceId,
-    name,
-    addressLabel,
-}: Readonly<{
-    placeId: Restaurant["_id"]
-    googlePlaceId: string | undefined
-    name: string
-    addressLabel: string
-}>) {
+function DetailMapSection() {
+    const { restaurant } = useDetail()
+    const googlePlaceId = restaurant.address.google?.placeId
+    // The embedded map bills a Dynamic Maps load on mount, so it mounts only
+    // once the section nears the viewport instead of with the page.
+    const [sentinelRef, isVisible] = useVisible()
     if (googlePlaceId === undefined || googlePlaceId === "") {
         return null
     }
     return (
         <div className="rounded-card border border-border bg-surface p-4 shadow-card">
             <h2 className="font-display text-lg font-semibold text-balance text-foreground">Location</h2>
-            <p className="mt-1 text-sm text-muted-foreground">{addressLabel}</p>
-            <MapOnVisible placeId={placeId} googlePlaceId={googlePlaceId} name={name} />
-        </div>
-    )
-}
-
-function MapOnVisible({
-    placeId,
-    googlePlaceId,
-    name,
-}: Readonly<{ placeId: Restaurant["_id"]; googlePlaceId: string; name: string }>) {
-    // The embedded map bills a Dynamic Maps load on mount, so it mounts only
-    // once the section nears the viewport instead of with the page.
-    const [sentinelRef, isVisible] = useVisible()
-    return (
-        <div ref={sentinelRef} className="pt-2">
-            {isVisible ? (
-                <Suspense fallback={<div className="aspect-video rounded-xl bg-surface-muted" aria-hidden="true" />}>
-                    <RestaurantCardMap placeId={placeId} googlePlaceId={googlePlaceId} name={name} />
-                </Suspense>
-            ) : (
-                <div className="aspect-video rounded-xl bg-surface-muted" aria-hidden="true" />
-            )}
+            <p className="mt-1 text-sm text-muted-foreground">{restaurant.address.label}</p>
+            <div ref={sentinelRef} className="pt-2">
+                {isVisible ? (
+                    <Suspense
+                        fallback={<div className="aspect-video rounded-xl bg-surface-muted" aria-hidden="true" />}
+                    >
+                        <RestaurantCardMap
+                            placeId={restaurant._id}
+                            googlePlaceId={googlePlaceId}
+                            name={restaurant.name}
+                        />
+                    </Suspense>
+                ) : (
+                    <div className="aspect-video rounded-xl bg-surface-muted" aria-hidden="true" />
+                )}
+            </div>
         </div>
     )
 }
@@ -327,13 +317,10 @@ function RestaurantDetailView() {
         <PageContainer>
             <DetailBreadcrumb name={restaurant.name} />
             <div className="mx-auto max-w-3xl space-y-6 pt-4 lg:max-w-5xl">
-                <DetailHero key={restaurant._id} restaurant={restaurant} />
-                <DetailMapSection
-                    placeId={restaurant._id}
-                    googlePlaceId={restaurant.address.google?.placeId}
-                    name={restaurant.name}
-                    addressLabel={restaurant.address.label}
-                />
+                <DetailProvider key={restaurant._id} restaurant={restaurant}>
+                    <DetailHero />
+                    <DetailMapSection />
+                </DetailProvider>
             </div>
         </PageContainer>
     )
