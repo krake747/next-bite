@@ -50,11 +50,20 @@ function ownedRestaurant(name: string, owner: { id: string; name: string }, id: 
 }
 
 async function renderHome(
-    feed: ReadonlyArray<PlaceCard>,
+    mine: ReadonlyArray<PlaceCard>,
+    feed: ReadonlyArray<PlaceCard> = [],
     friends: ReadonlyArray<{ profileId: string; name: string }> = [],
 ): Promise<void> {
-    const seeds = new Map<string, unknown>([[seedKey("social:friends", undefined), friends]])
-    const backend = createSeededClient({ seeds, liveRows: feed })
+    const seeds = new Map<string, unknown>([
+        [seedKey("social:friends", undefined), friends],
+        [seedKey("places:mine", {}), mine],
+        [seedKey("places:feed", {}), feed],
+        [
+            seedKey("identity:me", undefined),
+            { status: "ready", profile: { _id: "user-1", authUserId: "user-1", name: "Alex" } },
+        ],
+    ])
+    const backend = createSeededClient({ seeds })
     const router = createRouter({
         routeTree,
         history: createMemoryHistory({ initialEntries: ["/home"] }),
@@ -75,46 +84,46 @@ async function renderHome(
 }
 
 describe("home friends feed", () => {
-    test("shows a friend's discovery in latest activity", async () => {
-        await renderHome([ownedRestaurant("Trattoria Verde", { id: "anna", name: "Anna" }, "r1")])
+    test("shows a friend's discovery in friends activity", async () => {
+        await renderHome([], [ownedRestaurant("Trattoria Verde", { id: "anna", name: "Anna" }, "r1")])
 
-        const activity = screen.getByLabelText("Latest activity")
+        const activity = screen.getByLabelText("Friends activity")
         expect(within(activity).getByText("Trattoria Verde")).toBeInTheDocument()
     })
 
     test("shows a single first-run empty state when nothing exists", async () => {
-        await renderHome([])
+        await renderHome([], [])
 
         expect(screen.getByLabelText("Saved restaurants")).toBeInTheDocument()
         expect(screen.getByText("The table is set, but empty")).toBeInTheDocument()
         expect(screen.queryByText("No friend saves yet")).not.toBeInTheDocument()
     })
 
-    test("shows personal saves without friend pills", async () => {
+    test("shows personal saves in the short list, not in friends activity", async () => {
         await renderHome(
             [ownedRestaurant("Trattoria Verde", { id: "user-1", name: "Alex" }, "r1")],
+            [],
             [{ profileId: "user-2", name: "Ben" }],
         )
 
-        const saved = screen.getByLabelText("Latest activity")
+        const saved = screen.getByLabelText("Saved restaurants")
         expect(within(saved).getByText("Trattoria Verde")).toBeInTheDocument()
-        expect(within(saved).queryByRole("button", { name: "Ben" })).toBeNull()
+        expect(screen.queryByLabelText("Friends activity")).not.toBeInTheDocument()
     })
 
-    test("interleaves friend saves with your own newest first", async () => {
+    test("separates friend saves from your own short list", async () => {
         await renderHome(
-            [
-                ownedRestaurant("Sushi Bar", { id: "user-2", name: "Ben" }, "r2"),
-                ownedRestaurant("Trattoria Verde", { id: "user-1", name: "Alex" }, "r1"),
-            ],
+            [ownedRestaurant("Trattoria Verde", { id: "user-1", name: "Alex" }, "r1")],
+            [ownedRestaurant("Sushi Bar", { id: "user-2", name: "Ben" }, "r2")],
             [{ profileId: "user-2", name: "Ben" }],
         )
 
-        const saved = screen.getByLabelText("Latest activity")
+        const activity = screen.getByLabelText("Friends activity")
         await waitFor(() => {
-            expect(within(saved).getByText("Sushi Bar")).toBeInTheDocument()
+            expect(within(activity).getByText("Sushi Bar")).toBeInTheDocument()
         })
-        expect(within(saved).getByText("Trattoria Verde")).toBeInTheDocument()
+        expect(within(activity).queryByText("Trattoria Verde")).not.toBeInTheDocument()
+        expect(within(screen.getByLabelText("Saved restaurants")).getByText("Trattoria Verde")).toBeInTheDocument()
     })
 
     test("a sync that keeps failing shows a recovery path, not the empty state", async () => {
