@@ -118,7 +118,7 @@ export async function createPlaceRecord(
     ownerId: ProfileId,
     fields: PlaceFields,
     photoInputs: ReadonlyArray<PhotoInput>,
-    mutationKey: string | undefined,
+    clientMutationId: string | undefined,
 ): Promise<PlaceId> {
     const name = cleanName(fields.name)
     const cuisine = cleanText(fields.cuisine, 80, "Cuisine")
@@ -128,10 +128,10 @@ export async function createPlaceRecord(
     if (photoInputs.length > MAX_IMAGES) {
         fail(`Maximum ${MAX_IMAGES} photos allowed`)
     }
-    if (mutationKey !== undefined) {
+    if (clientMutationId !== undefined) {
         const prior = await ctx.db
             .query("clientMutations")
-            .withIndex("by_user_key", (q) => q.eq("userId", ownerId).eq("key", mutationKey))
+            .withIndex("by_user_key", (q) => q.eq("userId", ownerId).eq("key", clientMutationId))
             .unique()
         if (prior !== null) {
             return prior.placeId
@@ -147,13 +147,13 @@ export async function createPlaceRecord(
         },
         ...(note !== undefined ? { note } : {}),
         ...(link !== undefined ? { link } : {}),
-        ...(mutationKey !== undefined ? { clientMutationId: mutationKey } : {}),
+        ...(clientMutationId !== undefined ? { clientMutationId } : {}),
     })
     for (const input of photoInputs) {
         await claimPhoto(ctx, placeId, input)
     }
-    if (mutationKey !== undefined) {
-        await ctx.db.insert("clientMutations", { key: mutationKey, userId: ownerId, placeId })
+    if (clientMutationId !== undefined) {
+        await ctx.db.insert("clientMutations", { key: clientMutationId, userId: ownerId, placeId })
     }
     return placeId
 }

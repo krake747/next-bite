@@ -89,11 +89,14 @@ export const create = mutation({
         note: v.optional(v.string()),
         link: v.optional(v.string()),
         photos: v.array(photoInputValidator),
+        clientMutationId: v.optional(v.string()),
         mutationKey: v.optional(v.string()),
     },
     returns: v.id("places"),
     handler: async (ctx, args) => {
         const me = await requireProfile(ctx)
+        // The client sends clientMutationId; mutationKey stays as a fallback for in-flight older bundles.
+        const key = args.clientMutationId ?? args.mutationKey
         return createPlaceRecord(
             ctx,
             me._id,
@@ -106,7 +109,7 @@ export const create = mutation({
                 ...(args.link !== undefined ? { link: args.link } : {}),
             },
             args.photos,
-            args.mutationKey,
+            key,
         )
     },
 })

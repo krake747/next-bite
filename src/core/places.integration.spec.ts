@@ -87,6 +87,27 @@ describe("places.create", () => {
             name: "Trattoria Verde",
             addressLabel: "Luxembourg City",
             photos: [],
+            clientMutationId: "anna:key-1",
+        })
+        const second = await asUser(t, "anna").mutation(api.places.create, {
+            name: "Trattoria Verde",
+            addressLabel: "Luxembourg City",
+            photos: [],
+            clientMutationId: "anna:key-1",
+        })
+
+        expect(second).toBe(first)
+        expect(await asUser(t, "anna").query(api.places.mine, {})).toHaveLength(1)
+    })
+
+    test("accepts the legacy mutation key for in-flight older clients", async () => {
+        const t = setup()
+        await registerUser(t, "anna")
+
+        const first = await asUser(t, "anna").mutation(api.places.create, {
+            name: "Trattoria Verde",
+            addressLabel: "Luxembourg City",
+            photos: [],
             mutationKey: "anna:key-1",
         })
         const second = await asUser(t, "anna").mutation(api.places.create, {
