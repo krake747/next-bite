@@ -1,27 +1,10 @@
-import { beforeEach, describe, expect, test, vi } from "vitest"
+import { describe, expect, test, vi } from "vitest"
 import { render } from "vitest-browser-react"
 
 import { toId } from "@api/data.model"
 import { type Restaurant } from "@core/restaurants"
 
 import { RestaurantCardCompact } from "./restaurant-card-compact"
-
-const { detailsMutate, detailsAction } = vi.hoisted(() => {
-    const detailsMutate = vi.fn<(args: { tier: string }) => Promise<unknown>>()
-    return { detailsMutate, detailsAction: { mutateAsync: detailsMutate } }
-})
-
-vi.mock("@core/restaurants", async (importOriginal) => {
-    const original = await importOriginal<typeof import("@core/restaurants")>()
-    return {
-        ...original,
-        usePlaceDetails: () => detailsAction,
-    }
-})
-
-beforeEach(() => {
-    detailsMutate.mockResolvedValue({})
-})
 
 const mockRestaurant: Restaurant = {
     _id: toId<"places">("spec-place-2"),
@@ -65,25 +48,5 @@ describe("RestaurantCardCompact", () => {
                 "href",
                 "https://www.google.com/maps/dir/?api=1&destination=12%20Rue%20de%20la%20Boucherie%2C%201247%20Luxembourg%20Grund",
             )
-    })
-
-    test("shows price in the eyebrow and open-now status", async () => {
-        detailsMutate
-            .mockResolvedValueOnce({
-                openingHours: { openState: "open", periods: [], weekdayText: [] },
-                priceLevel: "PRICE_LEVEL_INEXPENSIVE",
-            })
-            .mockResolvedValueOnce({})
-        const screen = await render(
-            <RestaurantCardCompact
-                restaurant={{
-                    ...mockRestaurant,
-                    address: { label: mockRestaurant.address.label, google: { placeId: "spec-place-id" } },
-                }}
-                onToggleWant={() => {}}
-            />,
-        )
-        await expect.element(screen.getByText("Italian · $")).toBeVisible()
-        await expect.element(screen.getByText("Open now")).toBeVisible()
     })
 })

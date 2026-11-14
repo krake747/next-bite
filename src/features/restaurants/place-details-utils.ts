@@ -43,28 +43,6 @@ export function formatRatingCount(count: number | undefined): string | undefined
     return `(${count})`
 }
 
-const BUSINESS_STATUS_LABELS: Record<string, string | undefined> = {
-    CLOSED_TEMPORARILY: "Temporarily closed",
-    CLOSED_PERMANENTLY: "Permanently closed",
-}
-
-export function formatBusinessStatus(status: string | undefined): string | undefined {
-    if (status === undefined) {
-        return undefined
-    }
-    return BUSINESS_STATUS_LABELS[status]
-}
-
-const OPEN_STATE_LABELS: Record<"open" | "closed" | "unknown", string | undefined> = {
-    open: "Open now",
-    closed: "Closed",
-    unknown: undefined,
-}
-
-export function formatOpenState(openState: "open" | "closed" | "unknown"): string | undefined {
-    return OPEN_STATE_LABELS[openState]
-}
-
 export function hasEnterpriseContent(details: EnterpriseDetails | undefined): boolean {
     if (details === undefined) {
         return false
