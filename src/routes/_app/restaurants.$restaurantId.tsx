@@ -1,6 +1,6 @@
 import { useSuspenseQuery } from "@tanstack/react-query"
 import { createFileRoute, useNavigate } from "@tanstack/react-router"
-import { useEffect, useState } from "react"
+import { useEffect, useState, lazy, Suspense } from "react"
 
 import { warmQueriesWithin } from "@api/convex.options"
 import { toId } from "@api/data.model"
@@ -24,6 +24,10 @@ import { BackNav } from "@routes/-layouts/back-nav"
 import { PageContainer } from "@routes/-layouts/page-container"
 import { Button } from "@ui/button"
 
+const RestaurantCardMap = lazy(async () =>
+    import("@features/restaurants/restaurant-card-map").then((module) => ({ default: module.RestaurantCardMap })),
+)
+
 export const Route = createFileRoute("/_app/restaurants/$restaurantId")({
     head: () => ({ meta: [{ title: "Restaurant details" }] }),
     component: RestaurantDetailView,
@@ -44,6 +48,21 @@ function RestaurantDetailError({ reset }: Readonly<{ reset: () => void }>) {
                 <QueryErrorState reset={reset} />
             </div>
         </PageContainer>
+    )
+}
+
+function DetailLocationMap({
+    placeId,
+    googlePlaceId,
+    name,
+}: Readonly<{ placeId: Restaurant["_id"]; googlePlaceId: string | undefined; name: string }>) {
+    if (googlePlaceId === undefined || googlePlaceId === "") {
+        return null
+    }
+    return (
+        <Suspense fallback={<div className="aspect-video rounded-xl bg-surface-muted" aria-hidden="true" />}>
+            <RestaurantCardMap placeId={placeId} googlePlaceId={googlePlaceId} name={name} />
+        </Suspense>
     )
 }
 
@@ -172,6 +191,11 @@ function DetailHero({ restaurant }: Readonly<{ restaurant: Restaurant }>) {
                         )}
                     </div>
                     <div className="space-y-3 p-5 md:p-4">
+                        <DetailLocationMap
+                            placeId={restaurant._id}
+                            googlePlaceId={googlePlaceId}
+                            name={restaurant.name}
+                        />
                         <PlaceEnterpriseDetails details={enterpriseDetails} />
                         {restaurant.note !== undefined && restaurant.note !== "" && (
                             <div>

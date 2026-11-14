@@ -1,6 +1,5 @@
 import { ArrowSquareOutIcon, ForkKnifeIcon, ImagesIcon } from "@phosphor-icons/react"
 import { Link } from "@tanstack/react-router"
-import { lazy, Suspense } from "react"
 
 import { type Restaurant } from "@core/restaurants"
 import { Lightbox, useLightbox } from "@pattern/gallery"
@@ -16,10 +15,6 @@ import { RestaurantAddressLink } from "./restaurant-address-link"
 import { RestaurantInterestButton } from "./restaurant-interest-button"
 import { RestaurantPriceBadge, RestaurantStatusLine } from "./restaurant-signals"
 import { useRestaurantSignals } from "./use-restaurant-signals"
-
-const RestaurantCardMap = lazy(async () =>
-    import("./restaurant-card-map").then((module) => ({ default: module.RestaurantCardMap })),
-)
 
 export function RestaurantCardOverlay({
     restaurant,
@@ -151,17 +146,6 @@ export function RestaurantCardOverlay({
                     wantCount={restaurant.wantCount}
                     onToggleWant={handleToggleWant}
                 />
-                {hasLocation && (
-                    <Suspense
-                        fallback={<div className="aspect-video rounded-xl bg-surface-muted" aria-hidden="true" />}
-                    >
-                        <RestaurantCardMap
-                            placeId={restaurant._id}
-                            googlePlaceId={googlePlaceId}
-                            name={restaurant.name}
-                        />
-                    </Suspense>
-                )}
                 <div className="flex justify-end">
                     <GoogleAttribution />
                 </div>
