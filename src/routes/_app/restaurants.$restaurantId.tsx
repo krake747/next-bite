@@ -1,15 +1,16 @@
 import { useSuspenseQuery } from "@tanstack/react-query"
 import { createFileRoute, useNavigate } from "@tanstack/react-router"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 
 import { warmQueriesWithin } from "@api/convex.options"
 import { toId } from "@api/data.model"
-import { placeDetailWarmups, placeOptions, usePlaceHours, type Restaurant } from "@core/restaurants"
+import { placeDetailWarmups, placeOptions, usePlaceDetails, type Restaurant } from "@core/restaurants"
 import { useToggleWant } from "@core/saves"
 import { useAuth } from "@core/session"
 import { OpeningHoursDialog } from "@features/restaurants/opening-hours-dialog"
-import { type OpeningHours } from "@features/restaurants/opening-hours-utils"
 import { PlaceAtmosphere } from "@features/restaurants/place-atmosphere"
+import { type EnterpriseDetails } from "@features/restaurants/place-details-utils"
+import { PlaceEnterpriseDetails } from "@features/restaurants/place-enterprise-details"
 import { RestaurantGallery } from "@features/restaurants/restaurant-gallery"
 import { RestaurantHeader } from "@features/restaurants/restaurant-header"
 import { RestaurantInterestButton } from "@features/restaurants/restaurant-interest-button"
@@ -50,12 +51,46 @@ function DetailHero({ restaurant }: Readonly<{ restaurant: Restaurant }>) {
     const navigate = useNavigate()
     const auth = useAuth()
     const toggleWant = useToggleWant(restaurant._id, restaurant.mySave)
-    const fetchHours = usePlaceHours()
+    const fetchDetails = usePlaceDetails()
     const [showHours, setShowHours] = useState(false)
-    const [hours, setHours] = useState<OpeningHours | undefined>(undefined)
-    const [hoursFailed, setHoursFailed] = useState(false)
+    const [enterprise, setEnterprise] = useState<
+        | { readonly status: "loading" }
+        | { readonly status: "ready"; readonly details: EnterpriseDetails }
+        | { readonly status: "failed" }
+    >({ status: "loading" })
 
     const googlePlaceId = restaurant.address.google?.placeId
+
+    useEffect(() => {
+        let cancelled = false
+        if (googlePlaceId === undefined || googlePlaceId === "") {
+            return () => {
+                cancelled = true
+            }
+        }
+        setEnterprise({ status: "loading" })
+        void fetchDetails
+            .mutateAsync({ placeId: restaurant._id, tier: "enterprise" })
+            .then((result) => {
+                if (cancelled) {
+                    return
+                }
+                if ("openingHours" in result) {
+                    setEnterprise({ status: "ready", details: result })
+                } else {
+                    setEnterprise({ status: "ready", details: {} })
+                }
+            })
+            .catch(() => {
+                if (!cancelled) {
+                    setEnterprise({ status: "failed" })
+                }
+            })
+        return () => {
+            cancelled = true
+        }
+        // fetchDetails is stable per session; refetch only when the place changes.
+    }, [restaurant._id, googlePlaceId])
 
     const goToLogin = () => {
         void navigate({ to: "/login" })
@@ -70,17 +105,12 @@ function DetailHero({ restaurant }: Readonly<{ restaurant: Restaurant }>) {
     }
 
     const handleShowHours = () => {
-        setHoursFailed(false)
         setShowHours(true)
-        if (hours === undefined) {
-            void fetchHours
-                .mutateAsync({ placeId: restaurant._id })
-                .then(setHours)
-                .catch(() => {
-                    setHoursFailed(true)
-                })
-        }
     }
+
+    const enterpriseDetails = enterprise.status === "ready" ? enterprise.details : undefined
+    const openingHours = enterpriseDetails?.openingHours
+    const enterpriseFailed = enterprise.status === "failed"
 
     return (
         <div className="overflow-hidden rounded-card border border-border bg-surface shadow-card">
@@ -112,6 +142,7 @@ function DetailHero({ restaurant }: Readonly<{ restaurant: Restaurant }>) {
                         )}
                     </div>
                     <div className="space-y-3 p-5 md:p-4">
+                        <PlaceEnterpriseDetails details={enterpriseDetails} />
                         {restaurant.note !== undefined && restaurant.note !== "" && (
                             <div>
                                 <h2 className="font-display text-lg font-semibold text-balance text-foreground">
@@ -123,7 +154,7 @@ function DetailHero({ restaurant }: Readonly<{ restaurant: Restaurant }>) {
                             </div>
                         )}
                         <SocialMetadata ownerName={restaurant.ownerName} wantCount={restaurant.wantCount} />
-                        {hoursFailed && (
+                        {enterpriseFailed && (
                             <p role="alert" className="text-sm text-destructive">
                                 Could not load opening hours.
                             </p>
@@ -134,8 +165,8 @@ function DetailHero({ restaurant }: Readonly<{ restaurant: Restaurant }>) {
             <OpeningHoursDialog
                 show={showHours}
                 onOpenChange={setShowHours}
-                openingHours={hours}
-                failed={hoursFailed}
+                openingHours={openingHours}
+                failed={enterpriseFailed}
                 restaurantName={restaurant.name}
             />
         </div>
