@@ -11,6 +11,7 @@ import { RestaurantCardOverlay } from "@features/restaurants/restaurant-card-ove
 import { ActivityPost } from "@features/social/activity-post"
 import { ButtonLink } from "@pattern/button-link"
 import { EmptyState } from "@pattern/empty-state"
+import { PageSection } from "@pattern/page-section"
 import { QueryErrorState } from "@pattern/query-error"
 import { HomeSkeleton } from "@routes/-components/page-skeletons"
 import { SessionGate } from "@routes/-components/session-gate"
@@ -42,52 +43,24 @@ type HomeGroup = {
     }
 }
 
-function SectionTitle({ children }: Readonly<{ children: React.ReactNode }>) {
-    return <h2 className="font-display text-2xl font-semibold text-balance text-foreground">{children}</h2>
-}
-
-function HomeSection({
-    label,
-    title,
-    action,
-    description,
-    children,
-}: Readonly<{
-    label: string
-    title: string
-    action?: React.ReactNode | undefined
-    description?: string | undefined
-    children?: React.ReactNode | undefined
-}>) {
-    return (
-        <section aria-label={label}>
-            <div className="flex items-baseline justify-between gap-4 px-4">
-                <SectionTitle>{title}</SectionTitle>
-                {action}
-            </div>
-            {description !== undefined && <p className="mt-1 px-4 text-muted-foreground">{description}</p>}
-            {children}
-        </section>
-    )
-}
-
 function HomePlans({ groups }: Readonly<{ groups: ReadonlyArray<HomeGroup> | undefined }>) {
     if (groups === undefined) {
         return null
     }
     if (groups.length === 0) {
         return (
-            <HomeSection label="Your plans" title="Your plans">
+            <PageSection padded label="Your plans" title="Your plans">
                 <EmptyState
                     title="No plans yet"
                     body="Create a plan, invite friends, and collect suggestions in one place."
                     className="mt-4"
                 />
-            </HomeSection>
+            </PageSection>
         )
     }
     return (
-        <HomeSection
+        <PageSection
+            padded
             label="Your plans"
             title="Your plans"
             action={<TextLink render={<Link to="/groups" />}>View all groups</TextLink>}
@@ -109,7 +82,7 @@ function HomePlans({ groups }: Readonly<{ groups: ReadonlyArray<HomeGroup> | und
                     </li>
                 ))}
             </ul>
-        </HomeSection>
+        </PageSection>
     )
 }
 
@@ -118,17 +91,14 @@ function HomeActivity({ feed }: Readonly<{ feed: ReadonlyArray<Restaurant> }>) {
         return null
     }
     return (
-        <HomeSection
-            label="Friends activity"
-            title="Friends activity"
-            description="What friends are saving, newest first."
-        >
+        <PageSection padded label="Friends activity" title="Friends activity">
+            <p className="mt-1 px-4 text-muted-foreground">What friends are saving, newest first.</p>
             <div className="flex flex-col gap-4 pt-4">
                 {feed.map((restaurant) => (
                     <HomeActivityItem key={restaurant._id} restaurant={restaurant} />
                 ))}
             </div>
-        </HomeSection>
+        </PageSection>
     )
 }
 
@@ -141,28 +111,25 @@ function HomeShortlist({ mine, feedCount }: Readonly<{ mine: ReadonlyArray<Resta
     const actions = useSocialActions()
     if (mine.length === 0 && feedCount === 0) {
         return (
-            <HomeSection label="Saved restaurants" title="Saved restaurants">
+            <PageSection padded label="Saved restaurants" title="Saved restaurants">
                 <EmptyRestaurantsState />
-            </HomeSection>
+            </PageSection>
         )
     }
     if (mine.length === 0) {
         return (
-            <HomeSection label="Saved restaurants" title="Saved restaurants">
+            <PageSection padded label="Saved restaurants" title="Saved restaurants">
                 <EmptyState
                     title="Nothing saved yet"
                     body="Share your first spot to start your short list."
                     className="mt-4"
                 />
-            </HomeSection>
+            </PageSection>
         )
     }
     return (
-        <HomeSection
-            label="Saved restaurants"
-            title="Saved restaurants"
-            description="Every restaurant on your short list."
-        >
+        <PageSection padded label="Saved restaurants" title="Saved restaurants">
+            <p className="mt-1 px-4 text-muted-foreground">Every restaurant on your short list.</p>
             <div className="grid gap-4 pt-4 md:grid-cols-2">
                 {mine.map((restaurant) => (
                     <RestaurantCardOverlay
@@ -172,7 +139,7 @@ function HomeShortlist({ mine, feedCount }: Readonly<{ mine: ReadonlyArray<Resta
                     />
                 ))}
             </div>
-        </HomeSection>
+        </PageSection>
     )
 }
 

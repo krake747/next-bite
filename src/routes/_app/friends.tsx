@@ -16,6 +16,7 @@ import {
 import { ButtonLink } from "@pattern/button-link"
 import { EmptyState } from "@pattern/empty-state"
 import { Header, HeaderSubtitle, HeaderTitle } from "@pattern/header"
+import { PageSection } from "@pattern/page-section"
 import { QueryErrorState } from "@pattern/query-error"
 import { FriendsSkeleton } from "@routes/-components/page-skeletons"
 import { LOADER_WARM_BUDGET_MS } from "@routes/-components/route-pending"
@@ -135,8 +136,7 @@ function RequestsSection() {
     }
 
     return (
-        <section aria-label="Friend requests" className="pt-8">
-            <h2 className="font-display text-2xl font-semibold text-balance text-foreground">Requests</h2>
+        <PageSection label="Friend requests" title="Requests" className="pt-8">
             {error.kind === "error" && (
                 <p role="alert" className="pt-2 text-sm text-destructive">
                     {error.message}
@@ -175,7 +175,7 @@ function RequestsSection() {
                     </li>
                 ))}
             </ul>
-        </section>
+        </PageSection>
     )
 }
 
@@ -261,10 +261,9 @@ function FriendsView() {
         <>
             <InviteByEmailForm />
             <RequestsSection />
-            <section aria-label="Friends" className="pt-8">
-                <h2 className="font-display text-2xl font-semibold text-balance text-foreground">Your friends</h2>
+            <PageSection label="Friends" title="Your friends" className="pt-8">
                 <FriendsList />
-            </section>
+            </PageSection>
         </>
     )
 }

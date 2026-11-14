@@ -22,6 +22,7 @@ import { PlanSection } from "@features/plans/plans"
 import { EmptyState } from "@pattern/empty-state"
 import { Header, HeaderSubtitle, HeaderTitle } from "@pattern/header"
 import { LoadingPlaceholder } from "@pattern/loading"
+import { PageSection } from "@pattern/page-section"
 import { QueryErrorState } from "@pattern/query-error"
 import { LOADER_WARM_BUDGET_MS } from "@routes/-components/route-pending"
 import { BackNav } from "@routes/-layouts/back-nav"
@@ -212,8 +213,7 @@ function GroupInviteSection({ groupId }: Readonly<{ groupId: Id<"groups"> }>) {
     }
 
     return (
-        <section aria-label="Invitation link" className="pt-8">
-            <h2 className="font-display text-2xl font-semibold text-balance text-foreground">Share with a link</h2>
+        <PageSection label="Invitation link" title="Share with a link" className="pt-8">
             <p className="pt-1 text-sm text-muted-foreground">
                 Anyone with the link can join until it expires or is revoked. No email needed.
             </p>
@@ -255,7 +255,7 @@ function GroupInviteSection({ groupId }: Readonly<{ groupId: Id<"groups"> }>) {
                     {error.message}
                 </p>
             )}
-        </section>
+        </PageSection>
     )
 }
 function GroupDetailView() {
@@ -287,17 +287,13 @@ function GroupDetailView() {
             </section>
             {auth.isAuthenticated && <GroupInviteSection groupId={groupConvexId} />}
             <PlanSection groupId={groupConvexId} isGroupOwner={group.isOwner} />
-            <section aria-label="Shared restaurants" className="pt-8">
-                <h2 className="font-display text-2xl font-semibold text-balance text-foreground">Shared list</h2>
+            <PageSection label="Shared restaurants" title="Shared list" className="pt-8">
                 <GroupRestaurantsSection groupId={groupConvexId} restaurants={restaurants} viewer={viewer} />
-            </section>
+            </PageSection>
             {auth.isAuthenticated && (
-                <section aria-label="Add your restaurants" className="pt-8">
-                    <h2 className="font-display text-2xl font-semibold text-balance text-foreground">
-                        Add your restaurants
-                    </h2>
+                <PageSection label="Add your restaurants" title="Add your restaurants" className="pt-8">
                     <AddFromMyList groupId={groupConvexId} sharedIds={sharedIds} />
-                </section>
+                </PageSection>
             )}
         </PageContainer>
     )

@@ -5,6 +5,7 @@ import { orderFeedByRecency } from "@core/saves"
 import { useSessionStatus } from "@core/session"
 import { RestaurantCardCompact } from "@features/restaurants/restaurant-card-compact"
 import { Header, HeaderSubtitle, HeaderTitle } from "@pattern/header"
+import { PageSection } from "@pattern/page-section"
 import { QueryErrorState } from "@pattern/query-error"
 import { RestaurantListsSkeleton } from "@routes/-components/page-skeletons"
 import { SessionGate } from "@routes/-components/session-gate"
@@ -36,10 +37,7 @@ function RestaurantsSection({
 }: Readonly<{ title: string; restaurants: ReadonlyArray<Restaurant>; emptyText: string }>) {
     const actions = useSocialActions()
     return (
-        <section aria-label={title}>
-            <h2 className="px-4 font-display text-2xl font-semibold text-balance text-foreground">
-                {title} · {restaurants.length}
-            </h2>
+        <PageSection padded label={title} title={`${title} · ${restaurants.length}`}>
             {restaurants.length === 0 ? (
                 <p className="px-4 pt-2 text-sm text-muted-foreground">{emptyText}</p>
             ) : (
@@ -51,7 +49,7 @@ function RestaurantsSection({
                     ))}
                 </ul>
             )}
-        </section>
+        </PageSection>
     )
 }
 
