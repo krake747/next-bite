@@ -54,6 +54,9 @@ Set per deployment with `npx convex env set`, never in GitHub.
 - `MAILGUN_DEV_FALLBACK`: local only. It turns codes on without delivering them, so never set it on
   a deployment that previews or the production domain read.
 - `GOOGLE_MAPS_API_KEY`: the server-side Maps key.
+- `GOOGLE_PLACES_FIXTURES`: local only. When `"true"`, Places actions return canned fixtures instead
+  of calling Google, so local development burns no quota. Never set it on a deployment that previews
+  or production read.
 
 While the production domain reads dev, dev's `SITE_URL` decides how production auth builds URLs and
 which origin auth trusts.

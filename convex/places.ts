@@ -3,7 +3,7 @@ import { v } from "convex/values"
 import { internal } from "./_generated/api"
 import { type Id } from "./_generated/dataModel"
 import { action, internalQuery, mutation, query, type ActionCtx } from "./_generated/server"
-import { googleMapsApiKey } from "./env"
+import { googleMapsApiKey, isGooglePlacesFixturesEnabled } from "./env"
 import { requireProfile, signedInProfile } from "./model/identity/profiles"
 import { fetchPlaceAtmosphere, type AtmosphereData } from "./model/places/atmosphere"
 import { fetchPlaceDetails, type PlaceDetailsResult } from "./model/places/details"
@@ -229,7 +229,7 @@ export const hours = action({
     handler: async (ctx, args): Promise<OpeningHoursData> => {
         await requireActionProfile(ctx)
         const placeId = await ctx.runQuery(internal.places._placeForHours, { placeId: args.placeId })
-        return fetchOpeningHours(placeId, googleMapsApiKey())
+        return fetchOpeningHours(placeId, googleMapsApiKey(), { fixtures: isGooglePlacesFixturesEnabled() })
     },
 })
 
@@ -239,7 +239,7 @@ export const location = action({
     handler: async (ctx, args): Promise<PlaceLocationData | null> => {
         await requireActionProfile(ctx)
         const placeId = await ctx.runQuery(internal.places._placeForLocation, { placeId: args.placeId })
-        return fetchPlaceLocation(placeId, googleMapsApiKey())
+        return fetchPlaceLocation(placeId, googleMapsApiKey(), { fixtures: isGooglePlacesFixturesEnabled() })
     },
 })
 
@@ -261,7 +261,9 @@ export const atmosphere = action({
             return cached
         }
         const placeId = await ctx.runQuery(internal.places._placeForAtmosphere, { placeId: args.placeId })
-        const fresh = await fetchPlaceAtmosphere(placeId, googleMapsApiKey())
+        const fresh = await fetchPlaceAtmosphere(placeId, googleMapsApiKey(), {
+            fixtures: isGooglePlacesFixturesEnabled(),
+        })
         await ctx.runMutation(internal.model.places.cache.storeGoogleCache, {
             placeId: args.placeId,
             kind: "atmosphere",
@@ -287,7 +289,9 @@ export const details = action({
             return cached
         }
         const placeId = await ctx.runQuery(internal.places._placeForDetails, { placeId: args.placeId })
-        const fresh = await fetchPlaceDetails(placeId, googleMapsApiKey(), args.tier)
+        const fresh = await fetchPlaceDetails(placeId, googleMapsApiKey(), args.tier, {
+            fixtures: isGooglePlacesFixturesEnabled(),
+        })
         await ctx.runMutation(internal.model.places.cache.storeGoogleCache, {
             placeId: args.placeId,
             kind,

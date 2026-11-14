@@ -24,6 +24,7 @@ import type * as model_identity_profiles from "../model/identity/profiles.js";
 import type * as model_places_atmosphere from "../model/places/atmosphere.js";
 import type * as model_places_cache from "../model/places/cache.js";
 import type * as model_places_details from "../model/places/details.js";
+import type * as model_places_fixtures from "../model/places/fixtures.js";
 import type * as model_places_hours from "../model/places/hours.js";
 import type * as model_places_location from "../model/places/location.js";
 import type * as model_places_photos from "../model/places/photos.js";
@@ -60,6 +61,7 @@ declare const fullApi: ApiFromModules<{
   "model/places/atmosphere": typeof model_places_atmosphere;
   "model/places/cache": typeof model_places_cache;
   "model/places/details": typeof model_places_details;
+  "model/places/fixtures": typeof model_places_fixtures;
   "model/places/hours": typeof model_places_hours;
   "model/places/location": typeof model_places_location;
   "model/places/photos": typeof model_places_photos;

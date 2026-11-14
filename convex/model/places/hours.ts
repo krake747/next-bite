@@ -2,6 +2,7 @@ import { type Infer } from "convex/values"
 import * as valibot from "valibot"
 
 import { openingHoursValidator } from "../../validators"
+import { fixtureOpeningHours, type FixtureOptions } from "./fixtures"
 
 export type OpeningHoursData = Infer<typeof openingHoursValidator>
 
@@ -99,8 +100,22 @@ async function fetchCurrentOpeningHours(placeId: string, apiKey: string): Promis
     }
 }
 
-export async function fetchOpeningHours(placeId: string, apiKey: string | undefined): Promise<OpeningHoursData> {
-    if (placeId === "" || apiKey === undefined) {
+export async function fetchOpeningHours(
+    placeId: string,
+    apiKey: string | undefined,
+    options: FixtureOptions = {},
+): Promise<OpeningHoursData> {
+    if (placeId === "") {
+        return openFallback()
+    }
+    if (options.fixtures === true) {
+        const google = valibot.parse(googleOpeningHoursSchema, fixtureOpeningHours).currentOpeningHours
+        if (google === undefined) {
+            return openFallback()
+        }
+        return toOpeningHoursData(google)
+    }
+    if (apiKey === undefined) {
         return openFallback()
     }
     const google = await fetchCurrentOpeningHours(placeId, apiKey)
