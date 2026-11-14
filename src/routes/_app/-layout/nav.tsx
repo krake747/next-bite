@@ -247,7 +247,7 @@ function DesktopNav() {
                                 </span>
                                 <span className="truncate font-display text-lg font-semibold">Next Bite</span>
                             </Link>
-                            <SidebarTrigger />
+                            <SidebarTrigger id="app-sidebar-trigger" />
                         </div>
                     </SidebarHeader>
                     <SidebarContent>
@@ -255,6 +255,7 @@ function DesktopNav() {
                             {destinations.map((destination) => (
                                 <SidebarMenuItem key={destination.to}>
                                     <SidebarMenuButton
+                                        id={`app-nav-${destination.label.toLowerCase()}`}
                                         render={<Link to={destination.to} />}
                                         isActive={
                                             matchRoute({ to: destination.to, fuzzy: destination.to !== "/home" }) !==
@@ -268,7 +269,7 @@ function DesktopNav() {
                                 </SidebarMenuItem>
                             ))}
                             <SidebarMenuItem>
-                                <SidebarMenuButton render={<Link to="/add" />} tooltip="Add">
+                                <SidebarMenuButton id="app-nav-add" render={<Link to="/add" />} tooltip="Add">
                                     <PlusIcon aria-hidden="true" />
                                     <span>Add</span>
                                 </SidebarMenuButton>

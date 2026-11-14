@@ -96,19 +96,19 @@ export function SidebarDemo() {
                     <SidebarContent>
                         <SidebarMenu>
                             <SidebarMenuItem>
-                                <SidebarMenuButton isActive={true} tooltip="Home">
+                                <SidebarMenuButton id="ds-sidebar-demo-home" isActive={true} tooltip="Home">
                                     <HouseIcon aria-hidden="true" />
                                     <span>Home</span>
                                 </SidebarMenuButton>
                             </SidebarMenuItem>
                             <SidebarMenuItem>
-                                <SidebarMenuButton tooltip="Places">
+                                <SidebarMenuButton id="ds-sidebar-demo-places" tooltip="Places">
                                     <MapPinIcon aria-hidden="true" />
                                     <span>Places</span>
                                 </SidebarMenuButton>
                             </SidebarMenuItem>
                             <SidebarMenuItem>
-                                <SidebarMenuButton tooltip="Friends">
+                                <SidebarMenuButton id="ds-sidebar-demo-friends" tooltip="Friends">
                                     <UsersIcon aria-hidden="true" />
                                     <span>Friends</span>
                                 </SidebarMenuButton>

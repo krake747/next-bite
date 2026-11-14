@@ -18,6 +18,7 @@ function DesignSystemMobileMenu() {
             }}
         >
             <SheetTrigger
+                id="ds-menu-trigger"
                 render={
                     <IconButton label="Open design system menu" tone="plain" size="sm" className="md:hidden">
                         <ListIcon className="size-5" aria-hidden="true" />
@@ -48,7 +49,7 @@ export function DesignSystemShell({ children }: Readonly<{ children: React.React
                         <header className="flex min-h-14 shrink-0 items-center gap-2 border-b border-border bg-background px-3 sm:px-4">
                             <DesignSystemMobileMenu />
                             <div className="hidden md:block">
-                                <SidebarTrigger />
+                                <SidebarTrigger id="ds-header-sidebar-trigger" />
                             </div>
                             <p className="text-sm font-medium text-foreground">Design system</p>
                         </header>

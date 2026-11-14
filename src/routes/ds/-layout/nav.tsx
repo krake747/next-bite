@@ -100,13 +100,14 @@ export function DesignSystemSidebar() {
                         </span>
                         <span className="truncate font-display text-lg font-semibold">Design system</span>
                     </Link>
-                    <SidebarTrigger />
+                    <SidebarTrigger id="ds-sidebar-trigger" />
                 </div>
             </SidebarHeader>
             <SidebarContent>
                 <SidebarMenu>
                     <SidebarMenuItem>
                         <SidebarMenuButton
+                            id="ds-nav-overview"
                             isActive={matchRoute({ to: "/ds", fuzzy: false }) !== false}
                             render={<Link to="/ds" />}
                             tooltip="Overview"
@@ -126,6 +127,7 @@ export function DesignSystemSidebar() {
                                     .map((section) => (
                                         <SidebarMenuItem key={section.id}>
                                             <SidebarMenuButton
+                                                id={`ds-nav-${section.id}`}
                                                 isActive={
                                                     matchRoute({
                                                         to: "/ds/$sectionId",
