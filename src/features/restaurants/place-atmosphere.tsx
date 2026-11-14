@@ -9,7 +9,7 @@ import { LazyImage } from "@pattern/lazy-image"
 import { LoadingPlaceholder } from "@pattern/loading"
 import { Badge } from "@ui/badge"
 
-export const ABOUT_SUMMARY_URL = "https://support.google.com/local-listings/answer/9851099"
+const ABOUT_SUMMARY_URL = "https://support.google.com/local-listings/answer/9851099"
 
 export type AtmospherePhoto = {
     readonly name: string
@@ -39,18 +39,15 @@ export type AtmosphereFlagValues = {
     readonly reservable?: boolean | undefined
 }
 
-export function googlePhotoMediaUrl(name: string, apiKey: string): string {
+function googlePhotoMediaUrl(name: string, apiKey: string): string {
     return `https://places.googleapis.com/v1/${name}/media?maxHeightPx=1200&maxWidthPx=1600&key=${apiKey}`
 }
 
-function flagLabel(value: boolean | undefined, positive: string): string {
-    if (value === true) {
+function flagLabel(value: boolean, positive: string): string {
+    if (value) {
         return positive
     }
-    if (value === false) {
-        return `No ${positive.toLowerCase()}`
-    }
-    return `${positive} (not listed)`
+    return `No ${positive.toLowerCase()}`
 }
 
 function PhotoAuthor({ photo }: Readonly<{ photo: AtmospherePhoto }>) {
@@ -257,7 +254,6 @@ export function AtmosphereFlags({
 }
 
 type AtmosphereState =
-    | { readonly kind: "idle" }
     | { readonly kind: "loading" }
     | { readonly kind: "ready"; readonly data: AtmosphereDataShape }
     | { readonly kind: "failed" }
@@ -275,17 +271,17 @@ export function PlaceAtmosphere({
     placeId,
     googlePlaceId,
 }: Readonly<{ placeId: Id<"places">; googlePlaceId: string | undefined }>) {
-    const fetchAtmosphere = usePlaceAtmosphere()
-    const [state, setState] = useState<AtmosphereState>({ kind: "idle" })
+    const { mutateAsync: fetchAtmosphere } = usePlaceAtmosphere()
+    const [state, setState] = useState<AtmosphereState>({ kind: "loading" })
 
     useEffect(() => {
         if (googlePlaceId === undefined || googlePlaceId === "") {
+            // No-op cleanup keeps both effect paths returning a function.
             return () => {}
         }
         let cancelled = false
         setState({ kind: "loading" })
-        fetchAtmosphere
-            .mutateAsync({ placeId })
+        fetchAtmosphere({ placeId })
             .then((data) => {
                 if (!cancelled) {
                     setState({ kind: "ready", data })
@@ -304,7 +300,7 @@ export function PlaceAtmosphere({
     if (googlePlaceId === undefined || googlePlaceId === "") {
         return null
     }
-    if (state.kind === "idle" || state.kind === "loading") {
+    if (state.kind === "loading") {
         return (
             <div className="rounded-card border border-border bg-surface p-4 shadow-card">
                 <LoadingPlaceholder />
