@@ -1,9 +1,16 @@
 import { describe, expect, test } from "vitest"
 
-import { formatPriceLevel, formatRating, formatRatingCount, hasEnterpriseContent } from "./place-details-utils"
+import {
+    formatBusinessStatus,
+    formatOpenState,
+    formatPriceLevel,
+    formatRating,
+    formatRatingCount,
+    hasEnterpriseContent,
+} from "./place-details-utils"
 
-describe("place enterprise details formatting", () => {
-    test("price level maps Google enums to labels", () => {
+describe("place details formatting", () => {
+    test("maps price levels to symbols", () => {
         expect(formatPriceLevel("PRICE_LEVEL_INEXPENSIVE")).toBe("$")
         expect(formatPriceLevel("PRICE_LEVEL_MODERATE")).toBe("$$")
         expect(formatPriceLevel("PRICE_LEVEL_EXPENSIVE")).toBe("$$$")
@@ -13,7 +20,7 @@ describe("place enterprise details formatting", () => {
 
     test("unknown price levels and missing values stay empty", () => {
         expect(formatPriceLevel(undefined)).toBeUndefined()
-        expect(formatPriceLevel("SOMETHING_ELSE")).toBeUndefined()
+        expect(formatPriceLevel("PRICE_LEVEL_UNKNOWN")).toBeUndefined()
     })
 
     test("rating formats to one decimal and count keeps parentheses", () => {
@@ -21,6 +28,19 @@ describe("place enterprise details formatting", () => {
         expect(formatRating(undefined)).toBeUndefined()
         expect(formatRatingCount(123)).toBe("(123)")
         expect(formatRatingCount(undefined)).toBeUndefined()
+    })
+
+    test("labels closed statuses only", () => {
+        expect(formatBusinessStatus("CLOSED_PERMANENTLY")).toBe("Permanently closed")
+        expect(formatBusinessStatus("CLOSED_TEMPORARILY")).toBe("Temporarily closed")
+        expect(formatBusinessStatus("OPERATIONAL")).toBeUndefined()
+        expect(formatBusinessStatus(undefined)).toBeUndefined()
+    })
+
+    test("labels open states", () => {
+        expect(formatOpenState("open")).toBe("Open now")
+        expect(formatOpenState("closed")).toBe("Closed")
+        expect(formatOpenState("unknown")).toBeUndefined()
     })
 
     test("hasEnterpriseContent is false while loading or when empty", () => {
