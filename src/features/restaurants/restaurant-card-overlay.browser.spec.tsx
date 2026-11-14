@@ -1,4 +1,4 @@
-import { describe, expect, test, vi } from "vitest"
+import { beforeEach, describe, expect, test, vi } from "vitest"
 import { render } from "vitest-browser-react"
 
 import { toId } from "@api/data.model"
@@ -13,6 +13,23 @@ vi.mock("./restaurant-card-map", () => ({
         </div>
     ),
 }))
+
+const { detailsMutate, detailsAction } = vi.hoisted(() => {
+    const detailsMutate = vi.fn<(args: { tier: string }) => Promise<unknown>>()
+    return { detailsMutate, detailsAction: { mutateAsync: detailsMutate } }
+})
+
+vi.mock("@core/restaurants", async (importOriginal) => {
+    const original = await importOriginal<typeof import("@core/restaurants")>()
+    return {
+        ...original,
+        usePlaceDetails: () => detailsAction,
+    }
+})
+
+beforeEach(() => {
+    detailsMutate.mockResolvedValue({})
+})
 
 const mockRestaurant: Restaurant = {
     _id: toId<"places">("spec-place-1"),
@@ -53,5 +70,25 @@ describe("RestaurantCardOverlay", () => {
         await screen.getByRole("button", { name: /Want to try/ }).click()
         expect(onToggleWant).toHaveBeenCalledTimes(1)
         await expect.element(screen.getByRole("button", { name: "View on Map" })).toBeVisible()
+    })
+
+    test("shows price and open-now signals", async () => {
+        detailsMutate
+            .mockResolvedValueOnce({
+                openingHours: { openState: "open", periods: [], weekdayText: [] },
+                priceLevel: "PRICE_LEVEL_MODERATE",
+            })
+            .mockResolvedValueOnce({})
+        const screen = await render(<RestaurantCardOverlay restaurant={mockRestaurant} onToggleWant={() => {}} />)
+        await expect.element(screen.getByText("$$")).toBeVisible()
+        await expect.element(screen.getByText("Open now")).toBeVisible()
+    })
+
+    test("flags permanently closed places", async () => {
+        detailsMutate
+            .mockResolvedValueOnce({ openingHours: { openState: "closed", periods: [], weekdayText: [] } })
+            .mockResolvedValueOnce({ businessStatus: "CLOSED_PERMANENTLY" })
+        const screen = await render(<RestaurantCardOverlay restaurant={mockRestaurant} onToggleWant={() => {}} />)
+        await expect.element(screen.getByText("Permanently closed")).toBeVisible()
     })
 })
