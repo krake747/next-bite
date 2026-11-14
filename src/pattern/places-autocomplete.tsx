@@ -1,5 +1,5 @@
 import { useMapsLibrary } from "@vis.gl/react-google-maps"
-import { useRef, useState, useEffect, useId } from "react"
+import { useEffect, useId, useRef, useState } from "react"
 import * as v from "valibot"
 
 import { cx } from "@ui/cva.config"
@@ -123,9 +123,8 @@ export function PlacesAutocomplete({
     const fallbackId = useId()
     const inputId = id ?? fallbackId
     const onChangeRef = useRef(onChange)
-    useEffect(() => {
-        onChangeRef.current = onChange
-    }, [onChange])
+    // Latest-ref assignment during render: the mounted widget always calls the current handler.
+    onChangeRef.current = onChange
     const biasKey = `${locationBias.north},${locationBias.south},${locationBias.east},${locationBias.west}`
 
     useEffect(() => {

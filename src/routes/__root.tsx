@@ -3,7 +3,7 @@ import dmSansLatinUrl from "@fontsource-variable/dm-sans/files/dm-sans-latin-wgh
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import { HeadContent, Outlet, Scripts, createRootRouteWithContext, useRouter } from "@tanstack/react-router"
 import { APIProvider } from "@vis.gl/react-google-maps"
-import { StrictMode, Suspense, useEffect } from "react"
+import { StrictMode, Suspense } from "react"
 
 import { type RouterAuth } from "@api/auth.identity"
 import { AuthProvider } from "@api/auth.provider"
@@ -57,11 +57,11 @@ function RootComponent() {
             void router.invalidate()
         }
     }
-    useEffect(() => {
-        if (auth !== null) {
-            authSnapshot.publish(auth)
-        }
-    }, [auth, authSnapshot])
+    // Render-time publish: idempotent, and the snapshot is request-scoped via getRouter().
+    // Previously an effect; the value is identical on every render for the same loader data.
+    if (auth !== null) {
+        authSnapshot.publish(auth)
+    }
 
     return (
         <html lang="en" suppressHydrationWarning>

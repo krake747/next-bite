@@ -1,5 +1,5 @@
 import { Form, reset, setInput, useField, useForm, type FormStore } from "@formisch/react"
-import { useEffect, useRef, useState } from "react"
+import { useRef, useState } from "react"
 
 import { type Id } from "@api/data.model"
 import { SyncTimeoutError, type PlaceCreateArgs } from "@api/db/restaurants"
@@ -64,18 +64,18 @@ function useSubmitDiscard(args: {
     phaseRef: { readonly current: SubmitPhase }
 }): void {
     const { onDiscardReady, gallery, resetForm, phaseRef } = args
-    useEffect(() => {
-        onDiscardReady(async () => {
-            // Committed or uncertain submits keep files with the backend; reset draft only.
-            const phase = phaseRef.current
-            if (phase.kind === "saving" || phase.kind === "uncertain" || phase.kind === "committed") {
-                resetForm()
-                return
-            }
-            await gallery.discardChanges()
+    // Render-time registration: registerDiscard only writes a ref, and the previous
+    // effect re-ran every render anyway (gallery and resetForm change identity each render).
+    onDiscardReady(async () => {
+        // Committed or uncertain submits keep files with the backend; reset draft only.
+        const phase = phaseRef.current
+        if (phase.kind === "saving" || phase.kind === "uncertain" || phase.kind === "committed") {
             resetForm()
-        })
-    }, [onDiscardReady, gallery, resetForm, phaseRef])
+            return
+        }
+        await gallery.discardChanges()
+        resetForm()
+    })
 }
 
 function SubmitPhaseBanner({ phase, onRetry }: Readonly<{ phase: SubmitPhase; onRetry: () => void }>) {

@@ -1,7 +1,7 @@
 import { Select as BaseSelect } from "@base-ui/react/select"
 import { type FieldElementProps } from "@formisch/react"
 import { CaretDownIcon, CheckIcon, WarningCircleIcon } from "@phosphor-icons/react"
-import { useEffect, useId, useRef } from "react"
+import { useId, useRef } from "react"
 
 import { cx } from "@ui/cva.config"
 import { control, fieldLabel } from "@ui/variants"
@@ -138,13 +138,6 @@ export function Select(props: Readonly<SelectProps>) {
     const invalid = hasErrors(errors)
     const selectedLabel = options.find((item) => item.value === value)?.label ?? ""
 
-    useEffect(() => {
-        const element = hiddenRef.current
-        if (element !== null && element.value !== value) {
-            element.value = value
-        }
-    }, [value])
-
     return (
         <div className="flex flex-col gap-1.5">
             {label !== undefined && label !== "" && (
@@ -205,7 +198,7 @@ export function Select(props: Readonly<SelectProps>) {
                         selectRef(element)
                     }}
                     onChange={handleChange}
-                    defaultValue={value}
+                    value={value}
                     tabIndex={-1}
                     aria-hidden="true"
                     className="hidden"

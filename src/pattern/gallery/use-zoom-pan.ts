@@ -12,6 +12,16 @@ export function useZoomPan(resetToken: number) {
     const [zoom, setZoom] = useState(DEFAULT_ZOOM)
     const [pan, setPan] = useState<PanState>({ x: 0, y: 0 })
     const [rotation, setRotation] = useState(0)
+    const [seenToken, setSeenToken] = useState(resetToken)
+
+    // Render-time adjustment: reset zoom state when the viewed image changes.
+    if (resetToken !== seenToken) {
+        setSeenToken(resetToken)
+        setZoom(DEFAULT_ZOOM)
+        setPan({ x: 0, y: 0 })
+        setRotation(0)
+    }
+
     const [isPanning, setIsPanning] = useState(false)
     const containerRef = useRef<HTMLDivElement>(null)
     const initialPinchDistance = useRef<number | undefined>(undefined)
@@ -19,12 +29,6 @@ export function useZoomPan(resetToken: number) {
     const startPan = useRef({ x: 0, y: 0 })
     const suppressClickAfterPanRef = useRef(false)
     const lastPointerRef = useRef<PanState | null>(null)
-
-    useEffect(() => {
-        setZoom(DEFAULT_ZOOM)
-        setPan({ x: 0, y: 0 })
-        setRotation(0)
-    }, [resetToken])
 
     useEffect(() => {
         const container = containerRef.current

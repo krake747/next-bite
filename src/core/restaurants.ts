@@ -94,11 +94,7 @@ function useSessionCollection(kind: "owner" | "feed", sessionKey: string | null,
         sessionKey === null || client === null
             ? null
             : getSessionCollections(client, persistCallerFor(client), sessionKey)[kind]
-    useEffect(() => {
-        if (collection !== null) {
-            void collection.preload()
-        }
-    }, [collection])
+    // No preload effect: the useLiveQuery subscription below starts syncing on mount.
     return collection
 }
 
