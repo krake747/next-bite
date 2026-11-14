@@ -70,6 +70,7 @@ function ConvexAuthBridge({ client, children }: Readonly<{ client: ConvexReactCl
 }
 
 const connectedQueryClients = new WeakMap<QueryClient, ConvexPair>()
+const defaultsInstalled = new WeakSet<QueryClient>()
 const liveQueryClients = new WeakSet<QueryClient>()
 
 export function AuthProvider({
@@ -98,14 +99,22 @@ export function AuthProvider({
     })
     const store = useAuthStore({ initial: initialAuth, onChange: onAuthChange })
 
+    // Install query defaults during render, not in an effect. The first client
+    // render runs before effects, and useSuspenseQuery needs the queryFn then.
+    // The server never reaches here because pair is null there. Idempotent per
+    // QueryClient; the QueryClient instance is stable for the router lifetime.
+    if (pair !== null && !defaultsInstalled.has(queryClient)) {
+        queryClient.setDefaultOptions({
+            queries: {
+                queryKeyHashFn: pair.convexQueryClient.hashFn(),
+                queryFn: pair.convexQueryClient.queryFn(),
+            },
+        })
+        defaultsInstalled.add(queryClient)
+    }
+
     useEffect(() => {
         if (pair !== null && !liveQueryClients.has(queryClient)) {
-            queryClient.setDefaultOptions({
-                queries: {
-                    queryKeyHashFn: pair.convexQueryClient.hashFn(),
-                    queryFn: pair.convexQueryClient.queryFn(),
-                },
-            })
             pair.convexQueryClient.connect(queryClient)
             liveQueryClients.add(queryClient)
         }

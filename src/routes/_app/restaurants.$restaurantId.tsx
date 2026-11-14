@@ -29,6 +29,7 @@ const RestaurantCardMap = lazy(async () =>
 )
 
 export const Route = createFileRoute("/_app/restaurants/$restaurantId")({
+    ssr: false,
     head: () => ({ meta: [{ title: "Restaurant details" }] }),
     component: RestaurantDetailView,
     pendingComponent: DetailLoading,

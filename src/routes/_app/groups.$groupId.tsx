@@ -30,6 +30,7 @@ import { Button } from "@ui/button"
 import { TextLink } from "@ui/text-link"
 
 export const Route = createFileRoute("/_app/groups/$groupId")({
+    ssr: false,
     head: () => ({ meta: [{ title: "Group details" }] }),
     component: GroupDetail,
     pendingComponent: GroupDetailLoading,
