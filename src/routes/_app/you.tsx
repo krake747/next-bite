@@ -92,11 +92,10 @@ function YouPage() {
     return (
         <PageContainer>
             <div className="mx-auto flex w-full max-w-2xl flex-col gap-8">
-                <section aria-label="You" className="px-4 pt-8 sm:pt-10">
-                    <h1 className="font-display text-3xl font-semibold tracking-tight text-balance text-foreground sm:text-4xl">
-                        You
-                    </h1>
-                </section>
+                <Header>
+                    <HeaderTitle>You</HeaderTitle>
+                    <HeaderSubtitle>Your saved restaurants, wants, and visits.</HeaderSubtitle>
+                </Header>
                 <SessionGate status={status} context="your lists" fallback={<RestaurantListsSkeleton />}>
                     <YouContent />
                 </SessionGate>

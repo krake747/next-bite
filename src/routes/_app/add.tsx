@@ -6,6 +6,7 @@ import { suggestCuisine } from "@features/restaurants/cuisine-suggestion"
 import { RestaurantForm, useFormDiscard } from "@features/restaurants/restaurant-form"
 import { ButtonLink } from "@pattern/button-link"
 import { GoogleAttribution } from "@pattern/google-attribution"
+import { Header, HeaderSubtitle, HeaderTitle } from "@pattern/header"
 import { PlacesAutocomplete, type PlaceSelection } from "@pattern/places-autocomplete"
 import { BackNav } from "@routes/-layouts/back-nav"
 import { PageContainer } from "@routes/-layouts/page-container"
@@ -147,16 +148,13 @@ function AddPage() {
     return (
         <PageContainer>
             <BackNav backTo="/home" label="Back to restaurants" />
+            <Header>
+                <HeaderTitle>Add a restaurant</HeaderTitle>
+                <HeaderSubtitle>
+                    Find it on Google Maps and confirm the details. Only your notes and photos are manual.
+                </HeaderSubtitle>
+            </Header>
             <div className="mx-auto max-w-2xl space-y-6 pt-4">
-                <div>
-                    <h1 className="font-display text-3xl font-semibold tracking-tight text-balance text-foreground">
-                        Add a restaurant
-                    </h1>
-                    <p className="mt-1 text-muted-foreground">
-                        Find it on Google Maps and confirm the details. Only your notes and photos are manual.
-                    </p>
-                </div>
-
                 {choice.kind === "idle" ? (
                     <PlacePickerCard onSelect={handleSelectPlace} onManual={handleManual} />
                 ) : (
