@@ -9,7 +9,7 @@ import { useToggleWant } from "@core/saves"
 import { useAuth } from "@core/session"
 import { OpeningHoursDialog } from "@features/restaurants/opening-hours-dialog"
 import { PlaceAtmosphere } from "@features/restaurants/place-atmosphere"
-import { type EnterpriseDetails } from "@features/restaurants/place-details-utils"
+import { type EnterpriseDetails, formatBusinessStatus } from "@features/restaurants/place-details-utils"
 import { PlaceEnterpriseDetails } from "@features/restaurants/place-enterprise-details"
 import { RestaurantGallery } from "@features/restaurants/restaurant-gallery"
 import { RestaurantHeader } from "@features/restaurants/restaurant-header"
@@ -58,6 +58,11 @@ function DetailHero({ restaurant }: Readonly<{ restaurant: Restaurant }>) {
         | { readonly status: "ready"; readonly details: EnterpriseDetails }
         | { readonly status: "failed" }
     >({ status: "loading" })
+    const [proStatus, setProStatus] = useState<
+        | { readonly status: "loading" }
+        | { readonly status: "ready"; readonly businessStatus: string | undefined }
+        | { readonly status: "failed" }
+    >({ status: "loading" })
 
     const googlePlaceId = restaurant.address.google?.placeId
 
@@ -69,6 +74,7 @@ function DetailHero({ restaurant }: Readonly<{ restaurant: Restaurant }>) {
             }
         }
         setEnterprise({ status: "loading" })
+        setProStatus({ status: "loading" })
         void fetchDetails({ placeId: restaurant._id, tier: "enterprise" })
             .then((result) => {
                 if (cancelled) {
@@ -83,6 +89,21 @@ function DetailHero({ restaurant }: Readonly<{ restaurant: Restaurant }>) {
             .catch(() => {
                 if (!cancelled) {
                     setEnterprise({ status: "failed" })
+                }
+            })
+        void fetchDetails({ placeId: restaurant._id, tier: "pro" })
+            .then((result) => {
+                if (cancelled) {
+                    return
+                }
+                setProStatus({
+                    status: "ready",
+                    businessStatus: "businessStatus" in result ? result.businessStatus : undefined,
+                })
+            })
+            .catch(() => {
+                if (!cancelled) {
+                    setProStatus({ status: "failed" })
                 }
             })
         return () => {
@@ -110,9 +131,19 @@ function DetailHero({ restaurant }: Readonly<{ restaurant: Restaurant }>) {
     const enterpriseDetails = enterprise.status === "ready" ? enterprise.details : undefined
     const openingHours = enterpriseDetails?.openingHours
     const enterpriseFailed = enterprise.status === "failed"
+    const closedLabel = proStatus.status === "ready" ? formatBusinessStatus(proStatus.businessStatus) : undefined
 
     return (
         <div className="overflow-hidden rounded-card border border-border bg-surface shadow-card">
+            {closedLabel !== undefined && (
+                <p
+                    role="status"
+                    className="flex items-center gap-2 border-b border-border bg-tomato-50 px-5 py-2.5 text-sm font-medium text-foreground md:px-4"
+                >
+                    <span className="size-1.5 rounded-full bg-tomato-500" aria-hidden="true" />
+                    {closedLabel}
+                </p>
+            )}
             <div className="grid divide-border lg:grid-cols-5 lg:divide-x">
                 <div className="lg:col-span-3">
                     <RestaurantGallery photos={restaurant.photos} name={restaurant.name} cuisine={restaurant.cuisine} />

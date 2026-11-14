@@ -73,6 +73,7 @@ describe("restaurant detail enterprise wiring", () => {
         const seeds = new Map<string, unknown>([
             [seedKey("places:get", { id: restaurantId }), verde],
             [seedKey("places:details", { placeId: restaurantId, tier: "enterprise" }), enterpriseDetails],
+            [seedKey("places:details", { placeId: restaurantId, tier: "pro" }), {}],
             [seedKey("places:atmosphere", { placeId: restaurantId }), { photos: [] }],
             [seedKey("social:friends", undefined), []],
             [seedKey("social:requests", undefined), { incoming: [], outgoing: [] }],
@@ -96,12 +97,44 @@ describe("restaurant detail enterprise wiring", () => {
         expect(screen.getByText("(123)")).toBeInTheDocument()
         expect(screen.getByText("$$")).toBeInTheDocument()
         expect(screen.getByText("Website")).toBeInTheDocument()
-        expect(detailCalls(actionCalls)).toHaveLength(1)
+        expect(detailCalls(actionCalls)).toHaveLength(2)
 
         await userEvent.click(screen.getByRole("button", { name: "Hours" }))
         expect(await screen.findByText("9:00 AM – 5:00 PM")).toBeInTheDocument()
         await waitFor(() => {
-            expect(detailCalls(actionCalls)).toHaveLength(1)
+            expect(detailCalls(actionCalls)).toHaveLength(2)
         })
+    })
+
+    test("flags a permanently closed place above the hero", async () => {
+        const actionCalls: MutationCall[] = []
+        const seeds = new Map<string, unknown>([
+            [seedKey("places:get", { id: restaurantId }), verde],
+            [seedKey("places:details", { placeId: restaurantId, tier: "enterprise" }), enterpriseDetails],
+            [
+                seedKey("places:details", { placeId: restaurantId, tier: "pro" }),
+                { businessStatus: "CLOSED_PERMANENTLY" },
+            ],
+            [seedKey("places:atmosphere", { placeId: restaurantId }), { photos: [] }],
+            [seedKey("social:friends", undefined), []],
+            [seedKey("social:requests", undefined), { incoming: [], outgoing: [] }],
+        ])
+        const backend = createSeededClient({ seeds, actionCalls })
+        const router = createRouter({
+            routeTree,
+            history: createMemoryHistory({
+                initialEntries: [`/restaurants/${restaurantId}`],
+            }),
+            context: { queryClient: backend.queryClient, authSnapshot: authSnapshotFor(alex) },
+        })
+        await router.load()
+        renderDocument(
+            <ConvexProvider client={backend.client} auth="authenticated">
+                <RouterProvider router={router} />
+            </ConvexProvider>,
+        )
+
+        expect(await screen.findByText("Permanently closed")).toBeInTheDocument()
+        expect(detailCalls(actionCalls)).toHaveLength(2)
     })
 })

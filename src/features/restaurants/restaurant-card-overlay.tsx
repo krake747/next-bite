@@ -14,6 +14,8 @@ import { focusRing } from "@ui/variants"
 
 import { RestaurantAddressLink } from "./restaurant-address-link"
 import { RestaurantInterestButton } from "./restaurant-interest-button"
+import { RestaurantPriceBadge, RestaurantStatusLine } from "./restaurant-signals"
+import { useRestaurantSignals } from "./use-restaurant-signals"
 
 const RestaurantCardMap = lazy(async () =>
     import("./restaurant-card-map").then((module) => ({ default: module.RestaurantCardMap })),
@@ -35,6 +37,7 @@ export function RestaurantCardOverlay({
     const hasLocation = googlePlaceId !== undefined && googlePlaceId !== ""
     const handleToggleWant = onToggleWant ?? (() => {})
     const lightbox = useLightbox(restaurant.photos)
+    const signals = useRestaurantSignals(restaurant._id, googlePlaceId)
     const cover = restaurant.photos[0]?.url
     const tagline = restaurant.cuisine ?? "Saved place"
 
@@ -67,11 +70,12 @@ export function RestaurantCardOverlay({
                     </div>
                 )}
 
-                <div className="absolute top-3 left-3">
+                <div className="absolute top-3 left-3 flex items-center gap-1.5">
                     <Badge tone="brand">
                         <ForkKnifeIcon className="mr-1 size-3" aria-hidden="true" />
                         {tagline}
                     </Badge>
+                    <RestaurantPriceBadge signals={signals} />
                 </div>
 
                 {restaurant.link !== undefined && restaurant.link !== "" && (
@@ -125,7 +129,10 @@ export function RestaurantCardOverlay({
             </div>
 
             <div className="flex flex-col gap-3 p-5 pt-4">
-                <RestaurantAddressLink address={restaurant.address.label} hasLocation={hasLocation} />
+                <div className="flex flex-col gap-1">
+                    <RestaurantAddressLink address={restaurant.address.label} hasLocation={hasLocation} />
+                    <RestaurantStatusLine signals={signals} />
+                </div>
                 {restaurant.note !== undefined && restaurant.note !== "" && (
                     <div className="relative">
                         <div
