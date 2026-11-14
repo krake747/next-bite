@@ -5,6 +5,8 @@ import * as v from "valibot"
 import { cx } from "@ui/cva.config"
 import { control, fieldLabel } from "@ui/variants"
 
+import { GoogleAttribution } from "./google-attribution"
+
 type Bias = Readonly<{ north: number; south: number; east: number; west: number }>
 
 export type PlaceSelection = {
@@ -174,6 +176,9 @@ export function PlacesAutocomplete({
                         data-fallback-location
                     />
                 )}
+            </div>
+            <div className="flex justify-end pt-1">
+                <GoogleAttribution />
             </div>
         </div>
     )
