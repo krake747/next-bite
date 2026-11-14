@@ -64,7 +64,10 @@ export function DropdownMenuDemo() {
     return (
         <Demo>
             <DropdownMenu>
-                <DropdownMenuTrigger render={<Button tone="outline">Group actions</Button>} />
+                <DropdownMenuTrigger
+                    id="ds-dropdown-menu-demo-trigger"
+                    render={<Button tone="outline">Group actions</Button>}
+                />
                 <DropdownMenuContent>
                     <DropdownMenuItem active>Rename group</DropdownMenuItem>
                     <DropdownMenuItem>Copy invite link</DropdownMenuItem>

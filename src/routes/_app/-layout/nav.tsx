@@ -163,6 +163,7 @@ function SidebarUserMenu() {
     return (
         <DropdownMenu>
             <DropdownMenuTrigger
+                id="app-account-menu-trigger"
                 aria-label="Open account menu"
                 render={
                     state === "collapsed" ? (
