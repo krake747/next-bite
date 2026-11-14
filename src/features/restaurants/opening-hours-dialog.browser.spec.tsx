@@ -24,9 +24,9 @@ describe("OpeningHoursDialog Google attribution", () => {
                 restaurantName="Trattoria"
             />,
         )
-        await expect.element(screen.getByText("Hours")).toBeInTheDocument()
+        await expect.element(screen.getByText("Hours")).toBeVisible()
         const attribution = screen.getByText("Powered by Google")
-        await expect.element(attribution).toBeInTheDocument()
+        await expect.element(attribution).toBeVisible()
         await expect.element(attribution).toHaveAttribute("translate", "no")
     })
 })
