@@ -5,7 +5,13 @@ import { Suspense, useEffect, useRef, useState } from "react"
 import { type Id } from "@api/data.model"
 import { usePlaceLocation } from "@core/restaurants"
 
-type MapLocation = Readonly<{ readonly lat: number; readonly lng: number }>
+import { boundsForViewport, type MapViewport } from "./map-bounds"
+
+type MapLocation = Readonly<{
+    readonly lat: number
+    readonly lng: number
+    readonly viewport?: MapViewport | undefined
+}>
 
 type LocationState =
     | { readonly kind: "idle" }
@@ -23,6 +29,7 @@ function RestaurantCardMapView({
     name: string | undefined
 }>) {
     const directionsUrl = `https://www.google.com/maps/dir/?api=1&destination=${location.lat},${location.lng}`
+    const bounds = boundsForViewport(location.viewport)
     return (
         <div>
             <a
@@ -33,8 +40,6 @@ function RestaurantCardMapView({
                 title="Get directions"
             >
                 <Map
-                    center={location}
-                    zoom={15}
                     mapId="DEMO_MAP_ID"
                     disableDefaultUI
                     zoomControl={false}
@@ -43,6 +48,7 @@ function RestaurantCardMapView({
                     fullscreenControl={false}
                     scrollwheel={false}
                     style={{ width: "100%", height: "100%" }}
+                    {...(bounds === undefined ? { center: location, zoom: 15 } : { defaultBounds: bounds })}
                 >
                     <AdvancedMarker position={location} title={name ?? null} />
                 </Map>
@@ -89,8 +95,7 @@ export function RestaurantCardMap({
                 setLocationState({ kind: "missing" })
             }
         }, LOCATION_TIMEOUT_MS)
-        void fetchLocation
-            .mutateAsync({ placeId })
+        void fetchLocation({ placeId })
             .then((location) => {
                 if (requestRef.current !== requestId) {
                     return

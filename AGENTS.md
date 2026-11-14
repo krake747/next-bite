@@ -76,3 +76,4 @@ change.
 | `export` on declarations, no trailing export lists; `use()` for context             | `nextbite/no-export-list`, `nextbite/no-use-context` lint |
 | Types over interfaces; never cast, fix at the source                                | `pnpm lint:ts` plus review                                |
 | Coupled lifecycles have explicit states, transitions, and async owners              | Review plus behavior tests; `CODING_STANDARDS.md`         |
+| Effect deps hold only stable identities; never whole Convex result objects          | `nextbite/no-unstable-effect-deps` lint                   |

@@ -7,8 +7,11 @@ import { Card } from "@ui/card"
 import { cx } from "@ui/cva.config"
 import { focusRing } from "@ui/variants"
 
+import { formatPriceLevel } from "./place-details-utils"
 import { RestaurantAddressLink } from "./restaurant-address-link"
 import { RestaurantInterestButton } from "./restaurant-interest-button"
+import { RestaurantStatusLine } from "./restaurant-signals"
+import { useRestaurantSignals } from "./use-restaurant-signals"
 
 export function RestaurantCardCompact({
     restaurant,
@@ -24,7 +27,11 @@ export function RestaurantCardCompact({
 >) {
     const hasLocation = restaurant.address.google?.placeId !== undefined && restaurant.address.google.placeId !== ""
     const handleToggleWant = onToggleWant ?? (() => {})
+    const signals = useRestaurantSignals(restaurant._id, restaurant.address.google?.placeId)
     const cover = restaurant.photos[0]?.url
+    const cuisine = restaurant.cuisine !== undefined && restaurant.cuisine !== "" ? restaurant.cuisine : undefined
+    const price = signals.status === "ready" ? formatPriceLevel(signals.priceLevel) : undefined
+    const eyebrow = [cuisine, price].filter((part) => part !== undefined).join(" · ")
 
     const heading = (
         <h3 className="line-clamp-2 font-display text-lg leading-6 font-semibold tracking-tight text-balance text-foreground">
@@ -55,9 +62,9 @@ export function RestaurantCardCompact({
                         </div>
                     )}
                     <div className="flex min-w-0 flex-1 flex-col gap-0.5">
-                        {restaurant.cuisine !== undefined && restaurant.cuisine !== "" && (
+                        {eyebrow !== "" && (
                             <p className="text-[11px] font-semibold tracking-[0.08em] text-muted-foreground uppercase">
-                                {restaurant.cuisine}
+                                {eyebrow}
                             </p>
                         )}
                         {detailsHref !== undefined ? (
@@ -80,8 +87,9 @@ export function RestaurantCardCompact({
                         </p>
                     </div>
                 </div>
-                <div className="mt-3">
+                <div className="mt-3 flex flex-col gap-1">
                     <RestaurantAddressLink address={restaurant.address.label} hasLocation={hasLocation} />
+                    <RestaurantStatusLine signals={signals} />
                 </div>
                 <div className="mt-3 flex items-center gap-2">
                     <RestaurantInterestButton

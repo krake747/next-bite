@@ -4,12 +4,15 @@ import { definePlugin, defineRule } from "vite-plus/lint/plugins"
 
 import {
     configArgumentSetsTimeout,
+    coreHookBindings,
     isButtonRenderedAsLink,
+    isEffectHookCall,
     isImportMetaEnvRead,
     isPhosphorIconImport,
     isViSetConfigCall,
     reportPhosphorSpecifiers,
     reportReactTypeImports,
+    wholeObjectHookBinding,
 } from "./rule-helpers.js"
 import { moduleOfFile, ownershipProblem, readTableOwners, tableAccess } from "./table-owners.js"
 
@@ -260,6 +263,68 @@ const convexTableOwner = defineRule({
     },
 })
 
+const noUnstableEffectDeps = defineRule({
+    meta: {
+        type: "problem",
+        docs: {
+            description:
+                "Do not depend on whole objects returned from @core hooks in effect or memo deps; their identity changes every render and refires the effect in a loop.",
+        },
+        messages: {
+            unexpected:
+                "{{name}} is a per-render object from {{hook}}. Depending on it refires the effect every render. Destructure the stable members you need, or depend on stable inputs instead.",
+        },
+    },
+    create(context) {
+        /** @type {Set<string>} */
+        const hooks = new Set()
+        /** @type {Map<string, string>} */
+        const bindings = new Map()
+        // usePlace* wrappers return the stable mutateAsync function itself
+        // (see src/core/restaurants.ts), so depending on them is safe.
+        /** @type {Set<string>} */
+        const stableHooks = new Set(["usePlaceLocation", "usePlaceAtmosphere", "usePlaceDetails"])
+        return {
+            ImportDeclaration(node) {
+                for (const binding of coreHookBindings(node)) {
+                    if (typeof binding?.local === "string") {
+                        hooks.add(binding.local)
+                    }
+                }
+            },
+            VariableDeclarator(node) {
+                const binding = wholeObjectHookBinding(node, hooks, stableHooks)
+                if (binding !== null && typeof binding.name === "string" && typeof binding.hook === "string") {
+                    bindings.set(binding.name, binding.hook)
+                }
+            },
+            CallExpression(node) {
+                if (!isEffectHookCall(node)) {
+                    return
+                }
+                const deps = node.arguments[1]
+                if (deps?.type !== "ArrayExpression") {
+                    return
+                }
+                for (const element of deps.elements ?? []) {
+                    if (element?.type !== "Identifier") {
+                        continue
+                    }
+                    const hook = bindings.get(element.name)
+                    if (typeof hook !== "string") {
+                        continue
+                    }
+                    context.report({
+                        node: element,
+                        messageId: "unexpected",
+                        data: { name: element.name, hook },
+                    })
+                }
+            },
+        }
+    },
+})
+
 export default definePlugin({
     meta: { name: "nextbite" },
     rules: {
@@ -273,5 +338,6 @@ export default definePlugin({
         "jsx-spread-last": jsxSpreadLast,
         "phosphor-icon-suffix": phosphorIconSuffix,
         "convex-table-owner": convexTableOwner,
+        "no-unstable-effect-deps": noUnstableEffectDeps,
     },
 })

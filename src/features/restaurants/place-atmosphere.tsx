@@ -271,7 +271,7 @@ export function PlaceAtmosphere({
     placeId,
     googlePlaceId,
 }: Readonly<{ placeId: Id<"places">; googlePlaceId: string | undefined }>) {
-    const { mutateAsync: fetchAtmosphere } = usePlaceAtmosphere()
+    const fetchAtmosphere = usePlaceAtmosphere()
     const [state, setState] = useState<AtmosphereState>({ kind: "loading" })
 
     useEffect(() => {

@@ -163,6 +163,7 @@ export default defineConfig({
             "nextbite/jsx-spread-last": "error",
             "nextbite/phosphor-icon-suffix": "error",
             "nextbite/convex-table-owner": "error",
+            "nextbite/no-unstable-effect-deps": "error",
             "shadcn/no-restyle": [
                 "error",
                 {

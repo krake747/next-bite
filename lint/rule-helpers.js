@@ -119,6 +119,11 @@ export function suffixFixes(fixer, specifier, variable, local, imported, expecte
  * @property {ExpressionLike} [key]
  * @property {ExpressionLike} [source]
  * @property {ExpressionLike} [meta]
+ * @property {ExpressionLike} [id]
+ * @property {ExpressionLike} [init]
+ * @property {ExpressionLike} [imported]
+ * @property {ExpressionLike} [local]
+ * @property {Array<ExpressionLike | null>} [elements]
  * @property {string} [name]
  * @property {string} [importKind]
  * @property {unknown} [value]
@@ -351,4 +356,76 @@ function reportIconSpecifier(context, sourceCode, specifier) {
             )
         },
     })
+}
+
+const CORE_SOURCE_PREFIX = "@core/"
+
+/**
+ * @typedef {object} HookBindingLike
+ * @property {string} local
+ * @property {string} imported
+ */
+
+/**
+ * @param {ExpressionLike} node
+ * @returns {boolean}
+ */
+export function isEffectHookCall(node) {
+    return (
+        node.callee?.type === "Identifier" &&
+        (node.callee.name === "useEffect" ||
+            node.callee.name === "useLayoutEffect" ||
+            node.callee.name === "useInsertionEffect" ||
+            node.callee.name === "useMemo" ||
+            node.callee.name === "useCallback")
+    )
+}
+
+/**
+ * @param {ExpressionLike} node
+ * @returns {Array<HookBindingLike>}
+ */
+export function coreHookBindings(node) {
+    if (node.source?.value === undefined || typeof node.source.value !== "string") {
+        return []
+    }
+    if (!node.source.value.startsWith(CORE_SOURCE_PREFIX)) {
+        return []
+    }
+    const bindings = []
+    for (const specifier of node.specifiers ?? []) {
+        if (specifier.type !== "ImportSpecifier") {
+            continue
+        }
+        const imported = specifier.imported
+        const importedName = imported.type === "Identifier" ? imported.name : imported.value
+        if (typeof importedName !== "string" || !importedName.startsWith("use")) {
+            continue
+        }
+        if (specifier.local?.type !== "Identifier") {
+            continue
+        }
+        bindings.push({ local: specifier.local.name, imported: importedName })
+    }
+    return bindings
+}
+
+/**
+ * @param {ExpressionLike} node
+ * @param {Set<string>} hooks
+ * @param {Set<string>} stableHooks
+ * @returns {{name: string, hook: string} | null}
+ */
+export function wholeObjectHookBinding(node, hooks, stableHooks) {
+    if (node.id?.type !== "Identifier" || node.init?.type !== "CallExpression") {
+        return null
+    }
+    const callee = node.init.callee
+    if (callee?.type !== "Identifier" || !hooks.has(callee.name)) {
+        return null
+    }
+    if (stableHooks.has(callee.name)) {
+        return null
+    }
+    return { name: node.id.name, hook: callee.name }
 }

@@ -5,16 +5,16 @@ import { toId } from "@api/data.model"
 
 import { RestaurantCardMap } from "./restaurant-card-map"
 
-const { mutateAsync, locationAction } = vi.hoisted(() => {
-    const mutateAsync = vi.fn<() => Promise<{ lat: number; lng: number } | null>>()
-    return { mutateAsync, locationAction: { mutateAsync } }
+const { mutateAsync } = vi.hoisted(() => {
+    const mutateAsync = vi.fn<(args: { placeId: unknown }) => Promise<{ lat: number; lng: number } | null>>()
+    return { mutateAsync }
 })
 
 vi.mock("@core/restaurants", async (importOriginal) => {
     const original = await importOriginal<typeof import("@core/restaurants")>()
     return {
         ...original,
-        usePlaceLocation: () => locationAction,
+        usePlaceLocation: () => mutateAsync,
     }
 })
 
