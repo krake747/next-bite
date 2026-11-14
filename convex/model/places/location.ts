@@ -2,6 +2,7 @@ import { type Infer } from "convex/values"
 import * as valibot from "valibot"
 
 import { placeLocationValidator } from "../../validators"
+import { fixtureLocation, type FixtureOptions } from "./fixtures"
 
 export type PlaceLocationData = Infer<typeof placeLocationValidator>
 
@@ -51,6 +52,16 @@ function toViewport(
     }
 }
 
+function toLocationData(data: valibot.InferOutput<typeof googleLocationSchema>): PlaceLocationData | null {
+    const latitude = data.location?.latitude
+    const longitude = data.location?.longitude
+    if (latitude === undefined || longitude === undefined) {
+        return null
+    }
+    const viewport = toViewport(data.viewport)
+    return viewport === undefined ? { lat: latitude, lng: longitude } : { lat: latitude, lng: longitude, viewport }
+}
+
 async function fetchCurrentLocation(placeId: string, apiKey: string): Promise<PlaceLocationData | null> {
     try {
         const response = await fetch(`https://places.googleapis.com/v1/places/${placeId}?fields=location,viewport`, {
@@ -66,13 +77,7 @@ async function fetchCurrentLocation(placeId: string, apiKey: string): Promise<Pl
         }
 
         const data = valibot.parse(googleLocationSchema, await response.json())
-        const latitude = data.location?.latitude
-        const longitude = data.location?.longitude
-        if (latitude === undefined || longitude === undefined) {
-            return null
-        }
-        const viewport = toViewport(data.viewport)
-        return viewport === undefined ? { lat: latitude, lng: longitude } : { lat: latitude, lng: longitude, viewport }
+        return toLocationData(data)
     } catch {
         return null
     }
@@ -81,8 +86,15 @@ async function fetchCurrentLocation(placeId: string, apiKey: string): Promise<Pl
 export async function fetchPlaceLocation(
     placeId: string,
     apiKey: string | undefined,
+    options: FixtureOptions = {},
 ): Promise<PlaceLocationData | null> {
-    if (placeId === "" || apiKey === undefined) {
+    if (placeId === "") {
+        return null
+    }
+    if (options.fixtures === true) {
+        return toLocationData(valibot.parse(googleLocationSchema, fixtureLocation))
+    }
+    if (apiKey === undefined) {
         return null
     }
     return fetchCurrentLocation(placeId, apiKey)

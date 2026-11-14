@@ -2,6 +2,7 @@ import { type Infer } from "convex/values"
 import * as valibot from "valibot"
 
 import { atmosphereValidator } from "../../validators"
+import { fixtureAtmosphere, type FixtureOptions } from "./fixtures"
 
 export type AtmosphereData = Infer<typeof atmosphereValidator>
 
@@ -98,8 +99,18 @@ async function fetchAtmosphereFields(placeId: string, apiKey: string): Promise<A
     }
 }
 
-export async function fetchPlaceAtmosphere(placeId: string, apiKey: string | undefined): Promise<AtmosphereData> {
-    if (placeId === "" || apiKey === undefined) {
+export async function fetchPlaceAtmosphere(
+    placeId: string,
+    apiKey: string | undefined,
+    options: FixtureOptions = {},
+): Promise<AtmosphereData> {
+    if (placeId === "") {
+        return emptyAtmosphere()
+    }
+    if (options.fixtures === true) {
+        return toAtmosphereData(valibot.parse(googleAtmosphereSchema, fixtureAtmosphere))
+    }
+    if (apiKey === undefined) {
         return emptyAtmosphere()
     }
     return fetchAtmosphereFields(placeId, apiKey)

@@ -1,5 +1,6 @@
 import * as valibot from "valibot"
 
+import { fixtureCombinedDetails, type FixtureOptions } from "./fixtures"
 import { type OpeningHoursData } from "./hours"
 
 export type PlaceDetailsTier = "atmosphere" | "combined"
@@ -302,8 +303,19 @@ export async function fetchPlaceDetails(
     placeId: string,
     apiKey: string | undefined,
     tier: PlaceDetailsTier,
+    options: FixtureOptions = {},
 ): Promise<PlaceDetailsResult> {
-    if (placeId === "" || apiKey === undefined) {
+    if (placeId === "") {
+        return fallbackFor()
+    }
+    if (options.fixtures === true) {
+        const google = valibot.parse(googleDetailsSchema, fixtureCombinedDetails)
+        if (tier === "combined") {
+            return { ...toProDetails(google), ...toEnterpriseDetails(google) }
+        }
+        return toAtmosphereDetails(google)
+    }
+    if (apiKey === undefined) {
         return fallbackFor()
     }
     const key = `${tier}:${placeId}`

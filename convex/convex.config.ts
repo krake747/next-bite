@@ -10,6 +10,7 @@ const app = defineApp({
         MAILGUN_API_KEY: v.optional(v.string()),
         MAILGUN_DOMAIN: v.optional(v.string()),
         MAILGUN_DEV_FALLBACK: v.optional(v.string()),
+        GOOGLE_PLACES_FIXTURES: v.optional(v.string()),
         SITE_URL: v.optional(v.string()),
     },
 })

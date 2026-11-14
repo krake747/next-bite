@@ -35,6 +35,14 @@ export function isMailDevFallback(): boolean {
     return env.MAILGUN_DEV_FALLBACK === "true"
 }
 
+// Dev-only Google stub. When true, the Places fetchers return canned
+// fixtures instead of calling Google, so local development burns no quota.
+// Local only, like MAILGUN_DEV_FALLBACK: never set it on a deployment that
+// previews or production read.
+export function isGooglePlacesFixturesEnabled(): boolean {
+    return env.GOOGLE_PLACES_FIXTURES === "true"
+}
+
 export function isEmailOtpAvailable(): boolean {
     return isEmailOtpEnabled() && (hasMailgunConfig() || isMailDevFallback())
 }
