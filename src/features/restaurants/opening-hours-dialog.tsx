@@ -1,5 +1,6 @@
 import { ClockIcon } from "@phosphor-icons/react"
 
+import { GoogleAttribution } from "@pattern/google-attribution"
 import { LoadingPlaceholder } from "@pattern/loading"
 import { Badge } from "@ui/badge"
 import { cx } from "@ui/cva.config"
@@ -70,6 +71,9 @@ export function OpeningHoursDialog({
                                     </div>
                                 )
                             })}
+                        </div>
+                        <div className="flex justify-end border-t border-border pt-3">
+                            <GoogleAttribution />
                         </div>
                     </>
                 )}

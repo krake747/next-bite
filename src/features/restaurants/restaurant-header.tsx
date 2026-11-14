@@ -1,6 +1,7 @@
 import { ArrowSquareOutIcon, ForkKnifeIcon, MapPinIcon } from "@phosphor-icons/react"
 import { Link } from "@tanstack/react-router"
 
+import { GoogleAttribution } from "@pattern/google-attribution"
 import { SocialMetadata } from "@pattern/social-metadata"
 import { cx } from "@ui/cva.config"
 import { focusRing } from "@ui/variants"
@@ -76,6 +77,9 @@ export function RestaurantHeader({
                                 {location}
                             </span>
                         )}
+                    </div>
+                    <div className="flex justify-end border-t border-border/60 pt-2">
+                        <GoogleAttribution />
                     </div>
                 </div>
             )}

@@ -5,6 +5,7 @@ import { useAuth } from "@core/session"
 import { suggestCuisine } from "@features/restaurants/cuisine-suggestion"
 import { RestaurantForm, useFormDiscard } from "@features/restaurants/restaurant-form"
 import { ButtonLink } from "@pattern/button-link"
+import { GoogleAttribution } from "@pattern/google-attribution"
 import { PlacesAutocomplete, type PlaceSelection } from "@pattern/places-autocomplete"
 import { BackNav } from "@routes/-layouts/back-nav"
 import { PageContainer } from "@routes/-layouts/page-container"
@@ -73,16 +74,21 @@ function AddRestaurantFormCard({
     return (
         <div className="rounded-card border border-border bg-surface p-5 shadow-card">
             {choice.kind === "place" && (
-                <div className="mb-5 flex items-center justify-between gap-3 border-b border-border pb-4">
-                    <p className="min-w-0 truncate text-sm text-muted-foreground">
-                        Adding{" "}
-                        <span className="font-semibold text-foreground">
-                            {choice.selection.name ?? choice.selection.address}
-                        </span>
-                    </p>
-                    <Button type="button" tone="ghost" onClick={onResetChoice}>
-                        Change
-                    </Button>
+                <div className="mb-5 border-b border-border pb-4">
+                    <div className="flex items-center justify-between gap-3">
+                        <p className="min-w-0 truncate text-sm text-muted-foreground">
+                            Adding{" "}
+                            <span className="font-semibold text-foreground">
+                                {choice.selection.name ?? choice.selection.address}
+                            </span>
+                        </p>
+                        <Button type="button" tone="ghost" onClick={onResetChoice}>
+                            Change
+                        </Button>
+                    </div>
+                    <div className="flex justify-end pt-2">
+                        <GoogleAttribution />
+                    </div>
                 </div>
             )}
             <RestaurantForm
