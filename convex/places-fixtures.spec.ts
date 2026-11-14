@@ -4,6 +4,7 @@ import { http, HttpResponse } from "msw"
 import { afterEach, beforeEach, describe, expect, test } from "vitest"
 
 import { register as registerBetterAuthComponent } from "@convex-dev/better-auth/test"
+import { register as registerRateLimiter } from "@convex-dev/rate-limiter/test"
 
 import { server } from "../src/vitest.msw.setup"
 import { api } from "./_generated/api"
@@ -69,6 +70,7 @@ describe("google places fixtures", () => {
         )
         const t = convexTest(schema, modules)
         registerBetterAuthComponent(t, "betterAuth")
+        registerRateLimiter(t, "rateLimiter")
         const placeId = await seedPlace(t)
         const authed = t.withIdentity({ subject: AUTH_USER_ID })
 

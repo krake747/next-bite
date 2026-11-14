@@ -170,7 +170,7 @@ function toEnterpriseDetails(google: GoogleDetails): PlaceEnterpriseDetails {
 
 const inflight = new Map<string, Promise<PlaceDetailsResult>>()
 
-function fallbackFor(tier: PlaceDetailsTier): PlaceDetailsResult {
+export function fallbackFor(tier: PlaceDetailsTier): PlaceDetailsResult {
     if (tier === "enterprise") {
         return { openingHours: { openState: "unknown", periods: [], weekdayText: [] } }
     }
