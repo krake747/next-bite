@@ -40,6 +40,10 @@ export function RestaurantCardOverlay({
     const cover = restaurant.photos[0]?.url
     const tagline = restaurant.cuisine ?? "Saved place"
 
+    function handleOpenGallery(): void {
+        lightbox.openAt(0)
+    }
+
     const heading = (
         <h3 className="font-display text-2xl leading-8 font-semibold tracking-tight text-balance text-inverse">
             {restaurant.name}
@@ -95,9 +99,7 @@ export function RestaurantCardOverlay({
                     <div className="absolute right-3 bottom-3">
                         <button
                             type="button"
-                            onClick={() => {
-                                lightbox.openAt(0)
-                            }}
+                            onClick={handleOpenGallery}
                             className="flex cursor-pointer items-center gap-1.5 rounded-full bg-surface/95 px-2.5 py-1 text-xs font-medium text-foreground shadow-lg backdrop-blur-md transition-colors duration-150 hover:bg-surface"
                         >
                             <ImagesIcon className="size-3.5" aria-hidden="true" />

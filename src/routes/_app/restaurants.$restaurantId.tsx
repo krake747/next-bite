@@ -1,6 +1,6 @@
 import { useSuspenseQuery } from "@tanstack/react-query"
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router"
-import { lazy, Suspense } from "react"
+import { createContext, lazy, Suspense, use } from "react"
 
 import { warmQueriesWithin } from "@api/convex.options"
 import { toId } from "@api/data.model"
@@ -60,19 +60,30 @@ function RestaurantDetailError({ reset }: Readonly<{ reset: () => void }>) {
     )
 }
 
-function DetailInfoPanel({
-    restaurant,
-    enterpriseDetails,
-    enterpriseFailed,
-    onToggleWant,
-    onShowHours,
-}: Readonly<{
-    restaurant: Restaurant
-    enterpriseDetails: EnterpriseDetails | undefined
-    enterpriseFailed: boolean
-    onToggleWant: () => void
-    onShowHours: () => void
-}>) {
+type DetailContextValue = {
+    readonly restaurant: Restaurant
+    readonly enterpriseDetails: EnterpriseDetails | undefined
+    readonly enterpriseFailed: boolean
+    readonly openingHours: EnterpriseDetails["openingHours"]
+    readonly closedLabel: string | undefined
+    readonly showHours: boolean
+    readonly onToggleWant: () => void
+    readonly onShowHours: () => void
+    readonly onOpenChange: (open: boolean) => void
+}
+
+const DetailContext = createContext<DetailContextValue | null>(null)
+
+function useDetail(): DetailContextValue {
+    const value = use(DetailContext)
+    if (!value) {
+        throw new Error("Detail components must render inside a detail provider")
+    }
+    return value
+}
+
+function DetailInfoPanel() {
+    const { restaurant, enterpriseDetails, enterpriseFailed, onToggleWant, onShowHours } = useDetail()
     const googlePlaceId = restaurant.address.google?.placeId
     return (
         <div className="min-w-0 lg:col-span-2">
@@ -117,19 +128,64 @@ function DetailInfoPanel({
     )
 }
 
+function DetailClosedBanner() {
+    const { closedLabel } = useDetail()
+    if (closedLabel === undefined) {
+        return null
+    }
+    return (
+        <p
+            role="status"
+            className="flex items-center gap-2 border-b border-border bg-tomato-50 px-5 py-2.5 text-sm font-medium text-foreground md:px-4"
+        >
+            <span className="size-1.5 rounded-full bg-tomato-500" aria-hidden="true" />
+            {closedLabel}
+        </p>
+    )
+}
+
+function DetailGalleryPane() {
+    const { restaurant } = useDetail()
+    const viewer = useViewer()
+    return (
+        <div className="lg:col-span-3">
+            <RestaurantGallery
+                photos={restaurant.photos}
+                name={restaurant.name}
+                cuisine={restaurant.cuisine}
+                placeId={restaurant._id}
+                viewerId={viewer.kind === "signed-in" ? toId<"profiles">(viewer.id) : undefined}
+                ownerId={restaurant.ownerId}
+            />
+        </div>
+    )
+}
+
+function DetailHoursDialog() {
+    const { restaurant, openingHours, enterpriseFailed, showHours, onOpenChange } = useDetail()
+    return (
+        <OpeningHoursDialog
+            show={showHours}
+            onOpenChange={onOpenChange}
+            openingHours={openingHours}
+            failed={enterpriseFailed}
+            restaurantName={restaurant.name}
+        />
+    )
+}
+
 function DetailHero({ restaurant }: Readonly<{ restaurant: Restaurant }>) {
     const navigate = useNavigate()
     const auth = useAuth()
-    const viewer = useViewer()
     const toggleWant = useToggleWant(restaurant._id, restaurant.mySave)
     const { enterpriseDetails, openingHours, enterpriseFailed, closedLabel, showHours, setShowHours } =
         useDetailEnterprise(restaurant)
 
-    const goToLogin = () => {
+    function goToLogin(): void {
         void navigate({ to: "/login" })
     }
 
-    const handleToggleWant = () => {
+    function handleToggleWant(): void {
         if (!auth.isAuthenticated) {
             goToLogin()
             return
@@ -137,48 +193,37 @@ function DetailHero({ restaurant }: Readonly<{ restaurant: Restaurant }>) {
         toggleWant()
     }
 
-    const handleShowHours = () => {
+    function handleShowHours(): void {
         setShowHours(true)
     }
 
+    function handleOpenChange(open: boolean): void {
+        setShowHours(open)
+    }
+
     return (
-        <div className="overflow-hidden rounded-card border border-border bg-surface shadow-card">
-            {closedLabel !== undefined && (
-                <p
-                    role="status"
-                    className="flex items-center gap-2 border-b border-border bg-tomato-50 px-5 py-2.5 text-sm font-medium text-foreground md:px-4"
-                >
-                    <span className="size-1.5 rounded-full bg-tomato-500" aria-hidden="true" />
-                    {closedLabel}
-                </p>
-            )}
-            <div className="grid divide-border lg:grid-cols-5 lg:divide-x">
-                <div className="lg:col-span-3">
-                    <RestaurantGallery
-                        photos={restaurant.photos}
-                        name={restaurant.name}
-                        cuisine={restaurant.cuisine}
-                        placeId={restaurant._id}
-                        viewerId={viewer.kind === "signed-in" ? toId<"profiles">(viewer.id) : undefined}
-                        ownerId={restaurant.ownerId}
-                    />
+        <DetailContext
+            value={{
+                restaurant,
+                enterpriseDetails,
+                enterpriseFailed,
+                openingHours,
+                closedLabel,
+                showHours,
+                onToggleWant: handleToggleWant,
+                onShowHours: handleShowHours,
+                onOpenChange: handleOpenChange,
+            }}
+        >
+            <div className="overflow-hidden rounded-card border border-border bg-surface shadow-card">
+                <DetailClosedBanner />
+                <div className="grid divide-border lg:grid-cols-5 lg:divide-x">
+                    <DetailGalleryPane />
+                    <DetailInfoPanel />
                 </div>
-                <DetailInfoPanel
-                    restaurant={restaurant}
-                    enterpriseDetails={enterpriseDetails}
-                    enterpriseFailed={enterpriseFailed}
-                    onToggleWant={handleToggleWant}
-                    onShowHours={handleShowHours}
-                />
+                <DetailHoursDialog />
             </div>
-            <OpeningHoursDialog
-                show={showHours}
-                onOpenChange={setShowHours}
-                openingHours={openingHours}
-                failed={enterpriseFailed}
-                restaurantName={restaurant.name}
-            />
-        </div>
+        </DetailContext>
     )
 }
 
