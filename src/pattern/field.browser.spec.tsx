@@ -1,4 +1,5 @@
 import { type FieldElement, type FieldElementProps } from "@formisch/react"
+import { useState } from "react"
 import { describe, expect, test, vi } from "vitest"
 import { render } from "vitest-browser-react"
 
@@ -10,13 +11,15 @@ const options = [
     { value: "Priya", label: "Priya" },
 ]
 
-async function setup(input: string | undefined) {
-    const onChange = vi.fn<FieldElementProps["onChange"]>()
-    let hiddenElement: FieldElement | null = null
-    const ref = vi.fn<FieldElementProps["ref"]>((element) => {
-        hiddenElement = element
-    })
-    const screen = await render(
+type SelectHarnessProps = {
+    readonly initial: string
+    readonly onChangeSpy: (event: React.ChangeEvent<FieldElement>) => void
+    readonly refSpy: (element: FieldElement | null) => void
+}
+
+function SelectHarness({ initial, onChangeSpy, refSpy }: SelectHarnessProps) {
+    const [input, setInput] = useState(initial)
+    return (
         <Select
             input={input}
             errors={null}
@@ -26,10 +29,22 @@ async function setup(input: string | undefined) {
             autoFocus={false}
             onFocus={() => {}}
             onBlur={() => {}}
-            onChange={onChange}
-            ref={ref}
-        />,
+            onChange={(event) => {
+                onChangeSpy(event)
+                setInput(event.currentTarget.value)
+            }}
+            ref={refSpy}
+        />
     )
+}
+
+async function setup(initial: string | undefined) {
+    const onChange = vi.fn<(event: React.ChangeEvent<FieldElement>) => void>()
+    let hiddenElement: FieldElement | null = null
+    const ref = vi.fn<FieldElementProps["ref"]>((element) => {
+        hiddenElement = element
+    })
+    const screen = await render(<SelectHarness initial={initial ?? ""} onChangeSpy={onChange} refSpy={ref} />)
     return { onChange, hiddenElement: () => hiddenElement, screen }
 }
 

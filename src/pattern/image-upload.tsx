@@ -142,11 +142,9 @@ export function ImageUpload(props: Readonly<ImageUploadProps>) {
     const batchRef = useRef(0)
     const mountedRef = useRef(true)
     const latestImagesRef = useRef(props.images)
+    // Latest-ref assignment during render: the async batch always reads current props.
+    latestImagesRef.current = props.images
     const maxFiles = props.maxFiles ?? MAX_IMAGES
-    useEffect(() => {
-        latestImagesRef.current = props.images
-    }, [props.images])
-
     useEffect(() => {
         return () => {
             mountedRef.current = false

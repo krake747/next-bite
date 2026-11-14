@@ -1,6 +1,6 @@
 import { ArrowLeftIcon, ArrowRightIcon, CheckIcon, CopyIcon } from "@phosphor-icons/react"
 import { createFileRoute, Link } from "@tanstack/react-router"
-import { createContext, use, useEffect, useRef, useState } from "react"
+import { createContext, use, useRef, useState } from "react"
 
 import { cx } from "@ui/cva.config"
 import { IconButton } from "@ui/icon-button"
@@ -72,12 +72,6 @@ export function toImportSpecifier(importPath: string): string {
 function useCopyFeedback(text: string): { readonly copied: boolean; readonly handleCopy: () => void } {
     const [copied, setCopied] = useState(false)
     const timeout = useRef<number | undefined>(undefined)
-
-    useEffect(() => {
-        return () => {
-            window.clearTimeout(timeout.current)
-        }
-    }, [])
 
     function handleCopy(): void {
         window.clearTimeout(timeout.current)

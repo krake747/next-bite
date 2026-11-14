@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react"
+import { useState } from "react"
 
 import { AspectRatio } from "@ui/aspect-ratio"
 import { cx } from "@ui/cva.config"
@@ -50,27 +50,31 @@ type LazyImageProps = {
     readonly draggable?: boolean | undefined
 }
 
-export function LazyImage({ src, alt, ratio, className, loading, decoding, ...imgProps }: Readonly<LazyImageProps>) {
-    const [isLoaded, setIsLoaded] = useState(src !== undefined && src !== "" ? loadedImages.has(src) : false)
-    const [hasError, setHasError] = useState(false)
+function keyForSrc(src: string | undefined): string | null {
+    return src !== undefined && src !== "" ? src : null
+}
 
-    useEffect(() => {
-        setIsLoaded(src !== undefined && src !== "" ? loadedImages.has(src) : false)
-        setHasError(false)
-    }, [src])
+type ImageContentProps = Readonly<LazyImageProps> &
+    Readonly<{
+        isLoaded: boolean
+        hasError: boolean
+        onLoad: () => void
+        onError: () => void
+    }>
 
-    const handleLoad = () => {
-        if (src !== undefined && src !== "") {
-            loadedImages.add(src)
-        }
-        setIsLoaded(true)
-    }
-
-    const handleError = () => {
-        setHasError(true)
-    }
-
-    const content = (
+function ImageContent({
+    src,
+    alt,
+    loading,
+    decoding,
+    className,
+    isLoaded,
+    hasError,
+    onLoad,
+    onError,
+    ...imgProps
+}: ImageContentProps) {
+    return (
         <>
             {!isLoaded && !hasError && <div className="absolute inset-0 bg-surface-muted" />}
 
@@ -87,12 +91,52 @@ export function LazyImage({ src, alt, ratio, className, loading, decoding, ...im
                     loading={loading ?? "lazy"}
                     decoding={decoding ?? "async"}
                     className={cx("size-full object-cover", isLoaded ? "opacity-100" : "opacity-0", className)}
-                    onLoad={handleLoad}
-                    onError={handleError}
+                    onLoad={onLoad}
+                    onError={onError}
                     {...imgProps}
                 />
             )}
         </>
+    )
+}
+
+export function LazyImage({ src, alt, ratio, className, loading, decoding, ...imgProps }: Readonly<LazyImageProps>) {
+    const key = keyForSrc(src)
+    const [seenKey, setSeenKey] = useState(key)
+    const [isLoaded, setIsLoaded] = useState(key !== null && loadedImages.has(key))
+    const [hasError, setHasError] = useState(false)
+
+    // Render-time adjustment: src is derived state, reset when it changes.
+    if (key !== seenKey) {
+        setSeenKey(key)
+        setIsLoaded(key !== null && loadedImages.has(key))
+        setHasError(false)
+    }
+
+    const handleLoad = () => {
+        if (src !== undefined && src !== "") {
+            loadedImages.add(src)
+        }
+        setIsLoaded(true)
+    }
+
+    const handleError = () => {
+        setHasError(true)
+    }
+
+    const content = (
+        <ImageContent
+            src={src}
+            alt={alt}
+            loading={loading}
+            decoding={decoding}
+            className={className}
+            isLoaded={isLoaded}
+            hasError={hasError}
+            onLoad={handleLoad}
+            onError={handleError}
+            {...imgProps}
+        />
     )
 
     if (ratio === undefined) {

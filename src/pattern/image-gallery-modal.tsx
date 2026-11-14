@@ -1,5 +1,4 @@
 import { XIcon } from "@phosphor-icons/react"
-import { useEffect } from "react"
 
 import { Dialog, DialogContent, DialogTitle } from "@ui/dialog"
 
@@ -18,12 +17,12 @@ export function ImageGalleryModal({ images, show, onOpenChange, initialIndex }: 
     if (images.length === 0) {
         return null
     }
+    // Remount on open state or target index so the viewer starts at initialIndex without a sync effect.
+    const viewerKey = show ? `open-${initialIndex ?? 0}` : "closed"
     return (
         <Dialog open={show} onOpenChange={onOpenChange}>
-            <GalleryViewer images={images} initialIndex={initialIndex}>
+            <GalleryViewer key={viewerKey} images={images} initialIndex={initialIndex}>
                 <GalleryShell
-                    show={show}
-                    initialIndex={initialIndex}
                     onClose={() => {
                         onOpenChange(false)
                     }}
@@ -33,23 +32,8 @@ export function ImageGalleryModal({ images, show, onOpenChange, initialIndex }: 
     )
 }
 
-function GalleryShell({
-    show,
-    initialIndex,
-    onClose,
-}: Readonly<{
-    show: boolean
-    initialIndex: number | undefined
-    onClose: () => void
-}>) {
+function GalleryShell({ onClose }: Readonly<{ onClose: () => void }>) {
     const viewer = useGalleryViewer()
-    const select = viewer.select
-
-    useEffect(() => {
-        if (show) {
-            select(initialIndex ?? 0)
-        }
-    }, [show, initialIndex, select])
 
     const handleKeyDown = (e: React.KeyboardEvent) => {
         if (e.key === "ArrowLeft") {
