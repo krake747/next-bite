@@ -26,17 +26,17 @@ export function useRestaurantSignals(placeId: Id<"places">, googlePlaceId: strin
             }
         }
         setSignals({ status: "loading" })
-        void Promise.all([fetchDetails({ placeId, tier: "enterprise" }), fetchDetails({ placeId, tier: "pro" })])
-            .then(([enterprise, pro]) => {
+        void fetchDetails({ placeId, tier: "combined" })
+            .then((result) => {
                 if (!cancelled) {
                     setSignals({
                         status: "ready",
-                        openState: "openingHours" in enterprise ? enterprise.openingHours.openState : "unknown",
-                        ...("priceLevel" in enterprise && enterprise.priceLevel !== undefined
-                            ? { priceLevel: enterprise.priceLevel }
+                        openState: "openingHours" in result ? result.openingHours.openState : "unknown",
+                        ...("priceLevel" in result && result.priceLevel !== undefined
+                            ? { priceLevel: result.priceLevel }
                             : {}),
-                        ...("businessStatus" in pro && pro.businessStatus !== undefined
-                            ? { businessStatus: pro.businessStatus }
+                        ...("businessStatus" in result && result.businessStatus !== undefined
+                            ? { businessStatus: result.businessStatus }
                             : {}),
                     })
                 }

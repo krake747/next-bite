@@ -68,12 +68,11 @@ function detailCalls(actionCalls: ReadonlyArray<MutationCall>): ReadonlyArray<Mu
 }
 
 describe("restaurant detail enterprise wiring", () => {
-    test("one enterprise call per view covers the fields and the hours dialog", async () => {
+    test("one combined call per view covers the fields and the hours dialog", async () => {
         const actionCalls: MutationCall[] = []
         const seeds = new Map<string, unknown>([
             [seedKey("places:get", { id: restaurantId }), verde],
-            [seedKey("places:details", { placeId: restaurantId, tier: "enterprise" }), enterpriseDetails],
-            [seedKey("places:details", { placeId: restaurantId, tier: "pro" }), {}],
+            [seedKey("places:details", { placeId: restaurantId, tier: "combined" }), enterpriseDetails],
             [seedKey("places:atmosphere", { placeId: restaurantId }), { photos: [] }],
             [seedKey("social:friends", undefined), []],
             [seedKey("social:requests", undefined), { incoming: [], outgoing: [] }],
@@ -97,12 +96,12 @@ describe("restaurant detail enterprise wiring", () => {
         expect(screen.getByText("(123)")).toBeInTheDocument()
         expect(screen.getByText("$$")).toBeInTheDocument()
         expect(screen.getByText("Website")).toBeInTheDocument()
-        expect(detailCalls(actionCalls)).toHaveLength(2)
+        expect(detailCalls(actionCalls)).toHaveLength(1)
 
         await userEvent.click(screen.getByRole("button", { name: "Hours" }))
         expect(await screen.findByText("9:00 AM – 5:00 PM")).toBeInTheDocument()
         await waitFor(() => {
-            expect(detailCalls(actionCalls)).toHaveLength(2)
+            expect(detailCalls(actionCalls)).toHaveLength(1)
         })
     })
 
@@ -110,10 +109,9 @@ describe("restaurant detail enterprise wiring", () => {
         const actionCalls: MutationCall[] = []
         const seeds = new Map<string, unknown>([
             [seedKey("places:get", { id: restaurantId }), verde],
-            [seedKey("places:details", { placeId: restaurantId, tier: "enterprise" }), enterpriseDetails],
             [
-                seedKey("places:details", { placeId: restaurantId, tier: "pro" }),
-                { businessStatus: "CLOSED_PERMANENTLY" },
+                seedKey("places:details", { placeId: restaurantId, tier: "combined" }),
+                { ...enterpriseDetails, businessStatus: "CLOSED_PERMANENTLY" },
             ],
             [seedKey("places:atmosphere", { placeId: restaurantId }), { photos: [] }],
             [seedKey("social:friends", undefined), []],
@@ -135,6 +133,6 @@ describe("restaurant detail enterprise wiring", () => {
         )
 
         expect(await screen.findByText("Permanently closed")).toBeInTheDocument()
-        expect(detailCalls(actionCalls)).toHaveLength(2)
+        expect(detailCalls(actionCalls)).toHaveLength(1)
     })
 })

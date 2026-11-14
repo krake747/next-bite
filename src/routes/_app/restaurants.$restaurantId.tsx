@@ -94,7 +94,7 @@ function DetailHero({ restaurant }: Readonly<{ restaurant: Restaurant }>) {
         }
         setEnterprise({ status: "loading" })
         setProStatus({ status: "loading" })
-        void fetchDetails({ placeId: restaurant._id, tier: "enterprise" })
+        void fetchDetails({ placeId: restaurant._id, tier: "combined" })
             .then((result) => {
                 if (cancelled) {
                     return
@@ -104,17 +104,6 @@ function DetailHero({ restaurant }: Readonly<{ restaurant: Restaurant }>) {
                 } else {
                     setEnterprise({ status: "ready", details: {} })
                 }
-            })
-            .catch(() => {
-                if (!cancelled) {
-                    setEnterprise({ status: "failed" })
-                }
-            })
-        void fetchDetails({ placeId: restaurant._id, tier: "pro" })
-            .then((result) => {
-                if (cancelled) {
-                    return
-                }
                 setProStatus({
                     status: "ready",
                     businessStatus: "businessStatus" in result ? result.businessStatus : undefined,
@@ -122,6 +111,7 @@ function DetailHero({ restaurant }: Readonly<{ restaurant: Restaurant }>) {
             })
             .catch(() => {
                 if (!cancelled) {
+                    setEnterprise({ status: "failed" })
                     setProStatus({ status: "failed" })
                 }
             })
