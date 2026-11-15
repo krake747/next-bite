@@ -28,8 +28,8 @@ export function AuthLayout({
                         Great company.
                     </p>
                     <p className="mt-4 max-w-md text-lg text-inverse/80">
-                        Your friends have good taste. Save spots together, vote want-to-go, and pick the next table in
-                        minutes.
+                        Your friends have good taste. Save restaurants together, vote want-to-go, and pick the next
+                        table in minutes.
                     </p>
                 </div>
             </div>

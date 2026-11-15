@@ -28,7 +28,7 @@ export function EmptyRestaurantsState() {
             </h3>
 
             <p className="mb-6 max-w-sm text-muted-foreground">
-                <span>Save your first spot to start your short list.</span>
+                <span>Save your first restaurant to start your short list.</span>
             </p>
 
             {auth.isAuthenticated ? (

@@ -22,7 +22,7 @@ export function LandingCloser() {
                         <h2 className="font-display text-lg font-semibold text-balance text-foreground">
                             Find your next favourite, together.
                         </h2>
-                        <p className="mt-1 text-sm text-muted-foreground">Save spots with your friends.</p>
+                        <p className="mt-1 text-sm text-muted-foreground">Save restaurants with your friends.</p>
                     </div>
                 </div>
                 <ButtonLink to="/signup" size="lg" className="shrink-0">
