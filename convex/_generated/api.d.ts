@@ -32,6 +32,7 @@ import type * as model_plans_plans from "../model/plans/plans.js";
 import type * as model_social_friendships from "../model/social/friendships.js";
 import type * as places from "../places.js";
 import type * as plans from "../plans.js";
+import type * as rateLimits from "../rateLimits.js";
 import type * as seed from "../seed.js";
 import type * as social from "../social.js";
 import type * as storage from "../storage.js";
@@ -68,6 +69,7 @@ declare const fullApi: ApiFromModules<{
   "model/social/friendships": typeof model_social_friendships;
   places: typeof places;
   plans: typeof plans;
+  rateLimits: typeof rateLimits;
   seed: typeof seed;
   social: typeof social;
   storage: typeof storage;
