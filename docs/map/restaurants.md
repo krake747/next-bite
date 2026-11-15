@@ -4,8 +4,8 @@ Product terms: Restaurant, Save, Cuisine, Location, Opening Hours. Defined in `G
 
 ## Routes (`src/routes/_app/`)
 
-- `home.tsx`: river of own restaurants plus friends restaurants, composed from `RestaurantCard` and
-  `ActivityPost`.
+- `home.tsx`: river of own restaurants plus friends restaurants, composed from
+  `RestaurantCardOverlay`, `RestaurantCardCompact`, and `ActivityPost`.
 - `add.tsx`: creation entry.
 - `restaurants.$restaurantId.tsx`: detail view with gallery, live opening hours, and interest
   buttons.
@@ -13,12 +13,15 @@ Product terms: Restaurant, Save, Cuisine, Location, Opening Hours. Defined in `G
 ## UI (`src/features/restaurants/`)
 
 - `restaurant-form.tsx`, `restaurant-form-fields.tsx`: create.
-- `restaurant-list.tsx`, `restaurant-card.tsx`: list and card.
+- `restaurant-card-overlay.tsx`, `restaurant-card-compact.tsx`: card variants.
 - `restaurant-header.tsx`, `restaurant-gallery.tsx`: detail header and photos.
 - `opening-hours.tsx`, `opening-hours-dialog.tsx`, `opening-hours-utils.ts`: schedule display.
 - `cuisine-suggestion.ts`: free text cuisine help.
 - `restaurant-interest-button.tsx`: Want and Been toggles.
-- `restaurant-card-map.tsx`, `use-restaurant-images.ts`: map preview and image handling.
+- `restaurant-card-map.tsx`, `map-bounds.ts`, `use-restaurant-images.ts`: map and image handling.
+- `place-enterprise-details.tsx`, `use-detail-enterprise.ts`, `place-details-utils.ts`: Google place
+  details on the detail view.
+- `place-photo-upload-dialog.tsx`: add place photos.
 - `empty-restaurants-state.tsx`: empty state.
 
 ## Core (`src/core/`)
@@ -30,8 +33,9 @@ Product terms: Restaurant, Save, Cuisine, Location, Opening Hours. Defined in `G
 ## Backend (`convex/`)
 
 - `places.ts`: `create` mutation; `mine`, `feed`, `get`, and `forGroup` queries; `setSave`,
-  `addToGroup`, and `removeFromGroup` mutations; `hours` action. Visibility for owner, friends, and
-  group members is `canViewPlace` in `convex/model/places/places.ts`.
+  `addToGroup`, and `removeFromGroup` mutations; `addPhotos` and `removePhoto` mutations; `location`
+  and `details` actions. Visibility for owner, friends, and group members is `canViewPlace` in
+  `convex/model/places/places.ts`.
 - `storage.ts`: `generateUploadUrl` plus claim cleanup for place photos and avatars.
 
 ## Data (`convex/model/places/schema.ts`)

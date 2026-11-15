@@ -18,8 +18,9 @@ up, your login). Membership in a group is part of `Group`, not a synonym for `Us
 vocabulary. _Avoid_: Food type, category, genre
 
 **Location**: A physical address resolved via Google Maps Places. Includes place name, street
-address, city, postal code, and geographic coordinates. The Google provider spells it place; product
-copy says location or restaurant. _Avoid_: Address, venue, place in product copy
+address, city, and postal code. Coordinates are fetched per view, not stored. The Google provider
+spells it place; product copy says location or restaurant. _Avoid_: Address, venue, place in product
+copy
 
 **Opening Hours**: A structured schedule by day of week indicating when a restaurant is open.
 Sourced from Google Maps Places API. Used to display hours and an Open now or Closed status on the
