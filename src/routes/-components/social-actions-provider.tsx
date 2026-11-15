@@ -5,13 +5,14 @@ import { type Restaurant } from "@core/restaurants"
 import { useSetSave } from "@core/saves"
 import { useAuth } from "@core/session"
 import { type RestaurantCardOverlay } from "@features/restaurants/restaurant-card-overlay"
-import { type Reactions } from "@features/social/reaction-bar"
+import { type WantState } from "@features/social/want-bar"
 
 export type SocialActions = {
     readonly toggleWantFor: (restaurant: Restaurant) => () => void
+    readonly toggleBeenFor: (restaurant: Restaurant) => () => void
     readonly goToDetail: (restaurant: Restaurant) => void
     readonly goToLogin: () => void
-    readonly reactionsFor: (restaurant: Restaurant) => Reactions
+    readonly wantFor: (restaurant: Restaurant) => WantState
     readonly cardFor: (restaurant: Restaurant) => Omit<React.ComponentProps<typeof RestaurantCardOverlay>, "restaurant">
 }
 
@@ -50,19 +51,32 @@ export function SocialActionsProvider({ children }: Readonly<{ children: React.R
         setSave.mutate({ placeId: restaurant._id, status: restaurant.mySave === "want" ? null : "want" })
     }
 
-    const reactionsFor: SocialActions["reactionsFor"] = (restaurant) => ({
+    const toggleBeenFor = (restaurant: Restaurant) => () => {
+        if (!isAuthenticated) {
+            goToLogin()
+            return
+        }
+        setSave.mutate({ placeId: restaurant._id, status: restaurant.mySave === "been" ? null : "been" })
+    }
+
+    const wantFor: SocialActions["wantFor"] = (restaurant) => ({
         wanted: restaurant.mySave === "want",
+        tried: restaurant.mySave === "been",
         wantCount: restaurant.wantCount,
         onToggleWant: toggleWantFor(restaurant),
+        onToggleBeen: toggleBeenFor(restaurant),
     })
 
     const cardFor: SocialActions["cardFor"] = (restaurant) => ({
         onToggleWant: toggleWantFor(restaurant),
+        onToggleBeen: toggleBeenFor(restaurant),
         detailsHref: `/restaurants/${restaurant._id}`,
     })
 
     return (
-        <SocialActionsContext.Provider value={{ toggleWantFor, goToDetail, goToLogin, reactionsFor, cardFor }}>
+        <SocialActionsContext.Provider
+            value={{ toggleWantFor, toggleBeenFor, goToDetail, goToLogin, wantFor, cardFor }}
+        >
             {children}
         </SocialActionsContext.Provider>
     )

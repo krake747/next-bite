@@ -1,10 +1,10 @@
 import { Badge } from "@ui/badge"
 import { cx } from "@ui/cva.config"
 
-import { formatBusinessStatus, formatOpenState, formatPriceLevel } from "./place-details-utils"
-import { type RestaurantSignals } from "./use-restaurant-signals"
+import { formatBusinessStatus, formatOpenState, formatPriceLevel } from "./google-details-utils"
+import { type GoogleSignals } from "./use-google-signals"
 
-export function RestaurantPriceBadge({ signals }: Readonly<{ signals: RestaurantSignals }>) {
+export function RestaurantPriceBadge({ signals }: Readonly<{ signals: GoogleSignals }>) {
     if (signals.status !== "ready") {
         return null
     }
@@ -15,7 +15,7 @@ export function RestaurantPriceBadge({ signals }: Readonly<{ signals: Restaurant
     return <Badge tone="neutral">{price}</Badge>
 }
 
-export function RestaurantStatusLine({ signals }: Readonly<{ signals: RestaurantSignals }>) {
+export function RestaurantStatusLine({ signals }: Readonly<{ signals: GoogleSignals }>) {
     if (signals.status !== "ready") {
         return null
     }

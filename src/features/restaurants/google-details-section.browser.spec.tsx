@@ -1,12 +1,12 @@
 import { describe, expect, test } from "vitest"
 import { render } from "vitest-browser-react"
 
-import { PlaceEnterpriseDetails } from "./place-enterprise-details"
+import { GoogleDetailsSection } from "./google-details-section"
 
-describe("PlaceEnterpriseDetails", () => {
+describe("GoogleDetailsSection", () => {
     test("renders rating, count, price, and website on the detail screen", async () => {
         const screen = await render(
-            <PlaceEnterpriseDetails
+            <GoogleDetailsSection
                 details={{
                     rating: 4.5,
                     ratingCount: 123,
@@ -24,7 +24,7 @@ describe("PlaceEnterpriseDetails", () => {
     })
 
     test("renders nothing new while loading", async () => {
-        const screen = await render(<PlaceEnterpriseDetails details={undefined} />)
+        const screen = await render(<GoogleDetailsSection details={undefined} />)
         await expect.element(screen.getByText("4.5")).not.toBeInTheDocument()
     })
 })

@@ -8,7 +8,7 @@ import { orderFeedByRecency } from "@core/saves"
 import { useAuth, useSessionStatus } from "@core/session"
 import { EmptyRestaurantsState } from "@features/restaurants/empty-restaurants-state"
 import { RestaurantCardOverlay } from "@features/restaurants/restaurant-card-overlay"
-import { ActivityPost } from "@features/social/activity-post"
+import { FriendUpdate } from "@features/social/friend-update"
 import { ButtonLink } from "@pattern/button-link"
 import { EmptyState } from "@pattern/empty-state"
 import { PageSection } from "@pattern/page-section"
@@ -104,7 +104,7 @@ function HomeActivity({ feed }: Readonly<{ feed: ReadonlyArray<Restaurant> }>) {
 
 function HomeActivityItem({ restaurant }: Readonly<{ restaurant: Restaurant }>) {
     const actions = useSocialActions()
-    return <ActivityPost restaurant={restaurant} reactions={actions.reactionsFor(restaurant)} />
+    return <FriendUpdate restaurant={restaurant} want={actions.wantFor(restaurant)} />
 }
 
 function HomeShortlist({ mine, feedCount }: Readonly<{ mine: ReadonlyArray<Restaurant>; feedCount: number }>) {
@@ -121,7 +121,7 @@ function HomeShortlist({ mine, feedCount }: Readonly<{ mine: ReadonlyArray<Resta
             <PageSection padded label="Saved restaurants" title="Saved restaurants">
                 <EmptyState
                     title="Nothing saved yet"
-                    body="Share your first spot to start your short list."
+                    body="Share your first restaurant to start your short list."
                     className="mt-4"
                 />
             </PageSection>
@@ -155,13 +155,13 @@ function HomeHeader({
             </h1>
             <p className="mt-2 max-w-xl text-muted-foreground">
                 {savedCount === 0 && friendCount === 0 ? (
-                    "Save your first spots and plan the first outing together."
+                    "Save your first restaurants and plan the first outing together."
                 ) : (
                     <>
                         <span className="font-semibold text-foreground tabular-nums">{savedCount}</span>{" "}
-                        {savedCount === 1 ? "place" : "places"} to try ·{" "}
+                        {savedCount === 1 ? "restaurant" : "restaurants"} to try ·{" "}
                         <span className="font-semibold text-foreground tabular-nums">{friendCount}</span>{" "}
-                        {friendCount === 1 ? "save" : "saves"} from friends
+                        {friendCount === 1 ? "friend update" : "friend updates"}
                     </>
                 )}
             </p>

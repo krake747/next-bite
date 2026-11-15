@@ -5,9 +5,9 @@ import { describe, expect, test, vi } from "vitest"
 import { toId, type Id } from "@api/data.model"
 import { type Restaurant } from "@core/restaurants"
 
-import { ActivityPost } from "./activity-post"
+import { FriendUpdate } from "./friend-update"
 
-const placeId = toId<"places">("p1")
+const restaurantId = toId<"places">("p1")
 const ownerId = toId<"profiles">("user-1")
 
 function isStorageId(value: string): value is Id<"_storage"> {
@@ -28,7 +28,7 @@ function restaurantWith(overrides?: {
     readonly wantCount?: number | undefined
 }): Restaurant {
     return {
-        _id: placeId,
+        _id: restaurantId,
         _creationTime: new Date("2026-03-04T12:00Z").getTime(),
         ownerId,
         ownerName: "Alex",
@@ -42,18 +42,18 @@ function restaurantWith(overrides?: {
     }
 }
 
-describe("ActivityPost", () => {
-    test("renders author, text, restaurant, and reactions from the restaurant", () => {
+describe("FriendUpdate", () => {
+    test("renders author, text, restaurant, and want from the restaurant", () => {
         const photoUrl = "https://example.com/s1.jpg"
         render(
-            <ActivityPost
+            <FriendUpdate
                 restaurant={restaurantWith({
                     note: "Great carbonara.",
                     cuisine: "Italian",
                     photos: [{ url: photoUrl, storageId: mustBeStorageId("s1") }],
                     wantCount: 3,
                 })}
-                reactions={{ wanted: true, wantCount: 3, onToggleWant: () => {} }}
+                want={{ wanted: true, tried: false, wantCount: 3, onToggleWant: () => {}, onToggleBeen: () => {} }}
             />,
         )
 
@@ -65,22 +65,41 @@ describe("ActivityPost", () => {
         expect(screen.getByRole("button", { name: "Want to try, 3" })).toBeInTheDocument()
     })
 
-    test("falls back to added text with no note, photos, or reactions", () => {
-        render(<ActivityPost restaurant={restaurantWith()} />)
+    test("falls back to added text with no note, photos, or want", () => {
+        render(<FriendUpdate restaurant={restaurantWith()} />)
 
         expect(screen.getByText("Added Trattoria Verde.")).toBeInTheDocument()
         expect(screen.queryByRole("img")).not.toBeInTheDocument()
-        expect(screen.queryByRole("group", { name: "Reactions" })).not.toBeInTheDocument()
+        expect(screen.queryByRole("group", { name: "Want" })).not.toBeInTheDocument()
     })
 
-    test("toggles want through the reactions handler", async () => {
+    test("toggles want through the want handler", async () => {
         const onToggleWant = vi.fn<() => void>()
+        const onToggleBeen = vi.fn<() => void>()
         const user = userEvent.setup()
         render(
-            <ActivityPost restaurant={restaurantWith({})} reactions={{ wanted: false, wantCount: 0, onToggleWant }} />,
+            <FriendUpdate
+                restaurant={restaurantWith({})}
+                want={{ wanted: false, tried: false, wantCount: 0, onToggleWant, onToggleBeen }}
+            />,
         )
 
         await user.click(screen.getByRole("button", { name: "Want to try, 0" }))
         expect(onToggleWant).toHaveBeenCalledTimes(1)
+    })
+
+    test("toggles been through the been handler", async () => {
+        const onToggleWant = vi.fn<() => void>()
+        const onToggleBeen = vi.fn<() => void>()
+        const user = userEvent.setup()
+        render(
+            <FriendUpdate
+                restaurant={restaurantWith({})}
+                want={{ wanted: false, tried: false, wantCount: 0, onToggleWant, onToggleBeen }}
+            />,
+        )
+
+        await user.click(screen.getByRole("button", { name: "Been there" }))
+        expect(onToggleBeen).toHaveBeenCalledTimes(1)
     })
 })

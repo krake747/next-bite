@@ -3,17 +3,19 @@ import { useEffect, useState } from "react"
 import { type Id } from "@api/data.model"
 import { useGooglePlaceDetails, type Restaurant } from "@core/restaurants"
 
+import { type GoogleDetails, formatBusinessStatus } from "./google-details-utils"
+
 async function loadGranularDetails(
     fetchDetails: ReturnType<typeof useGooglePlaceDetails>,
     restaurantId: Id<"places">,
-): Promise<{ readonly enterprise: EnterpriseDetails; readonly businessStatus: string | undefined } | null> {
+): Promise<{ readonly details: GoogleDetails; readonly businessStatus: string | undefined } | null> {
     try {
         const [enterpriseResult, proResult] = await Promise.all([
             fetchDetails({ placeId: restaurantId, tier: "enterprise" }),
             fetchDetails({ placeId: restaurantId, tier: "pro" }),
         ])
         return {
-            enterprise: "openingHours" in enterpriseResult ? enterpriseResult : {},
+            details: "openingHours" in enterpriseResult ? enterpriseResult : {},
             businessStatus: "businessStatus" in proResult ? proResult.businessStatus : undefined,
         }
     } catch {
@@ -21,24 +23,22 @@ async function loadGranularDetails(
     }
 }
 
-import { type EnterpriseDetails, formatBusinessStatus } from "./place-details-utils"
-
-type DetailEnterprise = {
-    readonly enterpriseDetails: EnterpriseDetails | undefined
-    readonly openingHours: EnterpriseDetails["openingHours"]
-    readonly enterpriseFailed: boolean
+type GoogleDetailsState = {
+    readonly details: GoogleDetails | undefined
+    readonly openingHours: GoogleDetails["openingHours"]
+    readonly detailsFailed: boolean
 }
 
-export function useDetailEnterprise(restaurant: Restaurant): DetailEnterprise & {
+export function useGoogleDetails(restaurant: Restaurant): GoogleDetailsState & {
     readonly closedLabel: string | undefined
     readonly showHours: boolean
     readonly setShowHours: (show: boolean) => void
 } {
     const fetchDetails = useGooglePlaceDetails()
     const [showHours, setShowHours] = useState(false)
-    const [enterprise, setEnterprise] = useState<
+    const [google, setGoogle] = useState<
         | { readonly status: "loading" }
-        | { readonly status: "ready"; readonly details: EnterpriseDetails }
+        | { readonly status: "ready"; readonly details: GoogleDetails }
         | { readonly status: "failed" }
     >({ status: "loading" })
     const [proStatus, setProStatus] = useState<
@@ -56,17 +56,17 @@ export function useDetailEnterprise(restaurant: Restaurant): DetailEnterprise & 
                 cancelled = true
             }
         }
-        setEnterprise({ status: "loading" })
+        setGoogle({ status: "loading" })
         setProStatus({ status: "loading" })
         void loadGranularDetails(fetchDetails, restaurant._id).then((outcome) => {
             if (cancelled || outcome === null) {
                 if (!cancelled && outcome === null) {
-                    setEnterprise({ status: "failed" })
+                    setGoogle({ status: "failed" })
                     setProStatus({ status: "failed" })
                 }
                 return
             }
-            setEnterprise({ status: "ready", details: outcome.enterprise })
+            setGoogle({ status: "ready", details: outcome.details })
             setProStatus({ status: "ready", businessStatus: outcome.businessStatus })
         })
         return () => {
@@ -75,11 +75,11 @@ export function useDetailEnterprise(restaurant: Restaurant): DetailEnterprise & 
         // fetchDetails is the stable mutateAsync function; refetch only when the restaurant changes.
     }, [restaurant._id, googlePlaceId, fetchDetails])
 
-    const enterpriseDetails = enterprise.status === "ready" ? enterprise.details : undefined
+    const details = google.status === "ready" ? google.details : undefined
     return {
-        enterpriseDetails,
-        openingHours: enterpriseDetails?.openingHours,
-        enterpriseFailed: enterprise.status === "failed",
+        details,
+        openingHours: details?.openingHours,
+        detailsFailed: google.status === "failed",
         closedLabel: proStatus.status === "ready" ? formatBusinessStatus(proStatus.businessStatus) : undefined,
         showHours,
         setShowHours,

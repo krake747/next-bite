@@ -3,11 +3,11 @@ import { useRef, useState } from "react"
 import { type Id } from "@api/data.model"
 import { type ImageRecord } from "@core/schemas"
 
-export type GalleryCleanup = (args: { storageId: Id<"_storage"> }) => Promise<unknown>
+export type RestaurantPhotoCleanup = (args: { storageId: Id<"_storage"> }) => Promise<unknown>
 
 async function cleanupStagedIds(
     storageIds: ReadonlyArray<Id<"_storage">>,
-    mutate: GalleryCleanup,
+    mutate: RestaurantPhotoCleanup,
     cleaned: Set<Id<"_storage">>,
 ): Promise<Id<"_storage">[]> {
     const failed: Id<"_storage">[] = []
@@ -26,14 +26,14 @@ async function cleanupStagedIds(
     return failed
 }
 
-export type GalleryDraft = {
+export type RestaurantPhotoDraft = {
     readonly images: ImageRecord[]
     readonly setImages: (images: ImageRecord[]) => void
     readonly discardChanges: () => Promise<void>
     readonly commitSubmit: () => Promise<void>
 }
 
-export function useRestaurantImages(options: Readonly<{ cleanup: GalleryCleanup }>): GalleryDraft {
+export function useRestaurantPhotos(options: Readonly<{ cleanup: RestaurantPhotoCleanup }>): RestaurantPhotoDraft {
     const { cleanup } = options
     const [images, setImagesState] = useState<ImageRecord[]>([])
     const removedRef = useRef(new Set<Id<"_storage">>())

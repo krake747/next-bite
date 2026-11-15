@@ -7,31 +7,34 @@ import { Card } from "@ui/card"
 import { cx } from "@ui/cva.config"
 import { focusRing } from "@ui/variants"
 
-import { formatPriceLevel } from "./place-details-utils"
+import { formatPriceLevel } from "./google-details-utils"
 import { RestaurantAddressLink } from "./restaurant-address-link"
 import { RestaurantInterestButton } from "./restaurant-interest-button"
 import { RestaurantStatusLine } from "./restaurant-signals"
-import { useRestaurantSignals } from "./use-restaurant-signals"
+import { useGoogleSignals } from "./use-google-signals"
 import { useVisible } from "./use-visible"
 
 export function RestaurantCardCompact({
     restaurant,
     onToggleWant,
+    onToggleBeen,
     detailsHref,
     ...cardProps
 }: Readonly<
     {
         restaurant: Restaurant
         onToggleWant?: (() => void) | undefined
+        onToggleBeen?: (() => void) | undefined
         detailsHref?: string | undefined
     } & React.ComponentProps<typeof Card>
 >) {
     const hasLocation = restaurant.address.google?.placeId !== undefined && restaurant.address.google.placeId !== ""
     const handleToggleWant = onToggleWant ?? (() => {})
-    // Signals bill Enterprise calls, so they load only once the card nears
+    const handleToggleBeen = onToggleBeen ?? (() => {})
+    // Signals bill Google details calls, so they load only once the card nears
     // the viewport instead of on mount for every card in the feed.
     const [sentinelRef, isVisible] = useVisible()
-    const signals = useRestaurantSignals(restaurant._id, restaurant.address.google?.placeId, isVisible)
+    const signals = useGoogleSignals(restaurant._id, restaurant.address.google?.placeId, isVisible)
     const cover = restaurant.photos[0]?.url
     const cuisine = restaurant.cuisine !== undefined && restaurant.cuisine !== "" ? restaurant.cuisine : undefined
     const price = signals.status === "ready" ? formatPriceLevel(signals.priceLevel) : undefined
@@ -98,8 +101,10 @@ export function RestaurantCardCompact({
                 <div className="mt-3 flex items-center gap-2">
                     <RestaurantInterestButton
                         wanted={restaurant.mySave === "want"}
+                        tried={restaurant.mySave === "been"}
                         wantCount={restaurant.wantCount}
                         onToggleWant={handleToggleWant}
+                        onToggleBeen={handleToggleBeen}
                     />
                     {restaurant.link !== undefined && restaurant.link !== "" && (
                         <a

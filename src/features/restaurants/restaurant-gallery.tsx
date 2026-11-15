@@ -130,7 +130,7 @@ export function RestaurantGallery({
     const selection = useCarouselSelection()
     const [showUpload, setShowUpload] = useState(false)
     const photos = restaurant.photos
-    const tagline = restaurant.cuisine ?? "Saved place"
+    const tagline = restaurant.cuisine ?? "Restaurant"
     const hasImages = photos.length > 0
     const browsable = photos.length > 1
     const canAdd = viewerId !== undefined && photos.length < MAX_IMAGES

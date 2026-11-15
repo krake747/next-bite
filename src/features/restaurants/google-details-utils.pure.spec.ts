@@ -6,10 +6,10 @@ import {
     formatPriceLevel,
     formatRating,
     formatRatingCount,
-    hasEnterpriseContent,
-} from "./place-details-utils"
+    hasGoogleContent,
+} from "./google-details-utils"
 
-describe("place details formatting", () => {
+describe("google details formatting", () => {
     test("maps price levels to symbols", () => {
         expect(formatPriceLevel("PRICE_LEVEL_INEXPENSIVE")).toBe("$")
         expect(formatPriceLevel("PRICE_LEVEL_MODERATE")).toBe("$$")
@@ -43,11 +43,11 @@ describe("place details formatting", () => {
         expect(formatOpenState("unknown")).toBeUndefined()
     })
 
-    test("hasEnterpriseContent is false while loading or when empty", () => {
-        expect(hasEnterpriseContent(undefined)).toBe(false)
-        expect(hasEnterpriseContent({})).toBe(false)
-        expect(hasEnterpriseContent({ websiteUri: "" })).toBe(false)
-        expect(hasEnterpriseContent({ rating: 4.5 })).toBe(true)
-        expect(hasEnterpriseContent({ websiteUri: "https://example.com" })).toBe(true)
+    test("hasGoogleContent is false while loading or when empty", () => {
+        expect(hasGoogleContent(undefined)).toBe(false)
+        expect(hasGoogleContent({})).toBe(false)
+        expect(hasGoogleContent({ websiteUri: "" })).toBe(false)
+        expect(hasGoogleContent({ rating: 4.5 })).toBe(true)
+        expect(hasGoogleContent({ websiteUri: "https://example.com" })).toBe(true)
     })
 })

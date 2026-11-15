@@ -1,4 +1,4 @@
-export type EnterpriseDetails = {
+export type GoogleDetails = {
     readonly openingHours?: {
         readonly openState: "open" | "closed" | "unknown"
         readonly periods: ReadonlyArray<{
@@ -65,7 +65,7 @@ export function formatOpenState(openState: "open" | "closed" | "unknown"): strin
     return OPEN_STATE_LABELS[openState]
 }
 
-export function hasEnterpriseContent(details: EnterpriseDetails | undefined): boolean {
+export function hasGoogleContent(details: GoogleDetails | undefined): boolean {
     if (details === undefined) {
         return false
     }
