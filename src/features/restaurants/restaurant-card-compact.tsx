@@ -7,11 +7,11 @@ import { Card } from "@ui/card"
 import { cx } from "@ui/cva.config"
 import { focusRing } from "@ui/variants"
 
-import { formatPriceLevel } from "./place-details-utils"
+import { formatPriceLevel } from "./google-details-utils"
 import { RestaurantAddressLink } from "./restaurant-address-link"
 import { RestaurantInterestButton } from "./restaurant-interest-button"
 import { RestaurantStatusLine } from "./restaurant-signals"
-import { useRestaurantSignals } from "./use-restaurant-signals"
+import { useGoogleSignals } from "./use-google-signals"
 import { useVisible } from "./use-visible"
 
 export function RestaurantCardCompact({
@@ -28,10 +28,10 @@ export function RestaurantCardCompact({
 >) {
     const hasLocation = restaurant.address.google?.placeId !== undefined && restaurant.address.google.placeId !== ""
     const handleToggleWant = onToggleWant ?? (() => {})
-    // Signals bill Enterprise calls, so they load only once the card nears
+    // Signals bill Google details calls, so they load only once the card nears
     // the viewport instead of on mount for every card in the feed.
     const [sentinelRef, isVisible] = useVisible()
-    const signals = useRestaurantSignals(restaurant._id, restaurant.address.google?.placeId, isVisible)
+    const signals = useGoogleSignals(restaurant._id, restaurant.address.google?.placeId, isVisible)
     const cover = restaurant.photos[0]?.url
     const cuisine = restaurant.cuisine !== undefined && restaurant.cuisine !== "" ? restaurant.cuisine : undefined
     const price = signals.status === "ready" ? formatPriceLevel(signals.priceLevel) : undefined

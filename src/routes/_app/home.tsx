@@ -8,7 +8,7 @@ import { orderFeedByRecency } from "@core/saves"
 import { useAuth, useSessionStatus } from "@core/session"
 import { EmptyRestaurantsState } from "@features/restaurants/empty-restaurants-state"
 import { RestaurantCardOverlay } from "@features/restaurants/restaurant-card-overlay"
-import { ActivityPost } from "@features/social/activity-post"
+import { FriendUpdate } from "@features/social/friend-update"
 import { ButtonLink } from "@pattern/button-link"
 import { EmptyState } from "@pattern/empty-state"
 import { PageSection } from "@pattern/page-section"
@@ -104,7 +104,7 @@ function HomeActivity({ feed }: Readonly<{ feed: ReadonlyArray<Restaurant> }>) {
 
 function HomeActivityItem({ restaurant }: Readonly<{ restaurant: Restaurant }>) {
     const actions = useSocialActions()
-    return <ActivityPost restaurant={restaurant} reactions={actions.reactionsFor(restaurant)} />
+    return <FriendUpdate restaurant={restaurant} want={actions.wantFor(restaurant)} />
 }
 
 function HomeShortlist({ mine, feedCount }: Readonly<{ mine: ReadonlyArray<Restaurant>; feedCount: number }>) {

@@ -11,7 +11,7 @@ import { Button } from "@ui/button"
 
 import { suggestCuisine } from "./cuisine-suggestion"
 import { LinkField, LocationSection, NameCuisineFields, NotesSection } from "./restaurant-form-fields"
-import { useRestaurantImages, type GalleryDraft } from "./use-restaurant-images"
+import { useRestaurantPhotos, type RestaurantPhotoDraft } from "./use-restaurant-photos"
 
 export type AddRestaurantFormProps = Readonly<{
     initial?: Readonly<{
@@ -59,7 +59,7 @@ export function useFormDiscard(): {
 
 function useSubmitDiscard(args: {
     onDiscardReady: (discard: () => Promise<void>) => void
-    gallery: Pick<GalleryDraft, "discardChanges">
+    gallery: Pick<RestaurantPhotoDraft, "discardChanges">
     resetForm: () => void
     phaseRef: { readonly current: SubmitPhase }
 }): void {
@@ -98,7 +98,7 @@ type RestaurantFormOutput = Readonly<RestaurantOutput>
 
 function toRestaurantCreateArgs(
     output: RestaurantFormOutput,
-    gallery: Pick<GalleryDraft, "images">,
+    gallery: Pick<RestaurantPhotoDraft, "images">,
     clientMutationId: string,
 ): RestaurantCreateArgs {
     const { location, placeId, notes, link, cuisine, ...rest } = output
@@ -120,7 +120,7 @@ function toRestaurantCreateArgs(
 }
 
 function useSubmitDraft(args: {
-    gallery: GalleryDraft
+    gallery: RestaurantPhotoDraft
     resetForm: () => void
     onDiscardReady: (discard: () => Promise<void>) => void
     onSuccess: (restaurantId: Id<"places">) => void
@@ -208,7 +208,7 @@ export function RestaurantForm(props: AddRestaurantFormProps) {
     const addRestaurant = useAddRestaurant()
     const uploadImage = useUploadImage()
     const deleteUpload = useDeleteUpload()
-    const gallery = useRestaurantImages({
+    const gallery = useRestaurantPhotos({
         cleanup: async (args) => {
             await deleteUpload.mutateAsync(args)
         },

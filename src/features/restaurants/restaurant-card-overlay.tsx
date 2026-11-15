@@ -14,7 +14,7 @@ import { focusRing } from "@ui/variants"
 import { RestaurantAddressLink } from "./restaurant-address-link"
 import { RestaurantInterestButton } from "./restaurant-interest-button"
 import { RestaurantPriceBadge, RestaurantStatusLine } from "./restaurant-signals"
-import { useRestaurantSignals } from "./use-restaurant-signals"
+import { useGoogleSignals } from "./use-google-signals"
 import { useVisible } from "./use-visible"
 
 export function RestaurantCardOverlay({
@@ -33,12 +33,12 @@ export function RestaurantCardOverlay({
     const hasLocation = googlePlaceId !== undefined && googlePlaceId !== ""
     const handleToggleWant = onToggleWant ?? (() => {})
     const lightbox = useLightbox(restaurant.photos)
-    // Signals bill Enterprise calls, so they load only once the card nears
+    // Signals bill Google details calls, so they load only once the card nears
     // the viewport instead of on mount for every card in the feed.
     const [sentinelRef, isVisible] = useVisible()
-    const signals = useRestaurantSignals(restaurant._id, googlePlaceId, isVisible)
+    const signals = useGoogleSignals(restaurant._id, googlePlaceId, isVisible)
     const cover = restaurant.photos[0]?.url
-    const tagline = restaurant.cuisine ?? "Saved place"
+    const tagline = restaurant.cuisine ?? "Restaurant"
 
     function handleOpenGallery(): void {
         lightbox.openAt(0)

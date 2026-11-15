@@ -51,7 +51,7 @@ const verde: Restaurant = {
     wantCount: 0,
 }
 
-const enterpriseDetails = {
+const googleDetails = {
     openingHours: {
         openState: "open",
         periods: [],
@@ -78,12 +78,12 @@ function detailCalls(actionCalls: ReadonlyArray<MutationCall>): ReadonlyArray<Mu
     return actionCalls.filter((call) => call.fn === "places:details")
 }
 
-describe("restaurant detail enterprise wiring", () => {
+describe("restaurant detail google wiring", () => {
     test("granular pro plus enterprise calls cover the fields and the hours dialog", async () => {
         const actionCalls: MutationCall[] = []
         const seeds = new Map<string, unknown>([
             [seedKey("places:get", { id: restaurantId }), verde],
-            [seedKey("places:details", { placeId: restaurantId, tier: "enterprise" }), enterpriseDetails],
+            [seedKey("places:details", { placeId: restaurantId, tier: "enterprise" }), googleDetails],
             [seedKey("places:details", { placeId: restaurantId, tier: "pro" }), {}],
             [seedKey("social:friends", undefined), []],
             [seedKey("social:requests", undefined), { incoming: [], outgoing: [] }],
@@ -116,11 +116,11 @@ describe("restaurant detail enterprise wiring", () => {
         })
     })
 
-    test("flags a permanently closed place above the hero", async () => {
+    test("flags a permanently closed restaurant above the hero", async () => {
         const actionCalls: MutationCall[] = []
         const seeds = new Map<string, unknown>([
             [seedKey("places:get", { id: restaurantId }), verde],
-            [seedKey("places:details", { placeId: restaurantId, tier: "enterprise" }), enterpriseDetails],
+            [seedKey("places:details", { placeId: restaurantId, tier: "enterprise" }), googleDetails],
             [
                 seedKey("places:details", { placeId: restaurantId, tier: "pro" }),
                 { businessStatus: "CLOSED_PERMANENTLY" },
@@ -157,7 +157,7 @@ describe("restaurant detail enterprise wiring", () => {
         const withPhotos: Restaurant = { ...verde, photos: [photo("s1"), photo("s2")] }
         const seeds = new Map<string, unknown>([
             [seedKey("places:get", { id: restaurantId }), withPhotos],
-            [seedKey("places:details", { placeId: restaurantId, tier: "enterprise" }), enterpriseDetails],
+            [seedKey("places:details", { placeId: restaurantId, tier: "enterprise" }), googleDetails],
             [seedKey("places:details", { placeId: restaurantId, tier: "pro" }), {}],
             [seedKey("social:friends", undefined), []],
             [seedKey("social:requests", undefined), { incoming: [], outgoing: [] }],

@@ -3,7 +3,7 @@ import { BookmarkIcon } from "@phosphor-icons/react"
 import { cx } from "@ui/cva.config"
 import { focusRing } from "@ui/variants"
 
-type ReactionButtonProps = Readonly<{
+type WantButtonProps = Readonly<{
     pressed: boolean
     count: number | string
     label: string
@@ -11,7 +11,7 @@ type ReactionButtonProps = Readonly<{
     children: React.ReactNode
 }>
 
-function ReactionButton({ pressed, count, label, onToggle, children }: ReactionButtonProps) {
+function WantButton({ pressed, count, label, onToggle, children }: WantButtonProps) {
     return (
         <button
             type="button"
@@ -30,19 +30,19 @@ function ReactionButton({ pressed, count, label, onToggle, children }: ReactionB
     )
 }
 
-export type Reactions = {
+export type WantState = {
     readonly wanted: boolean
     readonly wantCount: number | string
     readonly onToggleWant: () => void
 }
 
-export function ReactionBar({ reactions }: Readonly<{ reactions: Reactions }>) {
-    const { wanted, wantCount, onToggleWant } = reactions
+export function WantBar({ want }: Readonly<{ want: WantState }>) {
+    const { wanted, wantCount, onToggleWant } = want
     return (
-        <div className="flex items-center gap-1" role="group" aria-label="Reactions">
-            <ReactionButton pressed={wanted} count={wantCount} label="Want to try" onToggle={onToggleWant}>
+        <div className="flex items-center gap-1" role="group" aria-label="Want">
+            <WantButton pressed={wanted} count={wantCount} label="Want to try" onToggle={onToggleWant}>
                 <BookmarkIcon className="size-4" weight={wanted ? "fill" : "regular"} aria-hidden="true" />
-            </ReactionButton>
+            </WantButton>
         </div>
     )
 }

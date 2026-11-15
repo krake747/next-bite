@@ -6,12 +6,12 @@ import {
     formatPriceLevel,
     formatRating,
     formatRatingCount,
-    hasEnterpriseContent,
-    type EnterpriseDetails,
-} from "./place-details-utils"
+    hasGoogleContent,
+    type GoogleDetails,
+} from "./google-details-utils"
 
-export function PlaceEnterpriseDetails({ details }: Readonly<{ details: EnterpriseDetails | undefined }>) {
-    if (!hasEnterpriseContent(details)) {
+export function GoogleDetailsSection({ details }: Readonly<{ details: GoogleDetails | undefined }>) {
+    if (!hasGoogleContent(details)) {
         return null
     }
     const rating = formatRating(details?.rating)
@@ -20,7 +20,7 @@ export function PlaceEnterpriseDetails({ details }: Readonly<{ details: Enterpri
     const website = details?.websiteUri !== undefined && details.websiteUri !== "" ? details.websiteUri : undefined
 
     return (
-        <div data-slot="place-enterprise-details" className="flex flex-col gap-2.5 rounded-xl bg-surface-muted/60 p-3">
+        <div data-slot="google-details-section" className="flex flex-col gap-2.5 rounded-xl bg-surface-muted/60 p-3">
             <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-muted-foreground">
                 {(rating !== undefined || count !== undefined) && (
                     <span className="flex items-center gap-1.5">

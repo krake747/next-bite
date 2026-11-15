@@ -8,13 +8,13 @@ import { useViewer } from "@core/identity"
 import { restaurantDetailWarmups, restaurantOptions, type Restaurant } from "@core/restaurants"
 import { useToggleWant } from "@core/saves"
 import { useAuth } from "@core/session"
+import { GoogleDetailsSection } from "@features/restaurants/google-details-section"
+import { type GoogleDetails } from "@features/restaurants/google-details-utils"
 import { OpeningHoursDialog } from "@features/restaurants/opening-hours-dialog"
-import { type EnterpriseDetails } from "@features/restaurants/place-details-utils"
-import { PlaceEnterpriseDetails } from "@features/restaurants/place-enterprise-details"
 import { RestaurantGallery } from "@features/restaurants/restaurant-gallery"
 import { RestaurantHeader } from "@features/restaurants/restaurant-header"
 import { RestaurantInterestButton } from "@features/restaurants/restaurant-interest-button"
-import { useDetailEnterprise } from "@features/restaurants/use-detail-enterprise"
+import { useGoogleDetails } from "@features/restaurants/use-google-details"
 import { useVisible } from "@features/restaurants/use-visible"
 import { LoadingPlaceholder } from "@pattern/loading"
 import { QueryErrorState } from "@pattern/query-error"
@@ -62,9 +62,9 @@ function RestaurantDetailError({ reset }: Readonly<{ reset: () => void }>) {
 
 type DetailContextValue = {
     readonly restaurant: Restaurant
-    readonly enterpriseDetails: EnterpriseDetails | undefined
-    readonly enterpriseFailed: boolean
-    readonly openingHours: EnterpriseDetails["openingHours"]
+    readonly details: GoogleDetails | undefined
+    readonly detailsFailed: boolean
+    readonly openingHours: GoogleDetails["openingHours"]
     readonly closedLabel: string | undefined
     readonly showHours: boolean
     readonly onToggleWant: () => void
@@ -83,7 +83,7 @@ function useDetail(): DetailContextValue {
 }
 
 function DetailInfoPanel() {
-    const { restaurant, enterpriseDetails, enterpriseFailed, onToggleWant, onShowHours } = useDetail()
+    const { restaurant, details, detailsFailed, onToggleWant, onShowHours } = useDetail()
     const googlePlaceId = restaurant.address.google?.placeId
     return (
         <div className="min-w-0 lg:col-span-2">
@@ -108,7 +108,7 @@ function DetailInfoPanel() {
                 )}
             </div>
             <div className="space-y-3 p-5 md:p-4">
-                <PlaceEnterpriseDetails details={enterpriseDetails} />
+                <GoogleDetailsSection details={details} />
                 {restaurant.note !== undefined && restaurant.note !== "" && (
                     <div>
                         <h2 className="font-display text-lg font-semibold text-balance text-foreground">
@@ -118,7 +118,7 @@ function DetailInfoPanel() {
                     </div>
                 )}
                 <SocialMetadata ownerName={restaurant.ownerName} wantCount={restaurant.wantCount} />
-                {enterpriseFailed && (
+                {detailsFailed && (
                     <p role="alert" className="text-sm text-destructive">
                         Could not load opening hours.
                     </p>
@@ -158,13 +158,13 @@ function DetailGalleryPane() {
 }
 
 function DetailHoursDialog() {
-    const { restaurant, openingHours, enterpriseFailed, showHours, onOpenChange } = useDetail()
+    const { restaurant, openingHours, detailsFailed, showHours, onOpenChange } = useDetail()
     return (
         <OpeningHoursDialog
             show={showHours}
             onOpenChange={onOpenChange}
             openingHours={openingHours}
-            failed={enterpriseFailed}
+            failed={detailsFailed}
             restaurantName={restaurant.name}
         />
     )
@@ -174,8 +174,7 @@ function DetailProvider({ restaurant, children }: Readonly<{ restaurant: Restaur
     const navigate = useNavigate()
     const auth = useAuth()
     const toggleWant = useToggleWant(restaurant._id, restaurant.mySave)
-    const { enterpriseDetails, openingHours, enterpriseFailed, closedLabel, showHours, setShowHours } =
-        useDetailEnterprise(restaurant)
+    const { details, openingHours, detailsFailed, closedLabel, showHours, setShowHours } = useGoogleDetails(restaurant)
 
     const goToLogin = (): void => {
         void navigate({ to: "/login" })
@@ -201,8 +200,8 @@ function DetailProvider({ restaurant, children }: Readonly<{ restaurant: Restaur
         <DetailContext
             value={{
                 restaurant,
-                enterpriseDetails,
-                enterpriseFailed,
+                details,
+                detailsFailed,
                 openingHours,
                 closedLabel,
                 showHours,

@@ -5,20 +5,20 @@ import { describe, expect, test, vi } from "vitest"
 import { type Id } from "@api/data.model"
 import { type ImageRecord } from "@core/schemas"
 
-import { useRestaurantImages, type GalleryCleanup, type GalleryDraft } from "./use-restaurant-images"
+import { useRestaurantPhotos, type RestaurantPhotoCleanup, type RestaurantPhotoDraft } from "./use-restaurant-photos"
 
-let galleryRef: GalleryDraft | null = null
-let cleanupMock = vi.fn<GalleryCleanup>(async () => {})
+let galleryRef: RestaurantPhotoDraft | null = null
+let cleanupMock = vi.fn<RestaurantPhotoCleanup>(async () => {})
 
-function Probe({ cleanup }: Readonly<{ cleanup: GalleryCleanup }>) {
-    const gallery = useRestaurantImages({ cleanup })
+function Probe({ cleanup }: Readonly<{ cleanup: RestaurantPhotoCleanup }>) {
+    const gallery = useRestaurantPhotos({ cleanup })
     useEffect(() => {
         galleryRef = gallery
     })
     return null
 }
 
-function currentGallery(): GalleryDraft {
+function currentGallery(): RestaurantPhotoDraft {
     if (galleryRef === null) {
         throw new TypeError("Gallery not mounted")
     }
@@ -34,11 +34,11 @@ function stagedImage(id: string): ImageRecord {
 
 function renderGallery(): void {
     galleryRef = null
-    cleanupMock = vi.fn<GalleryCleanup>(async () => {})
+    cleanupMock = vi.fn<RestaurantPhotoCleanup>(async () => {})
     render(<Probe cleanup={cleanupMock} />)
 }
 
-describe("useRestaurantImages ownership", () => {
+describe("useRestaurantPhotos ownership", () => {
     test("commit transfers ownership and clears the draft", async () => {
         renderGallery()
         await act(async () => {

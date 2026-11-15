@@ -88,7 +88,7 @@ export function PlanSection({ groupId, isGroupOwner }: Readonly<{ groupId: Id<"g
     const plans = usePlansForGroup(groupId)
     const groupPlaces = useGroupPlaces(groupId)
     const createPlan = useCreatePlan()
-    const [placeId, setPlaceId] = useState("")
+    const [restaurantId, setRestaurantId] = useState("")
     const [dateInput, setDateInput] = useState("")
     const [error, setError] = useState<FormError>(clearError)
     const viewer = useViewer()
@@ -109,17 +109,17 @@ export function PlanSection({ groupId, isGroupOwner }: Readonly<{ groupId: Id<"g
     const handleCreate = async () => {
         setError(clearError)
         const parsed = dateInput === "" ? Number.NaN : Date.parse(`${dateInput}T12:00:00`)
-        if (placeId === "" || Number.isNaN(parsed)) {
-            setError({ kind: "error", message: "Pick a place and a date to propose a plan" })
+        if (restaurantId === "" || Number.isNaN(parsed)) {
+            setError({ kind: "error", message: "Pick a restaurant and a date to propose a plan" })
             return
         }
         try {
             await createPlan.mutateAsync({
                 groupId,
-                placeId: toId<"places">(placeId),
+                placeId: toId<"places">(restaurantId),
                 startsAt: parsed,
             })
-            setPlaceId("")
+            setRestaurantId("")
             setDateInput("")
         } catch (err) {
             setError(errorFrom(err, "Could not create the plan"))
@@ -139,15 +139,15 @@ export function PlanSection({ groupId, isGroupOwner }: Readonly<{ groupId: Id<"g
             ) : (
                 <div className="flex flex-col gap-2 pt-3 sm:flex-row sm:items-end">
                     <label className="flex flex-1 flex-col gap-1 text-sm text-foreground">
-                        Place
+                        Restaurant
                         <select
-                            value={placeId}
+                            value={restaurantId}
                             onChange={(event) => {
-                                setPlaceId(event.target.value)
+                                setRestaurantId(event.target.value)
                             }}
                             className="rounded-card border border-border bg-surface px-3 py-2 text-sm"
                         >
-                            <option value="">Choose a place</option>
+                            <option value="">Choose a restaurant</option>
                             {groupPlaces.map((card) => (
                                 <option key={card._id} value={card._id}>
                                     {card.name}

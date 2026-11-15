@@ -1,42 +1,39 @@
 import { type Restaurant } from "@core/restaurants"
-import { feedTextFor } from "@core/saves"
+import { friendUpdateTextFor } from "@core/saves"
 import { AvatarGroup } from "@pattern/avatar-group"
 import { photoUrls } from "@pattern/gallery"
 import { LazyImage } from "@pattern/lazy-image"
 import { SocialMetadata } from "@pattern/social-metadata"
 
-import { ReactionBar, type Reactions } from "./reaction-bar"
+import { WantBar, type WantState } from "./want-bar"
 
-type ActivityAuthor = {
+type FriendUpdateAuthor = {
     readonly name: string
     readonly src?: string | undefined
 }
 
-export function ActivityPost({
-    restaurant,
-    reactions,
-}: Readonly<{ restaurant: Restaurant; reactions?: Reactions | undefined }>) {
+export function FriendUpdate({ restaurant, want }: Readonly<{ restaurant: Restaurant; want?: WantState | undefined }>) {
     return (
         <article className="overflow-hidden rounded-card border border-border bg-surface shadow-card">
-            <ActivityAuthorHeader
+            <FriendUpdateAuthorHeader
                 author={{ name: restaurant.ownerName }}
                 time={new Date(restaurant._creationTime).toLocaleDateString()}
             />
             <div className="space-y-3 p-4">
-                <p className="text-body text-foreground">{feedTextFor(restaurant.name, restaurant.note)}</p>
-                <ActivityRestaurant
+                <p className="text-body text-foreground">{friendUpdateTextFor(restaurant.name, restaurant.note)}</p>
+                <FriendUpdateRestaurant
                     name={restaurant.name}
                     cuisine={restaurant.cuisine}
                     imageUrls={photoUrls(restaurant.photos)}
                 />
                 <SocialMetadata ownerName={restaurant.ownerName} wantCount={restaurant.wantCount} />
-                {reactions !== undefined && <ReactionBar reactions={reactions} />}
+                {want !== undefined && <WantBar want={want} />}
             </div>
         </article>
     )
 }
 
-function ActivityAuthorHeader({ author, time }: Readonly<{ author: ActivityAuthor; time: string }>) {
+function FriendUpdateAuthorHeader({ author, time }: Readonly<{ author: FriendUpdateAuthor; time: string }>) {
     return (
         <div className="flex items-center gap-3 p-4 pb-0">
             <AvatarGroup members={[{ name: author.name, src: author.src }]} max={1} />
@@ -48,7 +45,7 @@ function ActivityAuthorHeader({ author, time }: Readonly<{ author: ActivityAutho
     )
 }
 
-function ActivityRestaurant({
+function FriendUpdateRestaurant({
     name,
     cuisine,
     imageUrls,

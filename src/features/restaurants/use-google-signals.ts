@@ -3,7 +3,7 @@ import { useEffect, useState } from "react"
 import { type Id } from "@api/data.model"
 import { useGooglePlaceDetails } from "@core/restaurants"
 
-export type RestaurantSignals =
+export type GoogleSignals =
     | { readonly status: "idle" }
     | { readonly status: "loading" }
     | {
@@ -14,13 +14,13 @@ export type RestaurantSignals =
       }
     | { readonly status: "failed" }
 
-export function useRestaurantSignals(
+export function useGoogleSignals(
     restaurantId: Id<"places">,
     googlePlaceId: string | undefined,
     enabled = true,
-): RestaurantSignals {
+): GoogleSignals {
     const fetchDetails = useGooglePlaceDetails()
-    const [signals, setSignals] = useState<RestaurantSignals>({ status: "idle" })
+    const [signals, setSignals] = useState<GoogleSignals>({ status: "idle" })
 
     useEffect(() => {
         let cancelled = false

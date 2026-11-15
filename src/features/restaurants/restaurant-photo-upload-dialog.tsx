@@ -14,7 +14,7 @@ import { LazyImage } from "@pattern/lazy-image"
 import { Button } from "@ui/button"
 import { Dialog, DialogContent, DialogTitle } from "@ui/dialog"
 
-import { useRestaurantImages } from "./use-restaurant-images"
+import { useRestaurantPhotos } from "./use-restaurant-photos"
 
 function toPhotoInput(image: ImageRecord): RestaurantPhotoInput {
     return {
@@ -30,7 +30,7 @@ function usePhotoUploadSubmit({
     onOpenChange,
 }: Readonly<{
     restaurantId: Id<"places">
-    gallery: ReturnType<typeof useRestaurantImages>
+    gallery: ReturnType<typeof useRestaurantPhotos>
     onOpenChange: (open: boolean) => void
 }>) {
     const addPhotos = useAddRestaurantPhotos()
@@ -168,7 +168,7 @@ export function RestaurantPhotoUploadDialog({
     const remaining = MAX_IMAGES - existingPhotos.length
     const uploadImage = useUploadImage()
     const deleteUpload = useDeleteUpload()
-    const gallery = useRestaurantImages({
+    const gallery = useRestaurantPhotos({
         cleanup: async (args) => {
             await deleteUpload.mutateAsync(args)
         },
