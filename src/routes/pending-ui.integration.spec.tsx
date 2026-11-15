@@ -1,5 +1,5 @@
 import { RouterProvider, createMemoryHistory, createRouter } from "@tanstack/react-router"
-import { act, render, screen, waitFor } from "@testing-library/react"
+import { act, screen, waitFor } from "@testing-library/react"
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest"
 
 import { ConvexProvider } from "@api/convex.context"
@@ -10,6 +10,7 @@ import { pendingOptions } from "@routes/-components/route-pending"
 
 import { routeTree } from "../routeTree.gen"
 import { authSnapshotFor } from "../vitest.auth"
+import { renderDocument } from "../vitest.render"
 
 const alex = { id: "user-1", email: "alex@example.com", name: "Alex" }
 
@@ -82,7 +83,7 @@ async function renderAt(path: string) {
         ...pendingOptions,
     })
     await router.load()
-    render(
+    renderDocument(
         <ConvexProvider client={backend.client} auth="authenticated">
             <RouterProvider router={router} />
         </ConvexProvider>,

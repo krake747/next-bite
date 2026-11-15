@@ -138,17 +138,24 @@ describe("home friends feed", () => {
             },
         })
         await router.load()
-        renderDocument(
-            <ConvexProvider client={backend.client} auth="authenticated">
-                <RouterProvider router={router} />
-            </ConvexProvider>,
-        )
+        // React logs render errors caught by the boundary; this test intentionally
+        // breaks sync to prove the recovery path, so silence the expected noise.
+        const error = vi.spyOn(console, "error").mockImplementation(() => {})
+        try {
+            renderDocument(
+                <ConvexProvider client={backend.client} auth="authenticated">
+                    <RouterProvider router={router} />
+                </ConvexProvider>,
+            )
 
-        await waitFor(() => {
-            expect(screen.getByText("Could not load this page")).toBeInTheDocument()
-        })
-        expect(screen.getByRole("button", { name: "Try again" })).toBeInTheDocument()
-        expect(screen.queryByText("The table is set, but empty")).not.toBeInTheDocument()
-        expect(document.querySelector('[data-slot="app-shell"]')).toBeInTheDocument()
+            await waitFor(() => {
+                expect(screen.getByText("Could not load this page")).toBeInTheDocument()
+            })
+            expect(screen.getByRole("button", { name: "Try again" })).toBeInTheDocument()
+            expect(screen.queryByText("The table is set, but empty")).not.toBeInTheDocument()
+            expect(document.querySelector('[data-slot="app-shell"]')).toBeInTheDocument()
+        } finally {
+            error.mockRestore()
+        }
     })
 })
