@@ -4,10 +4,20 @@ import { describe, expect, test } from "vitest"
 import { server } from "../../../src/vitest.msw.setup"
 import { fetchPlaceLocation } from "./location"
 
-const PLACE_URL = "https://places.googleapis.com/v1/places/ChIJtest?fields=location,viewport"
+const PLACE_PATH = "https://places.googleapis.com/v1/places/ChIJtest"
+const LOCATION_FIELDS = "location,viewport"
 
-function serveLocation(body: unknown, status = 200): void {
-    server.use(http.get(PLACE_URL, () => new HttpResponse(JSON.stringify(body), { status })))
+function fieldsOf(request: Request): string | null {
+    return new URL(request.url).searchParams.get("fields")
+}
+
+function serveLocation(body: unknown, status = 200, onRequest?: (request: Request) => void): void {
+    server.use(
+        http.get(PLACE_PATH, ({ request }) => {
+            onRequest?.(request)
+            return new HttpResponse(JSON.stringify(body), { status })
+        }),
+    )
 }
 
 describe("fetchPlaceLocation", () => {
@@ -17,12 +27,16 @@ describe("fetchPlaceLocation", () => {
     })
 
     test("returns fresh coordinates from the Essentials location field", async () => {
-        serveLocation({ location: { latitude: 49.6, longitude: 6.13 } })
+        let fields: string | null = null
+        serveLocation({ location: { latitude: 49.6, longitude: 6.13 } }, 200, (request) => {
+            fields = fieldsOf(request)
+        })
 
         await expect(fetchPlaceLocation("ChIJtest", "test-key")).resolves.toEqual({
             lat: 49.6,
             lng: 6.13,
         })
+        expect(fields).toBe(LOCATION_FIELDS)
     })
 
     test("includes the viewport when the provider returns one", async () => {
