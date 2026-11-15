@@ -15,7 +15,7 @@ async function sleep(ms: number): Promise<void> {
     })
 }
 
-export type PlacePhoto = {
+export type RestaurantPhoto = {
     readonly url: string
     readonly width?: number
     readonly height?: number
@@ -25,47 +25,47 @@ export type PlacePhoto = {
 
 export type SaveStatus = "want" | "been"
 
-export type PlaceCard = Doc<"places"> & {
+export type Restaurant = Doc<"places"> & {
     readonly ownerName: string
-    readonly photos: ReadonlyArray<PlacePhoto>
+    readonly photos: ReadonlyArray<RestaurantPhoto>
     readonly mySave: SaveStatus | null
     readonly wantCount: number | string
 }
 
 export type SyncClient = Pick<ConvexReactClient, "watchQuery">
 
-export type PlacePhotoInput = {
+export type RestaurantPhotoInput = {
     readonly storageId: Id<"_storage">
     readonly width?: number
     readonly height?: number
 }
 
-export type PlaceGoogleInput = {
+export type GooglePlaceInput = {
     readonly placeId?: string
 }
 
-export type PlaceCreateArgs = {
+export type RestaurantCreateArgs = {
     readonly name: string
     readonly cuisine?: string
     readonly addressLabel: string
-    readonly google?: PlaceGoogleInput
+    readonly google?: GooglePlaceInput
     readonly note?: string
     readonly link?: string
-    readonly photos: PlacePhotoInput[]
+    readonly photos: RestaurantPhotoInput[]
     readonly clientMutationId?: string
 }
 
 export type RestaurantPersist = {
-    readonly addPlace: (args: PlaceCreateArgs) => Promise<Id<"places">>
+    readonly addRestaurant: (args: RestaurantCreateArgs) => Promise<Id<"places">>
 }
 
 export function persistCallerFor(client: ConvexReactClient): RestaurantPersist {
     return {
-        addPlace: async (args) => client.mutation(api.places.create, args),
+        addRestaurant: async (args) => client.mutation(api.places.create, args),
     }
 }
 
-function toPhotoInput(photo: PlacePhoto): PlacePhotoInput {
+function toPhotoInput(photo: RestaurantPhoto): RestaurantPhotoInput {
     const input: { storageId: Id<"_storage">; width?: number; height?: number } = {
         storageId: photo.storageId,
     }
@@ -79,9 +79,9 @@ function toPhotoInput(photo: PlacePhoto): PlacePhotoInput {
 }
 
 function tempPhoto(
-    photo: PlacePhotoInput,
+    photo: RestaurantPhotoInput,
     previewUrls: ReadonlyMap<string, string>,
-): PlacePhotoInput & { readonly url: string } {
+): RestaurantPhotoInput & { readonly url: string } {
     const out: { storageId: Id<"_storage">; url: string; width?: number; height?: number } = {
         storageId: photo.storageId,
         url: previewUrls.get(String(photo.storageId)) ?? "",
@@ -95,7 +95,7 @@ function tempPhoto(
     return out
 }
 
-export function toCreateArgs(row: PlaceCard): PlaceCreateArgs {
+export function toRestaurantCreateArgs(row: Restaurant): RestaurantCreateArgs {
     return {
         name: row.name,
         ...(row.cuisine !== undefined ? { cuisine: row.cuisine } : {}),
@@ -108,7 +108,7 @@ export function toCreateArgs(row: PlaceCard): PlaceCreateArgs {
     }
 }
 
-export type TempPlaceInput = PlaceCreateArgs &
+export type TempRestaurantInput = RestaurantCreateArgs &
     Readonly<{
         ownerId: Id<"profiles">
         ownerName: string
@@ -116,7 +116,7 @@ export type TempPlaceInput = PlaceCreateArgs &
         previewUrls: ReadonlyMap<string, string>
     }>
 
-export function buildTempPlace(input: TempPlaceInput): PlaceCard {
+export function buildTempRestaurant(input: TempRestaurantInput): Restaurant {
     const now = Date.now()
     const tempId = toId<"places">(`${TEMP_ID_PREFIX}${crypto.randomUUID()}`)
     return {
@@ -140,14 +140,14 @@ export function buildTempPlace(input: TempPlaceInput): PlaceCard {
 }
 
 export type SyncedRows = {
-    values(): Iterable<PlaceCard>
+    values(): Iterable<Restaurant>
 }
 
 // See ADR-0002: timeout is not failure; retry on the same key.
 export class SyncTimeoutError extends Error {
     readonly code = "SYNC_TIMEOUT" as const
 
-    constructor(message = "Timed out waiting for the synced place") {
+    constructor(message = "Timed out waiting for the synced restaurant") {
         super(message)
         this.name = "SyncTimeoutError"
     }
@@ -158,7 +158,7 @@ export class SyncTimeoutError extends Error {
 }
 
 // See ADR-0002: resolve synced row by key, skip temp row.
-export async function resolvePlaceIdByKey(
+export async function resolveRestaurantIdByKey(
     rows: SyncedRows,
     clientMutationId: string,
     timeoutMs = 15000,
@@ -177,18 +177,18 @@ export async function resolvePlaceIdByKey(
     }
 }
 
-function createPlaceCollections(syncClient: SyncClient, persist: RestaurantPersist) {
+function createRestaurantCollections(syncClient: SyncClient, persist: RestaurantPersist) {
     const shared = {
         client: syncClient,
-        getKey: (item: PlaceCard) => item._id,
-        onInsert: async ({ transaction }: { transaction: { mutations: { modified: PlaceCard }[] } }) => {
+        getKey: (item: Restaurant) => item._id,
+        onInsert: async ({ transaction }: { transaction: { mutations: { modified: Restaurant }[] } }) => {
             for (const mutation of transaction.mutations) {
-                await persist.addPlace(toCreateArgs(mutation.modified))
+                await persist.addRestaurant(toRestaurantCreateArgs(mutation.modified))
             }
         },
         onUpdate: async (): Promise<void> => {
             await Promise.resolve()
-            throw new Error("Places cannot be edited")
+            throw new Error("Restaurants cannot be edited")
         },
     }
     return {
@@ -199,7 +199,7 @@ function createPlaceCollections(syncClient: SyncClient, persist: RestaurantPersi
 
 const collectionCache = new WeakMap<
     object,
-    { sessionKey: string; collections: ReturnType<typeof createPlaceCollections> }
+    { sessionKey: string; collections: ReturnType<typeof createRestaurantCollections> }
 >()
 
 // See ADR-0002: collections scoped per session, no cross-session leaks.
@@ -207,12 +207,12 @@ export function getSessionCollections(
     syncClient: SyncClient,
     persist: RestaurantPersist,
     sessionKey: string,
-): ReturnType<typeof createPlaceCollections> {
+): ReturnType<typeof createRestaurantCollections> {
     const hit = collectionCache.get(syncClient)
     if (hit !== undefined && hit.sessionKey === sessionKey) {
         return hit.collections
     }
-    const created = createPlaceCollections(syncClient, persist)
+    const created = createRestaurantCollections(syncClient, persist)
     collectionCache.set(syncClient, { sessionKey, collections: created })
     return created
 }
@@ -284,6 +284,6 @@ export function claimSessionCache(
 }
 
 // See ADR-0002: temp ids never travel; collections resolve by key.
-export function assertRealPlaceId(id: Id<"places">): void {
+export function assertRealRestaurantId(id: Id<"places">): void {
     assertRealId(String(id))
 }

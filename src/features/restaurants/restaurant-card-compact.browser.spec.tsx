@@ -15,7 +15,7 @@ vi.mock("@core/restaurants", async (importOriginal) => {
     const original = await importOriginal<typeof import("@core/restaurants")>()
     return {
         ...original,
-        usePlaceDetails: () => detailsMutate,
+        useGooglePlaceDetails: () => detailsMutate,
     }
 })
 

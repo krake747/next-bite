@@ -5,7 +5,7 @@ import { page } from "vitest/browser"
 
 import { ConvexProvider } from "@api/convex.context"
 import { toId, type Id } from "@api/data.model"
-import { SyncTimeoutError, type PlaceCreateArgs } from "@api/db/restaurants"
+import { SyncTimeoutError, type RestaurantCreateArgs } from "@api/db/restaurants"
 import { createSeededClient, type MutationCall } from "@api/db/seeded.client"
 import { type ImageRecord } from "@core/schemas"
 
@@ -62,7 +62,7 @@ vi.mock("@core/restaurants", async (importOriginal) => {
     return {
         ...original,
         useUploadImage: () => uploadImpl,
-        useAddPlace: () => ({ mutateAsync: addMutate }),
+        useAddRestaurant: () => ({ mutateAsync: addMutate }),
     }
 })
 
@@ -90,7 +90,7 @@ vi.mock("@api/auth.provider", async (importOriginal) => {
 })
 
 const mutationCalls: MutationCall[] = []
-const addMutate = vi.fn<(args: PlaceCreateArgs) => Promise<Id<"places">>>()
+const addMutate = vi.fn<(args: RestaurantCreateArgs) => Promise<Id<"places">>>()
 let submitGate: Deferred<unknown> | null = null
 
 function AddHarness({ onSuccess, onCancel }: Readonly<{ onSuccess: (id: string) => void; onCancel: () => void }>) {

@@ -1,16 +1,16 @@
 import { useEffect, useState } from "react"
 
 import { type Id } from "@api/data.model"
-import { usePlaceDetails, type Restaurant } from "@core/restaurants"
+import { useGooglePlaceDetails, type Restaurant } from "@core/restaurants"
 
 async function loadGranularDetails(
-    fetchDetails: ReturnType<typeof usePlaceDetails>,
-    placeId: Id<"places">,
+    fetchDetails: ReturnType<typeof useGooglePlaceDetails>,
+    restaurantId: Id<"places">,
 ): Promise<{ readonly enterprise: EnterpriseDetails; readonly businessStatus: string | undefined } | null> {
     try {
         const [enterpriseResult, proResult] = await Promise.all([
-            fetchDetails({ placeId, tier: "enterprise" }),
-            fetchDetails({ placeId, tier: "pro" }),
+            fetchDetails({ placeId: restaurantId, tier: "enterprise" }),
+            fetchDetails({ placeId: restaurantId, tier: "pro" }),
         ])
         return {
             enterprise: "openingHours" in enterpriseResult ? enterpriseResult : {},
@@ -34,7 +34,7 @@ export function useDetailEnterprise(restaurant: Restaurant): DetailEnterprise & 
     readonly showHours: boolean
     readonly setShowHours: (show: boolean) => void
 } {
-    const fetchDetails = usePlaceDetails()
+    const fetchDetails = useGooglePlaceDetails()
     const [showHours, setShowHours] = useState(false)
     const [enterprise, setEnterprise] = useState<
         | { readonly status: "loading" }
@@ -72,7 +72,7 @@ export function useDetailEnterprise(restaurant: Restaurant): DetailEnterprise & 
         return () => {
             cancelled = true
         }
-        // fetchDetails is the stable mutateAsync function; refetch only when the place changes.
+        // fetchDetails is the stable mutateAsync function; refetch only when the restaurant changes.
     }, [restaurant._id, googlePlaceId, fetchDetails])
 
     const enterpriseDetails = enterprise.status === "ready" ? enterprise.details : undefined

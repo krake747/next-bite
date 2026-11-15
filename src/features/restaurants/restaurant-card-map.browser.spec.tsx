@@ -14,14 +14,14 @@ vi.mock("@core/restaurants", async (importOriginal) => {
     const original = await importOriginal<typeof import("@core/restaurants")>()
     return {
         ...original,
-        usePlaceLocation: () => mutateAsync,
+        useGooglePlaceLocation: () => mutateAsync,
     }
 })
 
-const placeId = toId<"places">("spec-place-1")
+const restaurantId = toId<"places">("spec-place-1")
 
 async function renderMap() {
-    return render(<RestaurantCardMap placeId={placeId} googlePlaceId="spec-google-id" name="Five Guys" />)
+    return render(<RestaurantCardMap restaurantId={restaurantId} googlePlaceId="spec-google-id" name="Five Guys" />)
 }
 
 describe("RestaurantCardMap", () => {

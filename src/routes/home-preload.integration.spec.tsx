@@ -4,7 +4,7 @@ import { beforeEach, describe, expect, test, vi } from "vitest"
 
 import { ConvexProvider, type ConvexAuthPhase } from "@api/convex.context"
 import { toId } from "@api/data.model"
-import { type PlaceCard } from "@api/db/restaurants"
+import { type Restaurant } from "@api/db/restaurants"
 import { createSeededClient, seedKey } from "@api/db/seeded.client"
 
 import { routeTree } from "../routeTree.gen"
@@ -43,7 +43,7 @@ vi.mock("@api/auth.provider", async (importOriginal) => {
 const OWNER_KEY = seedKey("places:mine", {})
 const FEED_KEY = seedKey("places:feed", {})
 
-function savedBy(user: TestUser, name: string, id: string): PlaceCard {
+function savedBy(user: TestUser, name: string, id: string): Restaurant {
     return {
         _id: toId<"places">(id),
         _creationTime: 1000,
@@ -58,7 +58,7 @@ function savedBy(user: TestUser, name: string, id: string): PlaceCard {
     }
 }
 
-async function renderAt(path: string, rows: ReadonlyArray<PlaceCard>) {
+async function renderAt(path: string, rows: ReadonlyArray<Restaurant>) {
     const seeds = new Map<string, unknown>([
         [seedKey("social:friends", undefined), []],
         [seedKey("social:requests", undefined), { incoming: [], outgoing: [] }],
