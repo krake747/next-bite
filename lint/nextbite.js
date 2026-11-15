@@ -280,10 +280,10 @@ const noUnstableEffectDeps = defineRule({
         const hooks = new Set()
         /** @type {Map<string, string>} */
         const bindings = new Map()
-        // usePlace* wrappers return the stable mutateAsync function itself
+        // useGooglePlace* wrappers return the stable mutateAsync function itself
         // (see src/core/restaurants.ts), so depending on them is safe.
         /** @type {Set<string>} */
-        const stableHooks = new Set(["usePlaceLocation", "usePlaceAtmosphere", "usePlaceDetails"])
+        const stableHooks = new Set(["useGooglePlaceLocation", "useGooglePlaceAtmosphere", "useGooglePlaceDetails"])
         return {
             ImportDeclaration(node) {
                 for (const binding of coreHookBindings(node)) {

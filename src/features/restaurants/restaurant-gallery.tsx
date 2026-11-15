@@ -13,7 +13,7 @@ import { type CarouselApi } from "@ui/carousel.context"
 import { cx } from "@ui/cva.config"
 import { IconButton } from "@ui/icon-button"
 
-import { PlacePhotoUploadDialog } from "./place-photo-upload-dialog"
+import { RestaurantPhotoUploadDialog } from "./restaurant-photo-upload-dialog"
 
 function useCarouselSelection(): {
     readonly setApi: (api: CarouselApi) => void
@@ -167,7 +167,7 @@ export function RestaurantGallery({
 
                 <GalleryTopOverlays tagline={tagline} canAdd={canAdd} onAdd={handleAdd} />
             </AspectRatio>
-            <PlacePhotoUploadDialog
+            <RestaurantPhotoUploadDialog
                 restaurant={restaurant}
                 viewerId={viewerId}
                 show={showUpload}

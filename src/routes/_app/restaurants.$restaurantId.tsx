@@ -5,7 +5,7 @@ import { createContext, lazy, Suspense, use } from "react"
 import { warmQueriesWithin } from "@api/convex.options"
 import { toId } from "@api/data.model"
 import { useViewer } from "@core/identity"
-import { placeDetailWarmups, placeOptions, type Restaurant } from "@core/restaurants"
+import { restaurantDetailWarmups, restaurantOptions, type Restaurant } from "@core/restaurants"
 import { useToggleWant } from "@core/saves"
 import { useAuth } from "@core/session"
 import { OpeningHoursDialog } from "@features/restaurants/opening-hours-dialog"
@@ -44,7 +44,7 @@ export const Route = createFileRoute("/_app/restaurants/$restaurantId")({
     errorComponent: RestaurantDetailError,
     loader: async ({ context, params }) => {
         const restaurantId = toId<"places">(params.restaurantId)
-        await warmQueriesWithin(context.queryClient, placeDetailWarmups(restaurantId), LOADER_WARM_BUDGET_MS)
+        await warmQueriesWithin(context.queryClient, restaurantDetailWarmups(restaurantId), LOADER_WARM_BUDGET_MS)
         return null
     },
 })
@@ -273,7 +273,7 @@ function DetailMapSection() {
                         fallback={<div className="aspect-video rounded-xl bg-surface-muted" aria-hidden="true" />}
                     >
                         <RestaurantCardMap
-                            placeId={restaurant._id}
+                            restaurantId={restaurant._id}
                             googlePlaceId={googlePlaceId}
                             name={restaurant.name}
                         />
@@ -307,7 +307,7 @@ function DetailBreadcrumb({ name }: Readonly<{ name: string }>) {
 function RestaurantDetailView() {
     const { restaurantId } = Route.useParams()
     const restaurantConvexId = toId<"places">(restaurantId)
-    const { data: restaurant } = useSuspenseQuery(placeOptions(restaurantConvexId))
+    const { data: restaurant } = useSuspenseQuery(restaurantOptions(restaurantConvexId))
 
     if (restaurant === null) {
         return <DetailNotFound />

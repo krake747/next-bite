@@ -5,7 +5,7 @@ import { describe, expect, test, vi } from "vitest"
 
 import { ConvexProvider } from "@api/convex.context"
 import { toId, type Id } from "@api/data.model"
-import { type PlaceCard } from "@api/db/restaurants"
+import { type Restaurant } from "@api/db/restaurants"
 import { createSeededClient, seedKey, type MutationCall } from "@api/db/seeded.client"
 
 import { routeTree } from "../../routeTree.gen"
@@ -38,7 +38,7 @@ vi.mock("@api/auth.provider", async (importOriginal) => {
 const alex = { id: "user-1", email: "alex@example.com", name: "Alex" }
 const restaurantId = toId<"places">("r1")
 
-const verde: PlaceCard = {
+const verde: Restaurant = {
     _id: restaurantId,
     _creationTime: 1000,
     ownerId: toId<"profiles">(alex.id),
@@ -154,7 +154,7 @@ describe("restaurant detail enterprise wiring", () => {
             storageId: mustBeStorageId(id),
             addedBy: toId<"profiles">(alex.id),
         })
-        const withPhotos: PlaceCard = { ...verde, photos: [photo("s1"), photo("s2")] }
+        const withPhotos: Restaurant = { ...verde, photos: [photo("s1"), photo("s2")] }
         const seeds = new Map<string, unknown>([
             [seedKey("places:get", { id: restaurantId }), withPhotos],
             [seedKey("places:details", { placeId: restaurantId, tier: "enterprise" }), enterpriseDetails],

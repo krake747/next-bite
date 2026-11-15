@@ -2,8 +2,8 @@ import { Form, reset, setInput, useField, useForm, type FormStore } from "@formi
 import { useRef, useState } from "react"
 
 import { type Id } from "@api/data.model"
-import { SyncTimeoutError, type PlaceCreateArgs } from "@api/db/restaurants"
-import { useAddPlace, useDeleteUpload, useUploadImage } from "@core/restaurants"
+import { SyncTimeoutError, type RestaurantCreateArgs } from "@api/db/restaurants"
+import { useAddRestaurant, useDeleteUpload, useUploadImage } from "@core/restaurants"
 import { RestaurantSchema, type ImageRecord, type RestaurantOutput } from "@core/schemas"
 import { ImageUpload } from "@pattern/image-upload"
 import { type PlaceSelection } from "@pattern/places-autocomplete"
@@ -20,7 +20,7 @@ export type AddRestaurantFormProps = Readonly<{
         location: string
         placeId?: string | undefined
     }>
-    onSuccess: (placeId: string) => void
+    onSuccess: (restaurantId: string) => void
     onCancel: () => void
     onDiscardReady: (discard: () => Promise<void>) => void
 }>
@@ -96,11 +96,11 @@ function SubmitPhaseBanner({ phase, onRetry }: Readonly<{ phase: SubmitPhase; on
 
 type RestaurantFormOutput = Readonly<RestaurantOutput>
 
-function toCreateArgs(
+function toRestaurantCreateArgs(
     output: RestaurantFormOutput,
     gallery: Pick<GalleryDraft, "images">,
     clientMutationId: string,
-): PlaceCreateArgs {
+): RestaurantCreateArgs {
     const { location, placeId, notes, link, cuisine, ...rest } = output
     const google = placeId !== undefined ? { placeId } : undefined
     return {
@@ -123,8 +123,8 @@ function useSubmitDraft(args: {
     gallery: GalleryDraft
     resetForm: () => void
     onDiscardReady: (discard: () => Promise<void>) => void
-    onSuccess: (placeId: Id<"places">) => void
-    add: (input: PlaceCreateArgs & { readonly previews: ReadonlyArray<ImageRecord> }) => Promise<Id<"places">>
+    onSuccess: (restaurantId: Id<"places">) => void
+    add: (input: RestaurantCreateArgs & { readonly previews: ReadonlyArray<ImageRecord> }) => Promise<Id<"places">>
 }): {
     submitPhase: SubmitPhase
     handleSubmit: (output: RestaurantFormOutput) => Promise<void>
@@ -152,15 +152,15 @@ function useSubmitDraft(args: {
         lastOutputRef.current = output
         setSubmitPhase({ kind: "saving" })
         try {
-            const placeId = await args.add({
-                ...toCreateArgs(output, args.gallery, clientMutationId),
+            const restaurantId = await args.add({
+                ...toRestaurantCreateArgs(output, args.gallery, clientMutationId),
                 previews: args.gallery.images,
             })
             await args.gallery.commitSubmit()
             args.resetForm()
             setSubmitPhase({ kind: "committed" })
             setClientMutationId(crypto.randomUUID())
-            args.onSuccess(placeId)
+            args.onSuccess(restaurantId)
         } catch (error) {
             setSubmitPhase(toFailedPhase(error))
             if (!SyncTimeoutError.is(error)) {
@@ -181,7 +181,7 @@ function useSubmitDraft(args: {
 
 type RestaurantFormStore = FormStore<typeof RestaurantSchema>
 
-function applyPlaceSelection(
+function applyGooglePlaceSelection(
     form: RestaurantFormStore,
     selection: PlaceSelection,
     nameInput: string | undefined,
@@ -205,7 +205,7 @@ function initialInputFor(props: AddRestaurantFormProps) {
 }
 
 export function RestaurantForm(props: AddRestaurantFormProps) {
-    const addPlace = useAddPlace()
+    const addRestaurant = useAddRestaurant()
     const uploadImage = useUploadImage()
     const deleteUpload = useDeleteUpload()
     const gallery = useRestaurantImages({
@@ -229,11 +229,11 @@ export function RestaurantForm(props: AddRestaurantFormProps) {
         },
         onDiscardReady: props.onDiscardReady,
         onSuccess: props.onSuccess,
-        add: addPlace.mutateAsync,
+        add: addRestaurant.mutateAsync,
     })
 
     const handleLocationChange = (selection: PlaceSelection) => {
-        applyPlaceSelection(form, selection, nameField.input, cuisineField.input)
+        applyGooglePlaceSelection(form, selection, nameField.input, cuisineField.input)
     }
     const handleImagesChange = (updated: ReadonlyArray<ImageRecord>): void => {
         gallery.setImages([...updated])

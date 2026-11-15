@@ -2,7 +2,7 @@ import { AdvancedMarker, Map } from "@vis.gl/react-google-maps"
 import { Suspense, useEffect, useRef, useState } from "react"
 
 import { type Id } from "@api/data.model"
-import { usePlaceLocation } from "@core/restaurants"
+import { useGooglePlaceLocation } from "@core/restaurants"
 
 import { boundsForViewport, type MapViewport } from "./map-bounds"
 
@@ -61,15 +61,15 @@ function RestaurantCardMapView({
 }
 
 export function RestaurantCardMap({
-    placeId,
+    restaurantId,
     googlePlaceId,
     name,
 }: Readonly<{
-    placeId: Id<"places">
+    restaurantId: Id<"places">
     googlePlaceId: string
     name: string | undefined
 }>) {
-    const fetchLocation = usePlaceLocation()
+    const fetchLocation = useGooglePlaceLocation()
     const [locationState, setLocationState] = useState<LocationState>({ kind: "idle" })
     const [retryNonce, setRetryNonce] = useState(0)
     const requestRef = useRef(0)
@@ -88,11 +88,11 @@ export function RestaurantCardMap({
         setLocationState({ kind: "loading" })
         timeoutRef.current = setTimeout(() => {
             if (requestRef.current === requestId) {
-                console.error("[RestaurantCardMap] location lookup timed out", { placeId })
+                console.error("[RestaurantCardMap] location lookup timed out", { restaurantId })
                 setLocationState({ kind: "missing" })
             }
         }, LOCATION_TIMEOUT_MS)
-        void fetchLocation({ placeId })
+        void fetchLocation({ placeId: restaurantId })
             .then((location) => {
                 if (requestRef.current !== requestId) {
                     return
@@ -109,7 +109,7 @@ export function RestaurantCardMap({
                 if (timeoutRef.current !== null) {
                     clearTimeout(timeoutRef.current)
                 }
-                console.error("[RestaurantCardMap] location lookup failed", { placeId, error })
+                console.error("[RestaurantCardMap] location lookup failed", { restaurantId, error })
                 setLocationState({ kind: "missing" })
             })
         return () => {
@@ -118,8 +118,8 @@ export function RestaurantCardMap({
                 clearTimeout(timeoutRef.current)
             }
         }
-        // Fetch once per place id; manual retry bumps retryNonce.
-    }, [fetchLocation, placeId, googlePlaceId, retryNonce])
+        // Fetch once per restaurant id; manual retry bumps retryNonce.
+    }, [fetchLocation, restaurantId, googlePlaceId, retryNonce])
 
     return (
         <div className="w-full">

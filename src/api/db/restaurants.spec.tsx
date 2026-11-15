@@ -10,13 +10,13 @@ import { CatchError } from "../../vitest.catch"
 import { AuthProvider } from "../auth.provider"
 import { authClient } from "../auth.sdk"
 import {
-    assertRealPlaceId,
-    buildTempPlace,
+    assertRealRestaurantId,
+    buildTempRestaurant,
     getSessionCollections,
-    resolvePlaceIdByKey,
-    toCreateArgs,
-    type PlaceCreateArgs,
-    type PlaceCard,
+    resolveRestaurantIdByKey,
+    toRestaurantCreateArgs,
+    type RestaurantCreateArgs,
+    type Restaurant,
 } from "./restaurants"
 import { createSeededClient } from "./seeded.client"
 
@@ -102,7 +102,7 @@ vi.mock("../auth.sdk", () => ({
     },
 }))
 
-function placeFixture(overrides?: Partial<PlaceCard>): PlaceCard {
+function restaurantFixture(overrides?: Partial<Restaurant>): Restaurant {
     // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- test fixture shaped to the place card
     return {
         _id: "r1",
@@ -116,12 +116,12 @@ function placeFixture(overrides?: Partial<PlaceCard>): PlaceCard {
         mySave: null,
         wantCount: 0,
         ...overrides,
-    } as unknown as PlaceCard
+    } as unknown as Restaurant
 }
 
 function mockPersist() {
     return {
-        addPlace: vi.fn<(args: PlaceCreateArgs) => Promise<Id<"places">>>(async () => {
+        addRestaurant: vi.fn<(args: RestaurantCreateArgs) => Promise<Id<"places">>>(async () => {
             await Promise.resolve()
             // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- test-only place id
             return "r9" as unknown as Id<"places">
@@ -131,13 +131,13 @@ function mockPersist() {
 
 describe("place shape translators", () => {
     test("forwards the client mutation key to create args", () => {
-        const row = placeFixture({ clientMutationId: "user-1:key-1" })
+        const row = restaurantFixture({ clientMutationId: "user-1:key-1" })
 
-        expect(toCreateArgs(row)).toMatchObject({ clientMutationId: "user-1:key-1" })
+        expect(toRestaurantCreateArgs(row)).toMatchObject({ clientMutationId: "user-1:key-1" })
     })
 
     test("builds temp rows carrying the client mutation key", () => {
-        const temp = buildTempPlace({
+        const temp = buildTempRestaurant({
             ownerId: toId<"profiles">("user-1"),
             ownerName: "Alex",
             name: "Trattoria Verde",
@@ -150,7 +150,7 @@ describe("place shape translators", () => {
 
         expect(temp.clientMutationId).toBe("user-1:key-1")
         expect(() => {
-            assertRealPlaceId(temp._id)
+            assertRealRestaurantId(temp._id)
         }).toThrow("still syncing")
     })
 })
@@ -158,7 +158,7 @@ describe("place shape translators", () => {
 describe("place collections", () => {
     test("rejects local updates because places are append-only", async () => {
         const persist = mockPersist()
-        const backend = createSeededClient({ liveRows: [placeFixture()] })
+        const backend = createSeededClient({ liveRows: [restaurantFixture()] })
         const collections = getSessionCollections(backend.client, persist, SESSION)
         await collections.owner.preload()
         // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- test-only place id
@@ -179,17 +179,17 @@ describe("place collections", () => {
         const collections = getSessionCollections(backend.client, persist, SESSION)
         await collections.owner.preload()
 
-        const tx = collections.owner.insert({ ...placeFixture() })
+        const tx = collections.owner.insert({ ...restaurantFixture() })
         expect(collections.owner.size).toBe(1)
         await tx.when("settled")
 
         expect(tx.state).toBe("completed")
-        expect(persist.addPlace).toHaveBeenCalledWith(
+        expect(persist.addRestaurant).toHaveBeenCalledWith(
             expect.objectContaining({ name: "Trattoria Verde", addressLabel: "Luxembourg City" }),
         )
         // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- test-only place id
         const realId = "r9" as unknown as Id<"places">
-        backend.pushState([{ ...placeFixture(), _id: realId }])
+        backend.pushState([{ ...restaurantFixture(), _id: realId }])
         expect(collections.owner.get(realId)?.name).toBe("Trattoria Verde")
         expect(collections.owner.size).toBe(1)
     })
@@ -200,7 +200,7 @@ describe("place collections", () => {
         const collections = getSessionCollections(backend.client, persist, SESSION)
         await collections.owner.preload()
 
-        const temp = buildTempPlace({
+        const temp = buildTempRestaurant({
             ownerId: toId<"profiles">("user-1"),
             ownerName: "Alex",
             name: "Trattoria Verde",
@@ -215,15 +215,15 @@ describe("place collections", () => {
         // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- test-only place id
         const realId = "r9" as unknown as Id<"places">
 
-        const pending = resolvePlaceIdByKey(collections.owner, "user-1:delayed", 5000)
-        backend.pushState([{ ...placeFixture(), _id: realId, clientMutationId: "user-1:delayed" }])
+        const pending = resolveRestaurantIdByKey(collections.owner, "user-1:delayed", 5000)
+        backend.pushState([{ ...restaurantFixture(), _id: realId, clientMutationId: "user-1:delayed" }])
 
         await expect(pending).resolves.toBe(realId)
     })
 
     test("scopes synced rows per session key", async () => {
         const persist = mockPersist()
-        const backend = createSeededClient({ liveRows: [placeFixture()] })
+        const backend = createSeededClient({ liveRows: [restaurantFixture()] })
 
         const anna = getSessionCollections(backend.client, persist, "anna")
         await anna.owner.preload()
@@ -241,13 +241,13 @@ describe("place collections", () => {
 
     test("rolls back an optimistic insert when persistence fails", async () => {
         const persist = mockPersist()
-        persist.addPlace.mockRejectedValueOnce(new Error("mutation failed"))
+        persist.addRestaurant.mockRejectedValueOnce(new Error("mutation failed"))
         const backend = createSeededClient()
         const collections = getSessionCollections(backend.client, persist, SESSION)
         await collections.owner.preload()
 
         const tx = collections.owner.insert(
-            buildTempPlace({
+            buildTempRestaurant({
                 ownerId: toId<"profiles">("user-1"),
                 ownerName: "Alex",
                 name: "Trattoria Verde",
@@ -271,7 +271,7 @@ describe("place collections", () => {
             error: null,
         })
         const annasBackend = createSeededClient({
-            liveRows: [placeFixture({ ownerId: toId<"profiles">("anna"), ownerName: "Anna" })],
+            liveRows: [restaurantFixture({ ownerId: toId<"profiles">("anna"), ownerName: "Anna" })],
         })
         injectSyncClient(annasBackend.client)
         const queryClient = new QueryClient()
@@ -290,7 +290,7 @@ describe("place collections", () => {
             error: null,
         })
         const bensBackend = createSeededClient({
-            liveRows: [placeFixture({ ownerId: toId<"profiles">("ben"), ownerName: "Ben", name: "Sushi Bar" })],
+            liveRows: [restaurantFixture({ ownerId: toId<"profiles">("ben"), ownerName: "Ben", name: "Sushi Bar" })],
         })
         injectSyncClient(bensBackend.client)
 
@@ -305,7 +305,7 @@ describe("place collections", () => {
             error: null,
         })
         tokenMock.mockResolvedValue({ data: null })
-        const gated = createSeededClient({ liveRows: [placeFixture()] })
+        const gated = createSeededClient({ liveRows: [restaurantFixture()] })
         injectSyncClient(gated.client)
         const queryClient = new QueryClient()
         const wrapper = ({ children }: Readonly<{ children: React.ReactNode }>) => (
@@ -322,7 +322,7 @@ describe("place collections", () => {
         unmount()
 
         tokenMock.mockResolvedValue({ data: { token: "test-token" } })
-        const backend = createSeededClient({ liveRows: [placeFixture()] })
+        const backend = createSeededClient({ liveRows: [restaurantFixture()] })
         injectSyncClient(backend.client)
 
         const second = renderHook(() => useRestaurants(), { wrapper })

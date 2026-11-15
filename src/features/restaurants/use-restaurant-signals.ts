@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react"
 
 import { type Id } from "@api/data.model"
-import { usePlaceDetails } from "@core/restaurants"
+import { useGooglePlaceDetails } from "@core/restaurants"
 
 export type RestaurantSignals =
     | { readonly status: "idle" }
@@ -15,11 +15,11 @@ export type RestaurantSignals =
     | { readonly status: "failed" }
 
 export function useRestaurantSignals(
-    placeId: Id<"places">,
+    restaurantId: Id<"places">,
     googlePlaceId: string | undefined,
     enabled = true,
 ): RestaurantSignals {
-    const fetchDetails = usePlaceDetails()
+    const fetchDetails = useGooglePlaceDetails()
     const [signals, setSignals] = useState<RestaurantSignals>({ status: "idle" })
 
     useEffect(() => {
@@ -30,7 +30,10 @@ export function useRestaurantSignals(
             }
         }
         setSignals({ status: "loading" })
-        void Promise.all([fetchDetails({ placeId, tier: "enterprise" }), fetchDetails({ placeId, tier: "pro" })])
+        void Promise.all([
+            fetchDetails({ placeId: restaurantId, tier: "enterprise" }),
+            fetchDetails({ placeId: restaurantId, tier: "pro" }),
+        ])
             .then(([enterpriseResult, proResult]) => {
                 if (!cancelled) {
                     setSignals({
@@ -54,8 +57,8 @@ export function useRestaurantSignals(
         return () => {
             cancelled = true
         }
-        // fetchDetails is the stable mutateAsync function; refetch only when the place changes.
-    }, [placeId, googlePlaceId, enabled, fetchDetails])
+        // fetchDetails is the stable mutateAsync function; refetch only when the restaurant changes.
+    }, [restaurantId, googlePlaceId, enabled, fetchDetails])
 
     return signals
 }

@@ -2,10 +2,10 @@ import { XIcon } from "@phosphor-icons/react"
 import { useState } from "react"
 
 import { type Id } from "@api/data.model"
-import { type PlacePhotoInput } from "@api/db/restaurants"
+import { type RestaurantPhotoInput } from "@api/db/restaurants"
 import { MAX_IMAGES } from "@core/constants"
 import { clearError, errorFrom, type FormError } from "@core/outcome"
-import { useAddPlacePhotos, useDeleteUpload, useRemovePlacePhoto, useUploadImage } from "@core/restaurants"
+import { useAddRestaurantPhotos, useDeleteUpload, useRemoveRestaurantPhoto, useUploadImage } from "@core/restaurants"
 import { type Restaurant } from "@core/restaurants"
 import { type ImageRecord } from "@core/schemas"
 import { type GalleryPhoto } from "@pattern/gallery"
@@ -16,7 +16,7 @@ import { Dialog, DialogContent, DialogTitle } from "@ui/dialog"
 
 import { useRestaurantImages } from "./use-restaurant-images"
 
-function toPhotoInput(image: ImageRecord): PlacePhotoInput {
+function toPhotoInput(image: ImageRecord): RestaurantPhotoInput {
     return {
         storageId: image.storageId,
         ...(image.width !== undefined ? { width: image.width } : {}),
@@ -25,15 +25,15 @@ function toPhotoInput(image: ImageRecord): PlacePhotoInput {
 }
 
 function usePhotoUploadSubmit({
-    placeId,
+    restaurantId,
     gallery,
     onOpenChange,
 }: Readonly<{
-    placeId: Id<"places">
+    restaurantId: Id<"places">
     gallery: ReturnType<typeof useRestaurantImages>
     onOpenChange: (open: boolean) => void
 }>) {
-    const addPhotos = useAddPlacePhotos()
+    const addPhotos = useAddRestaurantPhotos()
     const [error, setError] = useState<FormError>(clearError)
 
     const handleSubmit = async () => {
@@ -42,7 +42,7 @@ function usePhotoUploadSubmit({
         }
         setError(clearError)
         try {
-            await addPhotos.mutateAsync({ placeId, photos: gallery.images.map(toPhotoInput) })
+            await addPhotos.mutateAsync({ placeId: restaurantId, photos: gallery.images.map(toPhotoInput) })
             await gallery.commitSubmit()
             onOpenChange(false)
         } catch (err) {
@@ -78,8 +78,8 @@ function PhotoUploadActions({
     )
 }
 
-function useSavedPhotoRemoval(placeId: Id<"places">) {
-    const removePhoto = useRemovePlacePhoto()
+function useSavedPhotoRemoval(restaurantId: Id<"places">) {
+    const removePhoto = useRemoveRestaurantPhoto()
     const [pendingStorageId, setPendingStorageId] = useState<Id<"_storage"> | null>(null)
     const [removeError, setRemoveError] = useState<string | null>(null)
 
@@ -93,7 +93,7 @@ function useSavedPhotoRemoval(placeId: Id<"places">) {
             setPendingStorageId(storageId)
             setRemoveError(null)
             removePhoto.mutate(
-                { placeId, storageId },
+                { placeId: restaurantId, storageId },
                 {
                     onSuccess: () => {
                         setPendingStorageId(null)
@@ -152,7 +152,7 @@ function SavedPhotoTile({
     )
 }
 
-export function PlacePhotoUploadDialog({
+export function RestaurantPhotoUploadDialog({
     restaurant,
     viewerId,
     show,
@@ -173,7 +173,7 @@ export function PlacePhotoUploadDialog({
             await deleteUpload.mutateAsync(args)
         },
     })
-    const submit = usePhotoUploadSubmit({ placeId, gallery, onOpenChange })
+    const submit = usePhotoUploadSubmit({ restaurantId: placeId, gallery, onOpenChange })
     const removal = useSavedPhotoRemoval(placeId)
 
     const handleOpenChange = (open: boolean): void => {

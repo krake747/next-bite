@@ -4,7 +4,7 @@ import { afterEach, beforeEach, describe, expect, test, vi } from "vitest"
 
 import { ConvexProvider } from "@api/convex.context"
 import { toId } from "@api/data.model"
-import { type PlaceCard } from "@api/db/restaurants"
+import { type Restaurant } from "@api/db/restaurants"
 import { createSeededClient, seedKey } from "@api/db/seeded.client"
 import { pendingOptions } from "@routes/-components/route-pending"
 
@@ -38,7 +38,7 @@ vi.mock("@api/auth.provider", async (importOriginal) => {
 
 const restaurantId = toId<"places">("r1")
 
-const verde: PlaceCard = {
+const verde: Restaurant = {
     _id: restaurantId,
     _creationTime: 1000,
     ownerId: toId<"profiles">(alex.id),
