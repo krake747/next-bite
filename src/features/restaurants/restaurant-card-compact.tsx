@@ -17,17 +17,20 @@ import { useVisible } from "./use-visible"
 export function RestaurantCardCompact({
     restaurant,
     onToggleWant,
+    onToggleBeen,
     detailsHref,
     ...cardProps
 }: Readonly<
     {
         restaurant: Restaurant
         onToggleWant?: (() => void) | undefined
+        onToggleBeen?: (() => void) | undefined
         detailsHref?: string | undefined
     } & React.ComponentProps<typeof Card>
 >) {
     const hasLocation = restaurant.address.google?.placeId !== undefined && restaurant.address.google.placeId !== ""
     const handleToggleWant = onToggleWant ?? (() => {})
+    const handleToggleBeen = onToggleBeen ?? (() => {})
     // Signals bill Google details calls, so they load only once the card nears
     // the viewport instead of on mount for every card in the feed.
     const [sentinelRef, isVisible] = useVisible()
@@ -98,8 +101,10 @@ export function RestaurantCardCompact({
                 <div className="mt-3 flex items-center gap-2">
                     <RestaurantInterestButton
                         wanted={restaurant.mySave === "want"}
+                        tried={restaurant.mySave === "been"}
                         wantCount={restaurant.wantCount}
                         onToggleWant={handleToggleWant}
+                        onToggleBeen={handleToggleBeen}
                     />
                     {restaurant.link !== undefined && restaurant.link !== "" && (
                         <a

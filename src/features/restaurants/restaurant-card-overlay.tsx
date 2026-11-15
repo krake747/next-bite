@@ -20,18 +20,21 @@ import { useVisible } from "./use-visible"
 export function RestaurantCardOverlay({
     restaurant,
     onToggleWant,
+    onToggleBeen,
     detailsHref,
     ...cardProps
 }: Readonly<
     {
         restaurant: Restaurant
         onToggleWant?: (() => void) | undefined
+        onToggleBeen?: (() => void) | undefined
         detailsHref?: string | undefined
     } & React.ComponentProps<typeof Card>
 >) {
     const googlePlaceId = restaurant.address.google?.placeId
     const hasLocation = googlePlaceId !== undefined && googlePlaceId !== ""
     const handleToggleWant = onToggleWant ?? (() => {})
+    const handleToggleBeen = onToggleBeen ?? (() => {})
     const lightbox = useLightbox(restaurant.photos)
     // Signals bill Google details calls, so they load only once the card nears
     // the viewport instead of on mount for every card in the feed.
@@ -149,8 +152,10 @@ export function RestaurantCardOverlay({
                 )}
                 <RestaurantInterestButton
                     wanted={restaurant.mySave === "want"}
+                    tried={restaurant.mySave === "been"}
                     wantCount={restaurant.wantCount}
                     onToggleWant={handleToggleWant}
+                    onToggleBeen={handleToggleBeen}
                 />
                 <div className="flex justify-end">
                     <GoogleAttribution />

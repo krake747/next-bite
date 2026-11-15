@@ -9,6 +9,7 @@ import { type WantState } from "@features/social/want-bar"
 
 export type SocialActions = {
     readonly toggleWantFor: (restaurant: Restaurant) => () => void
+    readonly toggleBeenFor: (restaurant: Restaurant) => () => void
     readonly goToDetail: (restaurant: Restaurant) => void
     readonly goToLogin: () => void
     readonly wantFor: (restaurant: Restaurant) => WantState
@@ -50,19 +51,32 @@ export function SocialActionsProvider({ children }: Readonly<{ children: React.R
         setSave.mutate({ placeId: restaurant._id, status: restaurant.mySave === "want" ? null : "want" })
     }
 
+    const toggleBeenFor = (restaurant: Restaurant) => () => {
+        if (!isAuthenticated) {
+            goToLogin()
+            return
+        }
+        setSave.mutate({ placeId: restaurant._id, status: restaurant.mySave === "been" ? null : "been" })
+    }
+
     const wantFor: SocialActions["wantFor"] = (restaurant) => ({
         wanted: restaurant.mySave === "want",
+        tried: restaurant.mySave === "been",
         wantCount: restaurant.wantCount,
         onToggleWant: toggleWantFor(restaurant),
+        onToggleBeen: toggleBeenFor(restaurant),
     })
 
     const cardFor: SocialActions["cardFor"] = (restaurant) => ({
         onToggleWant: toggleWantFor(restaurant),
+        onToggleBeen: toggleBeenFor(restaurant),
         detailsHref: `/restaurants/${restaurant._id}`,
     })
 
     return (
-        <SocialActionsContext.Provider value={{ toggleWantFor, goToDetail, goToLogin, wantFor, cardFor }}>
+        <SocialActionsContext.Provider
+            value={{ toggleWantFor, toggleBeenFor, goToDetail, goToLogin, wantFor, cardFor }}
+        >
             {children}
         </SocialActionsContext.Provider>
     )

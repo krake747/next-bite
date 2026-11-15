@@ -53,7 +53,7 @@ describe("FriendUpdate", () => {
                     photos: [{ url: photoUrl, storageId: mustBeStorageId("s1") }],
                     wantCount: 3,
                 })}
-                want={{ wanted: true, wantCount: 3, onToggleWant: () => {} }}
+                want={{ wanted: true, tried: false, wantCount: 3, onToggleWant: () => {}, onToggleBeen: () => {} }}
             />,
         )
 
@@ -75,10 +75,31 @@ describe("FriendUpdate", () => {
 
     test("toggles want through the want handler", async () => {
         const onToggleWant = vi.fn<() => void>()
+        const onToggleBeen = vi.fn<() => void>()
         const user = userEvent.setup()
-        render(<FriendUpdate restaurant={restaurantWith({})} want={{ wanted: false, wantCount: 0, onToggleWant }} />)
+        render(
+            <FriendUpdate
+                restaurant={restaurantWith({})}
+                want={{ wanted: false, tried: false, wantCount: 0, onToggleWant, onToggleBeen }}
+            />,
+        )
 
         await user.click(screen.getByRole("button", { name: "Want to try, 0" }))
         expect(onToggleWant).toHaveBeenCalledTimes(1)
+    })
+
+    test("toggles been through the been handler", async () => {
+        const onToggleWant = vi.fn<() => void>()
+        const onToggleBeen = vi.fn<() => void>()
+        const user = userEvent.setup()
+        render(
+            <FriendUpdate
+                restaurant={restaurantWith({})}
+                want={{ wanted: false, tried: false, wantCount: 0, onToggleWant, onToggleBeen }}
+            />,
+        )
+
+        await user.click(screen.getByRole("button", { name: "Been there" }))
+        expect(onToggleBeen).toHaveBeenCalledTimes(1)
     })
 })

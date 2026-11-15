@@ -6,7 +6,7 @@ import { warmQueriesWithin } from "@api/convex.options"
 import { toId } from "@api/data.model"
 import { useViewer } from "@core/identity"
 import { restaurantDetailWarmups, restaurantOptions, type Restaurant } from "@core/restaurants"
-import { useToggleWant } from "@core/saves"
+import { useToggleBeen, useToggleWant } from "@core/saves"
 import { useAuth } from "@core/session"
 import { GoogleDetailsSection } from "@features/restaurants/google-details-section"
 import { type GoogleDetails } from "@features/restaurants/google-details-utils"
@@ -68,6 +68,7 @@ type DetailContextValue = {
     readonly closedLabel: string | undefined
     readonly showHours: boolean
     readonly onToggleWant: () => void
+    readonly onToggleBeen: () => void
     readonly onShowHours: () => void
     readonly onOpenChange: (open: boolean) => void
 }
@@ -83,7 +84,7 @@ function useDetail(): DetailContextValue {
 }
 
 function DetailInfoPanel() {
-    const { restaurant, details, detailsFailed, onToggleWant, onShowHours } = useDetail()
+    const { restaurant, details, detailsFailed, onToggleWant, onToggleBeen, onShowHours } = useDetail()
     const googlePlaceId = restaurant.address.google?.placeId
     return (
         <div className="min-w-0 lg:col-span-2">
@@ -98,8 +99,10 @@ function DetailInfoPanel() {
             <div className="flex flex-wrap items-center gap-3 px-5 pb-2 md:px-4">
                 <RestaurantInterestButton
                     wanted={restaurant.mySave === "want"}
+                    tried={restaurant.mySave === "been"}
                     wantCount={restaurant.wantCount}
                     onToggleWant={onToggleWant}
+                    onToggleBeen={onToggleBeen}
                 />
                 {googlePlaceId !== undefined && googlePlaceId !== "" && (
                     <Button tone="secondary" onClick={onShowHours}>
@@ -174,6 +177,7 @@ function DetailProvider({ restaurant, children }: Readonly<{ restaurant: Restaur
     const navigate = useNavigate()
     const auth = useAuth()
     const toggleWant = useToggleWant(restaurant._id, restaurant.mySave)
+    const toggleBeen = useToggleBeen(restaurant._id, restaurant.mySave)
     const { details, openingHours, detailsFailed, closedLabel, showHours, setShowHours } = useGoogleDetails(restaurant)
 
     const goToLogin = (): void => {
@@ -186,6 +190,14 @@ function DetailProvider({ restaurant, children }: Readonly<{ restaurant: Restaur
             return
         }
         toggleWant()
+    }
+
+    const handleToggleBeen = (): void => {
+        if (!auth.isAuthenticated) {
+            goToLogin()
+            return
+        }
+        toggleBeen()
     }
 
     const handleShowHours = (): void => {
@@ -206,6 +218,7 @@ function DetailProvider({ restaurant, children }: Readonly<{ restaurant: Restaur
                 closedLabel,
                 showHours,
                 onToggleWant: handleToggleWant,
+                onToggleBeen: handleToggleBeen,
                 onShowHours: handleShowHours,
                 onOpenChange: handleOpenChange,
             }}

@@ -13,6 +13,13 @@ export function useToggleWant(restaurantId: Id<"places">, mySave: SaveStatus | n
     }
 }
 
+export function useToggleBeen(restaurantId: Id<"places">, mySave: SaveStatus | null): () => void {
+    const setSave = useSetSave()
+    return () => {
+        setSave.mutate({ placeId: restaurantId, status: mySave === "been" ? null : "been" })
+    }
+}
+
 export function orderFeedByRecency<Restaurant extends { readonly _creationTime: number }>(
     restaurants: ReadonlyArray<Restaurant>,
 ): Restaurant[] {
