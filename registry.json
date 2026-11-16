@@ -260,23 +260,23 @@
             ]
         },
         {
-            "name": "reaction-bar",
+            "name": "want-bar",
             "type": "registry:component",
-            "description": "Like, comment, and want-to-try toggles with counts.",
+            "description": "Want toggle with count.",
             "files": [
                 {
-                    "path": "src/features/social/reaction-bar.tsx",
+                    "path": "src/features/social/want-bar.tsx",
                     "type": "registry:component"
                 }
             ]
         },
         {
-            "name": "activity-post",
+            "name": "friend-update",
             "type": "registry:component",
-            "description": "Feed post composing author, text, restaurant, social context, and reactions.",
+            "description": "Friend update composing the shared restaurant card and its Want toggle.",
             "files": [
                 {
-                    "path": "src/features/social/activity-post.tsx",
+                    "path": "src/features/social/friend-update.tsx",
                     "type": "registry:component"
                 }
             ]
