@@ -582,6 +582,10 @@ export default defineConfig({
                     testTimeout: 20000,
                     slowTestThreshold: 19500,
                     server: { deps: { inline: [/@convex-dev\/better-auth/] } },
+                    // Edge-runtime copies the localStorage global on setup and Node 26
+                    // warns it is unavailable in workers. Convex tests never touch it,
+                    // so hide that warning in this project's workers only.
+                    execArgv: ["--disable-warning=ExperimentalWarning"],
                 },
             },
         ],

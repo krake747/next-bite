@@ -10,8 +10,12 @@ import {
     PRO_FIELD_MASK,
 } from "./details"
 
-function maskUrl(placeId: string, mask: ReadonlyArray<string>): string {
-    return `https://places.googleapis.com/v1/places/${placeId}?fields=${[...mask].join(",")}`
+function maskPath(placeId: string): string {
+    return `https://places.googleapis.com/v1/places/${placeId}`
+}
+
+function fieldsOf(request: Request): string | null {
+    return new URL(request.url).searchParams.get("fields")
 }
 
 describe("place details field masks", () => {
@@ -32,8 +36,10 @@ describe("fetchPlaceDetails granular", () => {
     })
 
     test("returns pro fields only", async () => {
+        let fields: string | null = null
         server.use(
-            http.get(maskUrl("ChIJpro", PRO_FIELD_MASK), () => {
+            http.get(maskPath("ChIJpro"), ({ request }) => {
+                fields = fieldsOf(request)
                 return HttpResponse.json({ businessStatus: "OPERATIONAL", displayName: { text: "Verde" } })
             }),
         )
@@ -42,11 +48,14 @@ describe("fetchPlaceDetails granular", () => {
             businessStatus: "OPERATIONAL",
             displayName: "Verde",
         })
+        expect(fields).toBe([...PRO_FIELD_MASK].join(","))
     })
 
     test("returns enterprise fields only", async () => {
+        let fields: string | null = null
         server.use(
-            http.get(maskUrl("ChIJent", ENTERPRISE_FIELD_MASK), () => {
+            http.get(maskPath("ChIJent"), ({ request }) => {
+                fields = fieldsOf(request)
                 return HttpResponse.json({
                     currentOpeningHours: { openNow: true, weekdayDescriptions: ["Monday: 9:00 AM – 5:00 PM"] },
                     rating: 4.5,
@@ -64,12 +73,13 @@ describe("fetchPlaceDetails granular", () => {
             priceLevel: "PRICE_LEVEL_MODERATE",
             websiteUri: "https://example.com/trattoria",
         })
+        expect(fields).toBe([...ENTERPRISE_FIELD_MASK].join(","))
     })
 
     test("fetches fresh with no persistent cache", async () => {
         let calls = 0
         server.use(
-            http.get(maskUrl("ChIJnocache", ENTERPRISE_FIELD_MASK), () => {
+            http.get(maskPath("ChIJnocache"), () => {
                 calls += 1
                 return HttpResponse.json({ rating: 4.0 })
             }),
@@ -83,7 +93,7 @@ describe("fetchPlaceDetails granular", () => {
     test("coalesces in-flight requests per tier", async () => {
         let calls = 0
         server.use(
-            http.get(maskUrl("ChIJcoalesce", ENTERPRISE_FIELD_MASK), async () => {
+            http.get(maskPath("ChIJcoalesce"), async () => {
                 calls += 1
                 await new Promise<void>((resolve) => {
                     setTimeout(resolve, 20)
@@ -101,9 +111,7 @@ describe("fetchPlaceDetails granular", () => {
     })
 
     test("returns fallback when the provider rejects", async () => {
-        server.use(
-            http.get(maskUrl("ChIJreject", ENTERPRISE_FIELD_MASK), () => new HttpResponse(null, { status: 500 })),
-        )
+        server.use(http.get(maskPath("ChIJreject"), () => new HttpResponse(null, { status: 500 })))
 
         await expect(fetchPlaceDetails("ChIJreject", "test-key", "enterprise")).resolves.toEqual({
             openingHours: { openState: "unknown", periods: [], weekdayText: [] },

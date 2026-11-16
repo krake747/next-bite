@@ -1,5 +1,5 @@
 import { RouterProvider, createMemoryHistory, createRouter } from "@tanstack/react-router"
-import { act, render, screen, waitFor } from "@testing-library/react"
+import { act, screen, waitFor } from "@testing-library/react"
 import { beforeEach, describe, expect, test, vi } from "vitest"
 
 import { ConvexProvider, type ConvexAuthPhase } from "@api/convex.context"
@@ -9,6 +9,7 @@ import { createSeededClient, seedKey } from "@api/db/seeded.client"
 
 import { routeTree } from "../routeTree.gen"
 import { authSnapshotFor } from "../vitest.auth"
+import { renderDocument } from "../vitest.render"
 
 type TestUser = { id: string; email: string; name: string }
 
@@ -80,7 +81,7 @@ async function renderAt(path: string, rows: ReadonlyArray<Restaurant>) {
             <RouterProvider router={router} />
         </ConvexProvider>
     )
-    const view = render(tree("authenticated"))
+    const view = renderDocument(tree("authenticated"))
     return {
         backend,
         router,
