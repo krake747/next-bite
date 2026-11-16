@@ -6,13 +6,13 @@ Product terms: Friend, Friend update, Want, Been. Defined in `GLOSSARY.md`.
 
 - `friends.tsx`: friend list, pending requests, and request by email. Warms `api.social.friends` and
   `api.social.requests` in its loader.
-- `home.tsx`: river of own restaurants plus Latest from friends, rendered through `ActivityPost`.
+- `home.tsx`: river of own restaurants plus Latest from friends, rendered through `FriendUpdate`.
 - `restaurants.$restaurantId.tsx`: per restaurant Want and Been buttons and summaries.
 
 ## UI (`src/features/social/`)
 
-- `activity-post.tsx`: a friend shared restaurant as shown in the home river.
-- `reaction-bar.tsx`: Want toggle on a friend update.
+- `friend-update.tsx`: a friend update (shared restaurant) as shown in the home river.
+- `want-bar.tsx`: Want toggle on a friend update.
 
 ## Core (`src/core/`)
 
@@ -45,5 +45,5 @@ Product terms: Friend, Friend update, Want, Been. Defined in `GLOSSARY.md`.
 ## State
 
 Shipped: friend requests by email, accept, remove, friend list, friend river, Want and Been with
-counts. Partial: social proof is counts plus activity posts; there is no comment thread shape in the
+counts. Partial: social proof is counts plus friend updates; there is no comment thread shape in the
 code. Out of scope of the current code: turning Want counts into a group pick.

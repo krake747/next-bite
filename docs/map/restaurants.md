@@ -5,7 +5,7 @@ Product terms: Restaurant, Save, Cuisine, Location, Opening Hours. Defined in `G
 ## Routes (`src/routes/_app/`)
 
 - `home.tsx`: river of own restaurants plus friends restaurants, composed from
-  `RestaurantCardOverlay`, `RestaurantCardCompact`, and `ActivityPost`.
+  `RestaurantCardOverlay`, `RestaurantCardCompact`, and `FriendUpdate`.
 - `add.tsx`: creation entry.
 - `restaurants.$restaurantId.tsx`: detail view with gallery, live opening hours, and interest
   buttons.
